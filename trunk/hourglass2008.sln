@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintaser", "wintaser\wintaser2008.vcproj", "{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5} = {610E7A3D-5BAF-43D2-B406-996DB9E66AC5}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintasee", "wintasee\wintasee2008.vcproj", "{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		DebugUnity|Win32 = DebugUnity|Win32
+		Release|Win32 = Release|Win32
+		ReleaseUnity|Win32 = ReleaseUnity|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.Debug|Win32.Build.0 = Debug|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.DebugUnity|Win32.ActiveCfg = DebugUnity|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.DebugUnity|Win32.Build.0 = DebugUnity|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.Release|Win32.ActiveCfg = Release|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.Release|Win32.Build.0 = Release|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.ReleaseUnity|Win32.ActiveCfg = ReleaseUnity|Win32
+		{3B2A79FF-8BCF-43F7-B16D-82235017A1EB}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.Debug|Win32.Build.0 = Debug|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.DebugUnity|Win32.ActiveCfg = DebugUnity|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.DebugUnity|Win32.Build.0 = DebugUnity|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.Release|Win32.ActiveCfg = Release|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.Release|Win32.Build.0 = Release|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.ReleaseUnity|Win32.ActiveCfg = ReleaseUnity|Win32
+		{610E7A3D-5BAF-43D2-B406-996DB9E66AC5}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
