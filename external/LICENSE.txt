@@ -1,0 +1,4 @@
+Files in this particular directory ("external") and its subdirectories are not part of Hourglass and are not covered by its license.
+They are like the other files you would typically compile or link with to allow your program to run on Windows.
+They are provided here for convenience only, and in case Microsoft decides to stop distributing them or introduce breaking changes in them.
+If their copyright owner (or enough other people) so requests it, they will be removed and replaced with a link to where they can be obtained.
