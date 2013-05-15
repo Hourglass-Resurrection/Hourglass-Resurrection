@@ -248,7 +248,7 @@ Movie::Movie()
 
 	unsigned int exefnameLen;
 	fread(&exefnameLen, 4, 1, file);
-	if(exefnameLen =< 0 || exefnameLen > 257) // Sanity check
+	if(exefnameLen <= 0 || exefnameLen > 257) // Sanity check
 	{
 		fclose(file);
 		if(author) // Prevent memory leak
@@ -260,7 +260,7 @@ Movie::Movie()
 		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	char* exefname = new char[exefname+1]// [48]; *exefname = 0;
+	char* exefname = new char[exefnameLen+1];// [48]; *exefname = 0;
 	fread(exefname, exefnameLen, 1, file);
 	exefname[exefnameLen] = '\0'; // Ensure proper null-termination
 
