@@ -21,6 +21,7 @@ Movie::Movie()
 	{
 		keyboardLayoutName[i] = 0;
 	}
+	author[0] = '\0';
 	exefname[0] = '\0';
 	commandline[0] = '\0';
 	headerBuilt = false;
@@ -38,6 +39,17 @@ Movie::Movie()
 
 	if(movie.frames.size() == 0)
 		return true; // Technically we did "Save" the movie...
+
+	// Sanity check, needs to be done before we open the file for writing, or we may cause some serious corruption.
+	const char* exefname = movie.exefname;
+	unsigned int exefnameLen = strlen(exefname);
+	if(!exefnameLen)
+	{
+		char str[1024];
+		sprintf(str, "Failed to save movie '%s', the exe filename field is empty!", filename);
+		CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+		return false;
+	}
 
 
 	FILE* file = fopen(filename, "wb");
@@ -99,6 +111,14 @@ Movie::Movie()
 	unsigned int rerecords = movie.rerecordCount;
 	fwrite(&rerecords, 4, 1, file);
 
+	const char* author = movie.author;
+	unsigned int authorLen = strlen(author);
+	fwrite(&authorLen, 4, 1, file);
+	if(authorLen) // If the author-field contains something, write that too
+	{
+		fwrite(author, authorLen, 1, file);
+	}
+
 	const char* keyboardLayoutName = movie.keyboardLayoutName;
 	fwrite(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
 
@@ -116,10 +136,11 @@ Movie::Movie()
 
 	// Why not save file name length (int32) and then ALL the characters in the exe name?
 	// Specially since all the work is already done!
-	const char* exefname = movie.exefname;
-	int exefnamelen = strlen(exefname);
-	fwrite(exefname, 1, min(exefnamelen,48-1), file);
-	for(int i = min(exefnamelen,48-1); i < 48; i++) fputc(0, file);
+
+	// These variables are declared before the file is opened as they are needed for sanity checks!
+	fwrite(&exefnameLen, 4, 1, file);
+	fwrite(exefname, exefnameLen, 1, file);
+	//for(int i = min(exefnamelen,48-1); i < 48; i++) fputc(0, file);
 
 	fwrite(&movie.desyncDetectionTimerValues[0], 16, 4, file);
 
@@ -132,14 +153,22 @@ Movie::Movie()
 	// No commandline should need to be that long, but we should still apply a limitation of 8191-(MAX_PATH+1) instead of 160.
 	// CreateProcess has a limit of 32767 characters, which I find odd since Windows itself has a limit of 8191.
 	const char* commandline = movie.commandline;
-	fwrite(commandline, 1, 160, file);
+	unsigned int commandlineLen = strlen(commandline);
+	fwrite(&commandlineLen, 4, 1, file);
+	if(commandlineLen) // If a commandline was entered, write that too.
+	{
+		fwrite(commandline, 1, commandlineLen, file);
+	}
 
 	// write remaining padding before movie data
 	// Why is there an assert here?
 	// TODO: clean up this assert
 	// assert(ftell(file) <= 1024-4);
-	while(ftell(file) < 1024)
-		fputc(0, file);
+	//while(ftell(file) < 1024)
+	//	fputc(0, file);
+	// ^^^^^^^^^^^^^^^^^^^^^^^^
+	// That is no longer valid since we have a header of variable size
+	// Perhaps we shall introduce a fixed number of null-bytes instead?
 
 	fwrite(&movie.frames[0], sizeof(MovieFrame), movie.frames.size(), file);
 
@@ -165,14 +194,14 @@ Movie::Movie()
 		return false;
 	}
 	
-	int identifier;
+	unsigned int identifier;
 	fread(&identifier, 4, 1, file);
 
 	if(identifier != MOVIE_TYPE_IDENTIFIER)
 	{
 		fclose(file);
 		char str[1024];
-		sprintf(str, "The movie file \"%s\" is not a valid Hourglass movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+		sprintf(str, "The movie file '%s' is not a valid Hourglass movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
 		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
 		return false;
 	}
@@ -183,7 +212,26 @@ Movie::Movie()
 	unsigned int rerecords;
 	fread(&rerecords, 4, 1, file);
 
-	char* keyboardLayoutName = movie.keyboardLayoutName;
+	unsigned int authorLen;
+	fread(&authorLen, 4, 1, file);
+	char* author;
+	author = NULL;
+	if(authorLen) // If this is non-zero, there is an author name in the movie.
+	{
+		if(authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
+		{
+			fclose(file);
+			char str[1024];
+			sprintf(str, "The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+			return false;
+		}
+		author = new char[authorLen+1]; // Need room for the null-termination.
+		fread(author, authorLen, 1, file);
+		author[authorLen] = '\0'; // Make sure the string is null-terminated.
+	}
+	
+	char keyboardLayoutName[KL_NAMELENGTH];// = movie.keyboardLayoutName;
 	fread(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
 
 	unsigned int fps = 0;
@@ -198,13 +246,28 @@ Movie::Movie()
 	unsigned int fsize = 0;
 	fread(&fsize, 4, 1, file);
 
-	char exefname [48]; *exefname = 0;
-	fread(exefname, 1, 48, file);
-	exefname[48-1] = 0;
+	unsigned int exefnameLen;
+	fread(&exefnameLen, 4, 1, file);
+	if(exefnameLen =< 0 || exefnameLen > 257) // Sanity check
+	{
+		fclose(file);
+		if(author) // Prevent memory leak
+		{
+			delete [] author;
+		}
+		char str[1024];
+		sprintf(str, "The movie file '%s' cannot be loaded because the exe filename is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	char* exefname = new char[exefname+1]// [48]; *exefname = 0;
+	fread(exefname, exefnameLen, 1, file);
+	exefname[exefnameLen] = '\0'; // Ensure proper null-termination
 
+	int desyncDetectionTimerValues[16];
 	fread(&movie.desyncDetectionTimerValues[0], 16, 4, file);
 
-	int version;
+	unsigned int version;
 	fread(&version, 4, 1, file);
 	/*if(version == 0)
 		if(movie.desyncDetectionTimerValues[0])
@@ -212,9 +275,31 @@ Movie::Movie()
 		else
 			version = 39; // or older*/
 
-	char *cmdline = movie.commandline;
-	fread(cmdline, 1, 160, file);
-	cmdline[strlen(cmdline)] = '\0'; // properly null-terminate the string.
+	unsigned int commandlineLen;
+	fread(&commandlineLen, 4, 1, file);
+	char* commandline;
+	commandline = NULL;//= movie.commandline;
+	if(commandlineLen) // There's a command line in the movie file.
+	{
+		if(commandlineLen > 8191-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
+		{
+			fclose(file);
+			if(author) // Prevent memory leak
+			{
+				delete [] author;
+			}
+			// No need to check for exefname since we would not have reached here if that string was empty.
+			char str[1024];
+			sprintf(str, "The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+			return false;
+		}
+		commandline = new char[commandlineLen];
+		fread(commandline, commandlineLen, 1, file);
+		commandline[commandlineLen] = '\0'; // Ensure proper null-termination.
+	}
+	//fread(cmdline, 1, 160, file);
+	//cmdline[strlen(cmdline)] = '\0'; // properly null-terminate the string.
 	//cmdline[min(ARRAYSIZE(cmdline),ARRAYSIZE(commandline))-1] = 0;
 
 
@@ -225,7 +310,10 @@ Movie::Movie()
 		// Why is there an assert here?
 		// TODO: clean up this assert
 		// assert(ftell(file) <= 1024-4);
-		fseek(file, 1024, SEEK_SET);
+	//	fseek(file, 1024, SEEK_SET);
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		// The above line is no longer accurate since the header now is of variable size.
+		// Perhaps we should add a fixed number of null-bytes?
 
 		movie.currentFrame = 0;
 		movie.rerecordCount = /*(localTASflags.playback || forPreview) ? */rerecords;// : 0;
@@ -234,11 +322,15 @@ Movie::Movie()
 		movie.it = it;
 		movie.crc = crc;
 		movie.fsize = fsize;
+
+		// We've gotten far enough, it's safe to put these values in the movie struct
+		strcpy(movie.author, author);
 		strcpy(movie.exefname, exefname);
+		strcpy(movie.commandline, commandline);
 
 		fread(&movie.frames[0], sizeof(MovieFrame), length, file);
 	}
-	else // empty movie file... do we really need this anymore?
+	else // empty movie file... do we really need this anymore? I mean, it would fail earlier if there was a problem.
 	{
 		movie.currentFrame = 0;
 		movie.rerecordCount = 0;

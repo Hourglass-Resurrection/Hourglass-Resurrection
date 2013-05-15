@@ -19,16 +19,17 @@ struct Movie
 	std::vector<MovieFrame> frames;
 	int currentFrame;
 	unsigned int rerecordCount;
+	char author[64]; // Authors will have to do with 63 characters (last char needed for null-termination).
 	char keyboardLayoutName [KL_NAMELENGTH]; // "00000409" for standard US layout
 	unsigned int fps;
 	unsigned int it;
 	unsigned int crc;
 	unsigned int fsize;
-	char exefname[48];
+	char exefname[258]; // Technically the file name can be 257 chars max, though it'd stupid we have to cover it.
 	int desyncDetectionTimerValues [16];
 	unsigned int version;
-	char commandline[160];
-	bool headerBuilt;
+	char commandline[8192-(MAX_PATH+1)]; // Windows can handle command lines of 8191 chars + null termination. This includes the program path though so we need to make sure our command line remains valid.
+	bool headerBuilt; // When true, the header is properly populated.
 	
 	// note: these aren't the only things in the movie file format.
 	// see SaveMovieToFile or LoadMovieFromFile for the rest.
