@@ -324,9 +324,15 @@ Movie::Movie()
 		movie.fsize = fsize;
 
 		// We've gotten far enough, it's safe to put these values in the movie struct
-		strcpy(movie.author, author);
+		if(author)
+		{
+			strcpy(movie.author, author);
+		}
 		strcpy(movie.exefname, exefname);
-		strcpy(movie.commandline, commandline);
+		if(commandline)
+		{
+			strcpy(movie.commandline, commandline);
+		}
 
 		fread(&movie.frames[0], sizeof(MovieFrame), length, file);
 	}
