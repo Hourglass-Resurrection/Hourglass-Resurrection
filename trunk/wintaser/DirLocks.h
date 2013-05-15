@@ -1,8 +1,8 @@
 #pragma once
 
 enum LockTypes {
-	MOVIE = 0;
-	SSTATE;
+	MOVIE = 0,
+	SSTATE,
 };
 
 bool LockDirectory(char* directory, LockTypes type);
