@@ -36,5 +36,5 @@ struct Movie
 	Movie();
 };
 
-/*static*/ bool SaveMovieToFile(Movie& movie, const char* filename);
+/*static*/ bool SaveMovieToFile(Movie& movie, char* filename);
 /*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, const char* filename/*, bool forPreview=false*/);
