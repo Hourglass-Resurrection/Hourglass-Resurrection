@@ -328,6 +328,7 @@ Movie::Movie()
 		{
 			strcpy(movie.author, author);
 		}
+		memcpy(movie.desyncDetectionTimerValues, desyncDetectionTimerValues, (sizeof(int)*16));
 		strcpy(movie.exefname, exefname);
 		if(commandline)
 		{
