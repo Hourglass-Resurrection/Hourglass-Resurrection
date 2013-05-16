@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{2a0fd6ce-20ad-472e-b141-0e9e6a1262c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\hooks_and_tramps">
+      <UniqueIdentifier>{8f45bc76-8410-4dcf-9011-dcc4bf233648}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dettime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="intercept.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="phasedetection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="print.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soundmixing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wintasee.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\d3d8hooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\d3d9hooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\d3dhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\ddrawhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\filehooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\gdihooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\inputhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\messagehooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\modulehooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\openglhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\registryhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\sdlhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\soundhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\synchooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\threadhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\timehooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\timerhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\waithooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\windowhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dettime.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="intercept.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\msg.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="phasedetection.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="print.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tls.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wintasee.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\asm.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ipc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\logcat.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\version.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\winutil.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\alltramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\dxvideotramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\filetramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\gditramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\inputtramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\messagetramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\moduletramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\opengltramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\registrytramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\sdltramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\soundtramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\synctramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\threadtramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\timertramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\timetramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\waittramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\windowtramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

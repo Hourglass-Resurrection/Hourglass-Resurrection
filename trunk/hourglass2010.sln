@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintasee", "wintasee\wintasee2010.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintaser", "wintaser\wintaser2010.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		DebugUnity|Win32 = DebugUnity|Win32
+		Release|Win32 = Release|Win32
+		ReleaseUnity|Win32 = ReleaseUnity|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Debug|Win32.ActiveCfg = Debug|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Debug|Win32.Build.0 = Debug|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.DebugUnity|Win32.ActiveCfg = DebugUnity|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.DebugUnity|Win32.Build.0 = DebugUnity|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Release|Win32.ActiveCfg = Release|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Release|Win32.Build.0 = Release|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.ReleaseUnity|Win32.ActiveCfg = ReleaseUnity|Win32
+		{948D0C09-EE11-4241-9286-D88C5B84DA36}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.Build.0 = Debug|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.DebugUnity|Win32.ActiveCfg = DebugUnity|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.DebugUnity|Win32.Build.0 = DebugUnity|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.ActiveCfg = Release|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.Build.0 = Release|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.ReleaseUnity|Win32.ActiveCfg = ReleaseUnity|Win32
+		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

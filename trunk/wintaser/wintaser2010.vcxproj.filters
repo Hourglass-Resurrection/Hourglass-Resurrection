@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\trace">
+      <UniqueIdentifier>{7db5e5dc-67a7-4186-9cd5-9b23d8f1490a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\inject">
+      <UniqueIdentifier>{848b6770-f704-45e4-a4c9-ce128028573d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{1c8f87bc-c3db-4164-8956-5d9b00548837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AVIDumper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRCMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomDLGs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirLocks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InjectDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="inputsetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Movie.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ramsearch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ramwatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wintaser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trace\extendedtrace.cpp">
+      <Filter>Source Files\trace</Filter>
+    </ClCompile>
+    <ClCompile Include="inject\iatmodifier.cpp">
+      <Filter>Source Files\inject</Filter>
+    </ClCompile>
+    <ClCompile Include="inject\process.cpp">
+      <Filter>Source Files\inject</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AVIDumper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crc32.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRCMath.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomDLGs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirLocks.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectDLL.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inputsetup.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logging.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Movie.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ramsearch.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ramwatch.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace\extendedtrace.h">
+      <Filter>Source Files\trace</Filter>
+    </ClInclude>
+    <ClInclude Include="inject\iatmodifier.h">
+      <Filter>Source Files\inject</Filter>
+    </ClInclude>
+    <ClInclude Include="inject\process.h">
+      <Filter>Source Files\inject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\asm.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ipc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\logcat.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\msg.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\version.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\winutil.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wintaser.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="wintaser.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
