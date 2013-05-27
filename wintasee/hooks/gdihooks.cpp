@@ -562,8 +562,8 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
 	HFONT rv;
 	if(tasflags.appLocale
 	&& (lplf->lfCharSet == LocaleToCharset(tasflags.appLocale)
-	 || (tasflags.movieVersion >= 79
-	  && (lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET)))
+	 || (/*tasflags.movieVersion >= 79
+	  && */(lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET)))
 		/*&& lplf->lfCharSet != LocaleToCharset(GetACP())*/)
 	{
 		// since windows 2000, the CreateFont functions can recognize either the localized or unlocalized font name.
@@ -573,7 +573,7 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
 		LOGFONTW fontw;
 		memcpy(&fontw, lplf, (int)&fontw.lfFaceName - (int)&fontw);
 		wcscpy(fontw.lfFaceName, wstr);
-		if(tasflags.movieVersion >= 79 && tasflags.appLocale == 1041 && !DoesFontExistW(&fontw))
+		if(/*tasflags.movieVersion >= 79 && */tasflags.appLocale == 1041 && !DoesFontExistW(&fontw))
 		{
 			wcscpy(fontw.lfFaceName, _L(DEFAULT_FONT_FOR_LOCALE_1041));
 			if(!DoesFontExistW(&fontw))
@@ -595,7 +595,7 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
 		((LOGFONTW*)lplf)->lfQuality = ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
 
 	LOGFONTW fontw;
-	if(tasflags.movieVersion >= 79 && tasflags.appLocale
+	if(/*tasflags.movieVersion >= 79 && */tasflags.appLocale
 	&& (lplf->lfCharSet == LocaleToCharset(tasflags.appLocale)
 	 || lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET))
 	{

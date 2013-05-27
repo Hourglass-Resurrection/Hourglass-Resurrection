@@ -28,8 +28,8 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 	// this totally breaks down if the first few bytes of the target function is a jump.
 	// so, the first thing we do is detect if the target starts with a jump,
 	// and if so, we follow where the jump goes instead of hooking the target directly.
-	if(tasflags.movieVersion >= 65)
-	{
+	//if(tasflags.movieVersion >= 65)
+	//{
 		for(int i = 0; *pTargetTail == JMP_REL32; i++)
 		{
 			int diff = *(DWORD*)(pTargetTail+1) + 5;
@@ -60,7 +60,7 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 			return rvOnSkip;
 		}
 	}
-	else // old version. if avast! is installed, this results in an incorrect trampoline which will crash the game.
+	/*else // old version. if avast! is installed, this results in an incorrect trampoline which will crash the game.
 	{
 		if(*pTargetHead == JMP_REL32)
 		{
@@ -75,7 +75,7 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 			debugprintf("already hooked (0x%X). skipping.\n", pTargetHead);
 			return rvOnSkip;
 		}
-	}
+	}*/
 
 	debuglog(LCF_HOOK, "want to hook 0x%X to call 0x%X, and want trampoline 0x%X to call 0x%X\n", pTargetHead, pHook, pTramp, pTargetTail);
 
