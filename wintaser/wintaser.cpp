@@ -269,11 +269,11 @@ static Movie movie;
 char* NormalizePath(char* output, const char* path)
 {
 	extern bool started;
-	if(movie.version >= 60 || !started)
+	if(/*movie.version >= 60 || */!started)
 		while(*path == ' ')
 			path++;
 	DWORD len = 0;
-	if(!(movie.version >= 40 && movie.version < 53) || !started)
+	if(/*!(movie.version >= 40 && movie.version < 53) || */!started)
 		len = GetFullPathNameA(path, MAX_PATH, output, NULL);
 	if(len && len < MAX_PATH)
 		GetLongPathNameA(output, output, MAX_PATH); // GetFullPathName won't always convert short filenames to long filenames
@@ -471,7 +471,6 @@ LogCategoryFlag excludeLogFlags = LCF_NONE
 
 
 char moviefilename [MAX_PATH+1];
-char newmoviefilename [MAX_PATH+1];
 char exefilename [MAX_PATH+1];
 char commandline [160];
 char thisprocessPath [MAX_PATH+1];
@@ -879,7 +878,7 @@ void SuggestThreadName(DWORD threadId, HANDLE hProcess)
 //}
 
 
-void SaveMovie(const char* filename)
+void SaveMovie(char* filename)
 {
 	// Update some variables, this should be harmless... (mostly)...
 	// May however become really harmful if SaveMovie is called during the LoadMovie scenario!
@@ -902,33 +901,13 @@ void SaveMovie(const char* filename)
 	{
 		unsavedMovieData = false;
 	}
-	// Should be an else-block here with error handling, no?
+	// TODO: Should be an else-block here with error handling, no?
 }
 
 // returns 1 on success, 0 on failure, -1 on cancel
+// TODO: Dependency on parameter can probably be removed.
 int LoadMovie(char* filename)
 {
-	if(unsavedMovieData)
-	{
-		int result = CustomMessageBox("The currently opened movie contains unsaved data.\nDo you want to save it before opening the new movie?\n(Click \"Yes\" to save, \"No\" to proceed without saving)", "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
-		if(result == IDYES)
-		{
-			// TODO: Make this save to the old filename.
-			// TODO done by introduction of 'newmoviefilename'?
-
-			// IF SaveMovie fails here, it means that the movie file got deleted between the last save and the creation of the new movie
-			// Should we really handle that scenario?
-			SaveMovie(moviefilename);
-			// transfer the new movie filename into the old movie filename.
-			strcpy(moviefilename, filename);
-		}
-		else
-		{
-			unsavedMovieData = false;
-		}
-		movie.headerBuilt = false; // Otherwise we may retain the old header?
-	}
-
 	bool rv = LoadMovieFromFile(movie, filename);
 	if(rv == false) return 0; // Check if LoadMovieFromFile failed, if it did we don't need to continue.
 
@@ -2390,7 +2369,7 @@ void CheckDialogChanges(int frameCount)
 		}
 		SendMessage(GetDlgItem(hWnd, IDC_TEXT_EXE), EM_SETREADONLY, started, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_MOVIE), EM_SETREADONLY, started, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_TEXT_MOVIE), EM_SETREADONLY, started, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_MOVIEBROWSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_GAMEBROWSE), !started);
@@ -4561,14 +4540,14 @@ static int IsPathTrusted(const char* path)
 		return 2;
 
 	int outCount = 2;
-	if(movie.version >= 68)
-	{
+	//if(movie.version >= 68)
+	//{
 		if(CountBackslashes(exefilename + CountSharedPrefixLength(exefilename, path)) < outCount)
 			return 1;
 		if(CountBackslashes(subexefilename + CountSharedPrefixLength(subexefilename, path)) < outCount)
 			return 1;
-	}
-	else // old version, which accidentally trusts some paths it clearly shouldn't:
+	//}
+	/*else // old version, which accidentally trusts some paths it clearly shouldn't:
 	{
 		const char* end = path + strlen(path);
 		for(const char* newEnd = end; outCount && newEnd != path; newEnd--)
@@ -4583,7 +4562,7 @@ static int IsPathTrusted(const char* path)
 			return 1;
 		if(!_strnicmp(path, subexefilename, end - path))
 			return 1;
-	}
+	}*/
 	if(strlen(path) >= 4 && !_strnicmp(path + strlen(path) - 4, ".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
 		return 1;
 
@@ -5087,8 +5066,8 @@ void OnMovieStart()
 {
 	finished = false;
 
-	if(movie.version >= 70)
-	{
+	//if(movie.version >= 70)
+	//{
 		// auto-detect app locale settings based on original movie author's keyboard layout in certain cases
 		tempAppLocale = 0;
 		if(!localTASflags.appLocale && movie.keyboardLayoutName[0] && movie.keyboardLayoutName[4])
@@ -5107,7 +5086,7 @@ void OnMovieStart()
 				break;
 			}
 		}
-	}
+	//}
 }
 
 
@@ -5145,14 +5124,15 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		*slash = 0;
 
 	char* cmdline = NULL;
-	if(movie.version >= 60 && movie.version <= 63)
+	/*if(movie.version >= 60 && movie.version <= 63)
 		cmdline = commandline;
 	else if(movie.version >= 64)
-	{
+	{*/
+		// TODO: Expand the size of allowed commandline
 		static char tempcmdline [ARRAYSIZE(commandline)+MAX_PATH+4];
 		sprintf(tempcmdline, "\"%s\" %s", exefilename, commandline);
 		cmdline = tempcmdline;
-	}
+	//}
 
 	/*debugprintf("enabling full debug privileges...\n");
 	if(!EnableDebugPrivilege())
@@ -6050,7 +6030,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					char filename [MAX_PATH+1];
 
 					// hFile is NULL sometimes...
-					if((movie.version >= 0 && movie.version < 40) || !GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess, filename))
+					if(/*(movie.version >= 0 && movie.version < 40) || */!GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess, filename))
 						GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile, filename);
 
 //					debugprintf("CREATE_PROCESS_DEBUG_EVENT: 0x%X\n", de.u.CreateProcessInfo.lpBaseOfImage);
@@ -6063,7 +6043,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					gameThreadIdList.push_back(de.dwThreadId);
 
 					entrypoint = (int)de.u.CreateProcessInfo.lpStartAddress;
-					if(entrypoint && movie.version >= 70)
+					if(entrypoint/* && movie.version >= 70*/)
 					{
 						AddBreakpoint(entrypoint, de.dwThreadId, de.u.CreateProcessInfo.hProcess);
 						debugprintf("entrypoint = 0x%X\n", entrypoint);
@@ -6077,7 +6057,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 ////						SuspendThread(de.u.CreateProcessInfo.hThread);
 //					}
 
-					bool nullFile = !de.u.CreateProcessInfo.hFile && !(movie.version >= 0 && movie.version < 40);
+					bool nullFile = !de.u.CreateProcessInfo.hFile/* && !(movie.version >= 0 && movie.version < 40)*/;
 					if(nullFile)
 						de.u.CreateProcessInfo.hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -7096,7 +7076,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//strcpy(temp_moviefilename, moviefilename);
 				movienameCustomized = false;
 				SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path);
-				SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_EDIT_MOVIE), strcmp(newmoviefilename, moviefilename) ? newmoviefilename : moviefilename);//temp_moviefilename);
+				SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), moviefilename);
 				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), commandline);
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));
@@ -8028,7 +8008,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								SaveMovie();
 							}*/
 
-							SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_EDIT_MOVIE), filename);
+							SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), filename);
 
 							if(movieFileWritable && exeFileExists)
 							{
@@ -8093,7 +8073,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						ofn.nMaxFile = MAX_PATH;
 						ofn.lpstrInitialDir = directory;
 						ofn.lpstrTitle = "Save Backup Movie";
-						ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN);
+						ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN;
 						ofn.lpstrDefExt = "wtf";
 						if(GetSaveFileName(&ofn))
 						{
@@ -8246,9 +8226,9 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 										strcpy(dot, ".wtf");
 										const char* moviename = slash ? slash+1 : filename;
 										strcat(path, moviename);
-										if(0 != strcmp(path, newmoviefilename))
+										if(0 != strcmp(path, moviefilename))
 										{
-											SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_EDIT_MOVIE), path);
+											SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), path);
 											movienameCustomized = false;
 										}
 									}
@@ -8259,14 +8239,34 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						recursing = false;
 					}
 					break;
-				case IDC_EDIT_MOVIE:
+				case IDC_TEXT_MOVIE: // Whenever IDC_TEXT_MOVIE changes, a new movie has been chosen for whatever reason.
 					if(HIWORD(wParam) == EN_CHANGE)
 					{
-						char* tmp_movie = strcmp(newmoviefilename, moviefilename) ? newmoviefilename : moviefilename;
-						GetWindowText(GetDlgItem(hDlg, IDC_EDIT_MOVIE), tmp_movie, MAX_PATH);
-						NormalizePath(newmoviefilename, tmp_movie);
+
+						// TODO: We can probably skip this alltogether and just make the check in OPENMOVIE.
+						// Will require implementing ability to run games without recording movies.
+						// This should do for now.
+						char tmp_movie[MAX_PATH+1];
+						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_MOVIE), tmp_movie, MAX_PATH);
+						NormalizePath(tmp_movie, tmp_movie);
 						EnableDisablePlayRecordButtons(hDlg);
 						movienameCustomized = tmp_movie[0] != '\0';
+
+						if(unsavedMovieData) // Check if we have some unsaved changes in an already loaded movie.
+						{
+							int result = CustomMessageBox("The currently opened movie contains unsaved data.\nDo you want to save it before opening the new movie?\n(Click \"Yes\" to save, \"No\" to proceed without saving)", "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+							if(result == IDYES)
+							{
+								// TODO:
+								// IF SaveMovie fails here, it means that the movie file got deleted between the last save and the creation of the new movie
+								// Should we really handle that scenario?
+								SaveMovie(moviefilename);
+							}
+							unsavedMovieData = false;
+							movie.headerBuilt = false; // Otherwise we may retain the old header? // TODO: Find this out
+						}
+						// transfer the new movie filename into the old movie filename.
+						strcpy(moviefilename, tmp_movie);
 					}
 					break;
 				}
@@ -8297,7 +8297,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							}
 							else if(!_strnicmp(dot, ".wtf", 4) || !_strnicmp(dot, ".hgm", 4)) // windows TAS file (input movie)
 							{
-								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_EDIT_MOVIE), filename);
+								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), filename);
 							}
 							else if(!stricmp(dot, ".cfg"))
 							{
