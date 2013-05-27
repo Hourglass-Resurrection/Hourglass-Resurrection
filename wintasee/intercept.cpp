@@ -59,7 +59,7 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 			debugprintf("bad input? target=0x%X, hook=0x%X, tramp=0x%X. skipping hook.\n", pTargetHead, pHook, pTramp);
 			return rvOnSkip;
 		}
-	}
+	//}
 	/*else // old version. if avast! is installed, this results in an incorrect trampoline which will crash the game.
 	{
 		if(*pTargetHead == JMP_REL32)
