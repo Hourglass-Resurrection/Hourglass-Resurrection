@@ -15,13 +15,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -37,7 +35,7 @@ IDI_MYICON              ICON                    "wintaser.ico"
 // Menu
 //
 
-IDC_WINTASER MENU 
+IDC_WINTASER MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -49,7 +47,7 @@ BEGIN
     END
 END
 
-RAMWATCH_MENU MENU 
+RAMWATCH_MENU MENU
 BEGIN
     POPUP "File"
     BEGIN
@@ -83,13 +81,13 @@ END
 // Accelerator
 //
 
-IDC_WINTASER ACCELERATORS 
+IDC_WINTASER ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
 END
 
-IDR_ACCELERATOR1 ACCELERATORS 
+IDR_ACCELERATOR1 ACCELERATORS
 BEGIN
     "N",            IDC_C_WATCH,            VIRTKEY, NOINVERT
     "D",            IDC_C_WATCH_DOWN,       VIRTKEY, NOINVERT
@@ -118,7 +116,7 @@ BEGIN
     LTEXT           "",IDC_TOPLEFTCONTROL,0,0,1,1
     CONTROL         "Read-Only",IDC_RADIO_READONLY,"Button",BS_AUTORADIOBUTTON | WS_GROUP,235,44,50,10
     CONTROL         "Read+Write",IDC_RADIO_READWRITE,"Button",BS_AUTORADIOBUTTON,235,56,54,10
-    EDITTEXT        IDC_EDIT_MOVIE,7,13,230,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TEXT_MOVIE,7,13,230,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
     LTEXT           "Movie File",IDC_STATIC,10,3,32,8
     PUSHBUTTON      "Browse...",IDC_BUTTON_MOVIEBROWSE,246,13,48,14
     LTEXT           "Frames:",IDC_STATIC,10,32,27,8
@@ -320,7 +318,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -335,6 +333,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 95
     END
+
+    IDD_PROMPT, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -344,13 +346,13 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_APP_TITLE           "hourglass"
     IDC_WINTASER            "HOURGLASS"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

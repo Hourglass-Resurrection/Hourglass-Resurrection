@@ -60,6 +60,7 @@
 #define IDC_USEDEFAULTKEY               1040
 #define IDC_DISABLEKEY                  1041
 #define IDC_STATIC_TEXT0                1043
+#define IDC_TEXT_MOVIE                  1043
 #define IDC_HOTKEYLIST                  1044
 #define ID_TOGGLE_MOVIE_READONLY        1045
 #define IDC_TOPLEFTCONTROL              1046
@@ -279,8 +280,7 @@
 #define ID_FILES_PLAYMOV                40310
 #define ID_FILES_WATCHMOV               40311
 #define ID_FILES_RECORDMOV              40312
-//#define ID_FILES_RESUMEMOVAS            40313
-#define ID_FILES_BACKUPMOVIE			40313
+#define ID_FILES_BACKUPMOVIE            40313
 #define ID_FILES_OPENMOV                40314
 #define ID_FILES_RESUMERECORDING        40315
 #define ID_FILES_SPLICE                 40316
@@ -403,7 +403,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32782
-#define _APS_NEXT_CONTROL_VALUE         1043
+#define _APS_NEXT_CONTROL_VALUE         1044
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
