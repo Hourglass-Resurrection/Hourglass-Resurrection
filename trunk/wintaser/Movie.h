@@ -28,7 +28,7 @@ struct Movie
 	char exefname[(MAX_PATH+1)-3]; // Technically the file name can be 257 chars max, though it'd stupid we have to cover it.
 	int desyncDetectionTimerValues [16];
 	unsigned int version;
-	char commandline[8192-(MAX_PATH+1)]; // Windows can handle command lines of 8191 chars + null termination. This includes the program path though so we need to make sure our command line remains valid.
+	char commandline[8192-1-(MAX_PATH+1)]; // Windows can handle command lines of 8192 with the null termination char. This includes the program path though so we need to make sure our command line remains valid.
 	bool headerBuilt; // When true, the header is properly populated.
 	
 	// note: these aren't the only things in the movie file format.
