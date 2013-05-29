@@ -56,6 +56,8 @@
 #include "../shared/winutil.h"
 #include "ramwatch.h"
 
+#include "DirLocks.h"
+
 
 #pragma warning(disable:4995)
 
@@ -260,7 +262,7 @@ bool HotkeyHWndIsHotkeys = true;
 //HWND SpliceHWnd = NULL; // modeless dialog
 
 
-static Movie movie;
+/*static*/ Movie movie;
 
 
 
@@ -8265,7 +8267,28 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							unsavedMovieData = false;
 							movie.headerBuilt = false; // Otherwise we may retain the old header? // TODO: Find this out
 						}
-						// transfer the new movie filename into the old movie filename.
+
+						if(moviefilename[0] != '\0') // We have currently locked the directory that we're saving the old movie to.
+						{
+							UnlockDirectory(MOVIE);
+						}
+
+						char movieDirectory[MAX_PATH+1];
+						// TODO: max will call strrchr 3 times in total, perhaps that can be reduced to 2 times?
+						char* dirEnd = max(strrchr(tmp_movie, '\\'), strrchr(tmp_movie, '/'));
+						strncpy(movieDirectory, tmp_movie, (size_t)(dirEnd-tmp_movie+1)); // Pointers-as-values math, yay!
+
+						// Attempt to lock the new directory.
+						if(LockDirectory(movieDirectory, MOVIE) == false)
+						{
+							char str[1024];
+							sprintf(str, "Locking the directory '%s' failed.\nHourglass may not have the rights to create files in this directory.\nChoose another directory to save the movie.", movieDirectory);
+							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+							moviefilename[0] = '\0'; // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
+							break; // Break early so that we don't allow the movie to be loaded.
+						}
+
+						// If we got here we can finally transfer the new movie filename into the old movie filename.
 						strcpy(moviefilename, tmp_movie);
 					}
 					break;
