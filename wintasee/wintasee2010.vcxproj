@@ -254,6 +254,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="hooks\Xinputhooks.cpp" />
     <ClCompile Include="intercept.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
@@ -362,6 +363,7 @@
     <ClInclude Include="phasedetection.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="tls.h" />
+    <ClInclude Include="tramps\Xinputtramps.h" />
     <ClInclude Include="wintasee.h" />
     <ClInclude Include="..\shared\asm.h" />
     <ClInclude Include="..\shared\ipc.h" />
