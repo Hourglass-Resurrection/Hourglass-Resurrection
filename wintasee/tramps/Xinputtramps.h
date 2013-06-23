@@ -4,7 +4,8 @@
 #ifndef XINPUTTRAMPS_H_INCL
 #define XINPUTTRAMPS_H_INCL
 
-#include <Xinput.h>
+//#include <Xinput.h>
+#include <../../external/Xinput.h>
 
 #define XInputGetState TrampXInputGetState
 TRAMPFUNC DWORD WINAPI XInputGetState(
