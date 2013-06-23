@@ -5,7 +5,8 @@
 #define XINPUTHOOKS_INCL
 
 #include "../global.h"
-#include <Xinput.h>
+//#include <Xinput.h>
+#include <../../external/Xinput.h>
 
 HOOKFUNC DWORD WINAPI MyXInputGetState(
     DWORD         dwUserIndex,  // [in] Index of the gamer associated with the device
