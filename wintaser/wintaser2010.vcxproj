@@ -232,6 +232,7 @@
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="InjectDLL.cpp" />
+    <ClCompile Include="InputCapture.cpp" />
     <ClCompile Include="inputsetup.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
@@ -267,6 +268,7 @@
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="InjectDLL.h" />
+    <ClInclude Include="InputCapture.h" />
     <ClInclude Include="inputsetup.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="Movie.h" />
