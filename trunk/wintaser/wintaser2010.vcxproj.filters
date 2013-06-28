@@ -62,6 +62,9 @@
     <ClCompile Include="inject\process.cpp">
       <Filter>Source Files\inject</Filter>
     </ClCompile>
+    <ClCompile Include="InputCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -127,6 +130,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputCapture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">
