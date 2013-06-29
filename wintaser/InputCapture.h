@@ -1,5 +1,6 @@
 #define DIRECTINPUT_VERSION 0x0500  // for joystick support
 #define DI_KEY_PRESSED_FLAG 0x80 // To test if a DI key was pressed.
+#define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
 #include "../external/dinput.h"
@@ -48,7 +49,7 @@ struct CurrentInput { // Can be extended with another 254 types since type can c
 		}
 	}
 
-	// Usually called 
+	// Usually called after isSourceCompatible, set the device type based on the single input type.
 	void setTypeBasedOnSingleInput(SINGLE_INPUT_DEVICE sid){
 		if(type != CURRENT_INPUT_NONE) // The type is already set.
 			return;
@@ -119,24 +120,28 @@ private:
 	static int modifierCount; // Number of modifier keys.
 
 	// Return if the key is a modifier.
-	bool isModifier(char key);
+	bool IsModifier(char key);
 
 	// From a keyboard state, builds the char that contains the flags from all pressed modifier keys.
-	char buildModifier(char* keys);
+	char BuildModifier(char* keys);
+
+	// Get the current keyboard state.
+	void GetKeyboardState(char* keys);
+
 
 public:
 
 	// Init all input devices it can.
-	bool initInputs(HINSTANCE hInst, HWND hWnd);
+	bool InitInputs(HINSTANCE hInst, HWND hWnd);
 
 	// Init a DI keyboard if possible
-	HRESULT initDIKeyboard(HWND hWnd);
+	HRESULT InitDIKeyboard(HWND hWnd);
 
 	// Init a DI mouse if possible
-	HRESULT initDIMouse(HWND hWnd);
+	HRESULT InitDIMouse(HWND hWnd);
 
 	// Release all inputs that have been acquired.
-	void releaseInputs();
+	void ReleaseInputs();
 
 	// Add a map from a key+modifiers to a key.
 	void AddKeyToKeyMapping(short modifiedKey, char destinationKey);
@@ -162,8 +167,8 @@ public:
 	 */
 	void ProcessInputs(CurrentInput* currentI, HWND hWnd);
 
-	// Returns the next single input pressed (+modifiers), is used inside the GUI mapping config.
-	//unsigned short NextSingleInput();
+	// Stores the next single input pressed, is used inside the GUI mapping config.
+	void NextSingleInput(SingleInput* si);
 
 
 	/* Mapping */

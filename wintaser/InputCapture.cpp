@@ -14,16 +14,19 @@ struct ModifierKey InputCapture::modifierKeys[] =
 
 int InputCapture::modifierCount = 8;
 
-bool InputCapture::isModifier(char key){
+bool InputCapture::IsModifier(char key){
 	for (int i=0; i<DI_KEY_NUMBER; i++){
 		ModifierKey mkey = InputCapture::modifierKeys[i]; // Damn, no foreach structure in c++...
+		if (mkey.DIK == key)
+			return true;
 	}
+	return false;
 }
 
-char InputCapture::buildModifier(char* keys){
+char InputCapture::BuildModifier(char* keys){
 	char modifiers = 0;
 	for (int i=0; i<DI_KEY_NUMBER; i++){
-		ModifierKey mkey = InputCapture::modifierKeys[i]; // Damn, no foreach structure in c++...
+		ModifierKey mkey = InputCapture::modifierKeys[i];
 		if (keys[mkey.DIK] & DI_KEY_PRESSED_FLAG){
 			modifiers |= mkey.flag;
 		}
@@ -31,7 +34,19 @@ char InputCapture::buildModifier(char* keys){
 	return modifiers;
 }
 
-bool InputCapture::initInputs(HINSTANCE hInst, HWND hWnd){
+void InputCapture::GetKeyboardState(char* keys){
+	HRESULT rval = InputCapture::lpDIDKeyboard->GetDeviceState(256, keys);
+
+	if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED)){
+		InputCapture::lpDIDKeyboard->Acquire();
+		rval = InputCapture::lpDIDKeyboard->GetDeviceState(256, keys);
+		if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED))
+			// We couldn't get the state of the keyboard. Let's just say nothing was pressed.
+			memset(keys, 0, sizeof(keys));
+	}
+}
+
+bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 
 	// Init the main DI interface.
 	HRESULT rval = DirectInputCreate(hInst, DIRECTINPUT_VERSION, &lpDI, NULL);
@@ -57,7 +72,7 @@ bool InputCapture::initInputs(HINSTANCE hInst, HWND hWnd){
 	return true;
 }
 
-HRESULT InputCapture::initDIKeyboard(HWND hWnd){
+HRESULT InputCapture::InitDIKeyboard(HWND hWnd){
 	HRESULT rval = lpDI->CreateDevice(GUID_SysKeyboard, &lpDIDKeyboard, NULL);
 	if(rval != DI_OK) return rval;
 
@@ -79,7 +94,7 @@ HRESULT InputCapture::initDIKeyboard(HWND hWnd){
 }
 
 // Init a DI mouse if possible
-HRESULT InputCapture::initDIMouse(HWND hWnd){
+HRESULT InputCapture::InitDIMouse(HWND hWnd){
 	HRESULT rval = lpDI->CreateDevice(GUID_SysMouse, &lpDIDMouse, NULL);
 	if(rval != DI_OK) return rval;
 
@@ -93,17 +108,17 @@ HRESULT InputCapture::initDIMouse(HWND hWnd){
 	return rval;
 }
 
-void InputCapture::releaseInputs(){
+void InputCapture::ReleaseInputs(){
 
 	if(lpDI){
 		if(lpDIDMouse){
-			inputState.lpDIDMouse->Release();
-			inputState.lpDIDMouse = NULL;
+			lpDIDMouse->Release();
+			lpDIDMouse = NULL;
 		}
 
-		if(inputState.lpDIDKeyboard){
-			inputState.lpDIDKeyboard->Release();
-			inputState.lpDIDKeyboard = NULL;
+		if(lpDIDKeyboard){
+			lpDIDKeyboard->Release();
+			lpDIDKeyboard = NULL;
 		}
 
 		lpDI->Release();
@@ -112,14 +127,14 @@ void InputCapture::releaseInputs(){
 }
 
 void InputCapture::AddKeyToKeyMapping(short modifiedKey, char destinationKey){
-	SingleInput mapFrom = {IC_INPUT_DI_KEYBOARD, modifiedKey};
-	SingleInput mapTo = {IC_INPUT_DI_KEYBOARD, (short)destinationKey};
+	SingleInput mapFrom = {SINGLE_INPUT_DI_KEYBOARD, modifiedKey};
+	SingleInput mapTo = {SINGLE_INPUT_DI_KEYBOARD, (short)destinationKey};
 	inputMapping[mapFrom] = mapTo; // Cool syntax!
 }
 
 // Add a map from a key+modifiers to an event.
 void InputCapture::AddKeyToEventMapping(short modifiedKey, WORD eventId){
-	SingleInput mapFrom = {IC_INPUT_DI_KEYBOARD, modifiedKey};
+	SingleInput mapFrom = {SINGLE_INPUT_DI_KEYBOARD, modifiedKey};
 	eventMapping[mapFrom] = eventId;
 }
 
@@ -133,12 +148,6 @@ void InputCapture::EmptyAllEventMappings(){
 	eventMapping.clear();
 }
 
-/* Big function here, should be called by wintaser (should be splitted up ?)
- * - gather the key states from lpDIDKeyboard
- * - iterate through all the entries in the maps, and search for matches
- * - insert matches of the input map into the CurrentInput structure
- * - execute the events of the event map matches
- */
 void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
 	// We first clear the CurrentInput object.
@@ -146,18 +155,10 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
 	// Get the current keyboard state.
 	char keys[256];
-	HRESULT rval = InputCapture::lpDIDKeyboard->GetDeviceState(256, keys);
-
-	if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED)){
-		InputCapture::lpDIDKeyboard->Acquire();
-		rval = InputCapture::lpDIDKeyboard->GetDeviceState(256, keys);
-		if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED))
-			// We couldn't get the state of the keyboard. Let's just say nothing was pressed.
-			memset(keys, 0, sizeof(keys));
-	}
+	InputCapture::GetKeyboardState(keys);
 
 	// Bulding the modifier from the array of pressed keys.
-	char modifier = InputCapture::buildModifier(keys);
+	char modifier = InputCapture::BuildModifier(keys);
 
 	// We want now to convert the initial inputs to their mapping.
 	// There are two mappings: inputs and events.
@@ -177,7 +178,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
 			char fromModifier = (char)(fromInput.key >> 8);
 			char fromKey = (char)(fromInput.key & 0xFF);
-			if((fromModifier == modifier) && (keys[fromKey] & DI_KEY_PRESSED_FLAG)){
+			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we must insert the corresponding input into the CurrentInput object.
 
 				if (! currentI->isSourceCompatible(toInput.device)){
@@ -224,7 +225,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
 			char fromModifier = (char)(fromInput.key >> 8);
 			char fromKey = (char)(fromInput.key & 0xFF);
-			if((fromModifier == modifier) && (keys[fromKey] & DI_KEY_PRESSED_FLAG)){
+			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we just have to send the corresponding message.
 
 				SendMessage(hWnd, WM_COMMAND, eventId, 777);
@@ -243,16 +244,48 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 										  }
 		}
 	}
+}
 
 
-	// Returns 0 if the key is not a modifier, or the corresponding flag if it is.
-	//char IsModifier(unsigned char key);
+void InputCapture::NextSingleInput(SingleInput* si){
 
-	// Returns the next single input pressed (+modifiers), is used inside the GUI mapping config.
-	//unsigned short NextSingleInput();
+	char previousKeys[DI_KEY_NUMBER];
+	char currentKeys[DI_KEY_NUMBER];
 
+	// Get the previous keyboard state.
+	InputCapture::GetKeyboardState(previousKeys);
+	// TODO: get also mouse/joystick states.
 
+	Sleep(1);
 
+	while(1){ // I don't really like while(1), set a timeout?
+
+		// Get the current keyboard state.
+		InputCapture::GetKeyboardState(currentKeys);
+		// TODO: get also mouse/joystick states.
+
+		// Try to find a non-modifier key that was just pressed.
+		for (int i=0; i<DI_KEY_NUMBER; i++){
+
+			if (InputCapture::IsModifier(i))
+				continue;
+
+			if (!DI_KEY_PRESSED(previousKeys[i]) && DI_KEY_PRESSED(currentKeys[i])){
+				// We found a just-pressed key. We need to compute the modifiers and return the SingleInput
+				char modifier = InputCapture::BuildModifier(currentKeys);
+				si->device = SINGLE_INPUT_DI_KEYBOARD;
+				si->key = (((short)modifier) << 8) | i;
+				return;
+			}
+		}
+
+		// TODO: Try to find a mouse button that was just pressed.
+		// TODO: Try to find a joystick button that was just pressed.
+
+		memcpy(previousKeys, currentKeys, DI_KEY_NUMBER);
+		Sleep(1);
+	}
+}
 
 
 	/* Mapping */
