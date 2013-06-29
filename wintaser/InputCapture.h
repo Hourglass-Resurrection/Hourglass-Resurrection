@@ -177,10 +177,10 @@ public:
 	//void BuildDefaultMapping();
 
 	// Save current mapping into a config file
-	//void SaveMapping();
+	void SaveMapping(char* filename);
 
 	// Load mapping from a config file
-	//void LoadMapping();
+	void LoadMapping(char* filename);
 
 
 }
