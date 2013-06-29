@@ -893,25 +893,6 @@ void AddHotkeySuffix(char* str, int id, const char* defaultSuffix, bool isHotkey
 }
 
 
-void PopulateHotkeyListbox(HWND listbox, bool isHotkeys)
-{
-	int(*GetNumButtons)() = isHotkeys ? GetNumHotkeys : GetNumInputs;
-	InputButton* buttons = isHotkeys ? s_hotkeyButtons : s_inputButtons;
-
-	StoreDefaultInputButtons();
-	int numInputButtons = GetNumButtons();
-	for(int i=0; i<numInputButtons; i++)
-	{
-		InputButton& button = buttons[i];
-
-		char str [1024];
-		strcpy(str, button.description);
-		AddHotkeySuffix(str, button);
-
-		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) str);
-	}
-}
-
 extern HINSTANCE hInst;
 
 void Get_Key_2(InputButton& button, bool allowVirtual, HWND hwnd, bool isHotkeys);
@@ -932,96 +913,6 @@ static void SetKey (char* message, InputButton& button, HWND hset, bool isHotkey
 }
 
 
-void ModifyHotkeyFromListbox(HWND listbox, WORD command, HWND statusText, HWND parentWindow, bool isHotkeys)
-{
-	std::map<WORD,int>& reverseEventLookup = isHotkeys ? s_reverseEventHotkeyLookup : s_reverseEventInputLookup;
-	int(*GetNumButtons)() = isHotkeys ? GetNumHotkeys : GetNumInputs;
-	InputButton* buttons = isHotkeys ? s_hotkeyButtons : s_inputButtons;
-
-	StoreInitialInputButtons();
-
-//	bool rebuildAccelerators = false;
-
-	int numHotkeys = GetNumButtons();
-	for(int i=0; i<numHotkeys; i++)
-	{
-		int selected = SendMessage((HWND) listbox, (UINT) LB_GETSEL, (WPARAM) i, (LPARAM) 0);
-		if(selected <= 0)
-			continue;
-
-		InputButton& button = buttons[i];
-
-		switch(command)
-		{
-			case IDC_REASSIGNKEY:
-				{
-					char str [256];
-					sprintf(str, "SETTING KEY: %s", button.description);
-					SetWindowText(statusText, str);
-					SetKey(str, button, parentWindow, isHotkeys);
-					SetWindowText(statusText, "");
-
-					// for convenience, set all similar savestate buttons together when the first one is set to certain keys
-					if(button.virtKey == '1' || button.virtKey == VK_F1)
-					{
-						if(button.eventID == ID_FILES_SAVESTATE_1
-						|| button.eventID == ID_FILES_SAVESTATE_11
-						|| button.eventID == ID_FILES_LOADSTATE_1
-						|| button.eventID == ID_FILES_LOADSTATE_11
-						|| button.eventID == ID_FILES_SETSTATE_1)
-						{
-							for(int j=1;j<=9;j++)
-							{
-								int index2 = reverseEventLookup[button.eventID+j]-1;
-								if(index2 >= 0)
-								{
-									InputButton& otherButton = buttons[index2];
-
-									otherButton.diKey = 0;
-									otherButton.modifiers = button.modifiers;
-									int vk = button.virtKey + j; if(vk == '1' + 9) vk = '0';
-									otherButton.virtKey = vk;
-
-									char str [1024];
-									strcpy(str, otherButton.description);
-									AddHotkeySuffix(str, otherButton);
-
-									SendMessage(listbox, LB_DELETESTRING, index2, 0);  
-									SendMessage(listbox, LB_INSERTSTRING, index2, (LPARAM) str); 
-								}
-							}
-						}
-					}
-				}
-				break;
-			case IDC_REVERTKEY:
-				(isHotkeys ? s_initialHotkeyButtons : s_initialInputButtons)[i].CopyConfigurablePartsTo(button);
-				break;
-			case IDC_USEDEFAULTKEY:
-				(isHotkeys ? s_defaultHotkeyButtons : s_defaultInputButtons)[i].CopyConfigurablePartsTo(button);
-				break;
-			case IDC_DISABLEKEY:
-				button.modifiers = MOD_NONE;
-				button.virtKey = VK_NONE;
-				button.diKey = 0;
-				break;
-		}
-		SetFocus(listbox);
-
-		char str [1024];
-		strcpy(str, button.description);
-		AddHotkeySuffix(str, button);
-
-		SendMessage(listbox, LB_DELETESTRING, i, 0);  
-		SendMessage(listbox, LB_INSERTSTRING, i, (LPARAM) str); 
-		SendMessage(listbox, LB_SETSEL, (WPARAM) TRUE, (LPARAM) i); 
-	}
-
-	UpdateReverseLookup(isHotkeys);
-
-	extern bool mainMenuNeedsRebuilding;
-	mainMenuNeedsRebuilding = true;
-}
 
 void End_Input(bool isConfigInput)
 {
@@ -1850,6 +1741,117 @@ LRESULT CALLBACK InputsProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return HotkeysOrInputsProc(hDlg, uMsg, wParam, lParam, false);
 }
+
+void ModifyHotkeyFromListbox(HWND listbox, WORD command, HWND statusText, HWND parentWindow, bool isHotkeys)
+{
+	std::map<WORD,int>& reverseEventLookup = isHotkeys ? s_reverseEventHotkeyLookup : s_reverseEventInputLookup;
+	int(*GetNumButtons)() = isHotkeys ? GetNumHotkeys : GetNumInputs;
+	InputButton* buttons = isHotkeys ? s_hotkeyButtons : s_inputButtons;
+
+	StoreInitialInputButtons();
+
+//	bool rebuildAccelerators = false;
+
+	int numHotkeys = GetNumButtons();
+	for(int i=0; i<numHotkeys; i++)
+	{
+		int selected = SendMessage((HWND) listbox, (UINT) LB_GETSEL, (WPARAM) i, (LPARAM) 0);
+		if(selected <= 0)
+			continue;
+
+		InputButton& button = buttons[i];
+
+		switch(command)
+		{
+			case IDC_REASSIGNKEY:
+				{
+					char str [256];
+					sprintf(str, "SETTING KEY: %s", button.description);
+					SetWindowText(statusText, str);
+					SetKey(str, button, parentWindow, isHotkeys);
+					SetWindowText(statusText, "");
+
+					// for convenience, set all similar savestate buttons together when the first one is set to certain keys
+					if(button.virtKey == '1' || button.virtKey == VK_F1)
+					{
+						if(button.eventID == ID_FILES_SAVESTATE_1
+						|| button.eventID == ID_FILES_SAVESTATE_11
+						|| button.eventID == ID_FILES_LOADSTATE_1
+						|| button.eventID == ID_FILES_LOADSTATE_11
+						|| button.eventID == ID_FILES_SETSTATE_1)
+						{
+							for(int j=1;j<=9;j++)
+							{
+								int index2 = reverseEventLookup[button.eventID+j]-1;
+								if(index2 >= 0)
+								{
+									InputButton& otherButton = buttons[index2];
+
+									otherButton.diKey = 0;
+									otherButton.modifiers = button.modifiers;
+									int vk = button.virtKey + j; if(vk == '1' + 9) vk = '0';
+									otherButton.virtKey = vk;
+
+									char str [1024];
+									strcpy(str, otherButton.description);
+									AddHotkeySuffix(str, otherButton);
+
+									SendMessage(listbox, LB_DELETESTRING, index2, 0);  
+									SendMessage(listbox, LB_INSERTSTRING, index2, (LPARAM) str); 
+								}
+							}
+						}
+					}
+				}
+				break;
+			case IDC_REVERTKEY:
+				(isHotkeys ? s_initialHotkeyButtons : s_initialInputButtons)[i].CopyConfigurablePartsTo(button);
+				break;
+			case IDC_USEDEFAULTKEY:
+				(isHotkeys ? s_defaultHotkeyButtons : s_defaultInputButtons)[i].CopyConfigurablePartsTo(button);
+				break;
+			case IDC_DISABLEKEY:
+				button.modifiers = MOD_NONE;
+				button.virtKey = VK_NONE;
+				button.diKey = 0;
+				break;
+		}
+		SetFocus(listbox);
+
+		char str [1024];
+		strcpy(str, button.description);
+		AddHotkeySuffix(str, button);
+
+		SendMessage(listbox, LB_DELETESTRING, i, 0);  
+		SendMessage(listbox, LB_INSERTSTRING, i, (LPARAM) str); 
+		SendMessage(listbox, LB_SETSEL, (WPARAM) TRUE, (LPARAM) i); 
+	}
+
+	UpdateReverseLookup(isHotkeys);
+
+	extern bool mainMenuNeedsRebuilding;
+	mainMenuNeedsRebuilding = true;
+}
+
+void PopulateHotkeyListbox(HWND listbox, bool isHotkeys)
+{
+	int(*GetNumButtons)() = isHotkeys ? GetNumHotkeys : GetNumInputs;
+	InputButton* buttons = isHotkeys ? s_hotkeyButtons : s_inputButtons;
+
+	StoreDefaultInputButtons();
+	int numInputButtons = GetNumButtons();
+	for(int i=0; i<numInputButtons; i++)
+	{
+		InputButton& button = buttons[i];
+
+		char str [1024];
+		strcpy(str, button.description);
+		AddHotkeySuffix(str, button);
+
+		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) str);
+	}
+}
+
 
 
 

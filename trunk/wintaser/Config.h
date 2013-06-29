@@ -2,14 +2,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+char Str_Tmp [1024] = {0};
 #define SetPrivateProfileIntA(lpAppName, lpKeyName, nValue, lpFileName) \
 	sprintf(Str_Tmp, "%d", nValue); \
 	WritePrivateProfileStringA(lpAppName, lpKeyName, Str_Tmp, lpFileName);
 
 
-class Config{
-public:
-
+namespace Config{
 	// TODO: Comment *everything* !
 	int audioFrequency;
 	int audioBitsPerSecond;
@@ -61,7 +60,7 @@ public:
 	char commandline [160];
 	char thisprocessPath [MAX_PATH+1];
 
-	static const char* defaultConfigFilename;
+	static const char* defaultConfigFilename = "hourglass.cfg";
 
 	int Save_Config(const char* filename);
 

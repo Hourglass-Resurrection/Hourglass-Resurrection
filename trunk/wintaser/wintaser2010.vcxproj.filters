@@ -133,8 +133,10 @@
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputCapture.h" />
     <ClInclude Include="Config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputCapture.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
