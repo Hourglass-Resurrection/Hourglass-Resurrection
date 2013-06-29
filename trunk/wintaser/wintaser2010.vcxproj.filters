@@ -65,6 +65,9 @@
     <ClCompile Include="InputCapture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -131,6 +134,9 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="InputCapture.h" />
+    <ClInclude Include="Config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">
