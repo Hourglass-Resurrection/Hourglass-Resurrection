@@ -8,6 +8,8 @@
 #include <map>
 using namespace std;
 
+
+
 typedef enum
 {
 	CURRENT_INPUT_NONE,
@@ -70,6 +72,10 @@ struct CurrentInput { // Can be extended with another 254 types since type can c
    // The rest of the data will be padded (with 0s) as we feed the input to the game.
 
 
+
+
+
+
 // Type of device
 typedef enum
 {
@@ -86,11 +92,15 @@ struct SingleInput
 	short key; // which key/button was pressed. The structure depends on the device type.
 	           // single key+modifiers for keyboard, single button for joystick.
 
+	const char* description; // Text to display on a GUI.
+
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const SingleInput &si ) const {
 		return ((this->device < si.device) || ((this->device < si.device) && (this->key < si.key)));
 	}
 };
+
+
 
 // Structure to hold the information about a modifier key.
 struct ModifierKey
@@ -100,6 +110,12 @@ struct ModifierKey
 };
 
 
+struct Event
+{
+	SingleInput defaultInput; // Default input mapped to this event.
+	WORD id; // Id used to identify the event when sending a message.
+	const char* description; // Text to display on a GUI.
+}
 
 
 
@@ -117,7 +133,13 @@ private:
 	static std::map<SingleInput,WORD> eventMapping; // mapping from a single input to an event.
 
 	static struct ModifierKey modifierKeys[]; // List of modifier keys.
-	static int modifierCount; // Number of modifier keys.
+	static const int modifierCount = 8; // Number of modifier keys.
+
+	static struct SingleInput SIList[]; // List of all inputs that can be mapped.
+	static const int SICount = 144;
+
+	static struct Event eventList[]; // List of all events that can be mapped.
+	static const int eventCount = 67;
 
 	// Return if the key is a modifier.
 	bool IsModifier(char key);
@@ -128,6 +150,14 @@ private:
 	// Get the current keyboard state.
 	void GetKeyboardState(char* keys);
 
+	// Get the next input pressed.
+	void NextInput(SingleInput* si);
+
+	// We need to be able to remove a map element based on the value. It doesn't need to be fast.
+	void RemoveValueFromInputMap(SingleInput* si);
+
+	// Same for events
+	void RemoveValueFromEventMap(WORD eventId);
 
 public:
 
@@ -167,8 +197,23 @@ public:
 	 */
 	void ProcessInputs(CurrentInput* currentI, HWND hWnd);
 
-	// Stores the next single input pressed, is used inside the GUI mapping config.
-	void NextSingleInput(SingleInput* si);
+	// Retreive the next single input pressed, and map it to the SingleInput whose index on the SIList is SIListIndex.
+	void ReassignInput(int SIListIndex);
+
+	// Set the single input to its default mapping.
+	void DefaultInput(int SIListIndex);
+
+	// Disable the single input.
+	void DisableInput(int SIListIndex);
+
+	// Retreive the next single input pressed, and map it to the event.
+	void ReassignEvent(int eventListIndex);
+
+	// Set the event to its default mapping.
+	void DefaultEvent(int eventListIndex);
+
+	// Disable the event.
+	void DisableEvent(int eventListIndex);
 
 
 	/* Mapping */
