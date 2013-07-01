@@ -110,6 +110,7 @@ struct ModifierKey
 };
 
 
+// Structure to hold the information about an event.
 struct Event
 {
 	SingleInput defaultInput; // Default input mapped to this event.
@@ -136,10 +137,7 @@ private:
 	static const int modifierCount = 8; // Number of modifier keys.
 
 	static struct SingleInput SIList[]; // List of all inputs that can be mapped.
-	static const int SICount = 144;
-
 	static struct Event eventList[]; // List of all events that can be mapped.
-	static const int eventCount = 67;
 
 	// Return if the key is a modifier.
 	bool IsModifier(char key);
@@ -160,6 +158,9 @@ private:
 	void RemoveValueFromEventMap(WORD eventId);
 
 public:
+
+	static const int SICount = 144;
+	static const int eventCount = 67;
 
 	// Init all input devices it can.
 	bool InitInputs(HINSTANCE hInst, HWND hWnd);
@@ -215,11 +216,17 @@ public:
 	// Disable the event.
 	void DisableEvent(int eventListIndex);
 
+	// Build (or restore to) a default input mapping.
+	void BuildDefaultInputMapping();
 
-	/* Mapping */
+	// Build (or restore to) a default event mapping.
+	void BuildDefaultEventMapping();
 
-	// Build (or restore to) a default mapping.
-	//void BuildDefaultMapping();
+	// Build the string with the input and its mapping.
+	void FormatInputMapping(int index, char* from, char* to);
+
+	// Build the string with the event and its mapping.
+	void FormatEventMapping(int index, char* from, char* to);
 
 	// Save current mapping into a config file
 	void SaveMapping(char* filename);

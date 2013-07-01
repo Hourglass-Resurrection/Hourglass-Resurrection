@@ -496,6 +496,7 @@ void InputCapture::NextInput(SingleInput* si){
 				char modifier = BuildModifier(currentKeys);
 				si->device = SINGLE_INPUT_DI_KEYBOARD;
 				si->key = (((short)modifier) << 8) | i;
+				// TODO: Build description!!
 				return;
 			}
 		}
@@ -583,9 +584,62 @@ void InputCapture::DisableEvent(int eventListIndex){
 	RemoveValueFromEventMap(ev.id);
 }
 
+// Build (or restore to) a default input mapping.
+void InputCapture::BuildDefaultInputMapping(){
+	inputMapping.clear();
+	for (int i=0; i<SICount; i++){
+		inputMapping[SIList[i]] = SIList[i]; // By default, an input is mapped to itself.
+	}
+}
 
-// Build (or restore to) a default mapping.
-//void BuildDefaultMapping();
+// Build (or restore to) a default event mapping.
+void InputCapture::BuildDefaultEventMapping(){
+	eventMapping.clear();
+	for (int i=0; i<eventCount; i++){
+		eventMapping[eventList[i].defaultInput] = eventList[i].id; // The default mapping in stored inside the eventList.
+	}
+}
+
+void InputCapture::FormatInputMapping(int index, char* from, char* to){
+	char localFrom[1024] = "";
+	char localTo[1024] = "";
+
+	SingleInput* si = &SIList[index];
+	strcpy(localFrom, si->description);
+	from = localFrom;
+
+	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
+		SingleInput fromInput = iter->first;
+		SingleInput toInput = iter->second;
+		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
+			strcat(localTo, fromInput.description);
+			break;
+		}
+	}
+
+	to = localTo;
+}
+
+void InputCapture::FormatEventMapping(int index, char* from, char* to){
+	char localFrom[1024] = "";
+	char localTo[1024] = "";
+
+	Event* ev = &eventList[index];
+	strcpy(localFrom, ev->description);
+	from = localFrom;
+
+	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
+		SingleInput fromInput = iter->first;
+		WORD toEventId = iter->second;
+		if(ev->id == toEventId){
+			strcat(localTo, fromInput.description);
+			break;
+		}
+	}
+
+	to = localTo;
+}
+
 
 // Save current mapping into a config file
 void InputCapture::SaveMapping(char* filename){
@@ -595,4 +649,221 @@ void InputCapture::SaveMapping(char* filename){
 // Load mapping from a config file
 void InputCapture::LoadMapping(char* filename){
 	// TODO. Use GetPrivateProfileSectionA function?
+}
+
+
+InputCapture* inputC;
+extern HINSTANCE hInst; // I don't like extern. Can it be removed?
+
+
+LRESULT CALLBACK HotkeysOrInputsProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, bool isHotkeys)
+{
+	RECT r;
+	RECT r2;
+	int dx1, dy1, dx2, dy2;
+	static HWND Tex0 = NULL;
+	extern HWND hWnd; // Same comment!
+
+	switch(uMsg)
+	{
+		case WM_INITDIALOG: {
+			GetWindowRect(hWnd, &r);
+			dx1 = (r.right - r.left) / 2;
+			dy1 = (r.bottom - r.top) / 2;
+
+			GetWindowRect(hDlg, &r2);
+			dx2 = (r2.right - r2.left) / 2;
+			dy2 = (r2.bottom - r2.top) / 2;
+
+			SetWindowPos(hDlg, NULL, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+
+			Tex0 = GetDlgItem(hDlg, IDC_STATIC_TEXT0);
+
+			// We create the input interface for the dialog.
+			inputC = new InputCapture();
+			if (!inputC->InitInputs(hInst, hDlg)) return false;
+
+			EnableWindow(GetDlgItem(hDlg, IDC_REASSIGNKEY), FALSE);
+			//EnableWindow(GetDlgItem(hDlg, IDC_REVERTKEY), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_USEDEFAULTKEY), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_DISABLEKEY), FALSE);
+
+			HWND listbox = GetDlgItem(hDlg, IDC_HOTKEYLIST);
+
+			int stops [4] = {25*4, 25*4+4, 25*4+8, 25*4+16};
+			SendMessage(listbox, LB_SETTABSTOPS, 4, (LONG)(LPSTR)stops);
+
+			PopulateHotkeyListbox(listbox, isHotkeys);
+
+			if(isHotkeys)
+				SetWindowText(hDlg, "Hotkey Configuration");
+			else
+				SetWindowText(hDlg, "Input Mapping Configuration");
+
+			return true;
+		}	break;
+
+		case WM_COMMAND:
+		{
+			int controlID = LOWORD(wParam);
+			int messageID = HIWORD(wParam);
+
+			if (messageID == LBN_SELCHANGE && controlID == IDC_HOTKEYLIST)
+			{
+				int selCount = SendDlgItemMessage(hDlg, IDC_HOTKEYLIST, LB_GETSELCOUNT, (WPARAM) 0, (LPARAM) 0);
+				EnableWindow(GetDlgItem(hDlg, IDC_REASSIGNKEY), (selCount == 1) ? TRUE : FALSE);
+				//EnableWindow(GetDlgItem(hDlg, IDC_REVERTKEY), (selCount >= 1) ? TRUE : FALSE);
+				EnableWindow(GetDlgItem(hDlg, IDC_USEDEFAULTKEY), (selCount >= 1) ? TRUE : FALSE);
+				EnableWindow(GetDlgItem(hDlg, IDC_DISABLEKEY), (selCount >= 1) ? TRUE : FALSE);
+			}
+
+			switch(controlID)
+			{
+				case IDOK:
+					inputC->ReleaseInputs();
+					delete inputC;
+					EndDialog(hDlg, true);
+					return true;
+					break;
+
+				case IDC_REASSIGNKEY:
+				//case IDC_REVERTKEY:
+				case IDC_USEDEFAULTKEY:
+				case IDC_DISABLEKEY:
+					ModifyHotkeyFromListbox(GetDlgItem(hDlg, IDC_HOTKEYLIST), controlID, Tex0, hDlg, isHotkeys);
+					break;
+			}
+		}	break;
+		case WM_CLOSE:
+			inputC->ReleaseInputs();
+			delete inputC;
+			EndDialog(hDlg, true);
+			return true;
+			break;
+	}
+
+	return false;
+}
+
+LRESULT CALLBACK HotkeysProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return HotkeysOrInputsProc(hDlg, uMsg, wParam, lParam, true);
+}
+LRESULT CALLBACK InputsProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return HotkeysOrInputsProc(hDlg, uMsg, wParam, lParam, false);
+}
+
+void PopulateHotkeyListbox(HWND listbox, bool isHotkeys)
+{
+	int inputNumber = 0;
+	if (isHotkeys)
+		inputNumber = inputC->eventCount;
+	else
+		inputNumber = inputC->SICount;
+
+	// TODO: Should load from file. For now, building the default mapping.
+	if (isHotkeys)
+		inputC->BuildDefaultEventMapping();
+	else
+		inputC->BuildDefaultInputMapping();
+
+	char* key;
+	char* map;
+	char line[1024];
+
+	for(int i=0; i<inputNumber; i++){
+
+		// Get the map strings.
+		if (isHotkeys)
+			inputC->FormatEventMapping(i, key, map);
+		else
+			inputC->FormatInputMapping(i, key, map);
+
+		// Build the line.
+		strcpy(line, key);
+		strcat(line, "\t");
+		strcpy(line, map);
+
+		// Send it.
+		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) line);
+	}
+}
+
+
+void ModifyHotkeyFromListbox(HWND listbox, WORD command, HWND statusText, HWND parentWindow, bool isHotkeys)
+{
+	char* key;
+	char* map;
+
+	int inputNumber = 0;
+	if (isHotkeys)
+		inputNumber = inputC->eventCount;
+	else
+		inputNumber = inputC->SICount;
+
+	for(int i=0; i<inputNumber; i++)
+	{
+		int selected = SendMessage((HWND) listbox, (UINT) LB_GETSEL, (WPARAM) i, (LPARAM) 0);
+		if(selected <= 0)
+			continue;
+
+		//InputButton& button = buttons[i];
+
+		switch(command)
+		{
+			case IDC_REASSIGNKEY:
+				{
+					char str [256];
+
+
+					if (isHotkeys){
+						inputC->FormatEventMapping(i, key, map);
+						sprintf(str, "SETTING KEY: %s", key);
+						SetWindowText(statusText, str);
+						inputC->ReassignEvent(i);
+					}
+					else{
+						inputC->FormatInputMapping(i, key, map);
+						sprintf(str, "SETTING KEY: %s", key);
+						SetWindowText(statusText, str);
+						inputC->ReassignInput(i);
+					}
+					SetWindowText(statusText, "");
+				}
+				break;
+			//case IDC_REVERTKEY:
+				//(isHotkeys ? s_initialHotkeyButtons : s_initialInputButtons)[i].CopyConfigurablePartsTo(button);
+				//break;
+			case IDC_USEDEFAULTKEY:
+				if (isHotkeys)
+					inputC->DefaultEvent(i);
+				else
+					inputC->DefaultInput(i);
+				break;
+			case IDC_DISABLEKEY:
+				if (isHotkeys)
+					inputC->DisableEvent(i);
+				else
+					inputC->DisableInput(i);
+				break;
+		}
+		SetFocus(listbox);
+
+		if (isHotkeys){
+			inputC->FormatEventMapping(i, key, map);
+		}
+		else{
+			inputC->FormatInputMapping(i, key, map);
+		}
+
+		char line[1024];
+		strcpy(line, key);
+		strcat(line, "\t");
+		strcpy(line, map);
+
+		SendMessage(listbox, LB_DELETESTRING, i, 0);  
+		SendMessage(listbox, LB_INSERTSTRING, i, (LPARAM) line); 
+		SendMessage(listbox, LB_SETSEL, (WPARAM) TRUE, (LPARAM) i); 
+	}
 }
