@@ -8281,9 +8281,6 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						// Attempt to lock the new directory.
 						if(LockDirectory(movieDirectory, MOVIE) == false)
 						{
-							char str[1024];
-							sprintf(str, "Locking the directory '%s' failed.\nHourglass may not have the rights to create files in this directory.\nChoose another directory to save the movie.", movieDirectory);
-							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
 							moviefilename[0] = '\0'; // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
 							break; // Break early so that we don't allow the movie to be loaded.
 						}
