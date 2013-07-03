@@ -39,7 +39,7 @@ char avifilename [MAX_PATH+1];
 #define _AVIDEBUG
 #endif
 
-#if defined(_AVIDEBUG) || 0
+#if defined(_AVIDEBUG) || 0 //1
 	#define verbosedebugprintf debugprintf
 
 	#include "Movie.h"

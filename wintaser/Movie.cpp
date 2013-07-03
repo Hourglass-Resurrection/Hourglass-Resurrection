@@ -281,7 +281,7 @@ Movie::Movie()
 	commandline = NULL;//= movie.commandline;
 	if(commandlineLen) // There's a command line in the movie file.
 	{
-		if(commandlineLen > 8191-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
+		if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
 		{
 			fclose(file);
 			if(author) // Prevent memory leak
