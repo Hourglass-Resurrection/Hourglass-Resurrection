@@ -92,7 +92,7 @@ struct SingleInput
 	short key; // which key/button was pressed. The structure depends on the device type.
 	           // single key+modifiers for keyboard, single button for joystick.
 
-	const char* description; // Text to display on a GUI.
+	char description[48]; // Text to display on a GUI.
 
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const SingleInput &si ) const {
@@ -139,11 +139,17 @@ private:
 	static struct SingleInput SIList[]; // List of all inputs that can be mapped.
 	static struct Event eventList[]; // List of all events that can be mapped.
 
+	HWND hotkeysbox;
+	HWND gameinputbox;
+
 	// Return if the key is a modifier.
 	bool IsModifier(char key);
 
 	// From a keyboard state, builds the char that contains the flags from all pressed modifier keys.
 	char BuildModifier(char* keys);
+
+	// Convert a SingleInput struct to a string.
+	void InputToDescription(SingleInput &si);
 
 	// Get the current keyboard state.
 	void GetKeyboardState(char* keys);
@@ -152,12 +158,18 @@ private:
 	void NextInput(SingleInput* si);
 
 	// We need to be able to remove a map element based on the value. It doesn't need to be fast.
-	void RemoveValueFromInputMap(SingleInput* si);
+	void RemoveValueFromInputMap(const SingleInput* si);
 
 	// Same for events
-	void RemoveValueFromEventMap(WORD eventId);
+	void RemoveValueFromEventMap(const WORD eventId);
+
+	// Used by the callback to populate the listboxes.
+	void PopulateListbox(HWND listbox);
 
 public:
+
+	InputCapture::InputCapture();
+	InputCapture::InputCapture(char* filename);
 
 	static const int SICount = 144;
 	static const int eventCount = 67;
@@ -234,5 +246,7 @@ public:
 	// Load mapping from a config file
 	void LoadMapping(char* filename);
 
-
+	// Callback to change config of all the input.
+	// This SHOULD work according to the C++ FAQ Lite section 33.2
+	static LRESULT CALLBACK ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 }

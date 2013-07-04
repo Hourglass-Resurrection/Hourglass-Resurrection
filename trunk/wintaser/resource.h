@@ -15,6 +15,7 @@
 #define IDD_DIALOG2                     130
 #define IDR_ACCELERATOR1                131
 #define IDD_RAMWATCH                    132
+#define IDD_CONTROLCONF                 133
 #define IDD_PROMPT                      140
 #define IDD_HOTKEYS                     141
 #define IDD_SPLICE                      142
@@ -62,10 +63,20 @@
 #define IDC_STATIC_TEXT0                1043
 #define IDC_TEXT_MOVIE                  1043
 #define IDC_HOTKEYLIST                  1044
+#define IDC_HOTKEYBOX                   1044
 #define ID_TOGGLE_MOVIE_READONLY        1045
+#define IDC_GAMEINPUTBOX                1045
 #define IDC_TOPLEFTCONTROL              1046
+#define IDC_CONF_DISABLE                1046
 #define IDC_CHECK_MUTE                  1047
+#define IDC_CONF_USEDEFAULT             1047
 #define IDC_EDIT_SPLICESOURCESTART      1048
+#define IDC_CONF_RESTOREDEFHKS          1048
+#define IDC_CONF_SAVE                   1050
+#define IDC_CONF_CLOSE                  1051
+#define IDC_CONF_RESTOREDEFGIS          1053
+#define IDC_BUTTON1                     1056
+#define IDC_CONF_ASSIGNKEY              1056
 #define RAMMENU_FILE_AUTOLOAD           1218
 #define RAMMENU_FILE_APPEND             1220
 #define RAMMENU_FILE_SAVEWINDOW         3001
@@ -401,9 +412,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32782
-#define _APS_NEXT_CONTROL_VALUE         1044
+#define _APS_NEXT_CONTROL_VALUE         1057
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
