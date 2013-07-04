@@ -560,7 +560,6 @@ void InputCapture::NextInput(SingleInput* si){
 	char previousKeys[DI_KEY_NUMBER];
 	char currentKeys[DI_KEY_NUMBER];
 	bool somethingPressed = false;
-	char inputDescription[256] = { '\0' };
 
 	// Get the previous keyboard state.
 	GetKeyboardState(previousKeys);
