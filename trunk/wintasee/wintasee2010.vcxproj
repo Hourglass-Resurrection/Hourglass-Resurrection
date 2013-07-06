@@ -355,6 +355,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="dettime.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="intercept.h" />
