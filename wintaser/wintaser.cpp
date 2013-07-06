@@ -27,7 +27,9 @@
 #include "Movie.h"
 //#include "crc32.h"
 #include "CRCMath.h"
-#include "inputsetup.h"
+//#include "inputsetup.h"
+#include "Menu.h"
+#include "Config.h"
 #include "ramsearch.h"
 #define MAX_LOADSTRING 100
 //#include <stdio.h>
