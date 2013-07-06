@@ -30,6 +30,8 @@
 //#include "inputsetup.h"
 #include "Menu.h"
 #include "Config.h"
+using namespace Config;
+#include "InputCapture.h"
 #include "ramsearch.h"
 #define MAX_LOADSTRING 100
 //#include <stdio.h>
@@ -266,7 +268,7 @@ bool HotkeyHWndIsHotkeys = true;
 
 /*static*/ Movie movie;
 
-
+InputCapture inputC; // TODO, put the declaration somewhere else ?
 
 // requires both buffers given to be at least MAX_PATH characters in size.
 // it is allowed for both arguments to point at the same buffer.
@@ -383,7 +385,7 @@ std::map<LPVOID,std::string> dllBaseToFilename;
 static int lastFrameAdvanceKeyUnheldTime = timeGetTime();
 static int lastFrameAdvanceTime = timeGetTime();
 
-bool paused = false;
+//bool paused = false;
 //bool fastforward = false;
 static bool temporaryUnpause = false;
 static bool requestedCommandReenter = false;
@@ -394,14 +396,14 @@ static bool goingsuperfast = false;
 static bool runningNow = false;
 CRITICAL_SECTION g_processMemCS;
 
-bool started = false;
+//bool started = false;
 //bool playback = false;
-bool finished = false;
+//bool finished = false;
 bool unsavedMovieData = false;
-bool nextLoadRecords = true; // false if next load switches to playback, true if next load switches to recording... aka readonly/read-only toggle
-bool exeFileExists = false;
-bool movieFileExists = false;
-bool movieFileWritable = false;
+//bool nextLoadRecords = true;
+//bool exeFileExists = false;
+//bool movieFileExists = false;
+//bool movieFileWritable = false;
 //static int framerate = 60; // TODO: should probably get this from some per-game database if possible. not critical since it's user-configurable and gets saved in the movie file
 //static int keylimit = 8;
 
@@ -414,32 +416,32 @@ bool movieFileWritable = false;
 ///*static*/ int timersMode = 1;
 ///*static*/ int messageSyncMode = 1;
 //int allowLoadInstalledDlls = 0, allowLoadUxtheme = 0, 
-int runDllLast = 0;
+//int runDllLast = 0;
 //int waitSyncMode = 1;
 //int aviMode = 0;
 static int threadStuckCount = 0;
 //static int aviSplitCount = 0;
 //static int aviSplitDiscardCount = 0;
 //static int requestedAviSplitCount = 0;
-/*static*/ int usedThreadMode = -1;
+/*static*/ //int usedThreadMode = -1;
 //static int windowActivateFlags = 0;
 //int storeVideoMemoryInSavestates = 1;
-int storeGuardedPagesInSavestates = 1;
+//int storeGuardedPagesInSavestates = 1;
 //int appLocale = 0;
-int tempAppLocale = 0; // Might still be needed
-int forceWindowed = 1;
-int truePause = 0;
-int onlyHookChildProcesses = 0;
-int advancePastNonVideoFrames = 0;
-bool advancePastNonVideoFramesConfigured = false;
+//int tempAppLocale = 0; // Might still be needed
+//int forceWindowed = 1;
+//int truePause = 0;
+//int onlyHookChildProcesses = 0;
+//int advancePastNonVideoFrames = 0;
+//bool advancePastNonVideoFramesConfigured = false;
 bool runDllLastConfigured = false;
-bool crcVerifyEnabled = true;
+//bool crcVerifyEnabled = true;
 //int audioFrequency = 44100;
 //int audioBitsPerSecond = 16;
 //int audioChannels = 2;
 //static int stateLoaded = 0;
 bool mainMenuNeedsRebuilding = false;
-#ifndef FOCUS_FLAGS_DEFINED
+/*#ifndef FOCUS_FLAGS_DEFINED
 #define FOCUS_FLAGS_DEFINED
 enum
 {
@@ -450,9 +452,10 @@ enum
 #endif
 int hotkeysFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_TASER; // allowbackgroundhotkeys
 int inputFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_OTHER|FOCUS_FLAG_TASER; // allowbackgroundinput
-
+*/
 
 // these can be set from the UI now (runtime menu > debug logging > include/exclude)
+/*
 LogCategoryFlag includeLogFlags = LCF_ERROR
 #ifdef _DEBUG
 |LCF_UNTESTED
@@ -466,7 +469,7 @@ LogCategoryFlag excludeLogFlags = LCF_NONE
 |LCF_FREQUENT
 #endif
 ;
-
+*/
 //static bool traceLogs = false;
 //static bool traceLogs = true;
 
@@ -474,10 +477,10 @@ LogCategoryFlag excludeLogFlags = LCF_NONE
 
 
 
-char moviefilename [MAX_PATH+1];
-char exefilename [MAX_PATH+1];
-char commandline [160];
-char thisprocessPath [MAX_PATH+1];
+//char moviefilename [MAX_PATH+1];
+//char exefilename [MAX_PATH+1];
+//char commandline [160];
+//char thisprocessPath [MAX_PATH+1];
 char injectedDllPath [MAX_PATH+1];
 char subexefilename [MAX_PATH+1];
 
@@ -491,7 +494,7 @@ char subexefilename [MAX_PATH+1];
 
 static bool warnedAboutFrameRateChange = false;
 
-bool recoveringStale = false;
+//bool recoveringStale = false;
 static int recoveringStaleSlot = 0;
 static int recoveringStaleFrame = 0;
 
@@ -1748,15 +1751,17 @@ struct UncompressedMovieFrame
 // InjectLocalInputs
 void RecordLocalInputs()
 {
-	extern unsigned char localGameInputKeys [256];
-
+	//extern unsigned char localGameInputKeys [256];
+	CurrentInput ci;
 	if(InputHasFocus(false))
 	{
-		Update_Input(NULL, true, false, false, false);
+		inputC.ProcessInputs(&ci, NULL);
+		//Update_Input(NULL, true, false, false, false);
 	}
 	else
 	{
-		memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
+		ci.clear();
+		//memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
 	}
 
 #if 0 // TEMP HACK until proper autofire implemented
@@ -1767,13 +1772,15 @@ void RecordLocalInputs()
 #endif
 
 
+	// TODO: Record the whole input instead of the keyboard only.
+
 	MovieFrame frame = {0};
 	int frameByte = 0;
 
 	// pack frame of input
 	for(int i = 1; i < 256 && frameByte < sizeof(frame.heldKeyIDs); i++)
 	{
-		if(localGameInputKeys[i])
+		if(ci.keys[i])
 		{
 			frame.heldKeyIDs[frameByte] = i;
 			frameByte++;
@@ -1886,6 +1893,7 @@ void MultitrackHack()
 }
 #endif
 
+// TODO: Pass the whole CurrentInput struct instead of just the keyboard.
 void InjectCurrentMovieFrame() // playback ... or recording, now
 {
 	if((unsigned int)movie.currentFrame >= (unsigned int)movie.frames.size())
@@ -2031,70 +2039,36 @@ void CheckHotkeys(int frameCount, bool frameSynced)
 
 	if(!InputHasFocus(true))
 	{
+		// FIXME: it looks like this call is doing pretty much nothing except for the frameSynced stuff.
+		// I really don't know what this is, but if/when we encounter problems, we will see...
+
 		// ignore background input
-		Update_Input(hWnd, frameSynced, false, false, true);
+		//Update_Input(hWnd, frameSynced, false, false, true);
 		return;
 	}
 
-	//if(KeyJustPressed('Y'))
-	//	SuspendAllExcept(threadId);
-	//if(KeyJustPressed('U'))
-	//	ResumeAllExcept(threadId);
-//	lastKeyThreadId = threadId;
+	CurrentInput ci; // Useless.
+	inputC.ProcessInputs(&ci, hWnd); // Only process events.
 
-	Update_Input(hWnd, frameSynced, true, false, true);
+	//Update_Input(hWnd, frameSynced, true, false, true);
 
-	// the rest of this should be replaced by Update_Input (done?)
 
-	//previnput = curinput;
-	//for(int i = 0; i < 256; i++)
-	//	if(i == VK_CAPITAL || i == VK_NUMLOCK || i == VK_SCROLL)
-	//		curinput.keys[i] = (GetKeyState(i) & 0x1) != 0;
-	//	else
-	//		curinput.keys[i] = (GetAsyncKeyState(i) & 0x8000) != 0;
+	// FIXME: FastFoward trigger does not use an message, but an extra virtual key.
+	// This is not supported by our new InputCapture class!
 
-	//for(int i = 0; i < 10; i++)
-	//{
-	//	bool fkeyp = KeyJustPressed(i+VK_F1);
-	//	bool nkeyp = KeyJustPressed((i==9)?'0':(i+'1'));
-	//	int iextra = fkeyp ? 11 : 1;
-	//	if(fkeyp || nkeyp)
-	//	{
-	//		if(KeyHeld(VK_SHIFT))
-	//			SaveGameStatePhase1(i+iextra);
-	//		else
-	//			//if(frameCount != -1)
-	//				LoadGameStatePhase1(i+iextra);
-	//			//else
-	//			//	LoadGameStatePhase2(i+iextra);
-	//		break;
-	//	}
-	//}
-
+	/*
 	static bool FastForwardKeyDown_prev = false;
 	if(FastForwardKeyDown_prev != FastForwardKeyDown)
 	{
 		FastForwardKeyDown_prev = FastForwardKeyDown;
 		SetFastForward(FastForwardKeyDown != 0);
 	}
+	*/
 
-	//if(KeyHeld(VK_CONTROL) && !KeyHeld(VK_SHIFT) && KeyJustPressed('T'))
-	//{
-	//	nextLoadRecords = !nextLoadRecords;
-	//	if(nextLoadRecords)
-	//		debugprintf("switched to read+write\n");
-	//	else
-	//		debugprintf("switched to read-only\n");
-	//}
-
-	//if(KeyJustPressed(VK_DELETE) || KeyJustPressed(VK_PAUSE))
-	//{
-	//	paused = !paused;
-
-	//	if(paused && fastforward)
-	//		temporaryUnpause = true;
-	//}
-
+	// FIXME: Same for FrameAdvance stuff.
+	// This really looks like a hack, we should find another way to support it.
+	// Use messages? I guess the problem is that we want to support holding keys (for fast-forward mostly).
+	/*
 	static bool FrameAdvanceKeyDown1_prev = false;
 	static bool FrameAdvanceKeyDown2_prev = false;
 	bool FrameAdvanceKeyDown = FrameAdvanceKeyDown1 || FrameAdvanceKeyDown2;
@@ -2164,7 +2138,7 @@ void CheckHotkeys(int frameCount, bool frameSynced)
 			SendTASFlags();
 		}
 	}
-	//if(paused && CAPTUREINFO_TYPE_NONE_SUBSEQUENT
+	*/
 }
 
 
@@ -6405,8 +6379,11 @@ HMENU MainMenu = NULL;
 // and also to make the edit boxes a little nicer to use
 bool PreTranslateMessage(MSG& msg)
 {
+	// FIXME: Implement this.
+	/*
 	if(IsHotkeyPress())
 		return false;
+	*/
 
 	if(msg.message == WM_KEYDOWN)
 	{
@@ -6513,7 +6490,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		return FALSE;
 	//hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINTASER);
 
-	Init_Input(hInst, hWnd);
+	//Init_Input(hInst, hWnd);
+	inputC.InitInputs(hInst, hWnd);
 
 	Build_Main_Menu(MainMenu, hWnd);
 
@@ -7533,6 +7511,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						BringGameWindowToForeground();
 					break;
 
+				// We now have a unique dialog box for both input types. I'm using the ID_INPUT_INPUTS id for it.
+				/*
 				case ID_INPUT_HOTKEYS: {
 					RECT rect = {};
 					if(HotkeyHWnd && !HotkeyHWndIsHotkeys)
@@ -7548,21 +7528,25 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						SetWindowPos(HotkeyHWnd, NULL, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, SWP_NOSIZE|SWP_NOZORDER);
 					HotkeyHWndIsHotkeys = true;
 				}	break;
+				*/
 
 				case ID_INPUT_INPUTS: {
 					RECT rect = {};
+					// We don't need that anymore.
+					/* 
 					if(HotkeyHWnd && HotkeyHWndIsHotkeys)
 					{
 						GetWindowRect(HotkeyHWnd, &rect);
 						SendMessage(HotkeyHWnd, WM_CLOSE, 0, 0); // we don't currently support having both input dialogs open
 					}
+					*/
 					if(!HotkeyHWnd)
-						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_HOTKEYS), hWnd, (DLGPROC) InputsProc);
+						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_HOTKEYS), hWnd, (DLGPROC) inputC.ConfigureInput);
 					else
 						SetForegroundWindow(HotkeyHWnd);
 					if(rect.right > rect.left && rect.bottom > rect.top)
 						SetWindowPos(HotkeyHWnd, NULL, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, SWP_NOSIZE|SWP_NOZORDER);
-					HotkeyHWndIsHotkeys = false;
+					// HotkeyHWndIsHotkeys = false;
 				}	break;
 
 
@@ -7740,10 +7724,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//	Save_Config();
 				//	break;
 				case ID_FILES_SAVECONFIGAS:
-					Save_As_Config(hDlg);
+					Save_As_Config(hDlg, hInst);
 					break;
 				case ID_FILES_LOADCONFIGFROM:
-					Load_As_Config(hDlg);
+					Load_As_Config(hDlg, hInst);
 					break;
 
 				//case IDC_AVIVIDEO:
@@ -8370,7 +8354,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #undef UNITY_BUILD
 #include "ramwatch.cpp"
 #include "ramsearch.cpp"
-#include "inputsetup.cpp"
+//#include "inputsetup.cpp"
 #include "trace/extendedtrace.cpp"
 #include "inject/process.cpp"
 #include "inject/iatmodifier.cpp"

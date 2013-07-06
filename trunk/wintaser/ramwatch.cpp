@@ -11,6 +11,7 @@
 #include "resource.h"
 #include "ramsearch.h"
 #include "ramwatch.h"
+#include "Config.h"
 #include <assert.h>
 #include <windows.h>
 #include <string>
@@ -40,9 +41,9 @@ extern HWND RamWatchHWnd;
 extern HWND hWnd;
 extern HINSTANCE hInst;
 extern CRITICAL_SECTION g_processMemCS;
-extern char exefilename [MAX_PATH+1];
-extern char thisprocessPath [MAX_PATH+1];
-extern bool started;
+//extern char exefilename [MAX_PATH+1];
+//extern char thisprocessPath [MAX_PATH+1];
+//extern bool started;
 static char Str_Tmp_RW [1024];
 
 void init_list_box(HWND Box, const char* Strs[], int numColumns, int *columnWidths); //initializes the ram search and/or ram watch listbox
@@ -447,7 +448,7 @@ int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 {
 	OPENFILENAME ofn;
 
-	SetCurrentDirectory(thisprocessPath);
+	SetCurrentDirectory(Config::thisprocessPath);
 
 	if(!strcmp(Dest, ""))
 	{
@@ -478,7 +479,7 @@ int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 {
 	OPENFILENAME ofn;
 
-	SetCurrentDirectory(thisprocessPath);
+	SetCurrentDirectory(Config::thisprocessPath);
 
 	if(!strcmp(Dest, ""))
 	{
@@ -507,12 +508,12 @@ int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 
 bool Save_Watches()
 {
-	char* slash = max(strrchr(exefilename, '\\'), strrchr(exefilename, '/'));
-	strcpy(Str_Tmp_RW,slash ? slash+1 : exefilename);
+	char* slash = max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
+	strcpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp_RW,".wch");
-	if(Change_File_S(Str_Tmp_RW, thisprocessPath, "Save Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_S(Str_Tmp_RW, Config::thisprocessPath, "Save Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
 	{
 		FILE *WatchFile = fopen(Str_Tmp_RW,"r+b");
 		if(!WatchFile) WatchFile = fopen(Str_Tmp_RW,"w+b");
@@ -626,12 +627,12 @@ bool Load_Watches(bool clear, const char* filename)
 
 bool Load_Watches(bool clear)
 {
-	char* slash = max(strrchr(exefilename, '\\'), strrchr(exefilename, '/'));
-	strcpy(Str_Tmp_RW,slash ? slash+1 : exefilename);
+	char* slash = max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
+	strcpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp_RW,".wch");
-	if(Change_File_L(Str_Tmp_RW, thisprocessPath, "Load Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_L(Str_Tmp_RW, Config::thisprocessPath, "Load Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
 	{
 		return Load_Watches(clear, Str_Tmp_RW);
 	}
@@ -839,7 +840,7 @@ LRESULT CALLBACK EditWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						}
 						if(!canceled)
 						{
-							if(IsHardwareAddressValid(Temp.Address) || !started || (index < WatchCount && Temp.Address == rswatches[index].Address))
+							if(IsHardwareAddressValid(Temp.Address) || !Config::started || (index < WatchCount && Temp.Address == rswatches[index].Address))
 							{
 								GetDlgItemText(hDlg,IDC_PROMPT_EDIT,Str_Tmp_RW,80);
 								ReplaceWatch(Temp,Str_Tmp_RW,index);

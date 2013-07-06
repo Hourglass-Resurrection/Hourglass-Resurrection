@@ -9,8 +9,63 @@
 
 namespace Config{
 
+	int audioFrequency;
+	int audioBitsPerSecond;
+	int audioChannels;
+	bool paused = false;
+	bool fastforward;
+	bool started = false;
+	bool playback;
+	bool finished = false;
+	bool nextLoadRecords = true; // false if next load switches to playback, true if next load switches to recording... aka readonly/read-only toggle
+	bool recoveringStale = false;
+	bool exeFileExists = false;
+	bool movieFileExists = false;
+	bool movieFileWritable = false;
+	int forceWindowed = 1;
+	int truePause = 0;
+	int onlyHookChildProcesses = 0;
+	int forceSurfaceMemory;
+	int forceSoftware;
+	int aviMode;
+	int emuMode;
+	int fastForwardFlags;
+	int timescale, timescaleDivisor;
+	int allowLoadInstalledDlls, allowLoadUxtheme;
+	int runDllLast = 0;
+	int advancePastNonVideoFrames = 0;
+	bool advancePastNonVideoFramesConfigured = false;
+	int threadMode;
+	int usedThreadMode = -1;
+	int timersMode;
+	int messageSyncMode;
+	int waitSyncMode;
+	int aviFrameCount;
+	int aviSoundFrameCount;
+	bool traceEnabled = true;
+	bool crcVerifyEnabled = true;
+	int storeVideoMemoryInSavestates;
+	int storeGuardedPagesInSavestates = 1;
+	int appLocale;
+	int tempAppLocale = 0;
+	int debugPrintMode;
+	LogCategoryFlag includeLogFlags = LCF_ERROR;
+	LogCategoryFlag traceLogFlags = LCF_NONE;
+	LogCategoryFlag excludeLogFlags = LCF_NONE|LCF_FREQUENT;
+	int inputFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_OTHER|FOCUS_FLAG_TASER; // allowbackgroundinput;
+	int hotkeysFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_TASER; // allowbackgroundhotkeys;
+
+	char moviefilename [MAX_PATH+1];
+	char exefilename [MAX_PATH+1];
+	char commandline [160];
+	char thisprocessPath [MAX_PATH+1];
+
+	//const char* defaultConfigFilename = "hourglass.cfg";
+
+
 	int Save_Config(const char* filename)
 	{
+		char Str_Tmp [1024] = {0};
 		if(!filename)
 			filename = defaultConfigFilename;
 		char Conf_File[1024];

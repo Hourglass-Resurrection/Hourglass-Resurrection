@@ -1,9 +1,12 @@
+#ifndef INPUT_CAPTURE_H
+#define INPUT_CAPTURE_H
+
 #define DIRECTINPUT_VERSION 0x0500  // for joystick support
 #define DI_KEY_PRESSED_FLAG 0x80 // To test if a DI key was pressed.
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
-#include "../shared/input.h"; // Contains the CurrentInput struct
+#include "../shared/input.h" // Contains the CurrentInput struct
 #include <map>
 using namespace std;
 
@@ -28,7 +31,7 @@ struct SingleInput
 
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const SingleInput &si ) const {
-		return ((this->device < si.device) || ((this->device < si.device) && (this->key < si.key)));
+		return ((device < si.device) || ((device < si.device) && (key < si.key)));
 	}
 };
 
@@ -37,8 +40,8 @@ struct SingleInput
 // Structure to hold the information about a modifier key.
 struct ModifierKey
 {
-	char DIK; // DIK value of the modifier key
-	char flag; // Corresponding flag
+	unsigned char DIK; // DIK value of the modifier key
+	unsigned char flag; // Corresponding flag
 };
 
 
@@ -48,7 +51,12 @@ struct Event
 	SingleInput defaultInput; // Default input mapped to this event.
 	WORD id; // Id used to identify the event when sending a message.
 	const char* description; // Text to display on a GUI.
-}
+
+	// We need to implement the < operator to use this struct in a map.
+	bool operator<( const Event &ev ) const {
+		return (id < ev.id);
+	}
+};
 
 
 
@@ -181,4 +189,6 @@ public:
 	// Callback to change config of all the input.
 	// This SHOULD work according to the C++ FAQ Lite section 33.2
 	static LRESULT CALLBACK ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-}
+};
+
+#endif

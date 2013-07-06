@@ -56,6 +56,7 @@
 #include "resource.h"
 #include "ramsearch.h"
 #include "ramwatch.h"
+#include "Config.h"
 #include "../shared/winutil.h"
 #include <assert.h>
 #include <commctrl.h>
@@ -1448,14 +1449,11 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 	if(disableRamSearchUpdate)
 		return;
 
-	extern BOOL fastForwardFlags;
-	extern bool fastforward;
-	extern bool recoveringStale;
-	if(fastforward && (RamWatchHWnd || last_rs_possible > 10000 || recoveringStale) && (fastForwardFlags & /*FFMODE_RAMSKIP*/0x08))
+	if(Config::fastforward && (RamWatchHWnd || last_rs_possible > 10000 || Config::recoveringStale) && (Config::fastForwardFlags & /*FFMODE_RAMSKIP*/0x08))
 	{
 		static int count = 0;
 
-		if(recoveringStale)
+		if(Config::recoveringStale)
 		{
 			if(++count % 128)
 				return;

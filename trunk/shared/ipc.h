@@ -5,6 +5,7 @@
 #define IPC_H_INCL
 
 #include "logcat.h"
+#include <mmsystem.h>
 
 struct TasFlags
 {
