@@ -239,6 +239,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="logging.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
@@ -273,6 +274,7 @@
     <ClInclude Include="InputCapture.h" />
     <ClInclude Include="inputsetup.h" />
     <ClInclude Include="logging.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
