@@ -264,6 +264,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="crc32.h" />

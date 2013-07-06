@@ -145,6 +145,9 @@
     <ClInclude Include="Menu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">

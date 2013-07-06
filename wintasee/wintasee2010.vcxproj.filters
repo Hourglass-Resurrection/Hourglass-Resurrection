@@ -189,5 +189,8 @@
     <ClInclude Include="tramps\Xinputtramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

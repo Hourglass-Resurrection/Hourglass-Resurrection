@@ -488,19 +488,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			char fromKey = (char)(fromInput.key & 0xFF);
 			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we must insert the corresponding input into the CurrentInput object.
-
-				if (! currentI->isSourceCompatible(toInput.device)){
-					// This is a problem, we already have stored an input from another device.
-					// Currently, we do not allow two inputs from two different devices to be passed.
-					// To resolve this, I'm just gonna pass.
-					break;
-				}
-
-				// If the device type is not yet set, set it.
-				currentI->setTypeBasedOnSingleInput(toInput.device);
-
-				// Store the input.
-				currentI->directInput.keys[toInput.key] = 1;
+				currentI->keys[toInput.key] = 1;
 			}
 									  }
 		case SINGLE_INPUT_DI_MOUSE:{
@@ -535,8 +523,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			char fromKey = (char)(fromInput.key & 0xFF);
 			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we just have to send the corresponding message.
-
-				SendMessage(hWnd, WM_COMMAND, eventId, 777);
+				SendMessage(hWnd, WM_COMMAND, eventId, 777); // TODO: Doc what is 777.
 			}
 									  }
 		case SINGLE_INPUT_DI_MOUSE:{

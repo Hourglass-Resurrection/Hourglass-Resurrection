@@ -3,77 +3,9 @@
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
-#include "../external/dinput.h"
-#include "../external/Xinput.h"
+#include "../shared/input.h"; // Contains the CurrentInput struct
 #include <map>
 using namespace std;
-
-
-
-typedef enum
-{
-	CURRENT_INPUT_NONE,
-	CURRENT_INPUT_DI,
-	CURRENT_INPUT_XINPUT
-} CURRENT_INPUT_DEVICE;
-
-struct CurrentInput { // Can be extended with another 254 types since type can contain 256 different values
-	CURRENT_INPUT_DEVICE type; // Will specify if the contents are VirtualKey data, Direct Input Data or XInput Data.
-	union {
-		struct { char keys[256]; DIMOUSESTATE mouse; DIJOYSTATE joypad[8]; } directInput; // <-- SIZE: (256 * 1) + (4 * 3) + (4 * 1) + ((4 * 8) + (4 * 4) + (32 * 1) * 8) = 576 bytes
-		// ^^^^ We need to bundle JoyState with the rest to support multiplayer games where someone can use a joypad, another a keyboard etc.
-		// We can use extended variants of MOUSESTATE and JOYSTATE which contain more buttons, do we want to? If the game supports it, so can we...
-		// Extra size: MOUSESTATE2 +4 bytes        JOYSTATE2 +96 bytes (PER JOYPAD! So: Extra 768 bytes!)
-		struct { XINPUT_GAMEPAD gamepad[4]; } xinput; // <-- SIZE: ((2 * 1) + (1 * 2) + (2 * 4) * 4) = 48 bytes
-		// ^^^^ Only to make it conform to the format. Otherwise the struct is unnecessary.
-	};
-
-	// clear the whole structure
-	void clear(){
-		type = CURRENT_INPUT_NONE;
-		for (int i=0; i<256; i++)
-			directInput.keys[i] = 0;
-		// TODO: the rest, I'm lazy...
-	}
-
-	// Right now, we are using a union, so we don't allow multiple devices.
-	// We need to check if we can add a single input, based on what we already have inserted.
-	bool isSourceCompatible(SINGLE_INPUT_DEVICE sid){
-		switch(type){
-		case CURRENT_INPUT_NONE: // We didn't insert anything yet.
-			return true;
-		case CURRENT_INPUT_DI:
-			return ((sid == SINGLE_INPUT_DI_KEYBOARD) || (sid == SINGLE_INPUT_DI_MOUSE) || (sid == SINGLE_INPUT_DI_JOYSTICK));
-		case CURRENT_INPUT_XINPUT:
-			return (sid == SINGLE_INPUT_XINPUT_JOYSTICK);
-		default:
-			return false;
-		}
-	}
-
-	// Usually called after isSourceCompatible, set the device type based on the single input type.
-	void setTypeBasedOnSingleInput(SINGLE_INPUT_DEVICE sid){
-		if(type != CURRENT_INPUT_NONE) // The type is already set.
-			return;
-		switch(sid){
-		case SINGLE_INPUT_DI_KEYBOARD:
-		case SINGLE_INPUT_DI_MOUSE:
-		case SINGLE_INPUT_DI_JOYSTICK:
-			type = CURRENT_INPUT_DI;
-		case SINGLE_INPUT_XINPUT_JOYSTICK:
-			type = CURRENT_INPUT_XINPUT;
-		}
-	}
-
-}; // <-- TOTAL SIZE: 576 + 1 = 577 bytes (640 bytes with safe rounding)
-   // Extending DirectInput to use MOUSESTATE2 and JOYSTATE2 instead will boost this to 1412 bytes. (2048 with very safe rounding)
-   // This will most likely have a speed impact, specially on games that use the smaller size input types (like VirtualKeys or XInput) since we will copy basically 1.5 kilobytes of junk.
-   // Movie frames will of course only contain the important parts, input type, and the data of the devices that has input.
-   // The rest of the data will be padded (with 0s) as we feed the input to the game.
-
-
-
-
 
 
 // Type of device
