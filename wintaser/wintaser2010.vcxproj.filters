@@ -35,9 +35,6 @@
     <ClCompile Include="InjectDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="inputsetup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,9 +86,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="InjectDLL.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inputsetup.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="logging.h">

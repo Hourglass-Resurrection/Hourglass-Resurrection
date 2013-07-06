@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include "Menu.h"
 #include "Config.h"
+#include "resource.h"
+#include "ipc.h"
 using namespace Config;
-
 
 #define MENU_L(smenu, pos, flags, id, suffixe, str, disableReason)	do{									\
 /*GetPrivateProfileStringA(language_name[Language], (str), (def), Str_Tmp, 1024, Language_Path);*/	\
@@ -9,7 +11,7 @@ if((disableReason) && ((flags) & (MF_DISABLED|MF_GRAYED))) \
 	sprintf(Str_Tmp, "%s (%s)", str, disableReason); \
 else \
 	strcpy(Str_Tmp, str); \
-/*strcat(Str_Tmp, (suffixe));*/ AddHotkeySuffix(Str_Tmp, id, suffixe, true);							\
+strcat(Str_Tmp, (suffixe)); /*AddHotkeySuffix(Str_Tmp, id, suffixe, true);*/							\
 InsertMenu((smenu), (pos), (flags), (id), Str_Tmp); } while(0)
 
 
@@ -18,6 +20,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	unsigned int Flags;
 	int i=0, j=0;
 	char str [1024];
+	char Str_Tmp [1024] = {0};
 
 	if(MainMenu)
 		DestroyMenu(MainMenu);
@@ -242,10 +245,10 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// Input Menu
 	i = 0;
-	MENU_L(Input, i++, Flags, ID_INPUT_HOTKEYS, "", "Configure &Hotkeys...", 0);	
+	//MENU_L(Input, i++, Flags, ID_INPUT_HOTKEYS, "", "Configure &Hotkeys...", 0);	
+	MENU_L(Input, i++, Flags, ID_INPUT_INPUTS, "", "Configure &Inputs...", 0);	
 	MENU_L(Input, i++, Flags | MF_POPUP, (UINT)InputHotkeyFocus, "", "Enable Hotkeys When", 0);
 	InsertMenu(Input, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Input, i++, Flags, ID_INPUT_INPUTS, "", "Configure Game &Input...", 0);	
 	MENU_L(Input, i++, Flags | MF_POPUP, (UINT)InputInputFocus, "", "Enable Game Input When", 0);
 	InsertMenu(Input, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Input, i++, Flags | (advancePastNonVideoFrames?MF_CHECKED:MF_UNCHECKED), ID_INPUT_SKIPLAGFRAMES, "", "Frame Advance Skips \"&Lag\" Frames", 0);

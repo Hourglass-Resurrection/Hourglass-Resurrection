@@ -72,6 +72,4 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE hFile, DWORD base);
 
 #endif
 
-extern bool traceEnabled;
-
 #endif

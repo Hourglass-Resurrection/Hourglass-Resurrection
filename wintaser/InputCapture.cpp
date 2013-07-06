@@ -1,8 +1,10 @@
+#define DIRECTINPUT_VERSION 0x0500  // for joystick support
 #include "InputCapture.h"
 #include "Resource.h"
-
 #include "CustomDLGs.h"
 #include "logging.h"
+#pragma comment(lib, "../external/lib/dinput.lib")
+#pragma comment(lib, "../external/lib/dxguid.lib")
 
 struct ModifierKey InputCapture::modifierKeys[] = 
 {
@@ -236,6 +238,8 @@ struct Event InputCapture::eventList[] =
 	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SWITCH_TO_TASER,       "Switch to Hourglass Window"}
 };
 
+std::map<SingleInput,SingleInput> InputCapture::inputMapping;
+std::map<SingleInput,WORD> InputCapture::eventMapping;
 
 InputCapture::InputCapture()
 {
@@ -508,6 +512,12 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
 
 	// Now doing the event map.
+
+	if (!hWnd){
+		// I don't want to process events!
+		return;
+	}
+
 	// The code is almost the same, couldn't we factorise it? By using a single map?
 	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
@@ -880,7 +890,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					for(int i = 0; i < returned; i++)
 					{
 						Event e = eventList[buf[i]];
-						newHotKeys[e.id] = e.defaultInput;
+						newHotKeys[e] = e.defaultInput;
 
 						char line[256];
 
@@ -921,7 +931,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						Event e = eventList[buf[i]];
 						SingleInput si;
 						si.description[0] = '\0';
-						newHotKeys[e.id] = si;
+						newHotKeys[e] = si;
 
 						char line[256];
 
@@ -963,7 +973,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						{
 							inputC->RemoveValueFromEventMap(it->first.id);
 						}
-						eventMapping[it->second] = (it->first).id;
+						//eventMapping[it->second] = (it->first).id;
 					}
 					for(std::map<SingleInput,SingleInput>::iterator it = newGameInput.begin(); it != newGameInput.end(); ++it)
 					{
@@ -971,7 +981,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						{
 							inputC->RemoveValueFromInputMap(&(it->first));
 						}
-						inputMapping[it->second] = it->first;
+						//inputMapping[it->second] = it->first;
 					}
 					unsavedChanges = false;
 				} break;
@@ -1014,8 +1024,8 @@ void InputCapture::PopulateListbox(HWND listbox)
 	else
 		inputNumber = SICount;
 
-	char* key;
-	char* map;
+	char* key = NULL;
+	char* map = NULL;
 	char line[256];
 
 	for(int i=0; i<inputNumber; i++){
