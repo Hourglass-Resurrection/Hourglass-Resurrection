@@ -195,35 +195,42 @@ void DetectWindowsVersion(int *major, int *minor)
 	UINT value = GetWindowsDirectory(filename, MAX_PATH);
 	if(value != 0)
 	{
-		StringCchCat(filename, (size_t)value, _T("\\System32\\svchost.exe"));
+		// Fix for Windows installations in root dirs, GetWindowsDirectory does not include the final slash EXCEPT for when Windows is installed in root.
+		if(filename[value-1] == '\\') filename[value-1] = '\0'; 
 
-		LPDWORD handle = NULL;
+		strcat(filename, "\\System32\\kernel32.dll");
+		debugprintf("Using file '%s' for the detection.", filename);
+
+		//LPDWORD handle = NULL;
 		UINT size = 0;
-		LPBYTE buffer = NULL;
-		DWORD infoSize = GetFileVersionInfoSize(filename, handle);
+		VS_FIXEDFILEINFO *buffer = NULL;
+		DWORD infoSize = GetFileVersionInfoSize(filename, NULL);
 
 		if(infoSize != 0)
 		{
-			char *verInfo = new char[infoSize];
+			BYTE *verInfo = new BYTE[(unsigned int)infoSize];
 
-			BOOL verInfoSuccess = GetFileVersionInfo(filename, *handle, infoSize, verInfo);
-			if(verInfoSuccess != FALSE)
+			// On some Windows versions the return value of GetFileVersionInfo is not to be trusted.
+			// It may return TRUE even if the function failed, but it always sets the right error code.
+			// So instead of catching the return value of the function, we query GetLastError for the function's return status.
+			GetFileVersionInfo(filename, NULL, infoSize, verInfo);
+			if(GetLastError() == ERROR_SUCCESS)
 			{
-				BOOL parseSuccess = VerQueryValue(verInfo, "\\",(LPVOID*)&buffer, &size);
+				BOOL parseSuccess = VerQueryValueA(verInfo, "\\", (LPVOID*)&buffer, &size);
 				if (parseSuccess != FALSE && size > 0)
 				{
-					if (((VS_FIXEDFILEINFO *)verInfo)->dwSignature == 0xFEEF04BD)
+					if (buffer->dwSignature == 0xFEEF04BD)
 					{
 						/* 
-						   svchost.exe versions and their Windows counter parts:
+						   kernel32.dll versions and their Windows counter parts:
 						   5.2 = XP
 						   6.0 = Vista
 						   6.1 = Win7
 						   6.2 = Win8
 						   Now don't these remind a lot of the actual windows versions?
 						*/
-						*major = HIWORD(((VS_FIXEDFILEINFO *)verInfo)->dwFileVersionMS);
-						*minor = LOWORD(((VS_FIXEDFILEINFO *)verInfo)->dwFileVersionMS);
+						*major = HIWORD(buffer->dwFileVersionMS);
+						*minor = LOWORD(buffer->dwFileVersionMS);
 
 						delete [] verInfo; // We no longer need to hold on to this.
 						
