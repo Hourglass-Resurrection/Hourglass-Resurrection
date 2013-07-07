@@ -201,8 +201,9 @@ void DetectWindowsVersion(int *major, int *minor)
 		strcat(filename, "\\System32\\kernel32.dll");
 		debugprintf("Using file '%s' for the detection.", filename);
 
-		//LPDWORD handle = NULL;
 		UINT size = 0;
+
+		// Despite being a pointer this must NOT be deleted by us, it will be taken care of properly by the destructors of the other structures when we delete verInfo.
 		VS_FIXEDFILEINFO *buffer = NULL;
 		DWORD infoSize = GetFileVersionInfoSize(filename, NULL);
 
