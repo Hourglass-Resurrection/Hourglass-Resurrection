@@ -2355,9 +2355,9 @@ void CheckDialogChanges(int frameCount)
 			EnableWindow(GetDlgItem(hWnd, IDC_RADIO_THREAD_WRAP), !started);
 			EnableWindow(GetDlgItem(hWnd, IDC_RADIO_THREAD_ALLOW), !started);
 		}
-		SendMessage(GetDlgItem(hWnd, IDC_TEXT_EXE), EM_SETREADONLY, started, 0);
+		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_EXE), EM_SETREADONLY, started, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_TEXT_MOVIE), EM_SETREADONLY, started, 0);
+		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_MOVIE), EM_SETREADONLY, started, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_MOVIEBROWSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_GAMEBROWSE), !started);
@@ -7012,7 +7012,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				char title [256];
 				sprintf(title, "Hourglass v%d", VERSION);
 #ifdef _DEBUG
-				strcat(title, "? (debug)");
+				strcat(title, " (debug build)");
 #endif
 				SetWindowTextA(hDlg, title);
 			}
@@ -8247,6 +8247,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						char tmp_movie[MAX_PATH+1];
 						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_MOVIE), tmp_movie, MAX_PATH);
 						NormalizePath(tmp_movie, tmp_movie);
+						
+						// HACK... TODO: Fix this properly, by completing TODO above!
+						if(tmp_movie[0] == '\0') break; // No movie loaded, don't go forward with anything.
+
 						EnableDisablePlayRecordButtons(hDlg);
 						movienameCustomized = tmp_movie[0] != '\0';
 
