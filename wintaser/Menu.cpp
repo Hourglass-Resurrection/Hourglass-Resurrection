@@ -87,7 +87,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	MENU_L(MainMenu, i++, Flags, (UINT)Exec, "", "&Runtime", 0);
 	MENU_L(MainMenu, i++, Flags, (UINT)Input, "", "&Input", 0);
 	MENU_L(MainMenu, i++, Flags, (UINT)TAS_Tools, "", "&Tools", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Avi, "", (aviMode&&started&&(aviFrameCount||aviSoundFrameCount)) ? ((aviFrameCount&&aviSoundFrameCount)?"&AVI!!":"&AVI!") : "&AVI", 0);
+	MENU_L(MainMenu, i++, Flags, (UINT)Avi, "", (localTASflags.aviMode&&started&&(aviFrameCount||aviSoundFrameCount)) ? ((aviFrameCount&&aviSoundFrameCount)?"&AVI!!":"&AVI!") : "&AVI", 0);
 //	MENU_L(MainMenu, i++, Flags, (UINT)Help, "", "&Help", 0);
 
 
@@ -112,9 +112,9 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
 
 	MENU_L(Files, i++, Flags | ((started||!exeFileExists)?MF_GRAYED:0), ID_FILES_RECORDMOV, "\tCtrl+R", "&Record New Movie...", started ? "must stop running first" : "must open an executable first");
-	MENU_L(Files, i++, Flags | ((!started||playback)?MF_GRAYED:0), ID_FILES_BACKUPMOVIE, "", "Backup Movie to File...", "Must be recording");
+	MENU_L(Files, i++, Flags | ((!started||localTASflags.playback)?MF_GRAYED:0), ID_FILES_BACKUPMOVIE, "", "Backup Movie to File...", "Must be recording");
 	//MENU_L(Files, i++, Flags | (!started?MF_GRAYED:0), ID_FILES_RESUMEMOVAS, "", (playback||!started) ? "Resume Recording to &Different File..." : "Continue Recording to &Different File...", "must be running");
-	MENU_L(Files, i++, Flags | ((!started||!playback||finished)?MF_GRAYED:0), ID_FILES_RESUMERECORDING, "", "Resume Recording from Now", "movie must be playing");
+	MENU_L(Files, i++, Flags | ((!started||!localTASflags.playback||finished)?MF_GRAYED:0), ID_FILES_RESUMERECORDING, "", "Resume Recording from Now", "movie must be playing");
 	//MENU_L(Files, i++, Flags | ((!started||finished)?MF_GRAYED:0), ID_FILES_SPLICE, "", "Splice...", "movie must be playing or recording");
 
 	InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
@@ -198,17 +198,17 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	
 	i = 0;
 
-	MENU_L(Graphics, i++, Flags | (!forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
+	MENU_L(Graphics, i++, Flags | (!localTASflags.forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
 	InsertMenu(Graphics, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Graphics, i++, Flags | (!forceSoftware ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_FORCESOFTWARE, "", "&Allow Hardware Acceleration", "can't change while running");
-	MENU_L(Graphics, i++, Flags | MF_POPUP | ((forceSoftware||started) ? MF_GRAYED : 0), (UINT)GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
+	MENU_L(Graphics, i++, Flags | (!localTASflags.forceSoftware ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_FORCESOFTWARE, "", "&Allow Hardware Acceleration", "can't change while running");
+	MENU_L(Graphics, i++, Flags | MF_POPUP | ((localTASflags.forceSoftware||started) ? MF_GRAYED : 0), (UINT)GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
 
 	// GraphicsMemory Menu
 	i = 0;
-	MENU_L(GraphicsMemory, i++, Flags | ((forceSurfaceMemory == 0) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_DONTCARE, "", "&Let Game Choose", 0);
-	MENU_L(GraphicsMemory, i++, Flags | ((forceSurfaceMemory == 1) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_SYSTEM, "", "&System Memory               (Slow Draw, Fast Read)", 0);
-	MENU_L(GraphicsMemory, i++, Flags | ((forceSurfaceMemory == 2) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_NONLOCAL, "", "&Non-Local Video Memory (Varies)", 0);
-	MENU_L(GraphicsMemory, i++, Flags | ((forceSurfaceMemory == 3) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_LOCAL, "", "Local &Video Memory        (Fast Draw, Slow Read)", 0);
+	MENU_L(GraphicsMemory, i++, Flags | ((localTASflags.forceSurfaceMemory == 0) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_DONTCARE, "", "&Let Game Choose", 0);
+	MENU_L(GraphicsMemory, i++, Flags | ((localTASflags.forceSurfaceMemory == 1) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_SYSTEM, "", "&System Memory               (Slow Draw, Fast Read)", 0);
+	MENU_L(GraphicsMemory, i++, Flags | ((localTASflags.forceSurfaceMemory == 2) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_NONLOCAL, "", "&Non-Local Video Memory (Varies)", 0);
+	MENU_L(GraphicsMemory, i++, Flags | ((localTASflags.forceSurfaceMemory == 3) ? MF_CHECKED : MF_UNCHECKED), ID_GRAPHICS_MEM_LOCAL, "", "Local &Video Memory        (Fast Draw, Slow Read)", 0);
 
 
 	// Execution Menu
@@ -266,63 +266,63 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// Fast-Forward Submenu
 	i = 0;
-	MENU_L(TimeFastForward, i++, Flags | ((fastForwardFlags&FFMODE_FRONTSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_FRONTSKIP, "", "Frontbuffer Frameskip", 0);
-	MENU_L(TimeFastForward, i++, Flags | ((fastForwardFlags&FFMODE_BACKSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_BACKSKIP, "", "Backbuffer Frameskip", 0);
-	MENU_L(TimeFastForward, i++, Flags | ((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))?MF_CHECKED:MF_UNCHECKED) | (recoveringStale ? MF_GRAYED : 0), ID_TIME_FF_SOUNDSKIP, "", "Soundskip", "always on while recovering stale");
-	MENU_L(TimeFastForward, i++, Flags | ((fastForwardFlags&FFMODE_RAMSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_RAMSKIP, "", "RAM Search/Watch Skip", 0);
-	MENU_L(TimeFastForward, i++, Flags | ((fastForwardFlags&FFMODE_SLEEPSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_SLEEPSKIP, "", "Sleep Skip", 0);
-	MENU_L(TimeFastForward, i++, Flags | ((fastForwardFlags&FFMODE_WAITSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_WAITSKIP, "", "Wait Skip", 0);
+	MENU_L(TimeFastForward, i++, Flags | ((localTASflags.fastForwardFlags&FFMODE_FRONTSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_FRONTSKIP, "", "Frontbuffer Frameskip", 0);
+	MENU_L(TimeFastForward, i++, Flags | ((localTASflags.fastForwardFlags&FFMODE_BACKSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_BACKSKIP, "", "Backbuffer Frameskip", 0);
+	MENU_L(TimeFastForward, i++, Flags | ((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))?MF_CHECKED:MF_UNCHECKED) | (recoveringStale ? MF_GRAYED : 0), ID_TIME_FF_SOUNDSKIP, "", "Soundskip", "always on while recovering stale");
+	MENU_L(TimeFastForward, i++, Flags | ((localTASflags.fastForwardFlags&FFMODE_RAMSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_RAMSKIP, "", "RAM Search/Watch Skip", 0);
+	MENU_L(TimeFastForward, i++, Flags | ((localTASflags.fastForwardFlags&FFMODE_SLEEPSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_SLEEPSKIP, "", "Sleep Skip", 0);
+	MENU_L(TimeFastForward, i++, Flags | ((localTASflags.fastForwardFlags&FFMODE_WAITSKIP)?MF_CHECKED:MF_UNCHECKED), ID_TIME_FF_WAITSKIP, "", "Wait Skip", 0);
 
 	// Time Rate Submenu
 	i = 0;
-	MENU_L(TimeRate, i++, Flags | ((timescale==timescaleDivisor)?MF_GRAYED:0), ID_TIME_RATE_FASTER, "", "Speed &Up", "already at 100%");
-	MENU_L(TimeRate, i++, Flags | ((timescale*8==timescaleDivisor)?MF_GRAYED:0), ID_TIME_RATE_SLOWER, "", "Slow &Down", "already at slowest option");
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale==localTASflags.timescaleDivisor)?MF_GRAYED:0), ID_TIME_RATE_FASTER, "", "Speed &Up", "already at 100%");
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*8==localTASflags.timescaleDivisor)?MF_GRAYED:0), ID_TIME_RATE_SLOWER, "", "Slow &Down", "already at slowest option");
 	InsertMenu(TimeRate, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(TimeRate, i++, Flags | ((timescale==timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_100, "", "&100% (normal speed)", 0);
-	MENU_L(TimeRate, i++, Flags | ((timescale*4==timescaleDivisor*3)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_75, "", "75%", 0);
-	MENU_L(TimeRate, i++, Flags | ((timescale*2==timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_50, "", "50%", 0);
-	MENU_L(TimeRate, i++, Flags | ((timescale*4==timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_25, "", "25%", 0);
-	MENU_L(TimeRate, i++, Flags | ((timescale*8==timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_12, "", "12%", 0);
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_100, "", "&100% (normal speed)", 0);
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*4==localTASflags.timescaleDivisor*3)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_75, "", "75%", 0);
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*2==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_50, "", "50%", 0);
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*4==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_25, "", "25%", 0);
+	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*8==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_12, "", "12%", 0);
 
 	// Multithreading Submenu
 	i = 0;
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_THREADS_DISABLE, "", "&Disable (prevent thread creation)", 0);
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 1)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode>=2?MF_GRAYED:0), ID_EXEC_THREADS_WRAP, "", "&Wrap (recycle threads)", "can't set while running after normal threads created");
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 2)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_ALLOW, "", "&Allow (normal thread creation)", "can't set while running after wrapped threads created");
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 3)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_KNOWN, "", "Allow &known threads only", "can't set while running after wrapped threads created");
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 4)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_UNKNOWN, "", "Allow &unknown threads only", "can't set while running after wrapped threads created");
-	MENU_L(ExecMultithreading, i++, Flags | ((threadMode == 5)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_TRUSTED, "", "Allow &trusted threads only", "can't set while running after wrapped threads created");
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_THREADS_DISABLE, "", "&Disable (prevent thread creation)", 0);
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 1)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode>=2?MF_GRAYED:0), ID_EXEC_THREADS_WRAP, "", "&Wrap (recycle threads)", "can't set while running after normal threads created");
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 2)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_ALLOW, "", "&Allow (normal thread creation)", "can't set while running after wrapped threads created");
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 3)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_KNOWN, "", "Allow &known threads only", "can't set while running after wrapped threads created");
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 4)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_UNKNOWN, "", "Allow &unknown threads only", "can't set while running after wrapped threads created");
+	MENU_L(ExecMultithreading, i++, Flags | ((localTASflags.threadMode == 5)?MF_CHECKED:MF_UNCHECKED) | (usedThreadMode==1?MF_GRAYED:0), ID_EXEC_THREADS_TRUSTED, "", "Allow &trusted threads only", "can't set while running after wrapped threads created");
 	
 
 	// Timers Submenu
 	i = 0;
-	MENU_L(ExecTimers, i++, Flags | ((timersMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_DISABLE, "", "&Disable (prevent timer creation)", 0);
-	MENU_L(ExecTimers, i++, Flags | ((timersMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_SYNC, "", "&Synchronous (run timers at frame boundaries)", 0);
-	MENU_L(ExecTimers, i++, Flags | ((timersMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_ASYNC, "", "&Asynchronous (run timers in separate threads)", 0);
+	MENU_L(ExecTimers, i++, Flags | ((localTASflags.timersMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_DISABLE, "", "&Disable (prevent timer creation)", 0);
+	MENU_L(ExecTimers, i++, Flags | ((localTASflags.timersMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_SYNC, "", "&Synchronous (run timers at frame boundaries)", 0);
+	MENU_L(ExecTimers, i++, Flags | ((localTASflags.timersMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_TIMERS_ASYNC, "", "&Asynchronous (run timers in separate threads)", 0);
 
 	// Message Sync Submenu
 	i = 0;
-	MENU_L(ExecMessageSync, i++, Flags | ((messageSyncMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_SYNC, "", "&Synchronous (no timeouts)", 0);
-	MENU_L(ExecMessageSync, i++, Flags | ((messageSyncMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_SEMISYNC, "", "Semi-S&ynchronous (some timeouts)", 0);
-	MENU_L(ExecMessageSync, i++, Flags | ((messageSyncMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_ASYNC, "", "&Asynchronous (any timeouts)", 0);
-	MENU_L(ExecMessageSync, i++, Flags | ((messageSyncMode == 3)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_DESYNC, "", "&Unchecked (native messaging)", 0);
+	MENU_L(ExecMessageSync, i++, Flags | ((localTASflags.messageSyncMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_SYNC, "", "&Synchronous (no timeouts)", 0);
+	MENU_L(ExecMessageSync, i++, Flags | ((localTASflags.messageSyncMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_SEMISYNC, "", "Semi-S&ynchronous (some timeouts)", 0);
+	MENU_L(ExecMessageSync, i++, Flags | ((localTASflags.messageSyncMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_ASYNC, "", "&Asynchronous (any timeouts)", 0);
+	MENU_L(ExecMessageSync, i++, Flags | ((localTASflags.messageSyncMode == 3)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_MESSAGES_DESYNC, "", "&Unchecked (native messaging)", 0);
 
 	// Wait Sync Submenu
 	i = 0;
-	MENU_L(ExecWaitSync, i++, Flags | ((waitSyncMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_SYNCWAIT, "", "Synchronous &Wait (infinite timeouts)", 0);
-	MENU_L(ExecWaitSync, i++, Flags | ((waitSyncMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_SYNCSKIP, "", "Synchronous &Skip (limited timeouts)", 0);
-	MENU_L(ExecWaitSync, i++, Flags | ((waitSyncMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_ASYNC, "", "&Asynchronous (unchecked waits)", 0);
+	MENU_L(ExecWaitSync, i++, Flags | ((localTASflags.waitSyncMode == 0)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_SYNCWAIT, "", "Synchronous &Wait (infinite timeouts)", 0);
+	MENU_L(ExecWaitSync, i++, Flags | ((localTASflags.waitSyncMode == 1)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_SYNCSKIP, "", "Synchronous &Skip (limited timeouts)", 0);
+	MENU_L(ExecWaitSync, i++, Flags | ((localTASflags.waitSyncMode == 2)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_WAITSYNC_ASYNC, "", "&Asynchronous (unchecked waits)", 0);
 
 	// Dll Loading Submenu	
 	i = 0;
-	MENU_L(ExecDlls, i++, Flags | ((allowLoadInstalledDlls)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_DLLS_INSTALLED, "", "Allow loading any custom/installed DLLs (e.g. Fraps) (can affect sync)", 0);
-	MENU_L(ExecDlls, i++, Flags | ((allowLoadUxtheme)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_DLLS_UXTHEME, "", "Allow loading uxtheme.dll (for non-classic window styles on XP)", 0);
+	MENU_L(ExecDlls, i++, Flags | ((localTASflags.allowLoadInstalledDlls)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_DLLS_INSTALLED, "", "Allow loading any custom/installed DLLs (e.g. Fraps) (can affect sync)", 0);
+	MENU_L(ExecDlls, i++, Flags | ((localTASflags.allowLoadUxtheme)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_DLLS_UXTHEME, "", "Allow loading uxtheme.dll (for non-classic window styles on XP)", 0);
 	InsertMenu(ExecDlls, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(ExecDlls, i++, Flags | ((runDllLast)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_DLLS_RUNLAST, "", "Allow other DLLs to run first (this is a hack currently required for RotateGear)", 0);
 
 	// Locale Submenu	
 	i = 0;
-	int curAppLocale = appLocale ? appLocale : tempAppLocale;
+	int curAppLocale = localTASflags.appLocale ? localTASflags.appLocale : tempAppLocale;
 	MENU_L(Locale, i++, Flags | ((curAppLocale==0)?MF_CHECKED:MF_UNCHECKED) | ((tempAppLocale&&started)?MF_GRAYED:0), ID_EXEC_LOCALE_SYSTEM, "", "Use system locale", "movie has forced non-system locale");
 	MENU_L(Locale, i++, Flags | ((curAppLocale==1041)?MF_CHECKED:MF_UNCHECKED) | ((!curAppLocale&&started)?MF_GRAYED:0), ID_EXEC_LOCALE_JAPANESE, "", "Force &Japanese locale", "can't enable while running");	
 	MENU_L(Locale, i++, Flags | ((curAppLocale==2052)?MF_CHECKED:MF_UNCHECKED) | ((!curAppLocale&&started)?MF_GRAYED:0), ID_EXEC_LOCALE_CHINESE, "", "Force &Chinese (Simplified) locale", "can't enable while running");	
@@ -334,7 +334,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	MENU_L(Performance, i++, Flags | ((traceEnabled)?MF_CHECKED:MF_UNCHECKED) | (started?MF_GRAYED:0), ID_DEBUGLOG_TOGGLETRACEENABLE, "", "Load All Symbols and dbghelp.dll", "can't change while running");
 	MENU_L(Performance, i++, Flags | ((crcVerifyEnabled)?MF_CHECKED:MF_UNCHECKED) | (started?MF_GRAYED:0), ID_DEBUGLOG_TOGGLECRCVERIFY, "", "Check CRCs on movie playback", "can't change while running");
 	InsertMenu(Performance, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Performance, i++, Flags | ((storeVideoMemoryInSavestates)?MF_CHECKED:MF_UNCHECKED), ID_PERFORMANCE_TOGGLESAVEVIDMEM, "", "Store Video Memory in Savestates", 0);
+	MENU_L(Performance, i++, Flags | ((localTASflags.storeVideoMemoryInSavestates)?MF_CHECKED:MF_UNCHECKED), ID_PERFORMANCE_TOGGLESAVEVIDMEM, "", "Store Video Memory in Savestates", 0);
 	MENU_L(Performance, i++, Flags | ((storeGuardedPagesInSavestates)?MF_CHECKED:MF_UNCHECKED), ID_PERFORMANCE_TOGGLESAVEGUARDED, "", "Store Guarded Memory Pages in Savestates", 0);
 	InsertMenu(Performance, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Performance, i++, Flags | (!started?MF_GRAYED:0), ID_PERFORMANCE_DEALLOCSTATES, "", "Discard All Savestates Now", "must be running");
@@ -343,10 +343,10 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// Debug Log Submenu
 	i = 0;
-	MENU_L(DebugLogging, i++, Flags | ((debugPrintMode==0)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DISABLED, "", "Disabled", 0);
-	if(debugPrintMode==1 || IsDebuggerPresent())
-		MENU_L(DebugLogging, i++, Flags | ((debugPrintMode==1)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DEBUGGER, "", "Send to Debugger", 0);
-	MENU_L(DebugLogging, i++, Flags | ((debugPrintMode==2)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_LOGFILE, "", "Write to Log File", 0);
+	MENU_L(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==0)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DISABLED, "", "Disabled", 0);
+	if(localTASflags.debugPrintMode==1 || IsDebuggerPresent())
+		MENU_L(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==1)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DEBUGGER, "", "Send to Debugger", 0);
+	MENU_L(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==2)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_LOGFILE, "", "Write to Log File", 0);
 	InsertMenu(DebugLogging, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(DebugLogging, i++, Flags | MF_POPUP, (UINT)DebugLoggingInclude, "", "&Print Categories", 0);
 	MENU_L(DebugLogging, i++, Flags | MF_POPUP, (UINT)DebugLoggingTrace, "", "&Trace Categories", 0);
@@ -466,31 +466,31 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	i = 0;
 
-	MENU_L(Sound, i++, Flags | ((emuMode & EMUMODE_EMULATESOUND) ? MF_CHECKED : MF_UNCHECKED) | (started?MF_GRAYED:0), ID_SOUND_SOFTWAREMIX, "", "&Use Software Mixing", "can't change while running");
-	MENU_L(Sound, i++, Flags | MF_POPUP | (started||!(emuMode&EMUMODE_EMULATESOUND) ? MF_GRAYED : 0), (UINT)SoundFormat, "", "&Format", started ? "can't change while running" : "software mixing must be enabled");
+	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_EMULATESOUND) ? MF_CHECKED : MF_UNCHECKED) | (started?MF_GRAYED:0), ID_SOUND_SOFTWAREMIX, "", "&Use Software Mixing", "can't change while running");
+	MENU_L(Sound, i++, Flags | MF_POPUP | (started||!(localTASflags.emuMode&EMUMODE_EMULATESOUND) ? MF_GRAYED : 0), (UINT)SoundFormat, "", "&Format", started ? "can't change while running" : "software mixing must be enabled");
 	InsertMenu(Sound, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Sound, i++, Flags | ((emuMode & EMUMODE_NOPLAYBUFFERS) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_NOPLAYBUFFERS, "", (emuMode&EMUMODE_EMULATESOUND) ? ((aviMode&2) ? "&Mute Sound" : "&Mute Sound (Skip Mixing)") : "&Mute Sound (Skip Playing)", 0);
-	MENU_L(Sound, i++, Flags | ((emuMode & EMUMODE_VIRTUALDIRECTSOUND) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_VIRTUALDIRECTSOUND, "", /*(emuMode&EMUMODE_EMULATESOUND) ? "&Virtual DirectSound" :*/ "&Disable DirectSound Creation", 0);
+	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_NOPLAYBUFFERS) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_NOPLAYBUFFERS, "", (localTASflags.emuMode&EMUMODE_EMULATESOUND) ? ((localTASflags.aviMode&2) ? "&Mute Sound" : "&Mute Sound (Skip Mixing)") : "&Mute Sound (Skip Playing)", 0);
+	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_VIRTUALDIRECTSOUND, "", /*(emuMode&EMUMODE_EMULATESOUND) ? "&Virtual DirectSound" :*/ "&Disable DirectSound Creation", 0);
 
 
 
 	// Sound Format Menu
 	i = 0;
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 8000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_8000, "8000 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 11025 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_11025, "&11025 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 12000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_12000, "12000 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 16000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_16000, "16000 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 22050 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_22050, "&22050 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 24000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_24000, "24000 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 32000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_32000, "32000 Hz");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 44100 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_44100, "&44100 Hz (default)");
-	InsertMenu(SoundFormat, i++, Flags | (audioFrequency == 48000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_48000, "48000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 8000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_8000, "8000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 11025 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_11025, "&11025 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 12000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_12000, "12000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 16000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_16000, "16000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 22050 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_22050, "&22050 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 24000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_24000, "24000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 32000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_32000, "32000 Hz");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 44100 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_44100, "&44100 Hz (default)");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioFrequency == 48000 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_RATE_48000, "48000 Hz");
 	InsertMenu(SoundFormat, i++, MF_SEPARATOR, NULL, NULL);
-	InsertMenu(SoundFormat, i++, Flags | (audioBitsPerSecond == 8 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_BITS_8, "8 bit");
-	InsertMenu(SoundFormat, i++, Flags | (audioBitsPerSecond == 16 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_BITS_16, "16 bit (default)");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioBitsPerSecond == 8 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_BITS_8, "8 bit");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioBitsPerSecond == 16 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_BITS_16, "16 bit (default)");
 	InsertMenu(SoundFormat, i++, MF_SEPARATOR, NULL, NULL);
-	InsertMenu(SoundFormat, i++, Flags | (audioChannels == 1 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_CHANNELS_1, "&Mono");
-	InsertMenu(SoundFormat, i++, Flags | (audioChannels == 2 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_CHANNELS_2, "&Stereo (default)");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioChannels == 1 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_CHANNELS_1, "&Mono");
+	InsertMenu(SoundFormat, i++, Flags | (localTASflags.audioChannels == 2 ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_CHANNELS_2, "&Stereo (default)");
 
 	// TAS Tools Menu
 	MENU_L(TAS_Tools,i++,Flags,ID_RAM_WATCH,"","RAM &Watch", 0);
@@ -552,12 +552,12 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// AVI Menu
 //	InsertMenu(Avi, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Avi,i++,Flags | ((aviMode&(1|2))==(1|2)?MF_CHECKED:MF_UNCHECKED) | ((started&&!(emuMode&EMUMODE_EMULATESOUND))?MF_GRAYED:0),ID_AVI_BOTH,"","Capture Video and Audio", "software sound mixing must be enabled");
-	MENU_L(Avi,i++,Flags | ((aviMode&(1|2))==(1  )?MF_CHECKED:MF_UNCHECKED),ID_AVI_VIDEO,"","Capture Video Only", 0);
-	MENU_L(Avi,i++,Flags | ((aviMode&(1|2))==(  2)?MF_CHECKED:MF_UNCHECKED) | ((started&&!(emuMode&EMUMODE_EMULATESOUND))?MF_GRAYED:0),ID_AVI_AUDIO,"","Capture Audio Only", "software sound mixing must be enabled");
-	MENU_L(Avi,i++,Flags | ((aviMode&(1|2))==( 0 )?MF_CHECKED:MF_UNCHECKED),ID_AVI_NONE,"",aviMode ? "Stop / Disable" : "AVI Capture Disabled", 0);
+	MENU_L(Avi,i++,Flags | ((localTASflags.aviMode&(1|2))==(1|2)?MF_CHECKED:MF_UNCHECKED) | ((started&&!(localTASflags.emuMode&EMUMODE_EMULATESOUND))?MF_GRAYED:0),ID_AVI_BOTH,"","Capture Video and Audio", "software sound mixing must be enabled");
+	MENU_L(Avi,i++,Flags | ((localTASflags.aviMode&(1|2))==(1  )?MF_CHECKED:MF_UNCHECKED),ID_AVI_VIDEO,"","Capture Video Only", 0);
+	MENU_L(Avi,i++,Flags | ((localTASflags.aviMode&(1|2))==(  2)?MF_CHECKED:MF_UNCHECKED) | ((started&&!(localTASflags.emuMode&EMUMODE_EMULATESOUND))?MF_GRAYED:0),ID_AVI_AUDIO,"","Capture Audio Only", "software sound mixing must be enabled");
+	MENU_L(Avi,i++,Flags | ((localTASflags.aviMode&(1|2))==( 0 )?MF_CHECKED:MF_UNCHECKED),ID_AVI_NONE,"",localTASflags.aviMode ? "Stop / Disable" : "AVI Capture Disabled", 0);
 	InsertMenu(Avi, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Avi,i++,Flags | ((!aviMode||!started||(!aviFrameCount&&!aviSoundFrameCount))?MF_GRAYED:0),ID_AVI_SPLITNOW,"","Split AVI now", "must be capturing");
+	MENU_L(Avi,i++,Flags | ((!localTASflags.aviMode||!started||(!aviFrameCount&&!aviSoundFrameCount))?MF_GRAYED:0),ID_AVI_SPLITNOW,"","Split AVI now", "must be capturing");
 	//MENU_L(Avi,i++,Flags,ID_AVI_SETSPLIT,"","Split AVI after...", 0);
 
 

@@ -82,6 +82,7 @@ BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 static void EnableDisablePlayRecordButtons(HWND hDlg);
 
 // Globalized the TAS-flags struct, should reduce memory usage some.
+/*
 TasFlags localTASflags =
 {
 	false, //playback
@@ -118,6 +119,7 @@ TasFlags localTASflags =
 	LCF_NONE|LCF_NONE, //includeLogFlags|traceLogFlags,
 	LCF_ERROR, //excludeLogFlags
 };
+*/
 
 //int debugPrintMode = 2;
 

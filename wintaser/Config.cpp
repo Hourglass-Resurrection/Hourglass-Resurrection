@@ -1,54 +1,93 @@
 #include "Config.h"
-#include <stdio.h>
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
+#include <stdio.h>
 
 #include "ramwatch.h"
 #include "logging.h"
-
+#include "../shared/version.h"
 
 namespace Config{
 
-	int audioFrequency;
-	int audioBitsPerSecond;
-	int audioChannels;
+	//#include "../shared/ipc.h"
+// Globalized the TAS-flags struct, should reduce memory usage some.
+	TasFlags localTASflags =
+	{
+		false, //playback
+		60, //framerate
+		8, //keylimit
+		0, //forceSoftware
+		0, //windowActivateFlags
+		1, //threadMode
+		1, //timersMode
+		1, //messageSyncMode
+		1, //waitSyncMode
+		0, //aviMode
+		EMUMODE_EMULATESOUND, //emuMode | (((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))&&fastforward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((threadMode==0||threadMode==4||threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0),
+		1, //forceWindowed
+		false, //fastforward
+		0, //forceSurfaceMemory
+		44100, //audioFrequency
+		16, //audioBitsPerSecond
+		2, //audioChannels
+		0, //stateLoaded
+		FFMODE_FRONTSKIP | FFMODE_BACKSKIP | FFMODE_RAMSKIP | FFMODE_SLEEPSKIP, //fastForwardFlags,// | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0),
+		6000, // initialTime
+		2, //debugPrintMode
+		1, //timescale
+		1, //timescaleDivisor
+		false, //frameAdvanceHeld
+		0, //allowLoadInstalledDlls
+		0, //allowLoadUxtheme
+		1, //storeVideoMemoryInSavestates
+		0, //appLocale ? appLocale : tempAppLocale
+		VERSION, //movie.version,
+		0, //osvi.dwMajorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
+		0, //osvi.dwMinorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
+		LCF_NONE|LCF_NONE, //includeLogFlags|traceLogFlags,
+		LCF_ERROR, //excludeLogFlags
+	};
+
+	//int audioFrequency;
+	//int audioBitsPerSecond;
+	//int audioChannels;
 	bool paused = false;
 	bool fastforward;
 	bool started = false;
-	bool playback;
+	//bool playback;
 	bool finished = false;
 	bool nextLoadRecords = true; // false if next load switches to playback, true if next load switches to recording... aka readonly/read-only toggle
 	bool recoveringStale = false;
 	bool exeFileExists = false;
 	bool movieFileExists = false;
 	bool movieFileWritable = false;
-	int forceWindowed = 1;
+	//int forceWindowed = 1;
 	int truePause = 0;
 	int onlyHookChildProcesses = 0;
-	int forceSurfaceMemory;
-	int forceSoftware;
-	int aviMode;
-	int emuMode;
-	int fastForwardFlags;
-	int timescale, timescaleDivisor;
-	int allowLoadInstalledDlls, allowLoadUxtheme;
+	//int forceSurfaceMemory;
+	//int forceSoftware;
+	//int aviMode;
+	//int emuMode;
+	//int fastForwardFlags;
+	//int timescale, timescaleDivisor;
+	//int allowLoadInstalledDlls, allowLoadUxtheme;
 	int runDllLast = 0;
 	int advancePastNonVideoFrames = 0;
 	bool advancePastNonVideoFramesConfigured = false;
-	int threadMode;
+	//int threadMode;
 	int usedThreadMode = -1;
-	int timersMode;
-	int messageSyncMode;
-	int waitSyncMode;
+	//int timersMode;
+	//int messageSyncMode;
+	//int waitSyncMode;
 	int aviFrameCount;
 	int aviSoundFrameCount;
 	bool traceEnabled = true;
 	bool crcVerifyEnabled = true;
-	int storeVideoMemoryInSavestates;
+	//int storeVideoMemoryInSavestates;
 	int storeGuardedPagesInSavestates = 1;
-	int appLocale;
+	//int appLocale;
 	int tempAppLocale = 0;
-	int debugPrintMode;
+	//int debugPrintMode;
 	LogCategoryFlag includeLogFlags = LCF_ERROR;
 	LogCategoryFlag traceLogFlags = LCF_NONE;
 	LogCategoryFlag excludeLogFlags = LCF_NONE|LCF_FREQUENT;
@@ -80,14 +119,14 @@ namespace Config{
 		WritePrivateProfileStringA("General", "Command line", commandline, Conf_File);
 
 		SetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
-		SetPrivateProfileIntA("Graphics", "Force Windowed", forceWindowed, Conf_File);
-		SetPrivateProfileIntA("Tools", "Fast Forward Flags", fastForwardFlags, Conf_File);
+		SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
+		SetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
 		if(advancePastNonVideoFramesConfigured)
 			SetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
 		SetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
 		SetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		SetPrivateProfileIntA("Debug", "Debug Logging Mode", debugPrintMode, Conf_File);
+		SetPrivateProfileIntA("Debug", "Debug Logging Mode", localTASflags.debugPrintMode, Conf_File);
 		SetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
 		SetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
@@ -165,14 +204,14 @@ namespace Config{
 		GetPrivateProfileStringA("General", "Command line", commandline, commandline, ARRAYSIZE(commandline), Conf_File);
 
 		nextLoadRecords = 0!=GetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
-		forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", forceWindowed, Conf_File);
-		fastForwardFlags = GetPrivateProfileIntA("Tools", "Fast Forward Flags", fastForwardFlags, Conf_File);
+		localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
+		localTASflags.fastForwardFlags = GetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
 		advancePastNonVideoFrames = GetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
 		advancePastNonVideoFramesConfigured = 0!=GetPrivateProfileIntA("Input", "Skip Lag Frames", 0, Conf_File);
 		inputFocusFlags = GetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
 		hotkeysFocusFlags = GetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		debugPrintMode = GetPrivateProfileIntA("Debug", "Debug Logging Mode", debugPrintMode, Conf_File);
+		localTASflags.debugPrintMode = GetPrivateProfileIntA("Debug", "Debug Logging Mode", localTASflags.debugPrintMode, Conf_File);
 		traceEnabled = 0!=GetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
 		crcVerifyEnabled = 0!=GetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
