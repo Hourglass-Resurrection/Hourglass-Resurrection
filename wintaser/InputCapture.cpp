@@ -686,42 +686,33 @@ void InputCapture::BuildDefaultEventMapping(){
 }
 
 void InputCapture::FormatInputMapping(int index, char* from, char* to){
-	char localFrom[1024] = { '\0' };
-	char localTo[1024] = { '\0' };
 
 	SingleInput* si = &SIList[index];
-	strcpy(localFrom, si->description);
-	from = localFrom;
+	strcpy(from, si->description);
 
 	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		SingleInput toInput = iter->second;
 		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
-			strcat(localTo, fromInput.description);
-			break;
+			strcpy(to, fromInput.description);
+			return;
 		}
 	}
-
-	to = localTo;
 }
 
 void InputCapture::FormatEventMapping(int index, char* from, char* to){
-	char localFrom[1024] = { '\0' };
-	char localTo[1024] = { '\0' };
 
 	Event* ev = &eventList[index];
-	strcpy(localFrom, ev->description);
-	from = localFrom;
+	strcpy(from, ev->description);
 
 	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		WORD toEventId = iter->second;
 		if(ev->id == toEventId){
-			strcat(localTo, fromInput.description);
-			break;
+			strcpy(to, fromInput.description);
+			return;
 		}
 	}
-	to = localTo;
 }
 
 
@@ -1024,9 +1015,9 @@ void InputCapture::PopulateListbox(HWND listbox)
 	else
 		inputNumber = SICount;
 
-	char* key = NULL;
-	char* map = NULL;
-	char line[256];
+	char key[256] = {'\0'};
+	char map[256] = {'\0'};
+	char line[256] = {'\0'};
 
 	for(int i=0; i<inputNumber; i++){
 
