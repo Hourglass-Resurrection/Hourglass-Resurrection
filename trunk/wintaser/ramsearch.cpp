@@ -1449,7 +1449,7 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 	if(disableRamSearchUpdate)
 		return;
 
-	if(Config::fastforward && (RamWatchHWnd || last_rs_possible > 10000 || Config::recoveringStale) && (Config::fastForwardFlags & /*FFMODE_RAMSKIP*/0x08))
+	if(Config::fastforward && (RamWatchHWnd || last_rs_possible > 10000 || Config::recoveringStale) && (Config::localTASflags.fastForwardFlags & /*FFMODE_RAMSKIP*/0x08))
 	{
 		static int count = 0;
 

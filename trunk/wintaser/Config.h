@@ -1,6 +1,6 @@
-#include "../shared/logcat.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "../shared/ipc.h"
 
 #define SetPrivateProfileIntA(lpAppName, lpKeyName, nValue, lpFileName) \
 	sprintf(Str_Tmp, "%d", nValue); \
@@ -19,46 +19,47 @@ enum
 namespace Config{ // A namespace is maybe not the best solution...
 
 	// TODO: Comment *everything* !
-	extern int audioFrequency;
-	extern int audioBitsPerSecond;
-	extern int audioChannels;
+	extern TasFlags localTASflags;
+	//extern int audioFrequency;
+	//extern int audioBitsPerSecond;
+	//extern int audioChannels;
 	extern bool paused;
 	extern bool fastforward;
 	extern bool started;
-	extern bool playback;
+	//extern bool playback;
 	extern bool finished;
 	extern bool nextLoadRecords; // false if next load switches to playback, true if next load switches to recording... aka readonly/read-only toggle
 	extern bool recoveringStale;
 	extern bool exeFileExists;
 	extern bool movieFileExists;
 	extern bool movieFileWritable;
-	extern int forceWindowed;
+	//extern int forceWindowed;
 	extern int truePause;
 	extern int onlyHookChildProcesses;
-	extern int forceSurfaceMemory;
-	extern int forceSoftware;
-	extern int aviMode;
-	extern int emuMode;
-	extern int fastForwardFlags;
-	extern int timescale, timescaleDivisor;
-	extern int allowLoadInstalledDlls, allowLoadUxtheme;
+	//extern int forceSurfaceMemory;
+	//extern int forceSoftware;
+	//extern int aviMode;
+	//extern int emuMode;
+	//extern int fastForwardFlags;
+	//extern int timescale, timescaleDivisor;
+	//extern int allowLoadInstalledDlls, allowLoadUxtheme;
 	extern int runDllLast;
 	extern int advancePastNonVideoFrames;
 	extern bool advancePastNonVideoFramesConfigured;
-	extern int threadMode;
+	//extern int threadMode;
 	extern int usedThreadMode;
-	extern int timersMode;
-	extern int messageSyncMode;
-	extern int waitSyncMode;
+	//extern int timersMode;
+	//extern int messageSyncMode;
+	//extern int waitSyncMode;
 	extern int aviFrameCount;
 	extern int aviSoundFrameCount;
 	extern bool traceEnabled;
 	extern bool crcVerifyEnabled;
-	extern int storeVideoMemoryInSavestates;
+	//extern int storeVideoMemoryInSavestates;
 	extern int storeGuardedPagesInSavestates;
-	extern int appLocale;
+	//extern int appLocale;
 	extern int tempAppLocale;
-	extern int debugPrintMode;
+	//extern int debugPrintMode;
 	extern LogCategoryFlag includeLogFlags;
 	extern LogCategoryFlag traceLogFlags;
 	extern LogCategoryFlag excludeLogFlags;

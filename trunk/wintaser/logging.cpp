@@ -5,14 +5,14 @@
 #include <stdio.h>
 //#include "../shared/logcat.h"
 #include "../shared/ipc.h"
-
+#include "Config.h"
 //#define ANONYMIZE_PRINT_NUMS // for simplifying diffs (debugging)
 
 FILE* debuglogfile = NULL;
 
 CRITICAL_SECTION g_debugPrintCS;
 
-extern TasFlags localTASflags;
+//extern TasFlags localTASflags;
 
 void InitDebugCriticalSection()
 {
@@ -21,7 +21,7 @@ void InitDebugCriticalSection()
 
 int debugprintf(const char * fmt, ...)
 {
-	if(localTASflags.debugPrintMode == 0)
+	if(Config::localTASflags.debugPrintMode == 0)
 		return 0;
 	char str[4096];
 	va_list args;
@@ -56,7 +56,7 @@ int debugprintf(const char * fmt, ...)
 	}
 #endif
 	OutputDebugString(str);
-	if(localTASflags.debugPrintMode == 1)
+	if(Config::localTASflags.debugPrintMode == 1)
 		return rv;
 	EnterCriticalSection(&g_debugPrintCS);
 	if(!debuglogfile)

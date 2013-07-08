@@ -17,7 +17,9 @@
 #pragma comment(lib, "msacm32.lib")
 
 #include "../shared/ipc.h"
-extern TasFlags localTASflags;
+#include "Config.h"
+
+//extern TasFlags localTASflags;
 extern bool tasFlagsDirty;
 extern bool mainMenuNeedsRebuilding; // TODO: Elimitate this from here <----
 
@@ -798,7 +800,7 @@ struct AviFrameQueue
 
 			void OutputVideoFrame()
 			{
-				if(localTASflags.aviMode & 1)
+				if(Config::localTASflags.aviMode & 1)
 				{
 			//		AutoCritSect cs(&s_aviCS);
 
@@ -829,7 +831,7 @@ struct AviFrameQueue
 							CloseAVI();
 							//CheckDlgButton(hWnd, IDC_AVIVIDEO, 0);
 							//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-							localTASflags.aviMode = 0;
+							Config::localTASflags.aviMode = 0;
 							tasFlagsDirty = true;
 						}
 					}
@@ -837,7 +839,7 @@ struct AviFrameQueue
 					aviFrameCount++;
 					if(!bytesWritten)
 					{
-						if(aviEmptyFrameCount == 0 && (localTASflags.aviMode & 2) && aviFrameCount < 300 && !aviSplitCount)
+						if(aviEmptyFrameCount == 0 && (Config::localTASflags.aviMode & 2) && aviFrameCount < 300 && !aviSplitCount)
 							CustomMessageBox("The video encoder you chose is outputting some null frames.\nThis may confuse video players into adding delays and letting the sound stream get out of sync.", "Warning", MB_OK | MB_ICONWARNING);
 						aviEmptyFrameCount++;;
 					}
@@ -857,13 +859,13 @@ struct AviFrameQueue
 
 			void OutputAudioFrame()
 			{
-				if(localTASflags.aviMode & 2)
+				if(Config::localTASflags.aviMode & 2)
 				{
 					if(!audioConverterStream)
 						return;
 
 					double nextAviSoundSecondsCount;
-					if((localTASflags.aviMode & 1) /*&& (framerate <= 0)*/)
+					if((Config::localTASflags.aviMode & 1) /*&& (framerate <= 0)*/)
 					{
 					//	// try to correct for if the game sends us more audio than video data
 						nextAviSoundSecondsCount = aviSoundSecondsCount + inAudioSeconds;
@@ -904,13 +906,13 @@ struct AviFrameQueue
 							CloseAVI();
 							//CheckDlgButton(hWnd, IDC_AVIVIDEO, 0);
 							//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-							localTASflags.aviMode = 0;
+							Config::localTASflags.aviMode = 0;
 							tasFlagsDirty = true;
 						}
 					}
 
 					aviSoundSampleCount += audioFrameSamples;
-					if((localTASflags.aviMode & 1) /*&& (framerate <= 0)*/)
+					if((Config::localTASflags.aviMode & 1) /*&& (framerate <= 0)*/)
 					{
 						aviSoundSecondsCount = nextAviSoundSecondsCount;
 						//int prevAviSoundFrameCount = aviSoundFrameCount;
@@ -1036,7 +1038,7 @@ void CloseAVI()
 	delete aviFrameQueue;
 	aviFrameQueue = NULL;
 
-	localTASflags.aviMode = 0;
+	Config::localTASflags.aviMode = 0;
 	aviSplitCount = 0;
 	aviSplitDiscardCount = 0;
 
@@ -1111,11 +1113,11 @@ void SetPaletteEntriesPointer(void* pointer)
 
 bool OpenAVIFile(int width, int height, int bpp, int fps)
 {
-	int oldAviMode = localTASflags.aviMode;
+	int oldAviMode = Config::localTASflags.aviMode;
 	int oldAviSplitCount = aviSplitCount;
 	int oldAviSplitDiscardCount = aviSplitDiscardCount;
 	CloseAVI();
-	localTASflags.aviMode = oldAviMode;
+	Config::localTASflags.aviMode = oldAviMode;
 	aviSplitCount = oldAviSplitCount;
 	aviSplitDiscardCount = oldAviSplitDiscardCount;
 
@@ -1266,10 +1268,10 @@ chooseAnotherFormat:
 
 void WriteAVIFrame(void* remotePixels, int width, int height, int pitch, int bpp, int rmask, int gmask, int bmask)
 {
-	if(!(localTASflags.aviMode & 1))
+	if(!(Config::localTASflags.aviMode & 1))
 		return; // double-check...
 
-	int fps = localTASflags.framerate;
+	int fps = Config::localTASflags.framerate;
 	if(fps <= 0)
 		fps = 60;
 
@@ -1281,7 +1283,7 @@ void WriteAVIFrame(void* remotePixels, int width, int height, int pitch, int bpp
 		{
 			//CheckDlgButton(hWnd, IDC_AVIVIDEO, 0);
 			//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-			localTASflags.aviMode = 0;
+			Config::localTASflags.aviMode = 0;
 			tasFlagsDirty = true;
 			return;
 		}
@@ -1293,7 +1295,7 @@ void WriteAVIFrame(void* remotePixels, int width, int height, int pitch, int bpp
 
 void RewriteAVIFrame()
 {
-	if((localTASflags.aviMode & 1) && aviCompressedStream)
+	if((Config::localTASflags.aviMode & 1) && aviCompressedStream)
 	{
 		aviFrameQueue->RefillFrame();
 	}
@@ -1303,7 +1305,7 @@ WaveFormat chooseFormat;
 
 bool ChooseAudioCodec(const LPWAVEFORMATEX defaultFormat)
 {
-	if(localTASflags.framerate <= 0)
+	if(Config::localTASflags.framerate <= 0)
 	{
 		int result = CustomMessageBox("This is a no-framerate movie,\nso audio capture is unlikely to work well.", "Warning", MB_OKCANCEL | MB_ICONWARNING);
 		if(result == IDCANCEL)
@@ -1348,7 +1350,7 @@ int OpenAVIAudioStream()
 		// open the output file if it's not already open
 		if(!aviFile)
 		{
-			if(!(localTASflags.aviMode & 1))
+			if(!(Config::localTASflags.aviMode & 1))
 			{
 				curAviWidth = 0;
 				curAviHeight = 0;
@@ -1364,7 +1366,7 @@ int OpenAVIAudioStream()
 			{
 				//CheckDlgButton(hWnd, IDC_AVIVIDEO, 0);
 				//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-				localTASflags.aviMode = 0;
+				Config::localTASflags.aviMode = 0;
 				tasFlagsDirty = true;
 				return -1;
 			}
@@ -1385,7 +1387,7 @@ int OpenAVIAudioStream()
 			{
 				// user cancelled
 				//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-				localTASflags.aviMode &= ~2;
+				Config::localTASflags.aviMode &= ~2;
 				tasFlagsDirty = true;
 				return -1;
 			}
@@ -1421,7 +1423,7 @@ int OpenAVIAudioStream()
 			debugprintf("AVIFileCreateStream(audio) failed!\n");
 			NormalMessageBox("AVIFileCreateStream(audio) failed!\nCapture will continue without audio\n", "Error", MB_OK|MB_ICONERROR);
 			//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-			localTASflags.aviMode &= ~2;
+			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
 			return -1;
 		}
@@ -1432,7 +1434,7 @@ int OpenAVIAudioStream()
 			debugprintf("AVIStreamSetFormat(audio) failed!\n");
 			NormalMessageBox("AVIStreamSetFormat(audio) failed!\nCapture will continue without audio\n", "Error", MB_OK|MB_ICONERROR);
 			//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-			localTASflags.aviMode &= ~2;
+			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
 			return -1;
 		}
@@ -1457,7 +1459,7 @@ void WriteAVIAudio()
 		if(res < 0)
 		{
 			//CheckDlgButton(hWnd, IDC_AVIAUDIO, 0);
-			localTASflags.aviMode &= ~2;
+			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
 			return;
 		}
@@ -1523,12 +1525,12 @@ void HandleAviSplitRequests()
 {
 	if(requestedAviSplitCount > aviSplitCount)
 	{
-		int oldAviMode = localTASflags.aviMode;
+		int oldAviMode = Config::localTASflags.aviMode;
 		int oldAviSplitDiscardCount = aviSplitDiscardCount;
 		int oldRequestedAviSplitCount = requestedAviSplitCount;
 		Sleep(200); // this isn't a fix for anything, the proper waits are in place. but it can't hurt...
 		CloseAVI();
-		localTASflags.aviMode = oldAviMode;
+		Config::localTASflags.aviMode = oldAviMode;
 		aviSplitDiscardCount = oldAviSplitDiscardCount;
 		requestedAviSplitCount = oldRequestedAviSplitCount;
 		aviSplitCount = requestedAviSplitCount;
@@ -1553,7 +1555,7 @@ void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, int frameCaptureI
 		RewriteAVIFrame();
 		break;
 	case CAPTUREINFO_TYPE_DDSD:
-		if((localTASflags.aviMode & 1) && frameCaptureInfoRemoteAddr)
+		if((Config::localTASflags.aviMode & 1) && frameCaptureInfoRemoteAddr)
 		{
 			DDSURFACEDESC desc = {0};
 			ReadProcessMemory(captureProcess, frameCaptureInfoRemoteAddr, &desc, sizeof(desc), NULL);
