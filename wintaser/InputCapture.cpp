@@ -338,9 +338,13 @@ void InputCapture::InputToDescription(SingleInput &si) // TODO: Make this better
 			else if(LWin) strcat(si.description, "LWinKey+");
 			else if(RWin) strcat(si.description, "RWinKey+");
 		}
-		strcat(si.description, SIList[(si.key & 0x00FF)].description);
-		
-		return;
+
+		for (int i=0; i<SICount; i++){
+			if (SIList[i].key == (si.key & 0x00FF)){
+				strcat(si.description, SIList[i].description);
+				return;
+			}
+		}		
 	}
 	// TODO: The other devices
 	return;
@@ -661,6 +665,7 @@ void InputCapture::ReassignEvent(int eventListIndex){
 void InputCapture::DefaultEvent(int eventListIndex){
 	Event ev = eventList[eventListIndex];
 	RemoveValueFromEventMap(ev.id);
+	InputToDescription(ev.defaultInput); // Building here the description, quite strange...
 	eventMapping[ev.defaultInput] = ev.id;
 }
 
@@ -681,6 +686,7 @@ void InputCapture::BuildDefaultInputMapping(){
 void InputCapture::BuildDefaultEventMapping(){
 	eventMapping.clear();
 	for (int i=0; i<eventCount; i++){
+		InputToDescription(eventList[i].defaultInput); // Building here the description, quite strange...
 		eventMapping[eventList[i].defaultInput] = eventList[i].id; // The default mapping in stored inside the eventList.
 	}
 }
@@ -688,13 +694,13 @@ void InputCapture::BuildDefaultEventMapping(){
 void InputCapture::FormatInputMapping(int index, char* from, char* to){
 
 	SingleInput* si = &SIList[index];
-	strcpy(from, si->description);
+	strcpy(to, si->description);
 
 	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		SingleInput toInput = iter->second;
 		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
-			strcpy(to, fromInput.description);
+			strcpy(from, fromInput.description);
 			return;
 		}
 	}
@@ -703,13 +709,13 @@ void InputCapture::FormatInputMapping(int index, char* from, char* to){
 void InputCapture::FormatEventMapping(int index, char* from, char* to){
 
 	Event* ev = &eventList[index];
-	strcpy(from, ev->description);
+	strcpy(to, ev->description);
 
 	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		WORD toEventId = iter->second;
 		if(ev->id == toEventId){
-			strcpy(to, fromInput.description);
+			strcpy(from, fromInput.description);
 			return;
 		}
 	}

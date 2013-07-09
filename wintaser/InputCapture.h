@@ -31,7 +31,7 @@ struct SingleInput
 
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const SingleInput &si ) const {
-		return ((device < si.device) || ((device < si.device) && (key < si.key)));
+		return ((device < si.device) || ((device == si.device) && (key < si.key)));
 	}
 };
 
