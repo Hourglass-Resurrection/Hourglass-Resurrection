@@ -7545,8 +7545,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					static int dialogPosX = 0;
 					static int dialogPosY = 0;
 					// Bit of a hack:
-					static const unsigned int dialogSizeX = 681;
-					static const unsigned int dialogSizeY = 529;
+					static unsigned int dialogSizeX = 0;
+					static unsigned int dialogSizeY = 0;
 					
 					// We don't need that anymore.
 					/* 
@@ -7561,12 +7561,17 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONTROLCONF), hWnd, (DLGPROC) &InputCapture::ConfigureInput);
 
+						// Get the coordinates of the Hourglass main window, and the desktop.
 						RECT desktopRect = {};
 						RECT hourglassRect = {};
-
-						// Get the coordinates of the Hourglass main window, and the desktop.
 						GetWindowRect(hWnd, &hourglassRect);
 						GetWindowRect(GetDesktopWindow(), &desktopRect);
+
+						// A little bit of a hack: get the size of the dialog box in pixels.
+						RECT configRect = {};
+						GetWindowRect(HotkeyHWnd, &configRect);
+						dialogSizeY = (configRect.bottom - configRect.top);
+						dialogSizeX = (configRect.right - configRect.left);
 
 						// Attempt creating the window in a cascaded position without using CascadeWindows();
 						dialogPosY = hourglassRect.top + 15;
