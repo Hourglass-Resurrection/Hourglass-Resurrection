@@ -243,6 +243,10 @@ std::map<SingleInput,WORD> InputCapture::eventMapping;
 
 InputCapture::InputCapture()
 {
+	lpDIDMouse = NULL;
+	lpDIDKeyboard = NULL;
+	lpDI = NULL;
+
 	hotkeysbox = NULL;
 	gameinputbox = NULL;
 
@@ -259,6 +263,10 @@ InputCapture::InputCapture()
 
 InputCapture::InputCapture(char* filename) // Construct by loading from file.
 {
+	lpDIDMouse = NULL;
+	lpDIDKeyboard = NULL;
+	lpDI = NULL;
+
 	hotkeysbox = NULL;
 	gameinputbox = NULL;
 
