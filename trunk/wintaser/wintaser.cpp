@@ -7541,7 +7541,13 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				*/
 
 				case ID_INPUT_INPUTS: {
-					RECT rect = {};
+					
+					static int dialogPosX = 0;
+					static int dialogPosY = 0;
+					// Bit of a hack:
+					static const unsigned int dialogSizeX = 681;
+					static const unsigned int dialogSizeY = 529;
+					
 					// We don't need that anymore.
 					/* 
 					if(HotkeyHWnd && HotkeyHWndIsHotkeys)
@@ -7550,12 +7556,33 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						SendMessage(HotkeyHWnd, WM_CLOSE, 0, 0); // we don't currently support having both input dialogs open
 					}
 					*/
-					if(!HotkeyHWnd)
-						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_HOTKEYS), hWnd, (DLGPROC) inputC.ConfigureInput);
+
+					if(HotkeyHWnd == NULL)
+					{
+						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONTROLCONF), hWnd, (DLGPROC) &InputCapture::ConfigureInput);
+
+						RECT desktopRect = {};
+						RECT hourglassRect = {};
+
+						// Get the coordinates of the Hourglass main window, and the desktop.
+						GetWindowRect(hWnd, &hourglassRect);
+						GetWindowRect(GetDesktopWindow(), &desktopRect);
+
+						// Attempt creating the window in a cascaded position without using CascadeWindows();
+						dialogPosY = hourglassRect.top + 15;
+						dialogPosX = hourglassRect.left + 15;
+						// Correct positioning so that we don't spawn (halfly) off-screen if Hourglass' window is in a corner or something.
+						if(dialogPosY < desktopRect.top) dialogPosY = desktopRect.top;
+						if(dialogPosX < desktopRect.left) dialogPosX = desktopRect.left;
+						if((dialogPosY + dialogSizeY) > desktopRect.bottom) dialogPosY = desktopRect.bottom - dialogSizeY;
+						if((dialogPosX + dialogSizeX) > desktopRect.right) dialogPosX = desktopRect.right - dialogSizeX;
+
+						SetWindowPos(HotkeyHWnd, HWND_TOP, dialogPosX, dialogPosY, dialogSizeX, dialogSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
+					}
 					else
 						SetForegroundWindow(HotkeyHWnd);
-					if(rect.right > rect.left && rect.bottom > rect.top)
-						SetWindowPos(HotkeyHWnd, NULL, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, SWP_NOSIZE|SWP_NOZORDER);
+					//if(rect.right > rect.left && rect.bottom > rect.top)
+					//	SetWindowPos(HotkeyHWnd, NULL, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, SWP_NOSIZE|SWP_NOZORDER);
 					// HotkeyHWndIsHotkeys = false;
 				}	break;
 
@@ -8117,6 +8144,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							char str[1024];
 							sprintf(str, "The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exefilename);
 							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+							recursing = false;
 							break;
 						}
 
