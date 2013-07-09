@@ -694,13 +694,13 @@ void InputCapture::BuildDefaultEventMapping(){
 void InputCapture::FormatInputMapping(int index, char* from, char* to){
 
 	SingleInput* si = &SIList[index];
-	strcpy(to, si->description);
+	strcpy(from, si->description);
 
 	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		SingleInput toInput = iter->second;
 		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
-			strcpy(from, fromInput.description);
+			strcpy(to, fromInput.description);
 			return;
 		}
 	}
@@ -709,13 +709,13 @@ void InputCapture::FormatInputMapping(int index, char* from, char* to){
 void InputCapture::FormatEventMapping(int index, char* from, char* to){
 
 	Event* ev = &eventList[index];
-	strcpy(to, ev->description);
+	strcpy(from, ev->description);
 
 	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		WORD toEventId = iter->second;
 		if(ev->id == toEventId){
-			strcpy(from, fromInput.description);
+			strcpy(to, fromInput.description);
 			return;
 		}
 	}
