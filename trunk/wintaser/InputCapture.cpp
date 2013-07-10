@@ -1029,22 +1029,22 @@ void InputCapture::PopulateListbox(HWND listbox)
 	else
 		inputNumber = SICount;
 
-	char key[256] = {'\0'};
-	char map[256] = {'\0'};
+	char mapFrom[256] = {'\0'};
+	char mapTo[256] = {'\0'};
 	char line[256] = {'\0'};
 
 	for(int i=0; i<inputNumber; i++){
 
 		// Get the map strings.
 		if (listbox == hotkeysbox)
-			FormatEventMapping(i, key, map);
+			FormatEventMapping(i, mapFrom, mapTo);
 		else
-			FormatInputMapping(i, key, map);
+			FormatInputMapping(i, mapFrom, mapTo);
 
 		// Build the line.
-		strcpy(line, map);
+		strcpy(line, mapFrom);
 		strcat(line, "\t");
-		strcat(line, key);
+		strcat(line, mapTo);
 
 		// Send it.
 		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) line);
