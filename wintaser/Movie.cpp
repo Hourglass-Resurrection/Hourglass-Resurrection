@@ -37,8 +37,8 @@ Movie::Movie()
 	//bool hadUnsaved = unsaved;
 	//unsaved = false;
 
-	if(movie.frames.size() == 0)
-		return true; // Technically we did "Save" the movie...
+	//if(movie.frames.size() == 0)
+	//	return true; // Technically we did "Save" the movie...
 
 	// Sanity check, needs to be done before we open the file for writing, or we may cause some serious corruption.
 	const char* exefname = movie.exefname;
@@ -169,8 +169,10 @@ Movie::Movie()
 	// ^^^^^^^^^^^^^^^^^^^^^^^^
 	// That is no longer valid since we have a header of variable size
 	// Perhaps we shall introduce a fixed number of null-bytes instead?
-
-	fwrite(&movie.frames[0], sizeof(MovieFrame), movie.frames.size(), file);
+	if(movie.frames.size() > 0)
+	{
+		fwrite(&movie.frames[0], sizeof(MovieFrame), movie.frames.size(), file);
+	}
 
 	fclose(file);
 
