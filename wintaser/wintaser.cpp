@@ -192,7 +192,7 @@ BOOL WINAPI RetryingWriteProcessMemory(IN HANDLE hProcess, IN LPVOID lpBaseAddre
 
 void DetectWindowsVersion(int *major, int *minor)
 {
-	debugprintf("Detecting Windows version...");
+	debugprintf("Detecting Windows version...\n");
 	char filename[MAX_PATH+1];
 	UINT value = GetWindowsDirectory(filename, MAX_PATH);
 	if(value != 0)
@@ -201,7 +201,7 @@ void DetectWindowsVersion(int *major, int *minor)
 		if(filename[value-1] == '\\') filename[value-1] = '\0'; 
 
 		strcat(filename, "\\System32\\kernel32.dll");
-		debugprintf("Using file '%s' for the detection.", filename);
+		debugprintf("Using file '%s' for the detection.\n", filename);
 
 		UINT size = 0;
 
@@ -237,7 +237,7 @@ void DetectWindowsVersion(int *major, int *minor)
 
 						delete [] verInfo; // We no longer need to hold on to this.
 						
-						debugprintf("Detection succeeded, detected version %d.%d", *major, *minor);
+						debugprintf("Detection succeeded, detected version %d.%d\n", *major, *minor);
 						return;
 					}
 				}
@@ -245,7 +245,7 @@ void DetectWindowsVersion(int *major, int *minor)
 			delete [] verInfo; // Destroy this if we failed, we cannot have a memory leak now can we?
 		}
 	}
-	debugprintf("Failed to determinate Windows version, using old unsafe method...");
+	debugprintf("Failed to determinate Windows version, using old unsafe method...\n");
 
 	OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
 	GetVersionEx(&osvi);
