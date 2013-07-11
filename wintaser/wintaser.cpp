@@ -7541,24 +7541,14 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				*/
 
 				case ID_INPUT_INPUTS: {
-					
-					static int dialogPosX = 0;
-					static int dialogPosY = 0;
-					// Bit of a hack:
-					static unsigned int dialogSizeX = 0;
-					static unsigned int dialogSizeY = 0;
-					
-					// We don't need that anymore.
-					/* 
-					if(HotkeyHWnd && HotkeyHWndIsHotkeys)
-					{
-						GetWindowRect(HotkeyHWnd, &rect);
-						SendMessage(HotkeyHWnd, WM_CLOSE, 0, 0); // we don't currently support having both input dialogs open
-					}
-					*/
-
 					if(HotkeyHWnd == NULL)
 					{
+						int dialogPosX = 0;
+						int dialogPosY = 0;
+						
+						static unsigned int dialogSizeX = 0;
+						static unsigned int dialogSizeY = 0;
+
 						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONTROLCONF), hWnd, (DLGPROC) &InputCapture::ConfigureInput);
 
 						// Get the coordinates of the Hourglass main window, and the desktop.
@@ -7568,10 +7558,13 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						GetWindowRect(GetDesktopWindow(), &desktopRect);
 
 						// A little bit of a hack: get the size of the dialog box in pixels.
-						RECT configRect = {};
-						GetWindowRect(HotkeyHWnd, &configRect);
-						dialogSizeY = (configRect.bottom - configRect.top);
-						dialogSizeX = (configRect.right - configRect.left);
+						if(dialogSizeX == 0 || dialogSizeY == 0)
+						{
+							RECT configRect = {};
+							GetWindowRect(HotkeyHWnd, &configRect);
+							dialogSizeY = (configRect.bottom - configRect.top);
+							dialogSizeX = (configRect.right - configRect.left);
+						}
 
 						// Attempt creating the window in a cascaded position without using CascadeWindows();
 						dialogPosY = hourglassRect.top + 15;
@@ -8309,7 +8302,9 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						char movieDirectory[MAX_PATH+1];
 						// TODO: max will call strrchr 3 times in total, perhaps that can be reduced to 2 times?
 						char* dirEnd = max(strrchr(tmp_movie, '\\'), strrchr(tmp_movie, '/'));
-						strncpy(movieDirectory, tmp_movie, (size_t)(dirEnd-tmp_movie+1)); // Pointers-as-values math, yay!
+						unsigned int strLen = dirEnd - tmp_movie + 1; // Pointers-as-values math, yay!
+						strncpy(movieDirectory, tmp_movie, (size_t)strLen);
+						movieDirectory[strLen] = '\0'; // properly null-terminate the string.
 
 						// Attempt to lock the new directory.
 						if(LockDirectory(movieDirectory, MOVIE) == false)
