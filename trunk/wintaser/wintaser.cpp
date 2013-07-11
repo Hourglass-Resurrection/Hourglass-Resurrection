@@ -7931,6 +7931,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_RECORD), false);
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_PLAY), false);
 						movie = Movie();
+						SaveMovie(moviefilename); // Save the new movie.
 						localTASflags.playback = false;
 						nextLoadRecords = true;
 						localTASflags.fastForward = false;
