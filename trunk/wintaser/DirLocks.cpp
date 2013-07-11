@@ -34,7 +34,7 @@ bool LockDirectory(char* directory, LockTypes type)
 
 	char name[MAX_PATH+1];
 	strcpy(name, directory);
-	strcat(name, "/hourglass.lock\0");
+	strcat(name, "hourglass.lock\0");
 	// FILE_FLAG_DELETE_ON_CLOSE is really handy here as it means we don't have to manage the deletion process for the lock-files ourselves.
 	HANDLE rv = CreateFile(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), NULL);
 	if(rv == INVALID_HANDLE_VALUE)
