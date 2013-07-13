@@ -286,7 +286,7 @@ InputCapture::InputCapture(char* filename) // Construct by loading from file.
 	}
 }
 
-bool InputCapture::IsModifier(char key){
+bool InputCapture::IsModifier(unsigned char key){
 	for (int i = 0; i < 8; i++){
 		ModifierKey mkey = modifierKeys[i]; // Damn, no foreach structure in c++...
 		if (mkey.DIK == key)
@@ -295,7 +295,7 @@ bool InputCapture::IsModifier(char key){
 	return false;
 }
 
-char InputCapture::BuildModifier(char* keys){
+char InputCapture::BuildModifier(unsigned char* keys){
 	char modifiers = 0;
 	for (int i = 0; i < 8; i++){
 		ModifierKey mkey = modifierKeys[i];
@@ -358,7 +358,7 @@ void InputCapture::InputToDescription(SingleInput &si) // TODO: Make this better
 	return;
 }
 
-void InputCapture::GetKeyboardState(char* keys){
+void InputCapture::GetKeyboardState(unsigned char* keys){
 	HRESULT rval = lpDIDKeyboard->GetDeviceState(256, keys);
 
 	if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED)){
@@ -472,13 +472,50 @@ void InputCapture::EmptyAllEventMappings(){
 	eventMapping.clear();
 }
 
+unsigned char convertDIKToVK (unsigned char DIK, HKL keyboardLayout){
+	unsigned char VK = MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/3, keyboardLayout) & 0xFF;
+
+	// unfortunately MapVirtualKeyEx is slightly broken, so patch up the results ourselves...
+	// (note that some of the left/right modifier keys get lost too despite MAPVK_VSC_TO_VK_EX)
+	switch(DIK)
+	{
+	case DIK_LEFT:    VK = VK_LEFT; break;
+	case DIK_RIGHT:   VK = VK_RIGHT; break;
+	case DIK_UP:      VK = VK_UP; break;
+	case DIK_DOWN:    VK = VK_DOWN; break;
+	case DIK_PRIOR:   VK = VK_PRIOR; break;
+	case DIK_NEXT:    VK = VK_NEXT; break;
+	case DIK_HOME:    VK = VK_HOME; break;
+	case DIK_END:     VK = VK_END; break;
+	case DIK_INSERT:  VK = VK_INSERT; break;
+	case DIK_DELETE:  VK = VK_DELETE; break;
+	case DIK_DIVIDE:  VK = VK_DIVIDE; break;
+	case DIK_NUMLOCK: VK = VK_NUMLOCK; break;
+	case DIK_LWIN:    VK = VK_LWIN; break;
+	case DIK_RWIN:    VK = VK_RWIN; break;
+	case DIK_RMENU:   VK = VK_RMENU; break;
+	case DIK_RCONTROL:VK = VK_RCONTROL; break;
+		// these work for me, but are here in case other layouts need them
+	case DIK_RSHIFT:  VK = VK_RSHIFT; break;
+	case DIK_LMENU:   VK = VK_LMENU; break;
+	case DIK_LCONTROL:VK = VK_LCONTROL; break;
+	case DIK_LSHIFT:  VK = VK_LSHIFT; break;
+	}
+	return VK;
+}
+
+unsigned char convertDIKToVK (unsigned char DIK){
+	HKL keyboardLayout = GetKeyboardLayout(0);
+	return convertDIKToVK(DIK, keyboardLayout);
+}
+
 void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
 	// We first clear the CurrentInput object.
 	currentI->clear();
 
 	// Get the current keyboard state.
-	char keys[256];
+	unsigned char keys[256];
 	GetKeyboardState(keys);
 
 	// Bulding the modifier from the array of pressed keys.
@@ -500,11 +537,11 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		case SINGLE_INPUT_DI_KEYBOARD:{
 
 			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
-			char fromModifier = (char)(fromInput.key >> 8);
-			char fromKey = (char)(fromInput.key & 0xFF);
+			unsigned char fromModifier = (unsigned char)(fromInput.key >> 8);
+			unsigned char fromKey = (unsigned char)(fromInput.key & 0xFF);
 			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we must insert the corresponding input into the CurrentInput object.
-				currentI->keys[toInput.key] = 1;
+				currentI->keys[convertDIKToVK(toInput.key)] = 1;
 			}
 									  }
 		case SINGLE_INPUT_DI_MOUSE:{
@@ -541,8 +578,8 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		case SINGLE_INPUT_DI_KEYBOARD:{
 
 			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
-			char fromModifier = (char)(fromInput.key >> 8);
-			char fromKey = (char)(fromInput.key & 0xFF);
+			unsigned char fromModifier = (unsigned char)(fromInput.key >> 8);
+			unsigned char fromKey = (unsigned char)(fromInput.key & 0xFF);
 			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
 				// We have a match! Now we just have to send the corresponding message.
 				SendMessage(hWnd, WM_COMMAND, eventId, 777); // TODO: Doc what is 777.
@@ -566,8 +603,8 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
 void InputCapture::NextInput(SingleInput* si){
 
-	char previousKeys[DI_KEY_NUMBER];
-	char currentKeys[DI_KEY_NUMBER];
+	unsigned char previousKeys[DI_KEY_NUMBER];
+	unsigned char currentKeys[DI_KEY_NUMBER];
 	bool somethingPressed = false;
 
 	// Get the previous keyboard state.
