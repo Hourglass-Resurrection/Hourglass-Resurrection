@@ -82,6 +82,8 @@ private:
 	HWND hotkeysbox;
 	HWND gameinputbox;
 
+	unsigned char previousKeys[DI_KEY_NUMBER]; // List of previous key states, needed for events triggering.
+
 	// Return if the key is a modifier.
 	bool IsModifier(unsigned char key);
 
