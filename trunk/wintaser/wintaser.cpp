@@ -7364,6 +7364,24 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					else if(localTASflags.timescale*8 == localTASflags.timescaleDivisor) {localTASflags.timescale = 1; localTASflags.timescaleDivisor = 4; tasFlagsDirty = true;}
 					break;
 
+				case ID_TIME_FRAME_ADVANCE:
+					if(started)
+					{
+						if(!paused)
+						{
+							// if pressed while unpaused, frame advance transitions to paused
+							paused = true;
+
+							if(localTASflags.fastForward)
+								temporaryUnpause = true;
+						}
+						else
+						{
+							// if already paused, pressing frame advance temporarily unpauses
+							temporaryUnpause = true;
+						}
+					}
+					break;
 
 				//case ID_EXEC_SUSPEND:
 				//	SuspendAllExcept(lastKeyThreadId);
