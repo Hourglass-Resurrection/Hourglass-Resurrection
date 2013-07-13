@@ -259,6 +259,8 @@ InputCapture::InputCapture()
 	{
 		BuildDefaultInputMapping();
 	}
+
+	memset(previousKeys, 0, DI_KEY_NUMBER);
 }
 
 InputCapture::InputCapture(char* filename) // Construct by loading from file.
@@ -284,6 +286,9 @@ InputCapture::InputCapture(char* filename) // Construct by loading from file.
 	{
 		BuildDefaultInputMapping();
 	}
+
+	memset(previousKeys, 0, DI_KEY_NUMBER);
+
 }
 
 bool InputCapture::IsModifier(unsigned char key){
@@ -472,6 +477,7 @@ void InputCapture::EmptyAllEventMappings(){
 	eventMapping.clear();
 }
 
+// TODO: Put this somewhere else ?
 unsigned char convertDIKToVK (unsigned char DIK, HKL keyboardLayout){
 	unsigned char VK = MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/3, keyboardLayout) & 0xFF;
 
@@ -519,85 +525,61 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	GetKeyboardState(keys);
 
 	// Bulding the modifier from the array of pressed keys.
-	char modifier = BuildModifier(keys);
+	unsigned short modifier = BuildModifier(keys);
 
 	// We want now to convert the initial inputs to their mapping.
 	// There are two mappings: inputs and events.
-	// We only need to consider the inputs that are actually mapped to something.
-	// So it's better to iterate through the map than through the keys array (I guess).
 
-	// Let's start with the input map first.
-	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
-		SingleInput fromInput = iter->first;
-		SingleInput toInput = iter->second;
-		// We want to map fromInput -> toInput
+	/** Keyboard **/
+	for (int k=0; k<DI_KEY_NUMBER; k++){
 
-		switch (fromInput.device){
+		// If k is a modifier, we don't process it.
+		if (IsModifier(k))
+			continue;
 
-		case SINGLE_INPUT_DI_KEYBOARD:{
+		// If k is not pressed, we skip to the next key.
+		if (!DI_KEY_PRESSED(keys[k]))
+			continue;
 
-			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
-			unsigned char fromModifier = (unsigned char)(fromInput.key >> 8);
-			unsigned char fromKey = (unsigned char)(fromInput.key & 0xFF);
-			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
-				// We have a match! Now we must insert the corresponding input into the CurrentInput object.
-				currentI->keys[convertDIKToVK(toInput.key)] = 1;
-			}
-									  }
-		case SINGLE_INPUT_DI_MOUSE:{
-			// TODO
-								   }
+		// Now we build the SingleInput, and check if it's mapped to something.
+		SingleInput siPressed = {SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, ""};
 
-		case SINGLE_INPUT_DI_JOYSTICK:{
-			// TODO
-									  }
+		/* Input mapping */
+		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
+		if (iterI != inputMapping.end()){
+			// We found a mapping. We need to flag the key in the CurrentInput struct.
+			// As wintasee is dealing with a VK-indexed array, we are doing the conversion here.
+			SingleInput siMapped = iterI->second;
+			currentI->keys[convertDIKToVK(siMapped.key)] = 1;
+		}
 
-		case SINGLE_INPUT_XINPUT_JOYSTICK:{
-			// TODO
-										  }
+		if (!hWnd)
+			continue; // I don't want to process events!
+
+		/* Event mapping */
+
+		// We also have to check that the key was just pressed.
+		if (DI_KEY_PRESSED(previousKeys[k]))
+			continue;
+
+		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressed);
+		if (iterE != eventMapping.end()){ // There is something.
+			WORD eventId = iterE->second;
+			// Now we just have to send the corresponding message.
+			SendMessage(hWnd, WM_COMMAND, eventId, 777); // TODO: Doc what is 777.
 		}
 	}
 
+	// TODO: Mouse, joystick, etc.
 
-
-	// Now doing the event map.
-
-	if (!hWnd){
-		// I don't want to process events!
-		return;
+	// Computing the previousKeys for the next call.
+	// We assume that this function can be called multiple times within a single frame.
+	// But only one call per frame is processing the events.
+	if (hWnd){
+		memmove(previousKeys, keys, DI_KEY_NUMBER);
 	}
 
-	// The code is almost the same, couldn't we factorise it? By using a single map?
-	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
-		SingleInput fromInput = iter->first;
-		WORD eventId = iter->second;
-		// We want to map fromInput -> eventId
 
-		switch (fromInput.device){
-
-		case SINGLE_INPUT_DI_KEYBOARD:{
-
-			// Mapping source is a keyboard, we need to check if the modifiers are identical, and if the key is pressed.
-			unsigned char fromModifier = (unsigned char)(fromInput.key >> 8);
-			unsigned char fromKey = (unsigned char)(fromInput.key & 0xFF);
-			if((fromModifier == modifier) && DI_KEY_PRESSED(keys[fromKey])){
-				// We have a match! Now we just have to send the corresponding message.
-				SendMessage(hWnd, WM_COMMAND, eventId, 777); // TODO: Doc what is 777.
-			}
-									  }
-		case SINGLE_INPUT_DI_MOUSE:{
-			// TODO
-								   }
-
-		case SINGLE_INPUT_DI_JOYSTICK:{
-			// TODO
-									  }
-
-		case SINGLE_INPUT_XINPUT_JOYSTICK:{
-			// TODO
-										  }
-		}
-	}
 }
 
 
