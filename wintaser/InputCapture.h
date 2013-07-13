@@ -83,16 +83,16 @@ private:
 	HWND gameinputbox;
 
 	// Return if the key is a modifier.
-	bool IsModifier(char key);
+	bool IsModifier(unsigned char key);
 
 	// From a keyboard state, builds the char that contains the flags from all pressed modifier keys.
-	char BuildModifier(char* keys);
+	char BuildModifier(unsigned char* keys);
 
 	// Convert a SingleInput struct to a string.
 	void InputToDescription(SingleInput &si);
 
 	// Get the current keyboard state.
-	void GetKeyboardState(char* keys);
+	void GetKeyboardState(unsigned char* keys);
 
 	// Get the next input pressed.
 	void NextInput(SingleInput* si);
