@@ -521,11 +521,17 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	currentI->clear();
 
 	// Get the current keyboard state.
-	unsigned char keys[256];
-	GetKeyboardState(keys);
+	//unsigned char keys[256];
+	GetKeyboardState(currentI->keys);
+
+	// If a mouse is attached, get it's state.
+	if(lpDIDMouse != NULL)
+	{
+		lpDIDMouse->GetDeviceState(sizeof(DIMOUSESTATE), &(currentI->mouse));
+	}
 
 	// Bulding the modifier from the array of pressed keys.
-	unsigned short modifier = BuildModifier(keys);
+	unsigned short modifier = BuildModifier(currentI->keys);
 
 	// We want now to convert the initial inputs to their mapping.
 	// There are two mappings: inputs and events.
@@ -538,7 +544,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// If k is not pressed, we skip to the next key.
-		if (!DI_KEY_PRESSED(keys[k]))
+		if (!DI_KEY_PRESSED(currentI->keys[k]))
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
@@ -576,7 +582,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// We assume that this function can be called multiple times within a single frame.
 	// But only one call per frame is processing the events.
 	if (hWnd){
-		memmove(previousKeys, keys, DI_KEY_NUMBER);
+		memmove(previousKeys, currentI->keys, DI_KEY_NUMBER);
 	}
 
 
