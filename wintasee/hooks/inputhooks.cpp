@@ -19,6 +19,11 @@ DEFINE_LOCAL_GUID(IID_IDirectInputDevice7W,0x57D7C6BD,0x2356,0x11D3,0x8E,0x9D,0x
 DEFINE_LOCAL_GUID(IID_IDirectInputDevice8A,0x54D41080,0xDC15,0x4833,0xA4,0x1B,0x74,0x8F,0x73,0xA3,0x81,0x79);
 DEFINE_LOCAL_GUID(IID_IDirectInputDevice8W,0x54D41081,0xDC15,0x4833,0xA4,0x1B,0x74,0x8F,0x73,0xA3,0x81,0x79);
 
+// Copied out of dxguid for now, I can only assume they have to match the actual DirectInput defines
+// Needed to avoid linker errors.
+DEFINE_LOCAL_GUID(GUID_SysMouse,   0x6F1D2B60,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_SysKeyboard,0x6F1D2B61,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+
 template<typename IDirectInputDeviceN> struct IDirectInputDeviceTraits {};
 template<> struct IDirectInputDeviceTraits<IDirectInputDeviceA>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
 template<> struct IDirectInputDeviceTraits<IDirectInputDeviceW>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
@@ -185,6 +190,10 @@ struct BufferedInput
 	}
 };
 
+// HACK: Something to init GUID to if it's not passed as a param to the class
+// TODO: Implement the hooking in such a way that GUID is ALWAYS needed for this hook.
+static const GUID emptyGUID = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
+
 // TODO: more than keyboard
 template<typename IDirectInputDeviceN>
 class MyDirectInputDevice : public IDirectInputDeviceN
@@ -200,7 +209,12 @@ public:
 	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIACTIONFORMATN LPDIACTIONFORMATN;
 	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEIMAGEINFOHEADERN LPDIDEVICEIMAGEINFOHEADERN;
 
-	MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+	MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_type(emptyGUID), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+	{
+		debugprintf("MyDirectInputDevice created.\n");
+	}
+
+	MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid) : m_device(device), m_type(guid), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
 	{
 		debugprintf("MyDirectInputDevice created.\n");
 	}
@@ -311,56 +325,63 @@ public:
 		// not-so-direct input
 		// since the movie already has to store the VK constants,
 		// try to convert those to DIK key state
-
-		HKL keyboardLayout = MyGetKeyboardLayout(0);
-
-		if(size > 256)
-			size = 256;
-
-		BYTE* keys = (BYTE*)data;
-
-		for(unsigned int i = 0; i < size; i++)
+		if(m_type == GUID_SysKeyboard)
 		{
-			int DIK = i;
-			int VK = MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/3, keyboardLayout) & 0xFF;
+			HKL keyboardLayout = MyGetKeyboardLayout(0);
 
-			// unfortunately MapVirtualKeyEx is slightly broken, so patch up the results ourselves...
-			// (note that some of the left/right modifier keys get lost too despite MAPVK_VSC_TO_VK_EX)
-			switch(DIK)
+			if(size > 256)
+				size = 256;
+
+			BYTE* keys = (BYTE*)data;
+
+			for(unsigned int i = 0; i < size; i++)
 			{
-			case DIK_LEFT:    VK = VK_LEFT; break;
-			case DIK_RIGHT:   VK = VK_RIGHT; break;
-			case DIK_UP:      VK = VK_UP; break;
-			case DIK_DOWN:    VK = VK_DOWN; break;
-			case DIK_PRIOR:   VK = VK_PRIOR; break;
-			case DIK_NEXT:    VK = VK_NEXT; break;
-			case DIK_HOME:    VK = VK_HOME; break;
-			case DIK_END:     VK = VK_END; break;
-			case DIK_INSERT:  VK = VK_INSERT; break;
-			case DIK_DELETE:  VK = VK_DELETE; break;
-			case DIK_DIVIDE:  VK = VK_DIVIDE; break;
-			case DIK_NUMLOCK: VK = VK_NUMLOCK; break;
-			case DIK_LWIN:    VK = VK_LWIN; break;
-			case DIK_RWIN:    VK = VK_RWIN; break;
-			case DIK_RMENU:   VK = VK_RMENU; break;
-			case DIK_RCONTROL:VK = VK_RCONTROL; break;
-			// these work for me, but are here in case other layouts need them
-			case DIK_RSHIFT:  VK = VK_RSHIFT; break;
-			case DIK_LMENU:   VK = VK_LMENU; break;
-			case DIK_LCONTROL:VK = VK_LCONTROL; break;
-			case DIK_LSHIFT:  VK = VK_LSHIFT; break;
+				int DIK = i;
+				int VK = MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/3, keyboardLayout) & 0xFF;
+
+				// unfortunately MapVirtualKeyEx is slightly broken, so patch up the results ourselves...
+				// (note that some of the left/right modifier keys get lost too despite MAPVK_VSC_TO_VK_EX)
+				switch(DIK)
+				{
+				case DIK_LEFT:    VK = VK_LEFT; break;
+				case DIK_RIGHT:   VK = VK_RIGHT; break;
+				case DIK_UP:      VK = VK_UP; break;
+				case DIK_DOWN:    VK = VK_DOWN; break;
+				case DIK_PRIOR:   VK = VK_PRIOR; break;
+				case DIK_NEXT:    VK = VK_NEXT; break;
+				case DIK_HOME:    VK = VK_HOME; break;
+				case DIK_END:     VK = VK_END; break;
+				case DIK_INSERT:  VK = VK_INSERT; break;
+				case DIK_DELETE:  VK = VK_DELETE; break;
+				case DIK_DIVIDE:  VK = VK_DIVIDE; break;
+				case DIK_NUMLOCK: VK = VK_NUMLOCK; break;
+				case DIK_LWIN:    VK = VK_LWIN; break;
+				case DIK_RWIN:    VK = VK_RWIN; break;
+				case DIK_RMENU:   VK = VK_RMENU; break;
+				case DIK_RCONTROL:VK = VK_RCONTROL; break;
+				// these work for me, but are here in case other layouts need them
+				case DIK_RSHIFT:  VK = VK_RSHIFT; break;
+				case DIK_LMENU:   VK = VK_LMENU; break;
+				case DIK_LCONTROL:VK = VK_LCONTROL; break;
+				case DIK_LSHIFT:  VK = VK_LSHIFT; break;
+				}
+
+
+				HOOKFUNC SHORT WINAPI MyGetKeyState(int vKey);
+
+				keys[DIK] = (BYTE)(MyGetKeyState(VK) & 0xFF);
+
+				if(keys[DIK] & 0x80)
+					verbosedebugprintf("PRESSED: DIK 0x%X -> VK 0x%X", DIK, VK);
 			}
-
-
-			HOOKFUNC SHORT WINAPI MyGetKeyState(int vKey);
-
-			keys[DIK] = (BYTE)(MyGetKeyState(VK) & 0xFF);
-
-			if(keys[DIK] & 0x80)
-				verbosedebugprintf("PRESSED: DIK 0x%X -> VK 0x%X", DIK, VK);
+			return DI_OK;
 		}
-
-		return DI_OK;
+		if(m_type == GUID_SysMouse)
+		{
+			// temp placeholder
+			// TODO: Replace this with an actual DIMOUSESTATE struct!
+			return DIERR_NOTACQUIRED;
+		}
 	}
 
 	STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
@@ -414,6 +435,8 @@ public:
 		dinputdebugprintf(__FUNCTION__ " called.\n");
 		if(IsWindow(window))
 			gamehwnd = window;
+		if(m_type == GUID_SysMouse)
+			cmdprintf("MOUSEREG: %d", (unsigned int)window); 
 		//return rvfilter(m_device->SetCooperativeLevel(window, level));
 		return DI_OK;
 	}
@@ -546,6 +569,7 @@ public:
 
 private:
 	IDirectInputDeviceN* m_device;
+	REFGUID m_type;
 	BufferedInput m_bufferedInput;
 	BOOL m_acquired;
 };
@@ -680,7 +704,7 @@ public:
 		{
 			// Return our own keyboard device that checks for injected keypresses
 			// (at least if rguid == GUID_SysKeyboard that's what it'll do)
-			HookCOMInterface(IID_IDirectInputDeviceN, (LPVOID*)device);
+			HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, (LPVOID)&rguid);
 		}
 		curtls.callerisuntrusted--;
 
@@ -1151,6 +1175,33 @@ bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 		HOOKRIID2(DirectInputDevice7W, MyDirectInputDevice);
 		HOOKRIID2(DirectInputDevice8A, MyDirectInputDevice);
 		HOOKRIID2(DirectInputDevice8W, MyDirectInputDevice);
+
+		default: return false;
+	}
+	return true;
+}
+
+bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew)
+{
+	switch(riid.Data1)
+	{
+		HOOKRIID(DirectInput,A);
+		HOOKRIID(DirectInput,W);
+		HOOKRIID(DirectInput,2A);
+		HOOKRIID(DirectInput,2W);
+		HOOKRIID(DirectInput,7A);
+		HOOKRIID(DirectInput,7W);
+		HOOKRIID(DirectInput,8A);
+		HOOKRIID(DirectInput,8W);
+
+		HOOKRIID2EX(DirectInputDeviceA, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDeviceW, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice2A, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice2W, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice7A, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice7W, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice8A, MyDirectInputDevice, parameter);
+		HOOKRIID2EX(DirectInputDevice8W, MyDirectInputDevice, parameter);
 
 		default: return false;
 	}

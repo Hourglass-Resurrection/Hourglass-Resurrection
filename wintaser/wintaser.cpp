@@ -3699,6 +3699,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							ReceiveFrameRate(pstr);
 						else if(MessagePrefixMatch("HWND"))
 							ReceiveHWND(atoi(pstr));
+						else if(MessagePrefixMatch("MOUSEREG"))
+						{
+							inputC.InitDIMouse((HWND)(atoi(pstr)));
+						}
 						else if(MessagePrefixMatch("WATCH")) 
 						{
 							AddressWatcher auto_watch;

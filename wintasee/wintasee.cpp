@@ -127,6 +127,7 @@ void ApplyGDIIntercepts();
 
 void ProcessFrameInput();
 bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew);
+bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew);
 void ApplyInputIntercepts();
 
 void ApplyRegistryIntercepts();
@@ -1401,7 +1402,30 @@ void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 	}
 }
 
+void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew)
+{
+	if(!ppvOut)
+		return;
 
+	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+
+	switch(riid.Data1)
+	{
+		//VTHOOKRIID3(IClassFactory,MyClassFactory);
+		HOOKRIID3(IClassFactory,MyClassFactory);
+
+		default:
+			if(!HookCOMInterfaceDDraw(riid, ppvOut, uncheckedFastNew)
+			&& !HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
+			&& !HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
+			&& !HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
+			&& !HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+			&& !HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
+			&& !HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
+				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+			break;
+	}
+}
 
 
 
