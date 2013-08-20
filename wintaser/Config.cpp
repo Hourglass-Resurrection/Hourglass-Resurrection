@@ -76,6 +76,8 @@ namespace Config{
 	bool advancePastNonVideoFramesConfigured = false;
 	//int threadMode;
 	int usedThreadMode = -1;
+	bool limitGameToOnePhysicalCore = false;
+	bool disableHyperThreading = false;
 	//int timersMode;
 	//int messageSyncMode;
 	//int waitSyncMode;

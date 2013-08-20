@@ -68,6 +68,9 @@
     <ClCompile Include="Menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CPUinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -141,6 +144,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\input.h">
       <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="CPUinfo.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
