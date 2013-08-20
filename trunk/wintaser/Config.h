@@ -48,6 +48,8 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern bool advancePastNonVideoFramesConfigured;
 	//extern int threadMode;
 	extern int usedThreadMode;
+	extern bool limitGameToOnePhysicalCore;
+	extern bool disableHyperThreading;
 	//extern int timersMode;
 	//extern int messageSyncMode;
 	//extern int waitSyncMode;

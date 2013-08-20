@@ -60,6 +60,7 @@ using namespace Config;
 #include "../shared/winutil.h"
 #include "ramwatch.h"
 
+#include "CPUinfo.h"
 #include "DirLocks.h"
 
 
@@ -265,7 +266,6 @@ bool IsWindows8()	  { return localTASflags.osVersionMajor == 6 && localTASflags.
 
 /*static*/ bool terminateRequest = false;
 static bool afterDebugThreadExit = false;
-
 
 HWND hWnd = 0;
 //HWND hExternalWnd = 0;
@@ -3462,6 +3462,114 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		SetCaptureProcess(hGameProcess);
 	}
 
+	// Older games developed before multi-core CPUs were a thing may still use threads, and due to insufficient (or even no) syncing this causes problems when
+	// the game is being played on a multi-core CPU. Since disabling this for every game may cause newer games to experience problems instead or just be unnecessarily slow
+	// making it a configurable setting is the only sensible way to go about this.
+	// There is also the possible scenario that a game is optimized for Hyper-Threading but will fail on multi-core, so we will give the option to allow Hyper-Threading
+	// in case the game doesn't run properly without it.
+	// At least 2 games are affected by Multi-Core incompatibility:
+	// -No One Lives Forever (audio issues): this game is a nightmare, some events are timed by audio playback, and audio can fail on multi-core systems
+	//                                       so that the sounds aren't played in full or not at all, causing the game to generate events way too fast,
+	//                                       and sometimes even skipping them. Examples are weapons not having cool-downs between shots and conversations cutting out.
+	// -XIII (speed issues): the GOG release of XIII seems to have fixed the speed issues however, but that version might not be the best one for TASing.
+
+	if(limitGameToOnePhysicalCore) // We want to limit the game to one physical core to avoid issues
+	{
+		int logicalCores;
+		int physicalCores;
+		//bool hyperThreading;
+
+		CPUInfo(&logicalCores, &physicalCores, /*&hyperThreading*/ NULL);
+
+		// Only actually do something if there is more than one core to choose from.
+		// The code will still generate a valid mask for a single-core CPU, it's just unnecessary since the result will be the exact same mask as the default, currently applied, one.
+		if(logicalCores > 1)
+		{
+			unsigned int numHyperThreadCores = logicalCores / physicalCores; // Get how many logical cores each physical CPU core consists of.
+
+			DWORD_PTR mask;
+
+			// Set the number of logical cores that we will use on the physical core.
+			if(numHyperThreadCores > 1 && !disableHyperThreading)
+			{
+				for (int i = 0; i < numHyperThreadCores; i++)
+				{
+					mask |= (0x01 << i);
+				}
+			}
+			else // the CPU doesn't have any purely logical cores, or we want to disable Hyper-Threading
+			{
+				mask = 0x01;
+			}
+
+			// Affinity is defined as follows for all CPUs:
+			// 0x01 logical core 1
+			// 0x02 logical core 2
+			// 0x04 logical core 3
+			// 0x08 logical core 4
+			// ... and so on.
+			// It's also defined that logical cores are grouped. Which means for a dual-core CPU with 2 logical cores for each physical:
+			// 0x01 logical core 1 cpu core 1
+			// 0x02 logical core 2 cpu core 1
+			// 0x04 logical core 1 cpu core 2
+			// 0x08 logical core 2 cpu core 2
+			//
+			// Using this information, we can use this code to pick physical cores:
+
+			if(physicalCores > 1) // We have more than one physical CPU core
+			{
+				mask = mask << numHyperThreadCores; // Use the 2nd physical core.
+			}
+			// Else: There is only one physical core, which means we cannot manipulate the mask further.
+
+
+			if(!SetProcessAffinityMask(hGameProcess, mask))
+			{
+				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+			}
+		}
+	}
+
+	// I have no idea what this would be good for, as far as I know Hyper-Threading never caused any problems on it's own, except for making games run slower overall,
+	// however that cannot be fixed like this since that needs proper disabling of Hyper-Threading from the BIOS given that the CPU allows it.
+	// By design Hyper-Threads are purely logical and therefore deterministic since the CPU will divide the execution time evenly across the Hyper-Threads.
+	// Since Hyper-Threading cannot be turned off at a software level, all we can do is to force the game to run on only one Hyper-Thread core of each physical core,
+	// this alone will most likely never fix any of the Hyper-Threading related slowdowns games can experience, and is probably entirely useless.
+	// But since computers and software always finds new ways to deviate from logic and make me speechless, let's include this option.
+	// -- Warepire
+	else if(disableHyperThreading)
+	{
+		int logicalCores;
+		int physicalCores;
+		bool hyperThreading;
+
+		CPUInfo(&logicalCores, &physicalCores, &hyperThreading);
+
+		// It's a Hyper-Threading CPU.
+		// Even though a valid mask would be generated even for CPUs without Hyper-Threading it is completely unnecessary to do these
+		// calculations as the resulting mask would be the same as the default, currently applied, one.
+		if(hyperThreading)
+		{
+			unsigned int numHyperThreadCores = logicalCores / physicalCores; // Number of Hyper-Thread cores per physical core.
+
+			DWORD_PTR mask = 0;
+
+			// Only let the game use one of the Hyper-Thread cores of each physical core.
+			// Refer to the comments in the code above for forcing the game to run on only one core for how Affinity masks work.
+			for(int i = 0; i < physicalCores; i++)
+			{
+				mask = mask << numHyperThreadCores;
+				mask |= 0x01;
+			}
+
+			if(!SetProcessAffinityMask(hGameProcess, mask))
+			{
+				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+			}
+		}
+		// Else: No Hyper-Threading to disable.
+	}
+
 	ReopenRamWindows();
 	reset_address_info();
 
@@ -5688,6 +5796,13 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//case ID_EXEC_RESUME:
 				//	ResumeAllExcept(lastKeyThreadId);
 				//	break;
+
+				case ID_EXEC_LIMITONEPHYSICALCORE:
+					limitGameToOnePhysicalCore = !limitGameToOnePhysicalCore;
+					break;
+				case ID_EXEC_DISABLEHYPERTHREADS:
+					disableHyperThreading = !disableHyperThreading;
+					break;
 
 				case ID_EXEC_USETRUEPAUSE:
 					truePause = !truePause;

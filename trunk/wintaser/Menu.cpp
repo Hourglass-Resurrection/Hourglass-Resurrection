@@ -57,6 +57,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	HMENU ExecWaitSync = CreatePopupMenu();
 	HMENU ExecDlls = CreatePopupMenu();
 	HMENU Locale = CreatePopupMenu();
+	HMENU Affinity = CreatePopupMenu();
 	HMENU DebugLogging = CreatePopupMenu();
 	HMENU DebugLoggingInclude = CreatePopupMenu();
 	HMENU DebugLoggingTrace = CreatePopupMenu();
@@ -215,6 +216,8 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	i = 0;
 	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)Locale, "", "App &Locale", 0);
 	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
+	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)Affinity, "", "&Affinity", 0);
+	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecMultithreading, "", "&Multithreading Mode", 0);
 	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecTimers, "", "Multimedia &Timer Mode", 0);
 	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecMessageSync, "", "Message &Sync Mode", 0);	
@@ -283,6 +286,11 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*2==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_50, "", "50%", 0);
 	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*4==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_25, "", "25%", 0);
 	MENU_L(TimeRate, i++, Flags | ((localTASflags.timescale*8==localTASflags.timescaleDivisor)?MF_CHECKED:MF_UNCHECKED), ID_TIME_RATE_12, "", "12%", 0);
+
+	// Affinity Submenu
+	i = 0;
+	MENU_L(Affinity, i++, Flags | ((limitGameToOnePhysicalCore)?MF_CHECKED:MF_UNCHECKED) | ((started)?MF_GRAYED:0), ID_EXEC_LIMITONEPHYSICALCORE, "", "Use only one physical core (Might help older games to run correctly)", "can't change after starting");
+	MENU_L(Affinity, i++, Flags | ((disableHyperThreading)?MF_CHECKED:MF_UNCHECKED) | ((started)?MF_GRAYED:0), ID_EXEC_DISABLEHYPERTHREADS, "", "Disable Hyper-Threading", "can't change after starting");
 
 	// Multithreading Submenu
 	i = 0;

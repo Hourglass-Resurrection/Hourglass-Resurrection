@@ -235,6 +235,7 @@
   <ItemGroup>
     <ClCompile Include="AVIDumper.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="CPUinfo.cpp" />
     <ClCompile Include="CRCMath.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
@@ -269,6 +270,7 @@
     <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="CPUinfo.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="CRCMath.h" />
     <ClInclude Include="CustomDLGs.h" />
