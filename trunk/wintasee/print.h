@@ -7,7 +7,7 @@
 int debugprintf(const char * fmt, ...);
 int cmdprintf(const char * fmt, ...);
 
-#define dinputdebugprintf verbosedebugprintf
+//#define dinputdebugprintf verbosedebugprintf
 #define ddrawdebugprintf verbosedebugprintf
 #define d3ddebugprintf verbosedebugprintf
 #define dsounddebugprintf verbosedebugprintf
