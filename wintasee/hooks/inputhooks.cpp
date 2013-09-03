@@ -10,6 +10,21 @@
 #include "../wintasee.h"
 #include "../tls.h"
 
+#if defined(_DEBUG) || 1//0
+	#define _DINPUTDEBUG
+#endif
+
+#if defined(_DINPUTDEBUG)
+	#define dinputdebugprintf debugprintf
+#else
+	#if _MSC_VER > 1310
+		#define dinputdebugprintf(...) ((void)0)
+	#else
+		#define dinputdebugprintf() ((void)0)
+		#pragma warning(disable:4002)
+	#endif
+#endif
+
 DEFINE_LOCAL_GUID(IID_IDirectInputDeviceA, 0x5944E680,0xC92E,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_LOCAL_GUID(IID_IDirectInputDeviceW, 0x5944E681,0xC92E,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_LOCAL_GUID(IID_IDirectInputDevice2A,0x5944E682,0xC92E,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
@@ -24,15 +39,67 @@ DEFINE_LOCAL_GUID(IID_IDirectInputDevice8W,0x54D41081,0xDC15,0x4833,0xA4,0x1B,0x
 DEFINE_LOCAL_GUID(GUID_SysMouse,   0x6F1D2B60,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_LOCAL_GUID(GUID_SysKeyboard,0x6F1D2B61,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 
+// Same reason as SysMouse and SysKeyboard.
+DEFINE_LOCAL_GUID(GUID_XAxis,   0xA36D02E0,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_YAxis,   0xA36D02E1,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_ZAxis,   0xA36D02E2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_RxAxis,  0xA36D02F4,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_RyAxis,  0xA36D02F5,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_RzAxis,  0xA36D02E3,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_Slider,  0xA36D02E4,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_Button,  0xA36D02F0,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_Key,     0x55728220,0xD33C,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_POV,     0xA36D02F2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_Unknown, 0xA36D02F3,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+
 template<typename IDirectInputDeviceN> struct IDirectInputDeviceTraits {};
-template<> struct IDirectInputDeviceTraits<IDirectInputDeviceA>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDeviceW>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice2A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice2W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice7A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice7W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice8A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 20}; };
-template<> struct IDirectInputDeviceTraits<IDirectInputDevice8W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; enum {defaultDIDEVICEOBJECTDATAsize = 20}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDeviceA>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDeviceW>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice2A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice2W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice7A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice7W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice8A>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 20}; };
+template<> struct IDirectInputDeviceTraits<IDirectInputDevice8W>  { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 20}; };
+
+// The DIDEVICEOBJECTINSTANCE struct has to be locally re-implemented thanks to it being defined in dinput.h as 2 different structs,
+// this creates a conflict for our catch-all model since only the *A-implementation gets used if we use the normal struct due to our
+// compiler being set to MultiByte which undefines UNICODE.
+// This templated implementation lets the struct become anamorphic and it can take the shape of either version of the struct.
+// NCHAR will take the form of a CHAR or WCHAR depending on which version of the IDirectInputDevice that is created by the game.
+// Since the struct will become an exact replica of either the ANSI or Unicode version, the game should experience no problems in
+// accessing the data from this struct compared to a "real" one.
+// -- Warepire
+template<typename NCHAR>
+struct MyDIDEVICEOBJECTINSTANCE {
+	DWORD	dwSize;
+	GUID	guidType;
+	DWORD	dwOfs;
+	DWORD	dwType;
+	DWORD	dwFlags;
+	NCHAR	tszName[MAX_PATH];
+	DWORD	dwFFMaxForce;
+	DWORD	dwFFForceResolution;
+	WORD	wCollectionNumber;
+	WORD	wDesignatorIndex;
+	WORD	wUsagePage;
+	WORD	wUsage;
+	DWORD	dwDimension;
+	WORD	wExponent;
+	WORD	wReportId;
+};
+
+// Due to NCHAR being able to take the shape of both a CHAR and WCHAR we cannot assign it data in string format.
+// This is caused by the difference in length of the 2 datatypes. We are however lucky enough that the values we
+// want to assign are the same, so we will just initiate tszName as an array using hexadecimal values.
+// To make the code somewhat easier to read I added these defines.
+// -- Warepire
+#define XAXIS	{ 0x58, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 }			// "X-axis\0"
+#define YAXIS	{ 0x59, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 }			// "Y-axis\0"
+#define WHEEL	{ 0x57, 0x68, 0x65, 0x65, 0x6C, 0x00 }					// "Wheel\0"
+#define BUTTON0 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x30, 0x00 }// "Button 0\0"
+#define BUTTON1 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x31, 0x00 }// "Button 1\0"
+#define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
 
 #include <vector>
 #include <algorithm>
@@ -208,15 +275,16 @@ public:
 	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIEFFECTINFON LPDIEFFECTINFON;
 	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIACTIONFORMATN LPDIACTIONFORMATN;
 	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEIMAGEINFOHEADERN LPDIDEVICEIMAGEINFOHEADERN;
+	typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::NCHAR NCHAR;
 
 	MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_type(emptyGUID), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
 	{
-		debugprintf("MyDirectInputDevice created.\n");
+		debugprintf("MyDirectInputDevice created without GUID.\n");
 	}
 
 	MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid) : m_device(device), m_type(guid), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
 	{
-		debugprintf("MyDirectInputDevice created.\n");
+		debugprintf("MyDirectInputDevice created, received GUID: %Xl, %Xh, %Xh, %s.\n", guid.Data1, guid.Data2, guid.Data3, guid.Data4);
 	}
 
 	/*** IUnknown methods ***/
@@ -253,11 +321,78 @@ public:
 		return DIERR_INVALIDPARAM; // NYI!
 	}
 
-	STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN callback, LPVOID ref, DWORD flags)	
+	STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)	
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		dinputdebugprintf(__FUNCTION__ " called with flags: 0x%X.\n", dwFlags);
+
+		if(m_type == GUID_SysMouse)
+		{
+			// A SysMouse device follows a defined standard, this data is the same for any pointer device loaded in DI as a SysMouse.
+			// Mice with more buttons/wheels may look differently after these objects, however, the array below represents a regular
+			// 3 button mouse with a scroll wheel, and that is what we choose to emulate as mice without scroll wheels are very rare
+			// in todays world, as far as I know anyway. This should be compatible with any mouse as long as it is loaded as SysMouse.
+			// -- Warepire
+			DWORD size = (sizeof(NCHAR) > sizeof(CHAR)) ? 576 : 316;
+			struct MyDIDEVICEOBJECTINSTANCE<NCHAR> EmulatedSysMouse[6] = {
+				{ size, GUID_XAxis,  0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ size, GUID_YAxis,  0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ size, GUID_ZAxis,  0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ size, GUID_Button, 0xC, 0x301, 0,                    BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ size, GUID_Button, 0xD, 0x401, 0,                    BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ size, GUID_Button, 0xE, 0x501, 0,                    BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+
+			// Requests that will return all the objects of our emulated mouse.
+			// The if statement checks for these flags: DIDFT_ALL || DIDFT_ENUMCOLLECTION(0) || DIDFT_NOCOLLECTION
+			// ALL is quite self-describing, the other 2 will both return all objects in HID collection 0 for this device.
+			// Which means all objects since they all belong to HID collection 0.
+			if((dwFlags == DIDFT_ALL) || (((dwFlags >> 8) & 0xFFFF) == 0x0000) || ((dwFlags & DIDFT_NOCOLLECTION) == DIDFT_NOCOLLECTION))
+			{
+				for(unsigned int i = 0; i < 6; i++)
+				{
+					if(lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+				}
+			}
+			else // Requests that will return subsets of the objects.
+			{
+				if((dwFlags & DIDFT_RELAXIS) == DIDFT_RELAXIS)
+				{
+					for(unsigned int i = 0; i < 3; i++)
+					{
+						if(lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+					}
+				}
+				if((dwFlags & DIDFT_PSHBUTTON) == DIDFT_PSHBUTTON)
+				{
+					for(unsigned int i = 3; i < 6; i++)
+					{
+						if(lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+					}
+				}
+
+				// The flags DIDFT_AXIS and DIDFT_BUTTON can be ignored since they are pre-defined combinations of
+				// DIDFT_ABSAXIS & DIDFT_RELAXIS and DIDFT_PSHBUTTON & DIDFT_TGLBUTTON respectively.
+
+				// Objects our emulated mouse do not have, for these we will do nothing:
+				// DIDFT_ABSAXIS
+				// DIDFT_ALIAS
+				// DIDFT_COLLECTION
+				// DIDFT_FFACTUATOR
+				// DIDFT_FFEFFECTTRIGGER
+				// DIDFT_NODATA
+				// DIDFT_OUTPUT
+				// DIDFT_TGLBUTTON
+				// DIDFT_VENDORDEFINED
+			}
+			return DI_OK;
+		}
+		if(m_type == GUID_SysKeyboard)
+		{
+			return DIERR_INVALIDPARAM; // TODO: NYI ... EnumObjects is relatively useless for keyboards since you cannot use it to check for available keyboard keys or LEDs.
+		}
+		return DIERR_INVALIDPARAM; // TODO: NYI ... Gamepads, wheels, joysticks etc, how do we handle this? There aren't any real standards for these...
+
 		//return m_device->EnumObjects(callback, ref, flags);
-		return DIERR_INVALIDPARAM; // NYI!
+		//return DIERR_INVALIDPARAM; // NYI!
 	}
 
 	STDMETHOD(GetProperty)(REFGUID rguid, LPDIPROPHEADER ph)
@@ -702,9 +837,10 @@ public:
 		HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
 		if(SUCCEEDED(hr))
 		{
+			debugprintf("Hooking input device with GUID: %Xl, %Xh, %Xh, %s.\n", rguid.Data1, rguid.Data2, rguid.Data3, rguid.Data4);
 			// Return our own keyboard device that checks for injected keypresses
 			// (at least if rguid == GUID_SysKeyboard that's what it'll do)
-			HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, (LPVOID)&rguid);
+			HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, rguid);
 		}
 		curtls.callerisuntrusted--;
 
@@ -1181,7 +1317,7 @@ bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 	return true;
 }
 
-bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew)
+bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
 {
 	switch(riid.Data1)
 	{

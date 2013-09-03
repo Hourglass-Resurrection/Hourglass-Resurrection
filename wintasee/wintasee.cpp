@@ -127,7 +127,7 @@ void ApplyGDIIntercepts();
 
 void ProcessFrameInput();
 bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew);
-bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew);
+bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew);
 void ApplyInputIntercepts();
 
 void ApplyRegistryIntercepts();
@@ -1402,7 +1402,7 @@ void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 	}
 }
 
-void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, LPVOID parameter, bool uncheckedFastNew)
+void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
 {
 	if(!ppvOut)
 		return;
