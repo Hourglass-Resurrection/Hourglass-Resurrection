@@ -5132,6 +5132,9 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	// preview data from movie
 	if(exists && !started)
 	{
+		// Setting playback to true should eliminate all the "overwrite?" messages.
+		// It might cause some other messages to appear, though.
+		localTASflags.playback = true;
 		LoadMovie(moviefilename);
 		
 		UpdateFrameCountDisplay(movie.currentFrame, 1);
@@ -5474,8 +5477,12 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//char temp_moviefilename [MAX_PATH+1];
 				//strcpy(temp_moviefilename, moviefilename);
 				movienameCustomized = false;
-				SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path);
-				SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), moviefilename);
+				// As they start blank, we have no interest in updating these if the filenames
+				// are empty. This prevents messages about file '' not existing.
+				if (path[0] != 0)
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path);
+				if (moviefilename[0] != 0)
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), moviefilename);
 				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), commandline);
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));
