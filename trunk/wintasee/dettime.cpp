@@ -4,7 +4,6 @@
 #if !defined(DETTIME_C_INCL) && !defined(UNITY_BUILD)
 #define DETTIME_C_INCL
 
-#include "global.h"
 #include "wintasee.h"
 #include "tls.h"
 #include "dettime.h"

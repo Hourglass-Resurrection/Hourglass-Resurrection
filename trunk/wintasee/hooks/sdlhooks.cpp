@@ -10,8 +10,6 @@
 #if !defined(SDLHOOKS_INCL) && !defined(UNITY_BUILD)
 #define SDLHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
 #include "../wintasee.h"
 
 bool PresentOGLD3D(); // extern

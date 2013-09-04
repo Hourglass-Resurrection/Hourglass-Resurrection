@@ -4,8 +4,6 @@
 #if !defined(TIMEHOOKS_INCL) && !defined(UNITY_BUILD)
 #define TIMEHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
 #include "../wintasee.h"
 #include "../tls.h"
 

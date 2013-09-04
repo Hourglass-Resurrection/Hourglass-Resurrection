@@ -4,6 +4,8 @@
 #ifndef WINTASEE_H_INCL
 #define WINTASEE_H_INCL
 
+#define DIRECTINPUT_VERSION 0x0800
+#include "../shared/input.h"
 #include "global.h"
 #include "../shared/ipc.h"
 
@@ -35,12 +37,8 @@ extern unsigned char asynckeybit [256];
 extern unsigned char synckeybit [256];
 extern int framecountModSkipFreq;
 
-struct InputStatus
-{
-	unsigned char keys [256];
-};
-extern InputStatus previnput;
-extern InputStatus curinput;
+extern CurrentInput previnput;
+extern CurrentInput curinput;
 
 
 #include "dettime.h"

@@ -4,10 +4,8 @@
 #if !defined(WINDOWHOOKS_INCL) && !defined(UNITY_BUILD)
 #define WINDOWHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
-#include "../tls.h"
 #include "../wintasee.h"
+#include "../tls.h"
 #include "../msgqueue.h"
 #include "../locale.h"
 #include <map>
