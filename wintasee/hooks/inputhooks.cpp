@@ -33,7 +33,7 @@ DEFINE_LOCAL_GUID(IID_IDirectInputDevice8W,0x54D41081,0xDC15,0x4833,0xA4,0x1B,0x
 
 // Device GUIDs, re-defined as local GUIDs to avoid linker errors.
 DEFINE_LOCAL_GUID(GUID_SysMouse,   0x6F1D2B60,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-//DEFINE_LOCAL_GUID(GUID_SysKeyboard,0x6F1D2B61,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
+DEFINE_LOCAL_GUID(GUID_SysKeyboard,0x6F1D2B61,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 
 // DeviceObject GUIDs, re-defined as local GUIDs to avoid linker errors.
 DEFINE_LOCAL_GUID(GUID_XAxis,   0xA36D02E0,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
@@ -572,9 +572,129 @@ public:
 		return DI_OK;
 	}
 
-	STDMETHOD(GetObjectInfo)(LPDIDEVICEOBJECTINSTANCEN object, DWORD objId, DWORD objHow)
+	STDMETHOD(GetObjectInfo)(LPDIDEVICEOBJECTINSTANCEN pdidoi, DWORD dwObj, DWORD dwHow)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		dinputdebugprintf(__FUNCTION__ " called with dwObj %u and dwHow %u.\n", dwObj, dwHow);
+		if(m_type == GUID_SysMouse)
+		{
+			// This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
+			// if the game passes a NULL pointer or a struct without the size member inited we cannot continue.
+			if(pdidoi == NULL || memcmp(pdidoi, 0, 4) == 0) return DIERR_INVALIDPARAM;
+			switch(dwHow)
+			{
+				// Due to games being able to pass wrong values (either through bad code or bad coders) we cannot merge
+				// DIPH_BYOFFSET & DIPH_BYID and handle them at the same time. So this massive block of code is required.
+				case DIPH_BYOFFSET:
+				{
+					DWORD size;
+					// Since our typedef system doesn't let us access the members of pdidoi, nor let us cast it to our struct, we have no choice but
+					// to memcpy the data out of and into the struct, grabbing the size like this is mandatory because we need to leave it "untouched"
+					// when we fill the rest of the struct.
+					memcpy(&size, pdidoi, 4);
+					switch(dwObj)
+					{
+						// Sadly the compiler does not support creating the object outside of the switch statement,
+						// and then assigning all the values depending on case...
+						case 0x0:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = { size, GUID_XAxis, 0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &xaxis, xaxis.dwSize);
+							break;
+						}
+						case 0x4:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = { size, GUID_YAxis, 0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &yaxis, yaxis.dwSize);
+							break;
+						}
+						case 0x8:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = { size, GUID_ZAxis, 0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &wheel, wheel.dwSize);
+							break;
+						}
+						case 0xC:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = { size, GUID_Button, 0xC, 0x304, 0, BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button0, button0.dwSize);
+							break;
+						}
+						case 0xD:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = { size, GUID_Button, 0xD, 0x404, 0, BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button1, button1.dwSize);
+							break;
+						}
+						case 0xE:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = { size, GUID_Button, 0xE, 0x504, 0, BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button2, button2.dwSize);
+							break;
+						}
+						default: return DIERR_OBJECTNOTFOUND;
+					}
+					break;
+				}
+				case DIPH_BYID:
+				{
+					DWORD size;
+					memcpy(&size, pdidoi, 4);
+					switch(dwObj)
+					{
+						case 0x001:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = { size, GUID_XAxis, 0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &xaxis, xaxis.dwSize);
+							break;
+						}
+						case 0x101:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = { size, GUID_YAxis, 0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &yaxis, yaxis.dwSize);
+							break;
+						}
+						case 0x201:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = { size, GUID_ZAxis, 0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &wheel, wheel.dwSize);
+							break;
+						}
+						case 0x304:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = { size, GUID_Button, 0xC, 0x304, 0, BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button0, button0.dwSize);
+							break;
+						}
+						case 0x404:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = { size, GUID_Button, 0xD, 0x404, 0, BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button1, button1.dwSize);
+							break;
+						}
+						case 0x504:
+						{
+							MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = { size, GUID_Button, 0xE, 0x504, 0, BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+							memcpy(pdidoi, &button2, button2.dwSize);
+							break;
+						}
+						default: return DIERR_OBJECTNOTFOUND;
+					}
+					break;
+				}
+				case DIPH_BYUSAGE:
+				{
+					// Despite MSDN giving a very detailed explanation on how to use this dwHow method it seems that for SysMouse
+					// it is not even closely supported, and this is what the function calls when I call it on every PC I own.
+					// -- Warepire
+					return E_NOTIMPL;
+				}
+			}
+			return DI_OK;
+		}
+		if(m_type == GUID_SysKeyboard)
+		{
+			return DIERR_INVALIDPARAM; // NYI!
+		}
 		//return rvfilter(m_device->GetObjectInfo(object, objId, objHow));
 		return DIERR_INVALIDPARAM; // NYI!
 	}
