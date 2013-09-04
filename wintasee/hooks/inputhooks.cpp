@@ -683,8 +683,8 @@ public:
 				}
 				case DIPH_BYUSAGE:
 				{
-					// Despite MSDN giving a very detailed explanation on how to use this dwHow method it seems that for SysMouse
-					// it is not even closely supported, and this is what the function calls when I call it on every PC I own.
+					// Despite MSDN giving a very detailed explanation on how to use this dwHow method it seems that for SysMouse it is not even
+					// closely supported, and this is what the function returns for this case when I call it on every PC I own.
 					// -- Warepire
 					return E_NOTIMPL;
 				}
