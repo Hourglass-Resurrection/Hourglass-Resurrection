@@ -4,10 +4,8 @@
 #if !defined(MESSAGEHOOKS_INCL) && !defined(UNITY_BUILD)
 #define MESSAGEHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
-#include "../tls.h"
 #include "../wintasee.h"
+#include "../tls.h"
 #include "../msgqueue.h"
 #include <map>
 #include <vector>

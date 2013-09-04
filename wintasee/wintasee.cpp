@@ -71,17 +71,15 @@
 
 //#pragma check_stack (off) // not sure if it's needed... doesn't seem to help, but I'll leave it here anyway
 
-#include "global.h"
+#include "wintasee.h"
 #include "print.h"
 
-#include "../shared/ipc.h"
 #include "../shared/msg.h"
 
 #include "intercept.h"
 #include "tls.h"
 #include "msgqueue.h"
 #include "locale.h"
-#include "wintasee.h"
 
 #include <map>
 
@@ -291,8 +289,8 @@ LogCategoryFlag& g_includeLogFlags = tasflags.includeLogFlags;
 LogCategoryFlag& g_excludeLogFlags = tasflags.excludeLogFlags;
 
 
-InputStatus previnput = {0};
-InputStatus curinput = {0};
+CurrentInput previnput = {0};
+CurrentInput curinput = {0};
 
 unsigned char asynckeybit [256] = {0}; // since-last-call bit for GetAsyncKeystate
 unsigned char synckeybit [256] = {0}; // toggle status for GetKeyState
@@ -755,61 +753,6 @@ void SaveOrLoad(int slot, bool save)
 void GetFrameInput()
 {
 	verbosedebugprintf(__FUNCTION__ " called.\n");
-	if(!tasflags.playback)
-	{
-//#if 1 // TEMP HACK until proper autofire implemented
-//		bool ZXmode = (GetAsyncKeyState('Q') & 0x8000) && (GetAsyncKeyState('W') & 0x8000);
-//#endif
-//
-//	//	GetKeyboardState((PBYTE)&curinput.keys);
-//		int keysHeld = 0;
-//		for(int i = 1; i < 256; i++)
-//		{
-////int prev = curinput.keys[i]; // <-- TEMP DEBUGGING
-//			if(i == VK_CAPITAL || i == VK_NUMLOCK || i == VK_SCROLL)
-//				curinput.keys[i] = (GetKeyState(i) & 0x1) ? 1 : 0;
-//			else
-//				curinput.keys[i] = (GetAsyncKeyState(i) & 0x8000) ? 1 : 0;
-//
-////if(prev!=curinput.keys[i]){ // <-- TEMP DEBUGGING
-////	debugprintf("key 0x%X = 0x%X", i, curinput.keys[i]); // <-- TEMP DEBUGGING
-////} // <-- TEMP DEBUGGING
-//
-//#if 0 // TEMP HACK until proper autofire implemented
-//			if(ZXmode)
-//			{
-//				if(i == 'Q' || i == 'W')
-//					curinput.keys[i] = 0;
-//				if(i == 'Z')
-//					curinput.keys['Z'] = framecount % 2 == 0;
-//				if(i == 'X')
-//					curinput.keys['X'] = (framecount+1) % 2 == 0;
-//			}
-//			// TEMP until proper key configuration
-//			if((GetAsyncKeyState('I') & 0x8000))
-//				curinput.keys[VK_UP] = 1;
-//			if((GetAsyncKeyState('J') & 0x8000))
-//				curinput.keys[VK_LEFT] = 1;
-//			if((GetAsyncKeyState('K') & 0x8000))
-//				curinput.keys[VK_DOWN] = 1;
-//			if((GetAsyncKeyState('L') & 0x8000))
-//				curinput.keys[VK_RIGHT] = 1;
-//#endif
-//
-//			if(curinput.keys[i])
-//			{
-//				keysHeld++;
-//				if(keysHeld >= tasflags.keylimit)
-//					break;
-//			}
-//		}
-		// curinput is set remotely in this case now too (see InjectLocalInputs)
-	}
-	else
-	{
-		// curinput is set remotely in this case (see InjectCurrentMovieFrame)
-	}
-
 	ProcessFrameInput();
 }
 
@@ -1671,8 +1614,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		// tell it where to put commands
 		cmdprintf("HERESMYCARD: %Iu", commandSlot);
 
-		// tell it where to read/write the 256 keyboard status bytes (booleans)
-		cmdprintf("KEYINPUTBUF: %Iu", &curinput);
+		// tell it where to read/write full inputs status
+		cmdprintf("INPUTSBUF: %Iu", &curinput);
 
 		// tell it where to write dll load/unload info
 		cmdprintf("DLLLOADINFOBUF: %Iu", &dllLoadInfos); // must happen before we call Apply*Intercepts functions

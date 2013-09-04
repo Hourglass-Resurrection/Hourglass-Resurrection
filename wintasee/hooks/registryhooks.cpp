@@ -5,10 +5,8 @@
 #define REGISTRYHOOKS_INCL
 
 
-#include "../global.h"
-#include "../../shared/ipc.h"
-#include "../tls.h"
 #include "../wintasee.h"
+#include "../tls.h"
 #include "../locale.h"
 #include <memory>
 

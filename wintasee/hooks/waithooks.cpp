@@ -4,10 +4,8 @@
 #if !defined(WAITHOOKS_INCL) && !defined(UNITY_BUILD)
 #define WAITHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
-#include "../tls.h"
 #include "../wintasee.h"
+#include "../tls.h"
 #include <map>
 
 void ThreadHandleToExitHandle(HANDLE& pHandle);

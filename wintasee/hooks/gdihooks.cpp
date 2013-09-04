@@ -5,7 +5,6 @@
 #define GDIHOOKS_INCL
 
 
-#include "../global.h"
 #include "../wintasee.h"
 #include "../tls.h"
 #include "../../shared/winutil.h"

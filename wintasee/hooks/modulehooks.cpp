@@ -4,11 +4,9 @@
 #if !defined(MODULEHOOKS_INCL) && !defined(UNITY_BUILD)
 #define MODULEHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
+#include "../wintasee.h"
 #include "../../shared/winutil.h"
 #include "../tls.h"
-#include "../wintasee.h"
 #include <map>
 
 bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);

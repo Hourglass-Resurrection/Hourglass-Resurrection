@@ -737,11 +737,11 @@ void ClearCommand();
 
 
 
-static void* remoteKeyboardState = 0;
+static void* remoteInputs = 0;
 
-void ReceiveKeyStatusPointer(__int64 pointerAsInt)
+void ReceiveInputsPointer(__int64 pointerAsInt)
 {
-	remoteKeyboardState = (void*)pointerAsInt;
+	remoteInputs = (void*)pointerAsInt;
 }
 
 static void* remoteTASflags = 0;
@@ -1751,12 +1751,12 @@ bool InputHasFocus(bool isHotkeys)
 }
 
 
-
+/*
 struct UncompressedMovieFrame
 {
 	unsigned char keys [256];
 };
-
+*/
 
 // InjectLocalInputs
 void RecordLocalInputs()
@@ -1774,18 +1774,11 @@ void RecordLocalInputs()
 		//memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
 	}
 
-#if 0 // TEMP HACK until proper autofire implemented
-	bool ZXmode = (GetAsyncKeyState('Q') & 0x8000) != 0;
-	if(ZXmode) {
-		localGameInputKeys[(movie.currentFrame & 1) ? 'Z' : 'X'] = 1;
-	}
-#endif
-
-
 	// TODO: Record the whole input instead of the keyboard only.
 
 	MovieFrame frame = {0};
 	int frameByte = 0;
+	frame.inputs = &ci;
 
 	// pack frame of input
 	for(int i = 1; i < 256 && frameByte < sizeof(frame.heldKeyIDs); i++)
@@ -1813,95 +1806,6 @@ void RecordLocalInputs()
 	}
 }
 
-#if 0
-void MultitrackHack()
-{
-// TEMP HACK until configurable multitrack implemented
-	if((GetAsyncKeyState('M') & 0x8000) == 0)
-	{
-		// not activated this frame
-		return;
-	}
-
-	if((unsigned int)movie.currentFrame >= (unsigned int)movie.frames.size())
-	{
-		return;
-	}
-
-
-	// unpack frame of input
-	UncompressedMovieFrame existingMovieKeyboardState = {0};
-	{
-		MovieFrame frame = movie.frames[movie.currentFrame];
-		for(int i = 0; i < sizeof(frame.heldKeyIDs); i++)
-		{
-			int vk = frame.heldKeyIDs[i];
-			if(!vk)
-				continue;
-			existingMovieKeyboardState.keys[vk] = true;
-		}
-	}
-
-
-	extern unsigned char localGameInputKeys [256];
-
-	if(InputHasFocus(false))
-	{
-		Update_Input(NULL, true, false, false, false);
-	}
-	else
-	{
-		memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
-	}
-
-
-	unsigned char mergedGameInputKeys [256];
-	memcpy(mergedGameInputKeys, existingMovieKeyboardState.keys, sizeof(mergedGameInputKeys));
-
-
-	// TEMP HACK until configurable multitrack implemented
-	{
-		mergedGameInputKeys['A'] = localGameInputKeys['A'];
-		mergedGameInputKeys['S'] = localGameInputKeys['S'];
-		mergedGameInputKeys['X'] = localGameInputKeys['X'];
-		if(localGameInputKeys['Z'])
-			mergedGameInputKeys['Z'] = 1;
-		if(!localGameInputKeys[VK_UP] || !localGameInputKeys[VK_DOWN])
-		{
-			mergedGameInputKeys[VK_UP] = localGameInputKeys[VK_UP];
-			mergedGameInputKeys[VK_DOWN] = localGameInputKeys[VK_DOWN];
-		}
-	}
-
-#if 1 // TEMP HACK until proper autofire implemented
-	bool ZXmode = (GetAsyncKeyState('Q') & 0x8000) != 0;
-	if(ZXmode && !(movie.currentFrame & 1)) {
-		mergedGameInputKeys['X'] = 1;
-	}
-#endif
-
-
-	MovieFrame frame = {0};
-	int frameByte = 0;
-
-	// pack frame of input
-	for(int i = 1; i < 256 && frameByte < sizeof(frame.heldKeyIDs); i++)
-	{
-		if(mergedGameInputKeys[i])
-		{
-			frame.heldKeyIDs[frameByte] = i;
-			frameByte++;
-		}
-	}
-
-	// apply merged input back to movie
-	//if((unsigned int)movie.currentFrame < (unsigned int)movie.frames.size())
-	{
-		movie.frames[movie.currentFrame] = frame;
-		//unsaved = true;
-	}
-}
-#endif
 
 // TODO: Pass the whole CurrentInput struct instead of just the keyboard.
 void InjectCurrentMovieFrame() // playback ... or recording, now
@@ -1915,33 +1819,19 @@ void InjectCurrentMovieFrame() // playback ... or recording, now
 			mainMenuNeedsRebuilding = true;
 			// let's clear the key input when the movie is finished
 			// to prevent potentially weird stuff from holding the last frame's buttons forever
-			unsigned char keys [256] = {0};
+			CurrentInput ci;
+			ci.clear();
 			SIZE_T bytesWritten = 0;
-			WriteProcessMemory(hGameProcess, remoteKeyboardState, &keys, 256, &bytesWritten);
+			WriteProcessMemory(hGameProcess, remoteInputs, &ci, sizeof(CurrentInput), &bytesWritten);
 		}
 		return;
 	}
 
-//	movie.currentFrame++;
-//	verbosedebugprintf("PLAY: movie.currentFrame = %d -> %d\n", movie.currentFrame-1,movie.currentFrame);
-
 	MovieFrame frame = movie.frames[movie.currentFrame];
 	verbosedebugprintf("injecting movie frame %d\n", movie.currentFrame);
 
-	UncompressedMovieFrame localKeyboardState = {0};
-
-	// unpack frame of input
-	for(int i = 0; i < sizeof(frame.heldKeyIDs); i++)
-	{
-		int vk = frame.heldKeyIDs[i];
-		if(!vk)
-			continue;
-		localKeyboardState.keys[vk] = true;
-		verbosedebugprintf("injecting press of key 0x%X\n", vk);
-	}
-
 	SIZE_T bytesWritten = 0;
-	if(!WriteProcessMemory(hGameProcess, remoteKeyboardState, &localKeyboardState, sizeof(UncompressedMovieFrame), &bytesWritten))
+	if(!WriteProcessMemory(hGameProcess, remoteInputs, frame.inputs, sizeof(CurrentInput), &bytesWritten))
 	{
 		debugprintf("failed to write input!!\n");
 	}
@@ -3181,7 +3071,7 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 
 	remoteCommandSlot = 0;
 	remoteTASflags = 0;
-	remoteKeyboardState = 0;
+	remoteInputs = 0;
 	//remoteLastFrameSoundInfo = 0;
 
 	hGameProcess = 0;
@@ -3867,8 +3757,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							AddAndSendDllInfo(NULL, true, hProcess);
 						else if(MessagePrefixMatch("TRUSTEDRANGEINFOBUF"))
 							ReceiveTrustedRangeInfosPointer(_atoi64(pstr), hProcess);
-						else if(MessagePrefixMatch("KEYINPUTBUF"))
-							ReceiveKeyStatusPointer(_atoi64(pstr));
+						else if(MessagePrefixMatch("INPUTSBUF"))
+							ReceiveInputsPointer(_atoi64(pstr));
 						else if(MessagePrefixMatch("TASFLAGSBUF"))
 							ReceiveTASFlagsPointer(_atoi64(pstr));
 						else if(MessagePrefixMatch("GENERALINFO"))

@@ -6,7 +6,6 @@
 
 #include "../../external/dsound.h"
 #include "../../external/dmusici.h"
-#include "../global.h"
 #include "../wintasee.h"
 #include "../tls.h"
 #include <algorithm>

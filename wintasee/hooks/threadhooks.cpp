@@ -4,8 +4,6 @@
 #if !defined(THREADHOOKS_INCL) && !defined(UNITY_BUILD)
 #define THREADHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
 #include "../wintasee.h"
 #include "../tls.h"
 //#include <setjmp.h>

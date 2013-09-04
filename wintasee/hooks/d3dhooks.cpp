@@ -5,7 +5,6 @@
 #define D3DHOOKS_INCL
 
 #include "../../external/d3d.h"
-#include "../global.h"
 #include "../wintasee.h"
 #include "../tls.h"
 #include <map>

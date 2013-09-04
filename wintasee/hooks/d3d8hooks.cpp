@@ -5,7 +5,6 @@
 #define D3D8HOOKS_INCL
 
 #include "../../external/d3d8.h"
-#include "../global.h"
 #include "../wintasee.h"
 #include "../tls.h"
 #include <map>

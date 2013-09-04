@@ -4,8 +4,6 @@
 #if !defined(TIMERHOOKS_INCL) && !defined(UNITY_BUILD)
 #define TIMERHOOKS_INCL
 
-#include "../global.h"
-#include "../../shared/ipc.h"
 #include "../wintasee.h"
 #include "../msgqueue.h"
 #include <vector>

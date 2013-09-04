@@ -5,7 +5,6 @@
 #define DDRAWHOOKS_INCL
 
 #include "../../external/ddraw.h"
-#include "../global.h"
 #include "../wintasee.h"
 #include "../tls.h"
 #include <map>
