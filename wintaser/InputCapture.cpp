@@ -521,8 +521,8 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	currentI->clear();
 
 	// Get the current keyboard state.
-	//unsigned char keys[256];
-	GetKeyboardState(currentI->keys);
+	unsigned char keys[256];
+	GetKeyboardState(keys);
 
 	// If a mouse is attached, get it's state.
 	if(lpDIDMouse != NULL)
@@ -531,7 +531,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	}
 
 	// Bulding the modifier from the array of pressed keys.
-	unsigned short modifier = BuildModifier(currentI->keys);
+	unsigned short modifier = BuildModifier(keys);
 
 	// We want now to convert the initial inputs to their mapping.
 	// There are two mappings: inputs and events.
@@ -539,16 +539,12 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	/** Keyboard **/
 	for (int k=0; k<DI_KEY_NUMBER; k++){
 
-		// If k is a modifier, we don't process it.
-		if (IsModifier(k))
-			continue;
-
 		// If k is not pressed, we skip to the next key.
-		if (!DI_KEY_PRESSED(currentI->keys[k]))
+		if (!DI_KEY_PRESSED(keys[k]))
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = {SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, ""};
+		SingleInput siPressed = {SINGLE_INPUT_DI_KEYBOARD, k, ""};
 
 		/* Input mapping */
 		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
@@ -568,7 +564,14 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		if (DI_KEY_PRESSED(previousKeys[k]))
 			continue;
 
-		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressed);
+		// If k is a modifier, we don't process it.
+		if (IsModifier(k))
+			continue;
+
+		// We build the SingleInput with modifiers this time, and check if it's mapped to something.
+		SingleInput siPressedMod = {SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, ""};
+
+		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressedMod);
 		if (iterE != eventMapping.end()){ // There is something.
 			WORD eventId = iterE->second;
 			// Now we just have to send the corresponding message.
@@ -582,14 +585,14 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// We assume that this function can be called multiple times within a single frame.
 	// But only one call per frame is processing the events.
 	if (hWnd){
-		memmove(previousKeys, currentI->keys, DI_KEY_NUMBER);
+		memmove(previousKeys, keys, DI_KEY_NUMBER);
 	}
 
 
 }
 
 
-void InputCapture::NextInput(SingleInput* si){
+void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 
 	unsigned char previousKeys[DI_KEY_NUMBER];
 	unsigned char currentKeys[DI_KEY_NUMBER];
@@ -607,17 +610,22 @@ void InputCapture::NextInput(SingleInput* si){
 		GetKeyboardState(currentKeys);
 		// TODO: get also mouse/joystick states.
 
-		// Try to find a non-modifier key that was just pressed.
+		// Try to find a key that was just pressed.
 		for (int i=0; i<DI_KEY_NUMBER; i++)
 		{
-			if(IsModifier(i))
+			if(allowModifiers && IsModifier(i))
 				continue;
 
 			if (!DI_KEY_PRESSED(previousKeys[i]) && DI_KEY_PRESSED(currentKeys[i])){
-				// We found a just-pressed key. We need to compute the modifiers and return the SingleInput
-				char modifier = BuildModifier(currentKeys);
+				// We found a just-pressed key. We need to return the SingleInput
 				si->device = SINGLE_INPUT_DI_KEYBOARD;
-				si->key = (((short)modifier) << 8) | i;
+				if (allowModifiers){
+					char modifier = BuildModifier(currentKeys);
+					si->key = (((short)modifier) << 8) | i;
+				}
+				else {
+					si->key = i;
+				}
 				InputToDescription(*si);
 				return;
 			}
@@ -661,7 +669,7 @@ void InputCapture::ReassignInput(int SIListIndex){
 	SingleInput toSI = SIList[SIListIndex];
 
 	// Gather the next input.
-	NextInput(&fromSI);
+	NextInput(&fromSI, false);
 
 	// Remove the previous mapping if any.
 	RemoveValueFromInputMap(&toSI);
@@ -686,7 +694,7 @@ void InputCapture::ReassignEvent(int eventListIndex){
 	Event ev = eventList[eventListIndex];
 
 	// Gather the next input.
-	NextInput(&fromSI);
+	NextInput(&fromSI, true);
 
 	// Remove the previous mapping if any.
 	RemoveValueFromEventMap(ev.id);
@@ -872,11 +880,11 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					int buf[1]; // Necessary, function crashes if you send a pointer to a simple varialbe.
 
 					SingleInput si;
-					inputC->NextInput(&si);
 
 					// Check if the selection happened in HotKeys
 					if(SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
+						inputC->NextInput(&si, true);
 						Event e = eventList[buf[0]];
 
 						newHotKeys[e] = si;
@@ -894,6 +902,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					}
 					else if(SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
+						inputC->NextInput(&si, false);
 						SingleInput s = SIList[buf[0]];
 
 						newGameInput[s] = si;
