@@ -97,7 +97,7 @@ private:
 	void GetKeyboardState(unsigned char* keys);
 
 	// Get the next input pressed.
-	void NextInput(SingleInput* si);
+	void NextInput(SingleInput* si, bool allowModifiers);
 
 	// We need to be able to remove a map element based on the value. It doesn't need to be fast.
 	void RemoveValueFromInputMap(const SingleInput* si);
