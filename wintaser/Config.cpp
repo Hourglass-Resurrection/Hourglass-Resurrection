@@ -13,7 +13,7 @@ namespace Config{
 // Globalized the TAS-flags struct, should reduce memory usage some.
 	TasFlags localTASflags =
 	{
-		false, //playback
+		true, //playback
 		60, //framerate
 		8, //keylimit
 		0, //forceSoftware

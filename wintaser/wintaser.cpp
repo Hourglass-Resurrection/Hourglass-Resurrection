@@ -5022,9 +5022,6 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	// preview data from movie
 	if(exists && !started)
 	{
-		// Setting playback to true should eliminate all the "overwrite?" messages.
-		// It might cause some other messages to appear, though.
-		localTASflags.playback = true;
 		LoadMovie(moviefilename);
 		
 		UpdateFrameCountDisplay(movie.currentFrame, 1);
