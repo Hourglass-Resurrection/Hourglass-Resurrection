@@ -62,6 +62,7 @@ using namespace Config;
 
 #include "CPUinfo.h"
 #include "DirLocks.h"
+#include "ExeFileOperations.h"
 
 
 #pragma warning(disable:4995)
@@ -6471,6 +6472,19 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
+						}
+
+						debugprintf("Attempting to determinate default thread stack size for the game...\n");
+						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exefilename);
+						if(localTASflags.threadStackSize != 0)
+						{
+							debugprintf("Detecting the default stack size succeeded, size is: %u bytes\n", localTASflags.threadStackSize);
+						}
+						else
+						{
+							// TODO: Make this an error prompt?
+							localTASflags.threadStackSize = 0x100000; // Terrible hack: We should probably abort loading instead.
+							debugprintf("Detecting the default thread stack size failed!\nIs '%s' a valid Win32 executable?\n", exefilename);
 						}
 
 

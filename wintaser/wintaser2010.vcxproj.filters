@@ -71,6 +71,9 @@
     <ClCompile Include="CPUinfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ExeFileOperations.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -146,6 +149,9 @@
       <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="CPUinfo.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExeFileOperations.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -239,6 +239,7 @@
     <ClCompile Include="CRCMath.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
+    <ClCompile Include="ExeFileOperations.cpp" />
     <ClCompile Include="InjectDLL.cpp" />
     <ClCompile Include="InputCapture.cpp" />
     <ClCompile Include="logging.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="CRCMath.h" />
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DirLocks.h" />
+    <ClInclude Include="ExeFileOperations.h" />
     <ClInclude Include="InjectDLL.h" />
     <ClInclude Include="InputCapture.h" />
     <ClInclude Include="logging.h" />
