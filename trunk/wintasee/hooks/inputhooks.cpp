@@ -310,11 +310,32 @@ public:
 	}
 
 	/*** IDirectInputDevice methods ***/
-	STDMETHOD(GetCapabilities)(LPDIDEVCAPS devCaps)
+	STDMETHOD(GetCapabilities)(LPDIDEVCAPS lpDIDevCaps)
 	{
 		dinputdebugprintf(__FUNCTION__ " called.\n");
+		if(m_type == GUID_SysMouse)
+		{
+			// This function requires that lpDIDevCaps exists and that it's dwSize member is initialized to either
+			// sizeof(DIDEVCAPS_DX3) which is 24 bytes or sizeof(DIDEVCAPS) which is 44 bytes.
+			if(lpDIDevCaps == NULL) return E_POINTER;
+			if(lpDIDevCaps->dwSize != 24 && lpDIDevCaps->dwSize != 44) return DIERR_INVALIDPARAM;
+			lpDIDevCaps->dwFlags = (DIDC_ATTACHED | DIDC_EMULATED);
+			lpDIDevCaps->dwDevType = 0x112;
+			lpDIDevCaps->dwAxes = 3;
+			lpDIDevCaps->dwButtons = 3;
+			lpDIDevCaps->dwPOVs = 0;
+			if(lpDIDevCaps->dwSize == 44 /*sizeof(DIDEVCAPS)*/) // These are only defined in structs for DX-versions 5+
+			{
+				lpDIDevCaps->dwFFSamplePeriod = 0;
+				lpDIDevCaps->dwFFMinTimeResolution = 0;
+				lpDIDevCaps->dwFirmwareRevision = 0;
+				lpDIDevCaps->dwHardwareRevision = 0;
+				lpDIDevCaps->dwFFDriverVersion = 0;
+			}
+			return DI_OK;
+		}
 		//return rvfilter(m_device->GetCapabilities(devCaps));
-		return DIERR_INVALIDPARAM; // NYI!
+		return DIERR_INVALIDPARAM; // NYI! for keyboard or gamepads
 	}
 
 	STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)	
