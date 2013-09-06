@@ -222,6 +222,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 //	return rv;
 
 	// try to reuse a thread, to avoid leaking lots of thread handles:
+	if(dwStackSize == 0) dwStackSize = tasflags.threadStackSize; // In the case of 0 (default) assign it the default stack size.
 	std::map<DWORD,ThreadWrapperInfo*>::iterator iter;
 	for(iter = threadWrappers.begin(); iter != threadWrappers.end(); iter++)
 	{
@@ -296,7 +297,9 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 	twi->args.dwCreationFlags = dwCreationFlags;
 	HANDLE handle = CreateThread(
 		lpThreadAttributes,
-		dwStackSize,
+		// It's important to add our head to the stack size so that games that create threads with optimized stack sizes
+		// doesn't run out of stack because of us.
+		(dwStackSize + sizeof(ThreadWrapperInfo)),
 		MyThreadWrapperThread,
 		twi,
 		dwCreationFlags,

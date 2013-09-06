@@ -15,6 +15,7 @@ struct TasFlags
 	int forceSoftware;
 	int windowActivateFlags;
 	int threadMode;
+	unsigned int threadStackSize;
 	int timersMode;
 	int messageSyncMode;
 	int waitSyncMode;

@@ -19,6 +19,7 @@ namespace Config{
 		0, //forceSoftware
 		0, //windowActivateFlags
 		1, //threadMode
+		0, //threadStackSize
 		1, //timersMode
 		1, //messageSyncMode
 		1, //waitSyncMode
