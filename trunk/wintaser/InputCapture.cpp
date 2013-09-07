@@ -537,7 +537,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// There are two mappings: inputs and events.
 
 	/** Keyboard **/
-	for (int k=0; k<DI_KEY_NUMBER; k++){
+	for (int k=1; k<DI_KEY_NUMBER; k++){
 
 		// If k is not pressed, we skip to the next key.
 		if (!DI_KEY_PRESSED(keys[k]))

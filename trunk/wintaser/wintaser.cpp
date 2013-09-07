@@ -1762,34 +1762,17 @@ struct UncompressedMovieFrame
 // InjectLocalInputs
 void RecordLocalInputs()
 {
-	//extern unsigned char localGameInputKeys [256];
-	CurrentInput ci;
+	MovieFrame frame;
 	if(InputHasFocus(false))
 	{
-		inputC.ProcessInputs(&ci, NULL);
+		inputC.ProcessInputs(&frame.inputs, NULL);
 		//Update_Input(NULL, true, false, false, false);
 	}
 	else
 	{
-		ci.clear();
+		frame.inputs.clear();
 		//memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
 	}
-
-	MovieFrame frame = {0};
-	//int frameByte = 0;
-	frame.inputs = &ci;
-
-	// pack frame of input
-	/*
-	for(int i = 1; i < 256 && frameByte < sizeof(frame.heldKeyIDs); i++)
-	{
-		if(ci.keys[i])
-		{
-			frame.heldKeyIDs[frameByte] = i;
-			frameByte++;
-			verbosedebugprintf("recording press of key 0x%X on frame %d\n", i, movie.currentFrame);
-		}
-	}*/
 
 	if((int)movie.currentFrame < (int)movie.frames.size())
 		movie.frames.erase(movie.frames.begin() + movie.currentFrame, movie.frames.end());
@@ -1830,7 +1813,7 @@ void InjectCurrentMovieFrame() // playback ... or recording, now
 	verbosedebugprintf("injecting movie frame %d\n", movie.currentFrame);
 
 	SIZE_T bytesWritten = 0;
-	if(!WriteProcessMemory(hGameProcess, remoteInputs, frame.inputs, sizeof(CurrentInput), &bytesWritten))
+	if(!WriteProcessMemory(hGameProcess, remoteInputs, &frame.inputs, sizeof(CurrentInput), &bytesWritten))
 	{
 		debugprintf("failed to write input!!\n");
 	}

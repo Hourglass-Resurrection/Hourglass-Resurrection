@@ -3,7 +3,7 @@
 
 #include "../external/dinput.h"
 #include "../external/Xinput.h"
-
+#include "../wintaser/logging.h"
 #define MOUSE_PRESSED_FLAG 0x80 // Flag saying if a DIMOUSESTATE button is pressed. FIXME: Put the correct value.
 
 #define KEY_FLAG   0x00001

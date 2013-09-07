@@ -3,14 +3,9 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include "../shared/input.h"
 
-// not the most thought-out movie format
-// Hardware supports pretty much all keys on a keyboard to be pressed at the same time,
-// only most keyboards suck and only allow a few keys to be pressed at the same time.
-// heldKeyIDs needs to be expanded to handle this.
 struct MovieFrame
 {
-	CurrentInput* inputs;
-	// unsigned char heldKeyIDs [8]; // Will disappear once we implement the new movie file format.
+	CurrentInput inputs;
 };
 
 #include <vector>

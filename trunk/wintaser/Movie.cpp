@@ -172,8 +172,8 @@ Movie::Movie()
 	if(movie.frames.size() > 0)
 	{
 		unsigned char* input_buffer = (unsigned char*)malloc(4+1+256+13+1); // Max size of a frame input.
-		for (int i=0; i<movie.frames.size(); i++){
-			int size = movie.frames[i].inputs->serialize(input_buffer);
+		for (unsigned int i=0; i<movie.frames.size(); i++){
+			int size = movie.frames[i].inputs.serialize(input_buffer);
 			fwrite(input_buffer, 1, size, file);
 		}
 	}
@@ -356,10 +356,8 @@ Movie::Movie()
 		fread(all_inputs, 1, file_size, file);
 		long current_pos = 0;
 		while(current_pos < file_size){
-			CurrentInput ci;
-			int size = ci.unserialize(all_inputs);
 			MovieFrame mf;
-			mf.inputs = &ci;
+			int size = mf.inputs.unserialize(all_inputs+current_pos);
 			movie.frames.push_back(mf);
 			current_pos += size;
 		}
