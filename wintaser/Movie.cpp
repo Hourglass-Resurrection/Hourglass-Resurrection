@@ -171,7 +171,11 @@ Movie::Movie()
 	// Perhaps we shall introduce a fixed number of null-bytes instead?
 	if(movie.frames.size() > 0)
 	{
-		fwrite(&movie.frames[0], sizeof(MovieFrame), movie.frames.size(), file);
+		unsigned char* input_buffer = (unsigned char*)malloc(4+1+256+13+1); // Max size of a frame input.
+		for (int i=0; i<movie.frames.size(); i++){
+			int size = movie.frames[i].inputs->serialize(input_buffer);
+			fwrite(input_buffer, 1, size, file);
+		}
 	}
 
 	fclose(file);
@@ -337,7 +341,28 @@ Movie::Movie()
 			strcpy(movie.commandline, commandline);
 		}
 
-		fread(&movie.frames[0], sizeof(MovieFrame), length, file);
+		// We now import the inputs into the movie.frames structure.
+		movie.frames.clear();
+
+		// First, we determine how long is the rest of the file (might be improved).
+		long current_file_pos = ftell(file); // Current position in file.
+		fseek(file, 0L, SEEK_END); // Seek to the end of file.
+		long end_file_pos = ftell(file); // Last position in file.
+		fseek(file, current_file_pos, SEEK_SET); // Go back to the previous position.
+		long file_size = end_file_pos - current_file_pos; // Length of the remaining part of the file.
+
+		// Then, we import the whole rest of the file into a buffer.
+		unsigned char* all_inputs = (unsigned char*)malloc(file_size);
+		fread(all_inputs, 1, file_size, file);
+		long current_pos = 0;
+		while(current_pos < file_size){
+			CurrentInput ci;
+			int size = ci.unserialize(all_inputs);
+			MovieFrame mf;
+			mf.inputs = &ci;
+			movie.frames.push_back(mf);
+			current_pos += size;
+		}
 	}
 	else // empty movie file... do we really need this anymore? I mean, it would fail earlier if there was a problem.
 	{

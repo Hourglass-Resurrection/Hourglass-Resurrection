@@ -579,7 +579,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		}
 	}
 
-	// TODO: Mouse, joystick, etc.
+	// TODO: Joystick, etc.
 
 	// Computing the previousKeys for the next call.
 	// We assume that this function can be called multiple times within a single frame.
