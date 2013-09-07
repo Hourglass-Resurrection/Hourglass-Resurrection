@@ -7,7 +7,7 @@
 #include "../wintasee.h"
 #include "../tls.h"
 
-#if defined(_DEBUG) || 1//0
+#if defined(_DEBUG) || 0//1
 	#define _DINPUTDEBUG
 #endif
 
@@ -530,9 +530,9 @@ public:
 		}
 		if(m_type == GUID_SysMouse)
 		{
-			// temp placeholder
-			// TODO: Replace this with an actual DIMOUSESTATE struct!
-			return DIERR_NOTACQUIRED;
+			//debugprintf("Mouse wanted! X pos = %d\n", curinput.mouse.lX);
+			memmove(data, &curinput.mouse, sizeof(DIMOUSESTATE));
+			return DI_OK;
 		}
 	}
 
@@ -587,8 +587,10 @@ public:
 		dinputdebugprintf(__FUNCTION__ " called.\n");
 		if(IsWindow(window))
 			gamehwnd = window;
-		if(m_type == GUID_SysMouse)
-			cmdprintf("MOUSEREG: %d", (unsigned int)window); 
+		if(m_type == GUID_SysMouse){
+			cmdprintf("MOUSEREG: %d", (unsigned int)window);
+			debugprintf("CooperativeMouse!\n");
+		}
 		//return rvfilter(m_device->SetCooperativeLevel(window, level));
 		return DI_OK;
 	}

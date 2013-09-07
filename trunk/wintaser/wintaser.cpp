@@ -1775,13 +1775,12 @@ void RecordLocalInputs()
 		//memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
 	}
 
-	// TODO: Record the whole input instead of the keyboard only.
-
 	MovieFrame frame = {0};
-	int frameByte = 0;
+	//int frameByte = 0;
 	frame.inputs = &ci;
 
 	// pack frame of input
+	/*
 	for(int i = 1; i < 256 && frameByte < sizeof(frame.heldKeyIDs); i++)
 	{
 		if(ci.keys[i])
@@ -1790,7 +1789,7 @@ void RecordLocalInputs()
 			frameByte++;
 			verbosedebugprintf("recording press of key 0x%X on frame %d\n", i, movie.currentFrame);
 		}
-	}
+	}*/
 
 	if((int)movie.currentFrame < (int)movie.frames.size())
 		movie.frames.erase(movie.frames.begin() + movie.currentFrame, movie.frames.end());
@@ -1808,7 +1807,6 @@ void RecordLocalInputs()
 }
 
 
-// TODO: Pass the whole CurrentInput struct instead of just the keyboard.
 void InjectCurrentMovieFrame() // playback ... or recording, now
 {
 	if((unsigned int)movie.currentFrame >= (unsigned int)movie.frames.size())
@@ -3700,6 +3698,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							ReceiveHWND(atoi(pstr));
 						else if(MessagePrefixMatch("MOUSEREG"))
 						{
+							printf("WindowMouse received!\n");
 							inputC.InitDIMouse((HWND)(atoi(pstr)));
 						}
 						else if(MessagePrefixMatch("WATCH")) 

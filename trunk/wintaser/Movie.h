@@ -10,7 +10,7 @@
 struct MovieFrame
 {
 	CurrentInput* inputs;
-	unsigned char heldKeyIDs [8]; // Will disappear once we implement the new movie file format.
+	// unsigned char heldKeyIDs [8]; // Will disappear once we implement the new movie file format.
 };
 
 #include <vector>
