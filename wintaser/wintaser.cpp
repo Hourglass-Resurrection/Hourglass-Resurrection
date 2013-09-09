@@ -3681,8 +3681,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							ReceiveHWND(atoi(pstr));
 						else if(MessagePrefixMatch("MOUSEREG"))
 						{
-							printf("WindowMouse received!\n");
-							inputC.InitDIMouse((HWND)(atoi(pstr)));
+							inputC.InitDIMouse((HWND)(atoi(pstr)), true);
 						}
 						else if(MessagePrefixMatch("WATCH")) 
 						{

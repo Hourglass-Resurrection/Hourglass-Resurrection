@@ -82,7 +82,7 @@ private:
 	HWND hotkeysbox;
 	HWND gameinputbox;
 
-	unsigned char previousKeys[DI_KEY_NUMBER]; // List of previous key states, needed for events triggering.
+	unsigned char oldKeys[DI_KEY_NUMBER]; // List of previous key states, needed for events triggering.
 
 	// Return if the key is a modifier.
 	bool IsModifier(unsigned char key);
@@ -96,8 +96,13 @@ private:
 	// Get the current keyboard state.
 	void GetKeyboardState(unsigned char* keys);
 
+	// Get the current keyboard state.
+	void GetMouseState(DIMOUSESTATE* mouse);
+
 	// Get the next input pressed.
 	void NextInput(SingleInput* si, bool allowModifiers);
+
+	/** Mapping functions **/
 
 	// We need to be able to remove a map element based on the value. It doesn't need to be fast.
 	void RemoveValueFromInputMap(const SingleInput* si);
@@ -107,50 +112,6 @@ private:
 
 	// Used by the callback to populate the listboxes.
 	void PopulateListbox(HWND listbox);
-
-public:
-
-	InputCapture::InputCapture();
-	InputCapture::InputCapture(char* filename);
-
-	static const int SICount = 144;
-	static const int eventCount = 67;
-
-	// Init all input devices it can.
-	bool InitInputs(HINSTANCE hInst, HWND hWnd);
-
-	// Init a DI keyboard if possible
-	HRESULT InitDIKeyboard(HWND hWnd);
-
-	// Init a DI mouse if possible
-	HRESULT InitDIMouse(HWND hWnd);
-
-	// Release all inputs that have been acquired.
-	void ReleaseInputs();
-
-	// Add a map from a key+modifiers to a key.
-	void AddKeyToKeyMapping(short modifiedKey, char destinationKey);
-
-	// Add a map from a key+modifiers to an event.
-	void AddKeyToEventMapping(short modifiedKey, WORD eventId);
-
-	// Clear all input mappings
-	void EmptyAllInputMappings();
-
-	// Clear all event mappings
-	void EmptyAllEventMappings();
-
-	/* Big function here, should be called by wintaser (should be splitted up ?)
-	 * - gather the key states from lpDIDKeyboard
-	 * - compare to previousKeyStates to see which key were pressed (modifiers don't need this)
-	 * - Build the list of modifiers+pressed_key for the following mapping
-	 * - Gather the list of corresponding inputs/events after remapping
-	 * - Execute all events
-	 * - Build the InputState struct and return it
-
-	 * Well, another possibility is to also return the list of events...
-	 */
-	void ProcessInputs(CurrentInput* currentI, HWND hWnd);
 
 	// Retreive the next single input pressed, and map it to the SingleInput whose index on the SIList is SIListIndex.
 	void ReassignInput(int SIListIndex);
@@ -177,16 +138,48 @@ public:
 	void BuildDefaultEventMapping();
 
 	// Build the string with the input and its mapping.
-	void FormatInputMapping(int index, char* from, char* to);
+	void FormatInputMapping(int index, char* line);
 
 	// Build the string with the event and its mapping.
-	void FormatEventMapping(int index, char* from, char* to);
+	void FormatEventMapping(int index, char* line);
 
 	// Save current mapping into a config file
 	void SaveMapping(char* filename);
 
 	// Load mapping from a config file
 	void LoadMapping(char* filename);
+
+public:
+
+	InputCapture::InputCapture();
+	InputCapture::InputCapture(char* filename);
+
+	static const int SICount = 148;
+	static const int eventCount = 67;
+
+	// Init all input devices it can.
+	bool InitInputs(HINSTANCE hInst, HWND hWnd);
+
+	// Init a DI keyboard if possible
+	HRESULT InitDIKeyboard(HWND hWnd);
+
+	// Init a DI mouse if possible
+	HRESULT InitDIMouse(HWND hWnd, bool exclusive);
+
+	// Release all inputs that have been acquired.
+	void ReleaseInputs();
+
+	/* Big function here, should be called by wintaser (should be splitted up ?)
+	 * - gather the key states from lpDIDKeyboard
+	 * - compare to previousKeyStates to see which key were pressed (modifiers don't need this)
+	 * - Build the list of modifiers+pressed_key for the following mapping
+	 * - Gather the list of corresponding inputs/events after remapping
+	 * - Execute all events
+	 * - Build the InputState struct and return it
+
+	 * Well, another possibility is to also return the list of events...
+	 */
+	void ProcessInputs(CurrentInput* currentI, HWND hWnd);
 
 	// Callback to change config of all the input.
 	// This SHOULD work according to the C++ FAQ Lite section 33.2

@@ -164,7 +164,12 @@ struct SingleInput InputCapture::SIList[] =
 	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBBACK, "WebBack"},
 	{SINGLE_INPUT_DI_KEYBOARD, DIK_MYCOMPUTER, "MyComputer"},
 	{SINGLE_INPUT_DI_KEYBOARD, DIK_MAIL, "Mail"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASELECT, "MediaSelect"}
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASELECT, "MediaSelect"},
+
+	{SINGLE_INPUT_DI_MOUSE, 0, "Mouse Button 0"},
+	{SINGLE_INPUT_DI_MOUSE, 1, "Mouse Button 1"},
+	{SINGLE_INPUT_DI_MOUSE, 2, "Mouse Button 2"},
+	{SINGLE_INPUT_DI_MOUSE, 3, "Mouse Button 3"}
 };
 
 struct Event InputCapture::eventList[] =
@@ -260,7 +265,7 @@ InputCapture::InputCapture()
 		BuildDefaultInputMapping();
 	}
 
-	memset(previousKeys, 0, DI_KEY_NUMBER);
+	memset(oldKeys, 0, DI_KEY_NUMBER);
 }
 
 InputCapture::InputCapture(char* filename) // Construct by loading from file.
@@ -287,8 +292,7 @@ InputCapture::InputCapture(char* filename) // Construct by loading from file.
 		BuildDefaultInputMapping();
 	}
 
-	memset(previousKeys, 0, DI_KEY_NUMBER);
-
+	memset(oldKeys, 0, DI_KEY_NUMBER);
 }
 
 bool InputCapture::IsModifier(unsigned char key){
@@ -375,6 +379,18 @@ void InputCapture::GetKeyboardState(unsigned char* keys){
 	}
 }
 
+void InputCapture::GetMouseState(DIMOUSESTATE* mouse){
+	HRESULT rval = lpDIDMouse->GetDeviceState(sizeof(DIMOUSESTATE), mouse);
+
+	if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED)){
+		lpDIDMouse->Acquire();
+		rval = lpDIDMouse->GetDeviceState(sizeof(DIMOUSESTATE), mouse);
+		if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED))
+			// We couldn't get the state of the mouse. Let's just say nothing was pressed.
+			memset(mouse, 0, sizeof(DIMOUSESTATE));
+	}
+}
+
 bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 
 	// Init the main DI interface.
@@ -423,11 +439,11 @@ HRESULT InputCapture::InitDIKeyboard(HWND hWnd){
 }
 
 // Init a DI mouse if possible
-HRESULT InputCapture::InitDIMouse(HWND hWnd){
+HRESULT InputCapture::InitDIMouse(HWND hWnd, bool exclusive){
 	HRESULT rval = lpDI->CreateDevice(GUID_SysMouse, &lpDIDMouse, NULL);
 	if(rval != DI_OK) return rval;
 
-	rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+	rval = lpDIDMouse->SetCooperativeLevel(hWnd, (exclusive?DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND);
 	if(rval != DI_OK) return rval;
 
 	rval = lpDIDMouse->SetDataFormat(&c_dfDIMouse);
@@ -453,28 +469,6 @@ void InputCapture::ReleaseInputs(){
 		lpDI->Release();
 		lpDI = NULL;
 	}
-}
-
-void InputCapture::AddKeyToKeyMapping(short modifiedKey, char destinationKey){
-	SingleInput mapFrom = {SINGLE_INPUT_DI_KEYBOARD, modifiedKey};
-	SingleInput mapTo = {SINGLE_INPUT_DI_KEYBOARD, (short)destinationKey};
-	inputMapping[mapFrom] = mapTo; // Cool syntax!
-}
-
-// Add a map from a key+modifiers to an event.
-void InputCapture::AddKeyToEventMapping(short modifiedKey, WORD eventId){
-	SingleInput mapFrom = {SINGLE_INPUT_DI_KEYBOARD, modifiedKey};
-	eventMapping[mapFrom] = eventId;
-}
-
-// Clear all input mappings
-void InputCapture::EmptyAllInputMappings(){
-	inputMapping.clear();
-}
-
-// Clear all event mappings
-void InputCapture::EmptyAllEventMappings(){
-	eventMapping.clear();
 }
 
 // TODO: Put this somewhere else ?
@@ -524,10 +518,20 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	unsigned char keys[256];
 	GetKeyboardState(keys);
 
+	DIMOUSESTATE mouseState;
 	// If a mouse is attached, get it's state.
 	if(lpDIDMouse != NULL)
 	{
-		lpDIDMouse->GetDeviceState(sizeof(DIMOUSESTATE), &(currentI->mouse));
+		GetMouseState(&mouseState);
+
+		// We can directly copy the axis states as it is not mappable.
+		currentI->mouse.lX = mouseState.lX;
+		currentI->mouse.lY = mouseState.lY;
+		currentI->mouse.lZ = mouseState.lZ;
+	}
+	else
+	{
+		memset(&mouseState, 0, sizeof(DIMOUSESTATE));
 	}
 
 	// Bulding the modifier from the array of pressed keys.
@@ -552,7 +556,10 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			// We found a mapping. We need to flag the key in the CurrentInput struct.
 			// As wintasee is dealing with a VK-indexed array, we are doing the conversion here.
 			SingleInput siMapped = iterI->second;
-			currentI->keys[convertDIKToVK(siMapped.key)] = 1;
+			if (siMapped.device == SINGLE_INPUT_DI_KEYBOARD)
+				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
+			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
+				currentI->mouse.rgbButtons[siMapped.key] |= 0x80;
 		}
 
 		if (!hWnd)
@@ -561,7 +568,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		/* Event mapping */
 
 		// We also have to check that the key was just pressed.
-		if (DI_KEY_PRESSED(previousKeys[k]))
+		if (DI_KEY_PRESSED(oldKeys[k]))
 			continue;
 
 		// If k is a modifier, we don't process it.
@@ -579,15 +586,39 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 		}
 	}
 
-	// TODO: Joystick, etc.
-
 	// Computing the previousKeys for the next call.
 	// We assume that this function can be called multiple times within a single frame.
 	// But only one call per frame is processing the events.
 	if (hWnd){
-		memmove(previousKeys, keys, DI_KEY_NUMBER);
+		memmove(oldKeys, keys, DI_KEY_NUMBER);
 	}
 
+	/** Mouse **/
+	for (int i=0; i<4; i++)
+	{
+		// If mouse button i is not pressed, we skip to the next button.
+		if (!DI_KEY_PRESSED(mouseState.rgbButtons[i]))
+			continue;
+
+		// Now we build the SingleInput, and check if it's mapped to something.
+		SingleInput siPressed = {SINGLE_INPUT_DI_MOUSE, i, ""};
+
+		//TODO: Duplicate code !!!
+
+		/* Input mapping */
+		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
+		if (iterI != inputMapping.end()){
+			// We found a mapping. We need to flag the key in the CurrentInput struct.
+			// As wintasee is dealing with a VK-indexed array, we are doing the conversion here.
+			SingleInput siMapped = iterI->second;
+			if (siMapped.device == SINGLE_INPUT_DI_KEYBOARD)
+				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
+			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
+				currentI->mouse.rgbButtons[siMapped.key] |= 0x80;
+		}
+	}
+
+	// TODO: Joystick, etc.
 
 }
 
@@ -596,19 +627,27 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 
 	unsigned char previousKeys[DI_KEY_NUMBER];
 	unsigned char currentKeys[DI_KEY_NUMBER];
-	bool somethingPressed = false;
+
+	DIMOUSESTATE previousMouse;
+	DIMOUSESTATE currentMouse;
 
 	// Get the previous keyboard state.
 	GetKeyboardState(previousKeys);
-	// TODO: get also mouse/joystick states.
+
+	// Get the previous mouse state.
+	if(lpDIDMouse != NULL)
+		GetMouseState(&previousMouse);
 
 	Sleep(1);
 
 	while(true){ // Set a timeout?
 
-		// Get the current keyboard state.
+		// Get the current keyboard and mouse state.
 		GetKeyboardState(currentKeys);
-		// TODO: get also mouse/joystick states.
+		if(lpDIDMouse != NULL)
+			GetMouseState(&currentMouse);
+
+		char modifier = BuildModifier(currentKeys);
 
 		// Try to find a key that was just pressed.
 		for (int i=0; i<DI_KEY_NUMBER; i++)
@@ -620,7 +659,6 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 				// We found a just-pressed key. We need to return the SingleInput
 				si->device = SINGLE_INPUT_DI_KEYBOARD;
 				if (allowModifiers){
-					char modifier = BuildModifier(currentKeys);
 					si->key = (((short)modifier) << 8) | i;
 				}
 				else {
@@ -631,10 +669,23 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 			}
 		}
 
-		// TODO: Try to find a mouse button that was just pressed.
+		// Try to find a mouse button that was just pressed. We can only map mouse buttons, not axes.
+		for (int i=0; i<4; i++)
+		{
+			if (!DI_KEY_PRESSED(previousMouse.rgbButtons[i]) && DI_KEY_PRESSED(currentMouse.rgbButtons[i]))
+			{
+				// We found a just-pressed mouse button. We need to return the SingleInput
+				si->device = SINGLE_INPUT_DI_MOUSE;
+				si->key = i;
+				sprintf(si->description, "Mouse button %d", i);
+				return;
+			}
+		}
+
 		// TODO: Try to find a joystick button that was just pressed.
 
 		memcpy(previousKeys, currentKeys, DI_KEY_NUMBER);
+		memcpy(&previousMouse, &currentMouse, sizeof(DIMOUSESTATE));
 		Sleep(1);
 	}
 }
@@ -732,31 +783,33 @@ void InputCapture::BuildDefaultEventMapping(){
 	}
 }
 
-void InputCapture::FormatInputMapping(int index, char* from, char* to){
+void InputCapture::FormatInputMapping(int index, char* line){
 
 	SingleInput* si = &SIList[index];
-	strcpy(from, si->description);
+	strcpy(line, si->description);
+	strcat(line, "\t");
 
 	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		SingleInput toInput = iter->second;
 		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
-			strcpy(to, fromInput.description);
+			strcat(line, fromInput.description);
 			return;
 		}
 	}
 }
 
-void InputCapture::FormatEventMapping(int index, char* from, char* to){
+void InputCapture::FormatEventMapping(int index, char* line){
 
 	Event* ev = &eventList[index];
-	strcpy(from, ev->description);
+	strcpy(line, ev->description);
+	strcat(line, "\t");
 
 	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
 		SingleInput fromInput = iter->first;
 		WORD toEventId = iter->second;
 		if(ev->id == toEventId){
-			strcpy(to, fromInput.description);
+			strcat(line, fromInput.description);
 			return;
 		}
 	}
@@ -783,8 +836,6 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 	static bool hotkeysNoLongerDefault = false;
 	static bool gameinputNoLongerDefault = false;
 	//static HWND Tex0 = NULL;
-	static map<Event,SingleInput> newHotKeys;
-	static map<SingleInput,SingleInput> newGameInput;
 	//extern HWND hWnd; // Same comment!
 
 	EnableWindow(GetDlgItem(hDlg, IDC_CONF_SAVE), unsavedChanges ? TRUE : FALSE);
@@ -821,6 +872,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			{
 				return FALSE;
 			}
+			inputC->InitDIMouse(hDlg, false);
 
 			/*HWND hotkeys*/ inputC->hotkeysbox = GetDlgItem(hDlg, IDC_HOTKEYBOX);
 			/*HWND gameinput*/ inputC->gameinputbox = GetDlgItem(hDlg, IDC_GAMEINPUTBOX);
@@ -884,16 +936,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					// Check if the selection happened in HotKeys
 					if(SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
-						inputC->NextInput(&si, true);
-						Event e = eventList[buf[0]];
-
-						newHotKeys[e] = si;
+						inputC->ReassignEvent(buf[0]);
 
 						char line[256];
-
-						strcpy(line, e.description);
-						strcat(line, "\t");
-						strcat(line, si.description);
+						inputC->FormatEventMapping(buf[0], line);
 
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -902,16 +948,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					}
 					else if(SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
-						inputC->NextInput(&si, false);
-						SingleInput s = SIList[buf[0]];
-
-						newGameInput[s] = si;
+						inputC->ReassignInput(buf[0]);
 
 						char line[256];
-
-						strcpy(line, s.description);
-						strcat(line, "\t");
-						strcat(line, si.description);
+						inputC->FormatInputMapping(buf[0], line);
 
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -928,14 +968,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					int returned = SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
-						Event e = eventList[buf[i]];
-						newHotKeys[e] = e.defaultInput;
+						inputC->DefaultEvent(buf[i]);
 
 						char line[256];
-
-						strcpy(line, e.description);
-						strcat(line, "\t");
-						strcat(line, e.defaultInput.description);
+						inputC->FormatEventMapping(buf[i], line);
 
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -945,14 +981,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					returned = SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
-						SingleInput si = SIList[buf[i]];
-						newGameInput[si] = si;
+						inputC->DefaultInput(buf[i]);
 
 						char line[256];
-
-						strcpy(line, si.description);
-						strcat(line, "\t");
-						strcat(line, si.description);
+						inputC->FormatInputMapping(buf[i], line);
 
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -967,16 +999,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					int returned = SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
-						Event e = eventList[buf[i]];
-						SingleInput si;
-						si.description[0] = '\0';
-						newHotKeys[e] = si;
+						inputC->DisableEvent(buf[i]);
 
 						char line[256];
-
-						strcpy(line, e.description);
-						strcat(line, "\t");
-						strcat(line, "");
+						inputC->FormatEventMapping(buf[i], line);
 
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -986,16 +1012,10 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					returned = SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
-						SingleInput si = SIList[buf[i]];
-						SingleInput s;
-						s.description[0] = '\0';
-						newGameInput[si] = s;
+						inputC->DisableInput(buf[i]);
 
 						char line[256];
-
-						strcpy(line, si.description);
-						strcat(line, "\t");
-						strcat(line, "");
+						inputC->FormatInputMapping(buf[i], line);
 
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
 						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
@@ -1006,22 +1026,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				} break;
 				case IDC_CONF_SAVE:
 				{
-					for(std::map<Event,SingleInput>::iterator it = newHotKeys.begin(); it != newHotKeys.end(); ++it)
-					{
-						if((it->second).description == "")// Disable, needs a better way of denoting it.
-						{
-							inputC->RemoveValueFromEventMap(it->first.id);
-						}
-						//eventMapping[it->second] = (it->first).id;
-					}
-					for(std::map<SingleInput,SingleInput>::iterator it = newGameInput.begin(); it != newGameInput.end(); ++it)
-					{
-						if((it->second).description == "")// Disable, needs a better way of denoting it.
-						{
-							inputC->RemoveValueFromInputMap(&(it->first));
-						}
-						//inputMapping[it->second] = it->first;
-					}
+					//inputC->SaveMapping(filename);
 					unsavedChanges = false;
 				} break;
 				case IDC_CONF_CLOSE:
@@ -1036,17 +1041,9 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			inputC->ReleaseInputs();
 			delete inputC;
 			inputC = NULL;
-			newHotKeys.clear();
-			newGameInput.clear();
 			EndDialog(hDlg, true);
 			return TRUE;
 		} break;
-	}
-
-	if(unsavedChanges == false)
-	{
-		newHotKeys.clear();
-		newGameInput.clear();
 	}
 
 	return FALSE;
@@ -1063,22 +1060,15 @@ void InputCapture::PopulateListbox(HWND listbox)
 	else
 		inputNumber = SICount;
 
-	char mapFrom[256] = {'\0'};
-	char mapTo[256] = {'\0'};
 	char line[256] = {'\0'};
 
 	for(int i=0; i<inputNumber; i++){
 
 		// Get the map strings.
 		if (listbox == hotkeysbox)
-			FormatEventMapping(i, mapFrom, mapTo);
+			FormatEventMapping(i, line);
 		else
-			FormatInputMapping(i, mapFrom, mapTo);
-
-		// Build the line.
-		strcpy(line, mapFrom);
-		strcat(line, "\t");
-		strcat(line, mapTo);
+			FormatInputMapping(i, line);
 
 		// Send it.
 		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) line);
