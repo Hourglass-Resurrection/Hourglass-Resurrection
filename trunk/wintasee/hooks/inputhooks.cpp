@@ -588,8 +588,7 @@ public:
 		if(IsWindow(window))
 			gamehwnd = window;
 		if(m_type == GUID_SysMouse){
-			cmdprintf("MOUSEREG: %d", (unsigned int)window);
-			debugprintf("CooperativeMouse!\n");
+			cmdprintf("MOUSEREG: %d", window);
 		}
 		//return rvfilter(m_device->SetCooperativeLevel(window, level));
 		return DI_OK;
