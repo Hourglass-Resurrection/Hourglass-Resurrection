@@ -7,7 +7,7 @@
 #include "../wintasee.h"
 #include "../tls.h"
 
-#if defined(_DEBUG) || 0//1
+#if defined(_DEBUG) || 1//0
 	#define _DINPUTDEBUG
 #endif
 
@@ -250,6 +250,27 @@ struct BufferedInput
 		dinputdebugprintf(__FUNCTION__ " called.\n");
 		for(int i = (int)bufferList.size()-1; i >= 0; i--)
 			bufferList[i]->AddEvent(inputEvent);
+	}
+	void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
+	{
+		dinputdebugprintf(__FUNCTION__ " called.\n");
+		if(used >= size)
+			overflowed = TRUE;
+		else
+		{
+			dinputdebugprintf(__FUNCTION__ "(dwOfs=0x%X, data=0x%X, id=0x%X) (used=%d)\n", inputEvent.dwOfs, inputEvent.dwData, inputEvent.dwSequence, used);
+
+			data[(startOffset + used) % size] = inputEvent;
+			used++;
+		}
+		if(event)
+			SetEvent(event);
+	}
+	static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
+	{
+		dinputdebugprintf(__FUNCTION__ " called.\n");
+		for(int i = (int)bufferList.size()-1; i >= 0; i--)
+			bufferList[i]->AddMouseEvent(inputEvent);
 	}
 };
 
@@ -568,6 +589,7 @@ public:
 
 		if(m_acquired)
 			return DIERR_ACQUIRED;
+
 		// NYI... assume 256 byte keyboard for now
 		return DI_OK;
 	}
@@ -1231,10 +1253,50 @@ void ProcessFrameInput()
 		}
 	}
 
+	// Send mouse events.
+	if (curinput.mouse.lX != 0){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X, curinput.mouse.lX, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.lY != 0){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y, curinput.mouse.lY, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.lZ != 0){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, curinput.mouse.lZ, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.rgbButtons[0] && !previnput.mouse.rgbButtons[0]){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, 0x80, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.rgbButtons[1] && !previnput.mouse.rgbButtons[1]){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, 0x80, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.rgbButtons[2] && !previnput.mouse.rgbButtons[2]){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, 0x80, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
+	if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
+		DWORD timeStamp = detTimer.GetTicks();
+		s_lii.dwTime = timeStamp;
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON3, 0x80, timeStamp, inputEventSequenceID++};
+		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
+	}
 
-
-	//if(curinput.keys['Z'])
-	//	debugprintf("Z PRESSED ON %d (%c)\n", framecount, tasflags.playback?'p':'r');
 }
 
 HOOKFUNC MMRESULT WINAPI MyjoyReleaseCapture(UINT uJoyID)
@@ -1313,9 +1375,10 @@ HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
 {
 	if(!lpPoint) { return FALSE; }
 	// NYI
-	lpPoint->x = 0;
-	lpPoint->y = 0;
-	return TRUE;
+	//lpPoint->x = 0;
+	//lpPoint->y = 0;
+	return GetCursorPos(lpPoint);
+	//return TRUE;
 }
 
 HOOKFUNC BOOL WINAPI MyGetCursorInfo(PCURSORINFO pci)

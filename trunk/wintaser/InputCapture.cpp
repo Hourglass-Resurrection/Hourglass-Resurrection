@@ -443,7 +443,11 @@ HRESULT InputCapture::InitDIMouse(HWND hWnd, bool exclusive){
 	HRESULT rval = lpDI->CreateDevice(GUID_SysMouse, &lpDIDMouse, NULL);
 	if(rval != DI_OK) return rval;
 
-	rval = lpDIDMouse->SetCooperativeLevel(hWnd, (exclusive?DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND);
+	// FIXME: This is not good!
+	if (exclusive)
+		rval = lpDIDMouse->SetCooperativeLevel(NULL, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
+	else
+		rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE|DISCL_FOREGROUND);
 	if(rval != DI_OK) return rval;
 
 	rval = lpDIDMouse->SetDataFormat(&c_dfDIMouse);
