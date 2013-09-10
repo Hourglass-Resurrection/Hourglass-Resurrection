@@ -1138,6 +1138,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		 )
 		{
 			sentToAny = true;
+
+			// Send keyboard messages.
 			HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
 
 			BYTE keyboardState[256];
@@ -1182,6 +1184,33 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 #else
 					//SendMessage(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
 					MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+#endif
+				}
+			}
+
+			// Send mouse messages.
+			WORD mouseButtonsUp[4] = {WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, WM_XBUTTONUP}; // FIXME: fix the order.
+			WORD mouseButtonsDown[4] = {WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN}; // FIXME: fix the order.
+
+			for (int i = 0; i < 4; i++){
+				int cur = curinput.mouse.rgbButtons[i];
+				int prev = previnput.mouse.rgbButtons[i];
+				if(cur && !prev)
+				{
+					debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
+#ifdef EMULATE_MESSAGE_QUEUES
+					PostMessageInternal(hwnd, mouseButtonsDown[i], 0, 0);
+#else
+					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), 0, 0); // TODO: fill lParam and wParam
+#endif
+				}
+				else if(!cur && prev)
+				{
+					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
+#ifdef EMULATE_MESSAGE_QUEUES
+					PostMessageInternal(hwnd, mouseButtonsUp[i], i, 0);
+#else
+					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), 0, 0);
 #endif
 				}
 			}
