@@ -552,7 +552,15 @@ public:
 		if(m_type == GUID_SysMouse)
 		{
 			//debugprintf("Mouse wanted! X pos = %d\n", curinput.mouse.lX);
-			memmove(data, &curinput.mouse, sizeof(DIMOUSESTATE));
+			// In the case of the game using DIMOUSESTATE2 we need to make sure the extra buttons are set to "idle" to avoid weird problems.
+			if(size == sizeof(DIMOUSESTATE2))
+			{
+				((LPDIMOUSESTATE2)data)->rgbButtons[4] = 0;
+				((LPDIMOUSESTATE2)data)->rgbButtons[5] = 0;
+				((LPDIMOUSESTATE2)data)->rgbButtons[6] = 0;
+				((LPDIMOUSESTATE2)data)->rgbButtons[7] = 0;
+			}
+			memcpy(data, &curinput.mouse, sizeof(DIMOUSESTATE));
 			return DI_OK;
 		}
 	}
@@ -570,7 +578,7 @@ public:
 		return m_bufferedInput.GetData(size, data, numElements, flags);
 	}
 
-	STDMETHOD(SetDataFormat)(LPCDIDATAFORMAT df)
+	STDMETHOD(SetDataFormat)(LPCDIDATAFORMAT lpdf)
 	{
 		dinputdebugprintf(__FUNCTION__ " called.\n");
 		//return rvfilter(m_device->SetDataFormat(df));
