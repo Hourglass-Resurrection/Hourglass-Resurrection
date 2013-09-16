@@ -7,7 +7,7 @@
 #include "../wintasee.h"
 #include "../tls.h"
 
-#if defined(_DEBUG) || 1//0
+#if defined(_DEBUG) || 0//0
 	#define _DINPUTDEBUG
 #endif
 
@@ -551,7 +551,6 @@ public:
 		}
 		if(m_type == GUID_SysMouse)
 		{
-			//debugprintf("Mouse wanted! X pos = %d\n", curinput.mouse.lX);
 			// In the case of the game using DIMOUSESTATE2 we need to make sure the extra buttons are set to "idle" to avoid weird problems.
 			if(size == sizeof(DIMOUSESTATE2))
 			{
@@ -560,7 +559,7 @@ public:
 				((LPDIMOUSESTATE2)data)->rgbButtons[6] = 0;
 				((LPDIMOUSESTATE2)data)->rgbButtons[7] = 0;
 			}
-			memcpy(data, &curinput.mouse, sizeof(DIMOUSESTATE));
+			memcpy(data, &curinput.mouse.di, sizeof(DIMOUSESTATE));
 			return DI_OK;
 		}
 	}
@@ -1262,48 +1261,48 @@ void ProcessFrameInput()
 	}
 
 	// Send mouse events.
-	if (curinput.mouse.lX != 0){
+	if (curinput.mouse.di.lX != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X, curinput.mouse.lX, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X, curinput.mouse.di.lX, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.lY != 0){
+	if (curinput.mouse.di.lY != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y, curinput.mouse.lY, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y, curinput.mouse.di.lY, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.lZ != 0){
+	if (curinput.mouse.di.lZ != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, curinput.mouse.lZ, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, curinput.mouse.di.lZ, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.rgbButtons[0] && !previnput.mouse.rgbButtons[0]){
+	if (curinput.mouse.di.rgbButtons[0] && !previnput.mouse.di.rgbButtons[0]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
 		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, 0x80, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.rgbButtons[1] && !previnput.mouse.rgbButtons[1]){
+	if (curinput.mouse.di.rgbButtons[1] && !previnput.mouse.di.rgbButtons[1]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
 		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, 0x80, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.rgbButtons[2] && !previnput.mouse.rgbButtons[2]){
+	if (curinput.mouse.di.rgbButtons[2] && !previnput.mouse.di.rgbButtons[2]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
 		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, 0x80, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
+	/*if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
 		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON3, 0x80, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
-	}
+	}*/
 
 }
 

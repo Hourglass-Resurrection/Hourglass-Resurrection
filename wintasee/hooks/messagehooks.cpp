@@ -285,8 +285,18 @@ static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPA
 
 //	if(message >= toggleWhitelistMessage(WM_KEYFIRST) && message <= toggleWhitelistMessage(WM_KEYLAST))
 //		return MAF_PASSTHROUGH | MAF_RETURN_OS;
-	if(message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
-		return MAF_INTERCEPT | MAF_RETURN_1;
+	if(message >= WM_MOUSEFIRST && message <= WM_MOUSELAST){
+		// This filtering is currently breaking Braid mouse inputs.
+		// However, we are generating exactly the same messages in the wintasee code.
+		// Why is it not working ?
+		//debugprintf("MOUSE message is 0x%X with wParam = %d and lParam = %d\n",message, wParam, lParam);
+		//debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		//if (message == WM_MOUSEMOVE)
+			//return MAF_PASSTHROUGH | MAF_RETURN_OS;
+		//else
+			return MAF_INTERCEPT | MAF_RETURN_1;
+	}
+	
 //	if(message >= toggleWhitelistMessage(WM_MOUSEFIRST) && message <= toggleWhitelistMessage(WM_MOUSELAST))
 //		return MAF_INTERCEPT | MAF_RETURN_1; // FIXME: TODO: mouse support is not implemented
 

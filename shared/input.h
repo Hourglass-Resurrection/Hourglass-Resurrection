@@ -13,7 +13,7 @@
 
 struct CurrentInput {
 	unsigned char keys[256]; // Contains 0/1, indexed by DIK_XXX. SIZE: 256 bytes
-	DIMOUSESTATE mouse; // SIZE: 16 bytes
+	struct { DIMOUSESTATE di; POINT coords; } mouse; // SIZE: 24 bytes
 	DIJOYSTATE joypad[8]; // SIZE: ((4 * 8) + (4 * 4) + (32 * 1) * 8) = 304 bytes
 	// We can use extended variants of MOUSESTATE and JOYSTATE which contain more buttons, do we want to? If the game supports it, so can we...
 	// Extra size: MOUSESTATE2 +4 bytes        JOYSTATE2 +96 bytes (PER JOYPAD! So: Extra 768 bytes!)
@@ -23,9 +23,9 @@ struct CurrentInput {
 	void clear(){
 		for (int i=0; i<256; i++)
 			keys[i] = 0;
-		mouse.lX = mouse.lY = mouse.lZ = 0;
+		mouse.di.lX = mouse.di.lY = mouse.di.lZ = mouse.coords.x = mouse.coords.y = 0;
 		for (int i=0; i<4; i++)
-			mouse.rgbButtons[i] = 0;
+			mouse.di.rgbButtons[i] = 0;
 		// TODO: the rest, I'm lazy...
 	}
 
@@ -50,23 +50,25 @@ struct CurrentInput {
 		}
 
 		/* Pack the mouse */
-		bool isMouseUsed = (mouse.lX != 0) || (mouse.lY != 0) || (mouse.lZ != 0);
+		bool isMouseUsed = (mouse.di.lX != 0) || (mouse.di.lY != 0) || (mouse.di.lZ != 0);
 		for (int i=0; i<4; i++)
-			isMouseUsed |= ((mouse.rgbButtons[i] & MOUSE_PRESSED_FLAG) != 0);
+			isMouseUsed |= ((mouse.di.rgbButtons[i] & MOUSE_PRESSED_FLAG) != 0);
 
-		unsigned char mouse_packed[13]; // 4 bytes for each direction (X, Y, Z) and 1 byte for the buttons.
+		unsigned char mouse_packed[21]; // 4 bytes for each relative direction (X, Y, Z), 1 byte for the buttons and 8 bytes for the aboslute coords.
 		if (isMouseUsed){
-			memmove(mouse_packed, &mouse.lX, 4);
-			memmove(mouse_packed+4, &mouse.lY, 4);
-			memmove(mouse_packed+8, &mouse.lZ, 4);
+			memmove(mouse_packed, &mouse.di.lX, 4);
+			memmove(mouse_packed+4, &mouse.di.lY, 4);
+			memmove(mouse_packed+8, &mouse.di.lZ, 4);
 
 			// We can pack the four button states into a single byte.
 			unsigned char buttons = 0;
 			for (int i=0; i<4; i++){
-				if(mouse.rgbButtons[i] & MOUSE_PRESSED_FLAG)
+				if(mouse.di.rgbButtons[i] & MOUSE_PRESSED_FLAG)
 					buttons |= (1 << i);
 			}
 			mouse_packed[12] = buttons;
+			memmove(mouse_packed+13, &mouse.coords.x, 4);
+			memmove(mouse_packed+17, &mouse.coords.y, 4);
 
 			mask |= MOUSE_FLAG;
 		}
@@ -87,8 +89,8 @@ struct CurrentInput {
 
 		// Write the mouse.
 		if (isMouseUsed){
-			memmove(input_pack + current_pos, mouse_packed, 13);
-			current_pos += 13;
+			memmove(input_pack + current_pos, mouse_packed, 21);
+			current_pos += 21;
 		}
 
 		// Write the end of buffer (do we need that ?).
@@ -114,16 +116,19 @@ struct CurrentInput {
 		}
 
 		if (mask & MOUSE_FLAG){ // A mouse is present.
-			memmove(&mouse.lX, packed_input+current_pos, 4);
-			memmove(&mouse.lY, packed_input+current_pos+4, 4);
-			memmove(&mouse.lZ, packed_input+current_pos+8, 4);
+			memmove(&mouse.di.lX, packed_input+current_pos, 4);
+			memmove(&mouse.di.lY, packed_input+current_pos+4, 4);
+			memmove(&mouse.di.lZ, packed_input+current_pos+8, 4);
 			current_pos += 12;
 
 			unsigned char buttons = packed_input[current_pos++];
 			for (int i=0; i<4; i++){
 				if (buttons & (1 << i))
-					mouse.rgbButtons[i] = MOUSE_PRESSED_FLAG;
+					mouse.di.rgbButtons[i] = MOUSE_PRESSED_FLAG;
 			}
+			memmove(&mouse.coords.x, packed_input+current_pos, 4);
+			memmove(&mouse.coords.y, packed_input+current_pos+4, 4);
+			current_pos += 8;
 		}
 
 		return current_pos;
