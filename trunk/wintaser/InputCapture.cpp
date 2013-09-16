@@ -445,7 +445,8 @@ HRESULT InputCapture::InitDIMouse(HWND hWnd, bool exclusive){
 
 	// FIXME: This is not good!
 	if (exclusive)
-		rval = lpDIDMouse->SetCooperativeLevel(NULL, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
+		//rval = lpDIDMouse->SetCooperativeLevel(NULL, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
+		rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
 	else
 		rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE|DISCL_FOREGROUND);
 	if(rval != DI_OK) return rval;
@@ -526,12 +527,17 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// If a mouse is attached, get it's state.
 	if(lpDIDMouse != NULL)
 	{
-		GetMouseState(&mouseState);
+		if (hWnd == NULL){ // Very bad hack. We must not gather mouse inputs if we only deal with events
+			GetMouseState(&mouseState);
 
-		// We can directly copy the axis states as it is not mappable.
-		currentI->mouse.lX = mouseState.lX;
-		currentI->mouse.lY = mouseState.lY;
-		currentI->mouse.lZ = mouseState.lZ;
+			// We can directly copy the axis states as it is not mappable.
+			currentI->mouse.di.lX = mouseState.lX;
+			currentI->mouse.di.lY = mouseState.lY;
+			currentI->mouse.di.lZ = mouseState.lZ;
+
+			// Get the absolute coords as well.
+			GetCursorPos(&currentI->mouse.coords);
+		}
 	}
 	else
 	{
@@ -563,7 +569,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			if (siMapped.device == SINGLE_INPUT_DI_KEYBOARD)
 				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
-				currentI->mouse.rgbButtons[siMapped.key] |= 0x80;
+				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
 		}
 
 		if (!hWnd)
@@ -618,7 +624,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			if (siMapped.device == SINGLE_INPUT_DI_KEYBOARD)
 				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
-				currentI->mouse.rgbButtons[siMapped.key] |= 0x80;
+				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
 		}
 	}
 

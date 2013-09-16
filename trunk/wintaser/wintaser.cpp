@@ -1773,6 +1773,31 @@ void RecordLocalInputs()
 		frame.inputs.clear();
 		//memset(localGameInputKeys, 0, sizeof(localGameInputKeys));
 	}
+	
+	// Convert pointer screen coordinates into window coordinates.
+	// We already have the list of windows that were created by the game.
+	// We choose the first window that is visible and whose height is higher than 10, or the last one.
+	// TODO: Might take a while, try not to test on every frame.
+
+	std::set<HWND>::iterator iter;
+	EnterCriticalSection(&g_gameHWndsCS);
+	for(iter = gameHWnds.begin(); iter != gameHWnds.end();)
+	{
+		HWND gamehwnd = *iter;
+		DWORD style = (DWORD)GetWindowLong(gamehwnd, GWL_STYLE);
+		iter++;
+		if((style & WS_VISIBLE) != 0 || iter == gameHWnds.end())
+		{
+			RECT rect;
+			GetClientRect(gamehwnd, &rect);
+			if(rect.bottom - rect.top > 10)
+			{
+				ScreenToClient(gamehwnd, &frame.inputs.mouse.coords);
+				break;
+			}
+		}
+	}
+	LeaveCriticalSection(&g_gameHWndsCS);
 
 	if((int)movie.currentFrame < (int)movie.frames.size())
 		movie.frames.erase(movie.frames.begin() + movie.currentFrame, movie.frames.end());
@@ -3681,7 +3706,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							ReceiveHWND(atoi(pstr));
 						else if(MessagePrefixMatch("MOUSEREG"))
 						{
-							inputC.InitDIMouse((HWND)(atoi(pstr)), true);
+							//inputC.InitDIMouse((HWND)(atoi(pstr)), true);
+							inputC.InitDIMouse(hWnd, true);
 						}
 						else if(MessagePrefixMatch("WATCH")) 
 						{

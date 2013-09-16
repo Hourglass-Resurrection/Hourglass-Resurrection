@@ -3,6 +3,8 @@
 
 #ifndef WINTASEE_H_INCL
 #define WINTASEE_H_INCL
+//#define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))
+//#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
 
 #define DIRECTINPUT_VERSION 0x0800
 #include "../shared/input.h"

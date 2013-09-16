@@ -1139,7 +1139,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		{
 			sentToAny = true;
 
-			// Send keyboard messages.
+			/* Send keyboard messages */
 			HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
 
 			BYTE keyboardState[256];
@@ -1188,29 +1188,58 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				}
 			}
 
-			// Send mouse messages.
-			WORD mouseButtonsUp[4] = {WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, WM_XBUTTONUP}; // FIXME: fix the order.
-			WORD mouseButtonsDown[4] = {WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN}; // FIXME: fix the order.
+			/* Send mouse messages */
 
-			for (int i = 0; i < 4; i++){
-				int cur = curinput.mouse.rgbButtons[i];
-				int prev = previnput.mouse.rgbButtons[i];
+			// Build the wParam (contains other buttons status + keyboard modifiers).
+			WPARAM flag = 0;
+			WPARAM mouseFlags[3] = {MK_LBUTTON, MK_RBUTTON, MK_MBUTTON};
+			for (int i = 0; i < 3; i++){
+				if (curinput.mouse.di.rgbButtons[i])
+					flag |= mouseFlags[i];
+			}
+			if (curinput.keys[VK_CONTROL])
+				flag |= MK_CONTROL;
+			if (curinput.keys[VK_SHIFT])
+				flag |= MK_SHIFT;
+
+			// Build the lParam (contains cursor coordinates relative to the window).
+			LPARAM coords = (curinput.mouse.coords.y << 16) | (curinput.mouse.coords.x); // Not sure it's good when coords are negative...
+
+			// Send the MOUSEMOVE message if needed.
+			if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0)){
+				debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE MOVE\n");
+				//debugprintf("My MOUSE message is 0x%X with wParam = %d and lParam = %d\n",WM_MOUSEMOVE, flag, coords);
+				//debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(coords), GET_Y_LPARAM(coords));
+#ifdef EMULATE_MESSAGE_QUEUES
+				PostMessageInternal(hwnd, WM_MOUSEMOVE, flag, coords);
+#else
+				MyWndProcA(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
+#endif
+			}
+
+			// Send the BUTTONUP/DOWN messages.
+			WORD mouseButtonsUp[3] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
+			WORD mouseButtonsDown[3] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
+
+			for (int i = 0; i < 3; i++){
+				int cur = curinput.mouse.di.rgbButtons[i];
+				int prev = previnput.mouse.di.rgbButtons[i];
 				if(cur && !prev)
 				{
 					debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, mouseButtonsDown[i], 0, 0);
+					PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
 #else
-					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), 0, 0); // TODO: fill lParam and wParam
+					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
 #endif
 				}
 				else if(!cur && prev)
 				{
 					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, mouseButtonsUp[i], i, 0);
+					PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
 #else
-					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), 0, 0);
+					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
 #endif
 				}
 			}
