@@ -1279,22 +1279,22 @@ void ProcessFrameInput()
 		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, curinput.mouse.di.lZ, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.di.rgbButtons[0] && !previnput.mouse.di.rgbButtons[0]){
+	if (curinput.mouse.di.rgbButtons[0] != previnput.mouse.di.rgbButtons[0]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, 0x80, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, curinput.mouse.di.rgbButtons[0]?0x80:0x00, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.di.rgbButtons[1] && !previnput.mouse.di.rgbButtons[1]){
+	if (curinput.mouse.di.rgbButtons[1] != previnput.mouse.di.rgbButtons[1]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, 0x80, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, curinput.mouse.di.rgbButtons[1]?0x80:0x00, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
-	if (curinput.mouse.di.rgbButtons[2] && !previnput.mouse.di.rgbButtons[2]){
+	if (curinput.mouse.di.rgbButtons[2] != previnput.mouse.di.rgbButtons[2]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, 0x80, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, curinput.mouse.di.rgbButtons[2]?0x80:0x00, timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	/*if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
@@ -1382,10 +1382,12 @@ HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
 {
 	if(!lpPoint) { return FALSE; }
 	// NYI
-	//lpPoint->x = 0;
-	//lpPoint->y = 0;
-	return GetCursorPos(lpPoint);
-	//return TRUE;
+	lpPoint->x = curinput.mouse.coords.x;
+	lpPoint->y = curinput.mouse.coords.y;
+	ClientToScreen(gamehwnd, lpPoint);
+	debugprintf("XCOORDS: %d\n", curinput.mouse.coords.x);
+	//return GetCursorPos(lpPoint);
+	return TRUE;
 }
 
 HOOKFUNC BOOL WINAPI MyGetCursorInfo(PCURSORINFO pci)
