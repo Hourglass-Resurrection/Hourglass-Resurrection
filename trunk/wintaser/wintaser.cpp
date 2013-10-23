@@ -940,13 +940,13 @@ int LoadMovie(char* filename)
 		{
 			char str [1024];
 			sprintf(str,
-			"This movie was recorded using a different version of Hourglass.\n"
+			"This movie was recorded using a different main version of Hourglass.\n"
 			"\n"
 			"Movie's version: %d\n"
 			"Program version: %d\n"
 			"\n"
 			"This may lead to the movie desyncing.\n"
-			"If it would desync you might want to use the movies version of Hourglass.\n"
+			"If it would desync you might want to use the movies main version of Hourglass.\n"
 			"\n"
 			"Do you want to try playing back the movie anyway?\n"
 			"(Click \"Yes\" to continue, \"No\" to abort)\n",
@@ -5315,7 +5315,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			if(VERSION >= 0)
 			{
 				char title [256];
-				sprintf(title, "Hourglass v%d", VERSION);
+				sprintf(title, "Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
 #ifdef _DEBUG
 				strcat(title, " (debug build)");
 #endif
