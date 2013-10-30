@@ -1304,6 +1304,18 @@ void ProcessFrameInput()
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}*/
 
+	/* Pass mouse cursor absolute coords.
+	 * If no mouse event were recorded during the current frame,
+	 * we have to pass the previous absolute coords into the current frame.
+	 */
+
+	bool isMouseUsed = (curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0) || (curinput.mouse.di.lZ != 0);
+	for (int i=0; i<4; i++)
+		isMouseUsed |= ((curinput.mouse.di.rgbButtons[i] & MOUSE_PRESSED_FLAG) != 0);
+
+	if (!isMouseUsed)
+		curinput.mouse.coords = previnput.mouse.coords;
+
 }
 
 HOOKFUNC MMRESULT WINAPI MyjoyReleaseCapture(UINT uJoyID)
@@ -1381,11 +1393,9 @@ return MMSYSERR_NODRIVER; // NYI
 HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
 {
 	if(!lpPoint) { return FALSE; }
-	// NYI
 	lpPoint->x = curinput.mouse.coords.x;
 	lpPoint->y = curinput.mouse.coords.y;
 	ClientToScreen(gamehwnd, lpPoint);
-	debugprintf("XCOORDS: %d\n", curinput.mouse.coords.x);
 	//return GetCursorPos(lpPoint);
 	return TRUE;
 }
