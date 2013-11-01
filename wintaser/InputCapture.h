@@ -154,7 +154,7 @@ public:
 	InputCapture::InputCapture();
 	InputCapture::InputCapture(char* filename);
 
-	static const int SICount = 148;
+	static const int SICount = 204;
 	static const int eventCount = 67;
 
 	// Init all input devices it can.

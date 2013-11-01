@@ -171,7 +171,7 @@ Movie::Movie()
 	// Perhaps we shall introduce a fixed number of null-bytes instead?
 	if(movie.frames.size() > 0)
 	{
-		unsigned char* input_buffer = (unsigned char*)malloc(4+1+256+13+1); // Max size of a frame input.
+		unsigned char* input_buffer = (unsigned char*)malloc(4+1+256+13+4*sizeof(XINPUT_GAMEPAD)+1); // Max size of a frame input.
 		for (unsigned int i=0; i<movie.frames.size(); i++){
 			int size = movie.frames[i].inputs.serialize(input_buffer);
 			fwrite(input_buffer, 1, size, file);

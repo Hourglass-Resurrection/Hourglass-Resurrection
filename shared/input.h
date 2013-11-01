@@ -4,7 +4,7 @@
 #include "../external/dinput.h"
 #include "../external/Xinput.h"
 #include "../wintaser/logging.h"
-#define MOUSE_PRESSED_FLAG 0x80 // Flag saying if a DIMOUSESTATE button is pressed. FIXME: Put the correct value.
+#define MOUSE_PRESSED_FLAG 0x80 // Flag saying if a DIMOUSESTATE button is pressed.
 
 #define KEY_FLAG   0x00001
 #define MOUSE_FLAG 0x00010
@@ -26,6 +26,8 @@ struct CurrentInput {
 		mouse.di.lX = mouse.di.lY = mouse.di.lZ = mouse.coords.x = mouse.coords.y = 0;
 		for (int i=0; i<4; i++)
 			mouse.di.rgbButtons[i] = 0;
+		memset(joypad, 0, 8*sizeof(DIJOYSTATE));
+		memset(gamepad, 0, 4*sizeof(XINPUT_GAMEPAD));
 		// TODO: the rest, I'm lazy...
 	}
 
@@ -73,6 +75,15 @@ struct CurrentInput {
 			mask |= MOUSE_FLAG;
 		}
 
+		/* Pack the Xbox controllers */
+		bool isXControllerUsed[4];
+		for (int i=0; i<4; i++){
+			isXControllerUsed[i] = (gamepad[i].wButtons != 0) || (gamepad[i].bLeftTrigger != 0) || (gamepad[i].bRightTrigger != 0) || (gamepad[i].sThumbLX != 0) || (gamepad[i].sThumbLY != 0) || (gamepad[i].sThumbRX != 0) || (gamepad[i].sThumbRY != 0);
+			if (isXControllerUsed[i])
+				mask |= (XJOY_FLAG << i);
+		}
+
+
 		/* Write the whole input */
 		
 		// Write the mask.
@@ -91,6 +102,14 @@ struct CurrentInput {
 		if (isMouseUsed){
 			memmove(input_pack + current_pos, mouse_packed, 21);
 			current_pos += 21;
+		}
+
+		// Write the XControllers
+		for (int i=0; i<4; i++){
+			if (isXControllerUsed[i]){
+				memmove(input_pack + current_pos, &gamepad[i], sizeof(XINPUT_GAMEPAD));
+				current_pos += sizeof(XINPUT_GAMEPAD);
+			}
 		}
 
 		// Write the end of buffer (do we need that ?).
@@ -129,6 +148,13 @@ struct CurrentInput {
 			memmove(&mouse.coords.x, packed_input+current_pos, 4);
 			memmove(&mouse.coords.y, packed_input+current_pos+4, 4);
 			current_pos += 8;
+		}
+
+		for (int i=0; i<4; i++){
+			if (mask & (XJOY_FLAG << i)){ // The i-th XController is present.
+				memmove(&gamepad[i],packed_input+current_pos, sizeof(XINPUT_GAMEPAD));
+				current_pos += sizeof(XINPUT_GAMEPAD);
+			}
 		}
 
 		return current_pos;
