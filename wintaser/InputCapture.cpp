@@ -636,8 +636,10 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
 				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
-			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK)
-				currentI->gamepad[siMapped.key >> 8].wButtons |= siMapped.key & 0xFF;
+			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK){
+				currentI->gamepad[siMapped.key >> 8].wButtons |= 1 << (siMapped.key & 0xFF);
+				debugprintf("X Key regsitered: %d", (siMapped.key & 0xFF));
+			}
 		}
 
 		if (!hWnd)
@@ -1053,8 +1055,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						char line[256];
 						inputC->FormatEventMapping(buf[i], line);
 
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
 						hotkeysNoLongerDefault = true;
 					}
@@ -1066,8 +1068,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						char line[256];
 						inputC->FormatInputMapping(buf[i], line);
 
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
 						gameinputNoLongerDefault = true;
 					}
@@ -1084,8 +1086,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						char line[256];
 						inputC->FormatEventMapping(buf[i], line);
 
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
 						hotkeysNoLongerDefault = true;
 					}
@@ -1097,8 +1099,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 						char line[256];
 						inputC->FormatInputMapping(buf[i], line);
 
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
 						gameinputNoLongerDefault = true;
 					}
