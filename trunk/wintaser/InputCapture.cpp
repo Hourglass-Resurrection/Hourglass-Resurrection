@@ -166,10 +166,76 @@ struct SingleInput InputCapture::SIList[] =
 	{SINGLE_INPUT_DI_KEYBOARD, DIK_MAIL, "Mail"},
 	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASELECT, "MediaSelect"},
 
+	// Mouse
 	{SINGLE_INPUT_DI_MOUSE, 0, "Mouse Button 0"},
 	{SINGLE_INPUT_DI_MOUSE, 1, "Mouse Button 1"},
 	{SINGLE_INPUT_DI_MOUSE, 2, "Mouse Button 2"},
-	{SINGLE_INPUT_DI_MOUSE, 3, "Mouse Button 3"}
+	{SINGLE_INPUT_DI_MOUSE, 3, "Mouse Button 3"},
+
+	// Xbox controller 1
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 0, "Xbox Controller 1 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 1, "Xbox Controller 1 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 2, "Xbox Controller 1 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 3, "Xbox Controller 1 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 4, "Xbox Controller 1 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 5, "Xbox Controller 1 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 6, "Xbox Controller 1 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 7, "Xbox Controller 1 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 8, "Xbox Controller 1 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 9, "Xbox Controller 1 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 12, "Xbox Controller 1 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 13, "Xbox Controller 1 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 14, "Xbox Controller 1 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 15, "Xbox Controller 1 - Y"},
+
+	// Xbox controller 2
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 0, "Xbox Controller 2 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 1, "Xbox Controller 2 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 2, "Xbox Controller 2 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 3, "Xbox Controller 2 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 4, "Xbox Controller 2 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 5, "Xbox Controller 2 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 6, "Xbox Controller 2 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 7, "Xbox Controller 2 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 8, "Xbox Controller 2 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 9, "Xbox Controller 2 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 12, "Xbox Controller 2 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 13, "Xbox Controller 2 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 14, "Xbox Controller 2 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 15, "Xbox Controller 2 - Y"},
+
+	// Xbox controller 3
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 0, "Xbox Controller 3 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 1, "Xbox Controller 3 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 2, "Xbox Controller 3 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 3, "Xbox Controller 3 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 4, "Xbox Controller 3 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 5, "Xbox Controller 3 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 6, "Xbox Controller 3 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 7, "Xbox Controller 3 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 8, "Xbox Controller 3 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 9, "Xbox Controller 3 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 12, "Xbox Controller 3 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 13, "Xbox Controller 3 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 14, "Xbox Controller 3 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 15, "Xbox Controller 3 - Y"},
+
+	// Xbox controller 4
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 0, "Xbox Controller 4 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 1, "Xbox Controller 4 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 2, "Xbox Controller 4 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 3, "Xbox Controller 4 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 4, "Xbox Controller 4 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 5, "Xbox Controller 4 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 6, "Xbox Controller 4 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 7, "Xbox Controller 4 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 8, "Xbox Controller 4 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 9, "Xbox Controller 4 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 12, "Xbox Controller 4 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 13, "Xbox Controller 4 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 14, "Xbox Controller 4 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 15, "Xbox Controller 4 - Y"}
+
 };
 
 struct Event InputCapture::eventList[] =
@@ -570,6 +636,8 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
 				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
+			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK)
+				currentI->gamepad[siMapped.key >> 8].wButtons |= siMapped.key & 0xFF;
 		}
 
 		if (!hWnd)
@@ -625,6 +693,8 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
 				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
+			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK)
+				currentI->gamepad[siMapped.key >> 8].wButtons |= siMapped.key & 0xFF;
 		}
 	}
 

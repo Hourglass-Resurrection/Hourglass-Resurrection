@@ -5,7 +5,7 @@
 #define INPUTHOOKS_INCL
 
 #include "../wintasee.h"
-#include "../tls.h"
+//#include "../tls.h"
 
 #if defined(_DEBUG) || 0//0
 	#define _DINPUTDEBUG

@@ -4,9 +4,12 @@
 #if !defined(XINPUTHOOKS_INCL) && !defined(UNITY_BUILD)
 #define XINPUTHOOKS_INCL
 
-#include "../global.h"
+//#include "../global.h"
+#include "../wintasee.h"
 //#include <Xinput.h>
 #include <../../external/Xinput.h>
+
+DWORD myDwPacketNumber = 0;
 
 HOOKFUNC DWORD WINAPI MyXInputGetState(
     DWORD         dwUserIndex,  // [in] Index of the gamer associated with the device
@@ -14,7 +17,18 @@ HOOKFUNC DWORD WINAPI MyXInputGetState(
 )
 {
 	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	return XInputGetState(dwUserIndex, pState);
+	//return XInputGetState(dwUserIndex, pState);
+
+	pState->Gamepad = curinput.gamepad[dwUserIndex];
+
+	// We have to see if the state is the same as the previous state
+	// We can use memcmp because the structs have been initialised with memset.
+	if (memcmp(&curinput.gamepad[dwUserIndex], &previnput.gamepad[dwUserIndex], sizeof(XINPUT_GAMEPAD)) == 0)
+		pState->dwPacketNumber = myDwPacketNumber;
+	else
+		pState->dwPacketNumber = ++myDwPacketNumber;
+
+	return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputSetState(
@@ -23,7 +37,9 @@ HOOKFUNC DWORD WINAPI MyXInputSetState(
 )
 {
 	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	return XInputSetState(dwUserIndex, pVibration);
+	//return XInputSetState(dwUserIndex, pVibration);
+
+	return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
@@ -33,7 +49,35 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
 )
 {
 	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
-	return XInputGetCapabilities(dwUserIndex, dwFlags, pCapabilities);
+	//return XInputGetCapabilities(dwUserIndex, dwFlags, pCapabilities);
+
+	// We always return that 4 standard controllers are plugged in.
+
+	pCapabilities->Type = XINPUT_DEVTYPE_GAMEPAD;
+	pCapabilities->SubType = XINPUT_DEVSUBTYPE_GAMEPAD;
+	pCapabilities->Flags = 0;
+
+	XINPUT_GAMEPAD fullySupportedGamepad;
+	fullySupportedGamepad.wButtons = 0xF3FF;
+	/* Doc says: For proportional controls, such as thumbsticks,
+	 *           the value indicates the resolution for that control.
+	 *           Some number of the least significant bits may not be set,
+	 *           indicating that the control does not provide resolution to that level.
+	 */
+	fullySupportedGamepad.bLeftTrigger = 0xFF;
+	fullySupportedGamepad.bRightTrigger = 0xFF;
+	fullySupportedGamepad.sThumbLX = 0xFFFF;
+	fullySupportedGamepad.sThumbLY = 0xFFFF;
+	fullySupportedGamepad.sThumbRX = 0xFFFF;
+	fullySupportedGamepad.sThumbRY = 0xFFFF;
+	pCapabilities->Gamepad = fullySupportedGamepad;
+
+	XINPUT_VIBRATION noVibration;
+	noVibration.wLeftMotorSpeed = 0;
+	noVibration.wRightMotorSpeed = 0;
+	pCapabilities->Vibration = noVibration;
+
+	return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
@@ -43,7 +87,12 @@ HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
 )
 {
 	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	return XInputGetDSoundAudioDeviceGuids(dwUserIndex, pDSoundRenderGuid, pDSoundCaptureGuid);
+	//return XInputGetDSoundAudioDeviceGuids(dwUserIndex, pDSoundRenderGuid, pDSoundCaptureGuid);
+
+	// No headset plugged in.
+	*pDSoundRenderGuid = GUID_NULL;
+	*pDSoundCaptureGuid = GUID_NULL;
+	return ERROR_SUCCESS;
 }
 
 
