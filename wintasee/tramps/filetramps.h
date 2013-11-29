@@ -4,16 +4,16 @@
 #ifndef FILETRAMPS_H_INCL
 #define FILETRAMPS_H_INCL
 
-//#define CreateFileA TrampCreateFileA
-//TRAMPFUNC HANDLE WINAPI CreateFileA(
-//	LPCSTR lpFileName,
-//	DWORD dwDesiredAccess,
-//	DWORD dwShareMode,
-//	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-//	DWORD dwCreationDisposition,
-//	DWORD dwFlagsAndAttributes,
-//	HANDLE hTemplateFile
-//) TRAMPOLINE_DEF
+#define CreateFileA TrampCreateFileA
+TRAMPFUNC HANDLE WINAPI CreateFileA(
+	LPCSTR lpFileName,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes,
+	HANDLE hTemplateFile
+) TRAMPOLINE_DEF
 #define CreateFileW TrampCreateFileW
 TRAMPFUNC HANDLE WINAPI CreateFileW(
 	LPCWSTR lpFileName,
@@ -24,5 +24,7 @@ TRAMPFUNC HANDLE WINAPI CreateFileW(
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile
 ) TRAMPOLINE_DEF
+#define OpenFile TrampOpenFile
+TRAMPFUNC HFILE WINAPI OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle) TRAMPOLINE_DEF
 
 #endif
