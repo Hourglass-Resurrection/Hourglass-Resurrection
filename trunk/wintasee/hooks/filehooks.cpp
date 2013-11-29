@@ -7,28 +7,27 @@
 #include "../global.h"
 #include "../../shared/ipc.h"
 
-//HOOKFUNC HANDLE WINAPI MyCreateFileA(
-//	LPCSTR lpFileName,
-//	DWORD dwDesiredAccess,
-//	DWORD dwShareMode,
-//	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-//	DWORD dwCreationDisposition,
-//	DWORD dwFlagsAndAttributes,
-//	HANDLE hTemplateFile
-//)
-//{
-//	debuglog(LCF_FILEIO|LCF_UNTESTED, __FUNCTION__ "(0x%X) called: %s\n", dwDesiredAccess, lpFileName);
-//	HANDLE rv = CreateFileA(
-//		lpFileName,
-//		dwDesiredAccess,
-//		dwShareMode,
-//		lpSecurityAttributes,
-//		dwCreationDisposition,
-//		dwFlagsAndAttributes,
-//		hTemplateFile
-//	);
-//	return rv;
-//}
+HOOKFUNC HANDLE WINAPI MyCreateFileA(
+	LPCSTR lpFileName,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes,
+	HANDLE hTemplateFile
+)
+{
+	debugprintf(__FUNCTION__ "(0x%X) called: %s\n", dwDesiredAccess, lpFileName);
+	return CreateFileA(
+		lpFileName,
+		dwDesiredAccess,
+		dwShareMode,
+		lpSecurityAttributes,
+		dwCreationDisposition,
+		dwFlagsAndAttributes,
+		hTemplateFile
+	);
+}
 
 HOOKFUNC HANDLE WINAPI MyCreateFileW(
 	LPCWSTR lpFileName,
@@ -40,8 +39,8 @@ HOOKFUNC HANDLE WINAPI MyCreateFileW(
 	HANDLE hTemplateFile
 )
 {
-	debuglog(LCF_FILEIO|LCF_TODO, __FUNCTION__ "(0x%X) called: %S\n", dwDesiredAccess, lpFileName);
-	HANDLE rv = CreateFileW(
+	debugprintf(__FUNCTION__ "(0x%X) called: %S\n", dwDesiredAccess, lpFileName);
+	return CreateFileW(
 		lpFileName,
 		dwDesiredAccess,
 		dwShareMode,
@@ -50,15 +49,21 @@ HOOKFUNC HANDLE WINAPI MyCreateFileW(
 		dwFlagsAndAttributes,
 		hTemplateFile
 	);
-	return rv;
+}
+
+HOOKFUNC HFILE WINAPI MyOpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
+{
+	debugprintf(__FUNCTION__ "(0x%X) called: %s\n", uStyle, lpFileName);
+	return OpenFile(lpFileName, lpReOpenBuff, uStyle);
 }
 
 void ApplyFileIntercepts()
 {
 	static const InterceptDescriptor intercepts [] = 
 	{
-//	MAKE_INTERCEPT(1, KERNEL32, CreateFileA),
+	MAKE_INTERCEPT(1, KERNEL32, CreateFileA),
 	MAKE_INTERCEPT(1, KERNEL32, CreateFileW),
+	MAKE_INTERCEPT(1, KERNEL32, OpenFile),
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
