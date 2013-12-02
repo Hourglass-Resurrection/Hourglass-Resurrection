@@ -6489,9 +6489,11 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-							// TODO: Make this an error prompt?
-							localTASflags.threadStackSize = 0x100000; // Terrible hack: We should probably abort loading instead.
-							debugprintf("Detecting the default thread stack size failed!\nIs '%s' a valid Win32 executable?\n", exefilename);
+							char str[1024];
+							sprintf(str, "Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exefilename);
+							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+							recursing = false;
+							break;
 						}
 
 
