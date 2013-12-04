@@ -17,7 +17,7 @@ namespace Config{
 		60, //framerate
 		8, //keylimit
 		0, //forceSoftware
-		0, //windowActivateFlags
+		//0, //windowActivateFlags
 		1, //threadMode
 		0, //threadStackSize
 		1, //timersMode
@@ -25,7 +25,7 @@ namespace Config{
 		1, //waitSyncMode
 		0, //aviMode
 		EMUMODE_EMULATESOUND, //emuMode | (((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))&&fastforward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((threadMode==0||threadMode==4||threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0),
-		1, //forceWindowed
+		//1, //forceWindowed
 		false, //fastforward
 		0, //forceSurfaceMemory
 		44100, //audioFrequency
@@ -122,7 +122,7 @@ namespace Config{
 		WritePrivateProfileStringA("General", "Command line", commandline, Conf_File);
 
 		SetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
-		SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
+		//SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
 		SetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
 		if(advancePastNonVideoFramesConfigured)
 			SetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
@@ -207,7 +207,7 @@ namespace Config{
 		GetPrivateProfileStringA("General", "Command line", commandline, commandline, ARRAYSIZE(commandline), Conf_File);
 
 		nextLoadRecords = 0!=GetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
-		localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
+		//localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
 		localTASflags.fastForwardFlags = GetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
 		advancePastNonVideoFrames = GetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
 		advancePastNonVideoFramesConfigured = 0!=GetPrivateProfileIntA("Input", "Skip Lag Frames", 0, Conf_File);

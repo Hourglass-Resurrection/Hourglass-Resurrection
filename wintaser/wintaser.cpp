@@ -5346,7 +5346,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 //				CheckDlgButton(hDlg, IDC_ALLOWHARDWAREACCEL, forceSoftware ? 0 : 1);
 //				CheckDlgButton(hDlg, IDC_ALLOWFULLSCREEN, forceWindowed ? 0 : 1);
 				//CheckDlgButton(hDlg, IDC_ALLOWDEACTIVATE, windowActivateFlags & 1);
-				CheckDlgButton(hDlg, IDC_MAKETOPMOST, localTASflags.windowActivateFlags & 2);
+				//CheckDlgButton(hDlg, IDC_MAKETOPMOST, localTASflags.windowActivateFlags & 2);
 				//CheckDlgButton(hDlg, IDC_EARLYINJECT, iatInjectionEnabled);
 				//CheckDlgButton(hDlg, IDC_AVIVIDEO, aviMode & 1);
 				//CheckDlgButton(hDlg, IDC_AVIAUDIO, aviMode & 2);
@@ -5542,10 +5542,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//	forceWindowed = IsDlgButtonChecked(hDlg, IDC_ALLOWFULLSCREEN) == 0;
 				//	tasFlagsDirty = true;
 				//	break;
-				case ID_GRAPHICS_ALLOWFULLSCREEN:
-					localTASflags.forceWindowed = !localTASflags.forceWindowed;
-					tasFlagsDirty = true;
-					break;
+				//case ID_GRAPHICS_ALLOWFULLSCREEN:
+				//	localTASflags.forceWindowed = !localTASflags.forceWindowed;
+				//	tasFlagsDirty = true;
+				//	break;
 				case ID_GRAPHICS_MEM_DONTCARE:
 					localTASflags.forceSurfaceMemory = 0;
 					tasFlagsDirty = true;
@@ -5605,10 +5605,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//	windowActivateFlags = (windowActivateFlags & ~1) | (IsDlgButtonChecked(hDlg, IDC_ALLOWDEACTIVATE) ? 1 : 0);
 				//	tasFlagsDirty = true;
 				//	break;
-				case IDC_MAKETOPMOST:
-					localTASflags.windowActivateFlags = (localTASflags.windowActivateFlags & ~2) | (IsDlgButtonChecked(hDlg, IDC_MAKETOPMOST) ? 2 : 0);
-					tasFlagsDirty = true;
-					break;
+				//case IDC_MAKETOPMOST:
+				//	localTASflags.windowActivateFlags = (localTASflags.windowActivateFlags & ~2) | (IsDlgButtonChecked(hDlg, IDC_MAKETOPMOST) ? 2 : 0);
+				//	tasFlagsDirty = true;
+				//	break;
 
 				case ID_TIME_FF_FRONTSKIP:
 					localTASflags.fastForwardFlags ^= FFMODE_FRONTSKIP;
@@ -6489,14 +6489,15 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
+							// TODO: Improve handling of this error, it's a very serious one as the DLL will fail to work properly!
 							char str[1024];
-							sprintf(str, "Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exefilename);
+							sprintf(str, "Determinating the default thread stack size failed!\nVerify that '%s' is a valid Win32 executable.", exefilename);
 							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
 						}
 
-
+						// TODO: Exterminate this thing:
 						//FILE* file = *exefilename ? fopen(exefilename, "rb") : NULL;
 						//if(file)
 						//{
@@ -6541,13 +6542,14 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								{
 									newFramerate = 60; newLagskip = false;
 
+									// TODO: Figure out why this game has this problem, and fix it proper
 									// extra temp: window activation is broken in this game
-									if(!(localTASflags.windowActivateFlags & 2))
-									{
-										localTASflags.windowActivateFlags |= 2;
-										CheckDlgButton(hDlg, IDC_MAKETOPMOST, localTASflags.windowActivateFlags & 2);
-										tasFlagsDirty = true;
-									}
+									//if(!(localTASflags.windowActivateFlags & 2))
+									//{
+									//	localTASflags.windowActivateFlags |= 2;
+									//	CheckDlgButton(hDlg, IDC_MAKETOPMOST, localTASflags.windowActivateFlags & 2);
+									//	tasFlagsDirty = true;
+									//}
 								}
 								else if(!stricmp(fname, "RotateGear.exe"))
 								{
