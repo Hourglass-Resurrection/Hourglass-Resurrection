@@ -22,7 +22,6 @@ Movie::Movie()
 		keyboardLayoutName[i] = 0;
 	}
 	author[0] = '\0';
-	exefname[0] = '\0';
 	commandline[0] = '\0';
 	headerBuilt = false;
 }
@@ -31,7 +30,7 @@ Movie::Movie()
 
 // NOTE: FPS and InitialTime used to have +1, we don't know why and we removed it as we made the values unsigned.
 // If problems arise, revert back to old behavior!
-#define MOVIE_TYPE_IDENTIFIER 0x02775466 // "\02wTf"
+#define MOVIE_TYPE_IDENTIFIER 0x02486752 // "\02HgR"
 /*static*/ bool SaveMovieToFile(Movie& movie, char* filename)
 {
 	//bool hadUnsaved = unsaved;
@@ -39,18 +38,6 @@ Movie::Movie()
 
 	//if(movie.frames.size() == 0)
 	//	return true; // Technically we did "Save" the movie...
-
-	// Sanity check, needs to be done before we open the file for writing, or we may cause some serious corruption.
-	const char* exefname = movie.exefname;
-	unsigned int exefnameLen = strlen(exefname);
-	if(!exefnameLen)
-	{
-		char str[1024];
-		sprintf(str, "Failed to save movie '%s', the exe filename field is empty!", filename);
-		CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
-		return false;
-	}
-
 
 	FILE* file = fopen(filename, "wb");
 	if(!file) // File failed to open
@@ -64,7 +51,7 @@ Movie::Movie()
 			char newFilename[MAX_PATH+1];
 			strncpy(newFilename, filename, dotLocation);
 			newFilename[dotLocation+1] = '\0'; // Make sure the string is null-terminated before we cat it.
-			strcat(newFilename, "new.wtf\0");
+			strcat(newFilename, "new.hgr\0");
 
 			char str[1024];
 			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s%.", filename, newFilename);
@@ -128,30 +115,22 @@ Movie::Movie()
 	unsigned int it = movie.it;
 	fwrite(&it, 4, 1, file);
 
-	unsigned int crc = movie.crc;
-	fwrite(&crc, 4, 1, file);
+	// MD5 checksum
+	fwrite(&movie.fmd5, 4, 4, file);
 
 	unsigned int fsize = movie.fsize;
 	fwrite(&fsize, 4, 1, file);
-
-	// Why not save file name length (int32) and then ALL the characters in the exe name?
-	// Specially since all the work is already done!
-
-	// These variables are declared before the file is opened as they are needed for sanity checks!
-	fwrite(&exefnameLen, 4, 1, file);
-	fwrite(exefname, exefnameLen, 1, file);
-	//for(int i = min(exefnamelen,48-1); i < 48; i++) fputc(0, file);
 
 	fwrite(&movie.desyncDetectionTimerValues[0], 16, 4, file);
 
 	unsigned int version = movie.version;
 	fwrite(&version, 4, 1, file);
 
-	// Same as for filename
 	// Windows limitation for command lines are 8191 characters, program included.
 	// e.g. "C:/Program Files/games/some game/game.exe /whatever /and /beyond" cannot be more than 8191 characters in total.
 	// No commandline should need to be that long, but we should still apply a limitation of 8191-(MAX_PATH+1) instead of 160.
 	// CreateProcess has a limit of 32767 characters, which I find odd since Windows itself has a limit of 8191.
+	// -- Warepire
 	const char* commandline = movie.commandline;
 	unsigned int commandlineLen = strlen(commandline);
 	fwrite(&commandlineLen, 4, 1, file);
@@ -207,7 +186,7 @@ Movie::Movie()
 	{
 		fclose(file);
 		char str[1024];
-		sprintf(str, "The movie file '%s' is not a valid Hourglass movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+		sprintf(str, "The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
 		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
 		return false;
 	}
@@ -246,29 +225,11 @@ Movie::Movie()
 	unsigned int it = 0;
 	fread(&it, 4, 1, file);
 
-	unsigned int crc = 0;
-	fread(&crc, 4, 1, file);
+	unsigned int fmd5[4] = { 0 };
+	fread(fmd5, 4, 4, file);
 
 	unsigned int fsize = 0;
 	fread(&fsize, 4, 1, file);
-
-	unsigned int exefnameLen;
-	fread(&exefnameLen, 4, 1, file);
-	if(exefnameLen <= 0 || exefnameLen > 257) // Sanity check
-	{
-		fclose(file);
-		if(author) // Prevent memory leak
-		{
-			delete [] author;
-		}
-		char str[1024];
-		sprintf(str, "The movie file '%s' cannot be loaded because the exe filename is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
-		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
-		return false;
-	}
-	char* exefname = new char[exefnameLen+1];// [48]; *exefname = 0;
-	fread(exefname, exefnameLen, 1, file);
-	exefname[exefnameLen] = '\0'; // Ensure proper null-termination
 
 	int desyncDetectionTimerValues[16];
 	fread(&movie.desyncDetectionTimerValues[0], 16, 4, file);
@@ -326,7 +287,9 @@ Movie::Movie()
 		movie.frames.resize(length);
 		movie.fps = fps;
 		movie.it = it;
-		movie.crc = crc;
+		
+		memcpy(movie.fmd5, fmd5, 4*4);
+
 		movie.fsize = fsize;
 
 		// We've gotten far enough, it's safe to put these values in the movie struct
@@ -335,7 +298,7 @@ Movie::Movie()
 			strcpy(movie.author, author);
 		}
 		memcpy(movie.desyncDetectionTimerValues, desyncDetectionTimerValues, (sizeof(int)*16));
-		strcpy(movie.exefname, exefname);
+
 		if(commandline)
 		{
 			strcpy(movie.commandline, commandline);

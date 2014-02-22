@@ -23,9 +23,6 @@
     <ClCompile Include="AVIDumper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CRCMath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CustomDLGs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,15 +71,15 @@
     <ClCompile Include="ExeFileOperations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MD5Checksum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="md5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="crc32.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRCMath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CustomDLGs.h">
@@ -152,6 +149,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ExeFileOperations.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MD5Checksum.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
