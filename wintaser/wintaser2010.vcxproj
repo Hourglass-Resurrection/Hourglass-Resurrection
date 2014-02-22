@@ -89,8 +89,8 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hourglass</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hourglass</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hourglass-resurrection</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hourglass-resurrection-d</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -114,7 +114,7 @@
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hourglass.exe</OutputFile>
+      <OutputFile>$(OutDir)hourglass-resurrection-d.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)wintaser.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -152,7 +152,7 @@
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hourglass.exe</OutputFile>
+      <OutputFile>$(OutDir)hourglass-resurrection.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -236,13 +236,14 @@
     <ClCompile Include="AVIDumper.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
-    <ClCompile Include="CRCMath.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
     <ClCompile Include="InjectDLL.cpp" />
     <ClCompile Include="InputCapture.cpp" />
     <ClCompile Include="logging.cpp" />
+    <ClCompile Include="md5.cpp" />
+    <ClCompile Include="MD5Checksum.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp">
@@ -272,14 +273,14 @@
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
-    <ClInclude Include="crc32.h" />
-    <ClInclude Include="CRCMath.h" />
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
     <ClInclude Include="InjectDLL.h" />
     <ClInclude Include="InputCapture.h" />
     <ClInclude Include="logging.h" />
+    <ClInclude Include="md5.h" />
+    <ClInclude Include="MD5Checksum.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />

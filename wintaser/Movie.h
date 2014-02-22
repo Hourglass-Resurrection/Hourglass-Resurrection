@@ -18,9 +18,8 @@ struct Movie
 	char keyboardLayoutName [KL_NAMELENGTH]; // "00000409" for standard US layout
 	unsigned int fps;
 	unsigned int it;
-	unsigned int crc;
+	unsigned int fmd5[4]; // MD5 Checksum of the exefile
 	unsigned int fsize;
-	char exefname[(MAX_PATH+1)-3]; // Technically the file name can be 257 chars max, though it'd stupid we have to cover it.
 	int desyncDetectionTimerValues [16];
 	unsigned int version;
 	char commandline[8192-1-(MAX_PATH+1)]; // Windows can handle command lines of 8192 with the null termination char. This includes the program path though so we need to make sure our command line remains valid.
