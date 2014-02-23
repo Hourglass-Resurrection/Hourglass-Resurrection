@@ -6320,7 +6320,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
 						ofn.hwndOwner = hWnd;
 						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Executable Program\0*.exe\0All Files\0*.*\0\0";
+						ofn.lpstrFilter = "Executable Program (*.exe)\0*.exe\0All Files\0*.*\0\0";
 						ofn.nFilterIndex = 1;
 						ofn.lpstrFile = filename;
 						ofn.nMaxFile = MAX_PATH;
@@ -6359,7 +6359,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
 						ofn.hwndOwner = hWnd;
 						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Windows TAS Files\0*.hgr\0All Files\0*.*\0\0";
+						ofn.lpstrFilter = "Windows TAS Files (*.hgr)\0*.hgr\0All Files\0*.*\0\0";
 						ofn.nFilterIndex = 1;
 						ofn.lpstrFile = filename;
 						ofn.nMaxFile = MAX_PATH;
@@ -6432,7 +6432,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
 						ofn.hwndOwner = hWnd;
 						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Windows TAS Files\0*.hgr\0All Files\0*.*\0\0";
+						ofn.lpstrFilter = "Windows TAS Files (*.hgr)\0*.hgr\0All Files\0*.*\0\0";
 						ofn.nFilterIndex = 1;
 						ofn.lpstrFile = filename;
 						ofn.nMaxFile = MAX_PATH;
