@@ -133,7 +133,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Files, i++, Flags | (!started?MF_GRAYED:0), ID_FILES_STOP_RELAY, "", "Stop Running", "already stopped");
 	InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Files, i++, Flags, ID_FILES_QUIT, "Alt F4", "E&xit", 0);
+	MENU_L(Files, i++, Flags, ID_FILES_QUIT, "\tAlt+F4", "E&xit", 0);
 
 	//// Menu FilesChangeState
 	//
