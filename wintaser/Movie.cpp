@@ -121,7 +121,7 @@ Movie::Movie()
 	unsigned int fsize = movie.fsize;
 	fwrite(&fsize, 4, 1, file);
 
-	fwrite(&movie.desyncDetectionTimerValues[0], 16, 4, file);
+	fwrite(&movie.desyncDetectionTimerValues, 16, 4, file);
 
 	unsigned int version = movie.version;
 	fwrite(&version, 4, 1, file);
@@ -232,7 +232,7 @@ Movie::Movie()
 	fread(&fsize, 4, 1, file);
 
 	int desyncDetectionTimerValues[16];
-	fread(&movie.desyncDetectionTimerValues[0], 16, 4, file);
+	fread(&desyncDetectionTimerValues, 16, 4, file);
 
 	unsigned int version;
 	fread(&version, 4, 1, file);
@@ -255,7 +255,6 @@ Movie::Movie()
 			{
 				delete [] author;
 			}
-			// No need to check for exefname since we would not have reached here if that string was empty.
 			char str[1024];
 			sprintf(str, "The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
 			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
