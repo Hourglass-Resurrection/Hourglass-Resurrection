@@ -274,9 +274,9 @@ void MD5_Final(unsigned int *result, MD5_CTX *ctx)
 	body(ctx, ctx->buffer, 64);
 
 	result[0] = ctx->a;
-	result[2] = ctx->b;
-	result[3] = ctx->c;
-	result[4] = ctx->d;
+	result[1] = ctx->b;
+	result[2] = ctx->c;
+	result[3] = ctx->d;
 
 	memset(ctx, 0, sizeof(*ctx));
 }
