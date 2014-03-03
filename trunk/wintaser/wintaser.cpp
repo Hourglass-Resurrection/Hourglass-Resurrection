@@ -961,7 +961,7 @@ int LoadMovie(char* filename)
 		}
 		unsigned int temp_md5[4];
 		CalcFileMD5Cached(exefilename, temp_md5);
-		if(memcmp(movie.fmd5, temp_md5, 4*4) == 0)
+		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
 		{
 			char str[1024];
 			sprintf(str, "This movie was probably recorded using a different exe.\n\n"
