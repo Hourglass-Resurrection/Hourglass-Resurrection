@@ -17,7 +17,7 @@ namespace Config{
 		60, //framerate
 		8, //keylimit
 		0, //forceSoftware
-		//0, //windowActivateFlags
+		0, //windowActivateFlags
 		1, //threadMode
 		0, //threadStackSize
 		1, //timersMode
@@ -25,7 +25,7 @@ namespace Config{
 		1, //waitSyncMode
 		0, //aviMode
 		EMUMODE_EMULATESOUND, //emuMode | (((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))&&fastforward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((threadMode==0||threadMode==4||threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0),
-		//1, //forceWindowed
+		1, //forceWindowed
 		false, //fastforward
 		0, //forceSurfaceMemory
 		44100, //audioFrequency
