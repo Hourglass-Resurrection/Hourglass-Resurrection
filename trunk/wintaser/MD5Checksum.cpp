@@ -57,7 +57,7 @@ bool CalcFileMD5Cached(const char* path, unsigned int* result)
 
 void ClearMD5Cache()
 {
-	// Since the unsigned char* is an array, we better delete it's contents too, or we'll have a leak.
+	// Since the unsigned int* is an array, we better delete it's contents too, or we'll have a leak.
 	std::map<std::string, unsigned int*>::iterator it;
 	for(it = MD5Cache.begin(); it != MD5Cache.end(); it++)
 	{

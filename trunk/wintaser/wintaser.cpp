@@ -3397,7 +3397,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			// Set the number of logical cores that we will use on the physical core.
 			if(numHyperThreadCores > 1 && !disableHyperThreading)
 			{
-				for (int i = 0; i < numHyperThreadCores; i++)
+				for (unsigned int i = 0; i < numHyperThreadCores; i++)
 				{
 					mask |= (0x01 << i);
 				}
