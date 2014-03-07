@@ -152,20 +152,24 @@ TasFlags localTASflags =
 
 static const int s_safeMaxIter = 300;
 static const int s_safeSleepPerIter = 10;
-
-LPVOID WINAPI RetryingVirtualAllocEx(IN HANDLE hProcess, IN LPVOID lpAddress,
-    IN SIZE_T dwSize, IN DWORD flAllocationType, IN DWORD flProtect)
-{
-	LPVOID rv;
-	for(int i = 0; i < s_safeMaxIter; i++)
-	{
-		rv = VirtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
-		if(rv /*|| GetLastError() != ERROR_ACCESS_DENIED*/)
-			break;
-		Sleep(s_safeSleepPerIter);
-	}
-	return rv;
-}
+///* Reserves memory to a given object. If it fails to do so at the first time,
+// *      it tries again later, until memory of the asked size is finally reserved.
+// *      The goal is to avoid an error because of a lack of free space.
+// * @see VirtualAllocEx from WinBase.h from windows.h
+// */
+//LPVOID WINAPI RetryingVirtualAllocEx(IN HANDLE hProcess, IN LPVOID lpAddress,
+//    IN SIZE_T dwSize, IN DWORD flAllocationType, IN DWORD flProtect)
+//{
+//	LPVOID rv;
+//	for(int i = 0; i < s_safeMaxIter; i++)
+//	{
+//		rv = VirtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
+//		if(rv /*|| GetLastError() != ERROR_ACCESS_DENIED*/)
+//			break;
+//		Sleep(s_safeSleepPerIter);
+//	}
+//	return rv;
+//}
 //BOOL WINAPI RetryingVirtualProtectEx(IN  HANDLE hProcess, IN  LPVOID lpAddress,
 //    IN  SIZE_T dwSize, IN  DWORD flNewProtect, OUT PDWORD lpflOldProtect)
 //{
@@ -179,19 +183,19 @@ LPVOID WINAPI RetryingVirtualAllocEx(IN HANDLE hProcess, IN LPVOID lpAddress,
 //	}
 //	return rv;
 //}
-BOOL WINAPI RetryingWriteProcessMemory(IN HANDLE hProcess, IN LPVOID lpBaseAddress,
-    IN LPCVOID lpBuffer, IN SIZE_T nSize, OUT SIZE_T * lpNumberOfBytesWritten)
-{
-	BOOL rv;
-	for(int i = 0; i < s_safeMaxIter; i++)
-	{
-		rv = WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, lpNumberOfBytesWritten);
-		if(rv /*|| GetLastError() != ERROR_ACCESS_DENIED*/)
-			break;
-		Sleep(s_safeSleepPerIter);
-	}
-	return rv;
-}
+//BOOL WINAPI RetryingWriteProcessMemory(IN HANDLE hProcess, IN LPVOID lpBaseAddress,
+//    IN LPCVOID lpBuffer, IN SIZE_T nSize, OUT SIZE_T * lpNumberOfBytesWritten)
+//{
+//	BOOL rv;
+//	for(int i = 0; i < s_safeMaxIter; i++)
+//	{
+//		rv = WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, lpNumberOfBytesWritten);
+//		if(rv /*|| GetLastError() != ERROR_ACCESS_DENIED*/)
+//			break;
+//		Sleep(s_safeSleepPerIter);
+//	}
+//	return rv;
+//}
 
 void DetectWindowsVersion(int *major, int *minor)
 {
