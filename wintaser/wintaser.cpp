@@ -197,6 +197,14 @@ static const int s_safeSleepPerIter = 10;
 //	return rv;
 //}
 
+/* Detects the Windows version currently used. 
+ * 
+ * Detects the Windows version currently used. For now it's slower than the
+ *      naive IsWindowsXP() and such that you could find below, but at the
+ *      same time this one is more reliable.
+ * @param *major int pointer to where the Windows major version number will be written
+ * @param *minor int pointer to where the Windows minor version number will be written  
+ */
 void DetectWindowsVersion(int *major, int *minor)
 {
 	debugprintf("Detecting Windows version...\n");
@@ -263,11 +271,13 @@ void DetectWindowsVersion(int *major, int *minor)
 
 //OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
 // warning: we can't trust these too much (version lies from compatibility mode shims are common)
-bool IsWindowsXP()    { return localTASflags.osVersionMajor == 5 && localTASflags.osVersionMinor == 1; }
+// Note: these seems to be used in a DLL. DetectWindowsVersion is also much slower.
+//      They are kept as is for now.
+bool IsWindowsXP()    { return localTASflags.osVersionMajor == 5 && (localTASflags.osVersionMinor == 1 || localTASflags.osVersionMinor == 2 ); }
 bool IsWindowsVista() { return localTASflags.osVersionMajor == 6 && localTASflags.osVersionMinor == 0; }
 bool IsWindows7()     { return localTASflags.osVersionMajor == 6 && localTASflags.osVersionMinor == 1; }
 // Not used for anything yet, but at least the function is here now, just in case.
-bool IsWindows8()	  { return localTASflags.osVersionMajor == 6 && localTASflags.osVersionMinor == 2; }
+bool IsWindows8()	  { return localTASflags.osVersionMajor == 6 && (localTASflags.osVersionMinor == 2 || localTASflags.osVersionMinor == 3 ); }
 
 
 /*static*/ bool terminateRequest = false;
@@ -286,8 +296,13 @@ bool HotkeyHWndIsHotkeys = true;
 
 InputCapture inputC; // TODO, put the declaration somewhere else ?
 
-// requires both buffers given to be at least MAX_PATH characters in size.
-// it is allowed for both arguments to point at the same buffer.
+/**
+ *
+ * Note: it requires both buffers given to be at least MAX_PATH characters in size.
+ *       It is allowed for both arguments to point at the same buffer.
+ * @param *output char pointer to where the normalized path will be written.
+ * @param *path char pointer to where the path to normalize is stored
+ */
 char* NormalizePath(char* output, const char* path)
 {
 	extern bool started;

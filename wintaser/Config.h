@@ -15,7 +15,9 @@ enum
 	FOCUS_FLAG_OTHER=0x04,
 };
 #endif
-
+/* Contains a lot of variables about the state of a given movie.
+ * Or so I suppose. That's a lot of things to be found there!
+ */
 namespace Config{ // A namespace is maybe not the best solution...
 
 	// TODO: Comment *everything* !
@@ -74,13 +76,31 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern char thisprocessPath [MAX_PATH+1];
 
 	static const char* defaultConfigFilename = "hourglass.cfg";
-
+    
+    /* Saves the configuration.
+     * If no filename is given, the default configuration file is used.
+     * @see defaultConfigFilename
+     * @param filename a char* with the path 
+     */
 	int Save_Config(const char* filename=0);
 
+    /* Saves in the default config file the window and the program's instance.
+     * @param hWnd HWND (Handles to a Window) data
+     * @param hInst HINSTANCE data
+     */
 	int Save_As_Config(HWND hWnd, HINSTANCE hInst);
 
+    /* Loads the configuration.
+     * If no filename is given, the default configuration file is used.
+     * @see defaultConfigFilename
+     * @param filename a char* with the path 
+     */
 	int Load_Config(const char* filename=0);
 
+    /* Loads from the default config file the window and the program's instance.
+     * @param hWnd HWND (Handles to a Window) data
+     * @param hInst HINSTANCE data
+     */
 	int Load_As_Config(HWND hWnd, HINSTANCE hInst);
 
 }
