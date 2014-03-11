@@ -13,10 +13,14 @@
 
 #include <mmsystem.h>
 // C RunTime Header Files
+#include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <string.h>
+#include <psapi.h>
+#include <strsafe.h>
 //#include "stdafx.h"
 //#include "svnrev.h" // defines SRCVERSION number
 #include "../shared/version.h"
@@ -296,19 +300,21 @@ bool HotkeyHWndIsHotkeys = true;
 
 InputCapture inputC; // TODO, put the declaration somewhere else ?
 
-/**
+/** Checks the path to ensure it is usable for the program.
  *
  * Note: it requires both buffers given to be at least MAX_PATH characters in size.
  *       It is allowed for both arguments to point at the same buffer.
  * @param *output char pointer to where the normalized path will be written.
  * @param *path char pointer to where the path to normalize is stored
+ * @return *output the same char pointer in parameter, containing the normalized path
  */
 char* NormalizePath(char* output, const char* path)
 {
 	extern bool started;
-	if(/*movie.version >= 60 || */!started)
+	if(/*movie.version >= 60 || */!started){
 		while(*path == ' ')
 			path++;
+	}
 	DWORD len = 0;
 	if(/*!(movie.version >= 40 && movie.version < 53) || */!started)
 		len = GetFullPathNameA(path, MAX_PATH, output, NULL);
@@ -320,14 +326,14 @@ char* NormalizePath(char* output, const char* path)
 }
 
 
-#include <stdio.h>
-#include <tchar.h>
-#include <string.h>
-#include <psapi.h>
-#include <strsafe.h>
-
+// Following code needs functions from C header files
 #define BUFSIZE 512
 
+/** Translates a path containing the name of a device to a path
+ *		containing a drive letter.
+ *
+ * @param *pszFilename TCHAR string with the path to translate.
+ */
 static bool TranslateDeviceName(TCHAR* pszFilename)
 {
 	// Translate path with device name to drive letters.
@@ -336,11 +342,13 @@ static bool TranslateDeviceName(TCHAR* pszFilename)
 
 	if(GetLogicalDriveStrings(BUFSIZE-1, szTemp)) 
 	{
+		//szTemp contains list of valid drives in the system.
 		TCHAR szName[MAX_PATH];
 		TCHAR szDrive[3] = TEXT(" :");
 		BOOL bFound = FALSE;
 		TCHAR* p = szTemp;
 
+		// Try every valid device name until one matches the path, in that case the path is translated
 		do {
 			*szDrive = *p;
 			if(QueryDosDevice(szDrive, szName, MAX_PATH))
@@ -390,13 +398,24 @@ bool GetFileNameFromFileHandle(HANDLE hFile, TCHAR* pszFilename)
 	return bSuccess;
 }
 
-
+/** Get the thread suspend count.
+ * This is needed to save the threads when saving the gamestate.
+ *
+ * @param hThread HANDLE to the thread you want to save the count.
+ * @return count integer with the suspend count.
+ */
 int GetThreadSuspendCount(HANDLE hThread)
 {
 	int count = SuspendThread(hThread);
 	ResumeThread(hThread);
 	return count;
 }
+/** Set the thread suspend count.
+ * This is needed to restore the threads when loading the gamestate.
+ *
+ * @param hThread HANDLE to the thread to initialize.
+ * @param count integer with the desired count.
+ */
 void SetThreadSuspendCount(HANDLE hThread, int count)
 {
 	int suspendCount;
