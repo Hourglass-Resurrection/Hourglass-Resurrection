@@ -373,13 +373,14 @@ static bool TranslateDeviceName(TCHAR* pszFilename)
 	return false;
 }
 
+/** TODO */
 bool GetFileNameFromProcessHandle(HANDLE hProcess, char* filename)
 {
 	if(GetProcessImageFileNameA(hProcess, filename, MAX_PATH))
 		return TranslateDeviceName(filename);
 	return false;
 }
-
+/** TODO */
 bool GetFileNameFromFileHandle(HANDLE hFile, TCHAR* pszFilename) 
 {
 	bool bSuccess = false;
@@ -556,6 +557,7 @@ static char localCommandSlot [256];
 
 void UpdateFrameCountDisplay(int frameCount, int frequency);
 
+/** Refresh the rerecord count displayed */
 void UpdateRerecordCountDisplay()
 {
 	char str [256];
@@ -566,6 +568,12 @@ void UpdateRerecordCountDisplay()
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), str);
 }
 
+/** Calculates the size taken by the given file. 
+ * @see CalcExeFilesize()
+ * @param path char* with the path to the file.
+ * @return size integer with the number of bytes of given file, 
+ *			    or 0 if the file has not been found.
+ */
 int CalcFilesize(const char* path)
 {
 	FILE* file = fopen(path, "rb");
@@ -576,7 +584,10 @@ int CalcFilesize(const char* path)
 	fclose(file);
 	return size;
 }
-
+/** Calculats the size of the currently used .exe game.
+ * @return size integer with the number of bytes of given file, 
+ *			    or 0 if the file has not been found.
+ */
 int CalcExeFilesize()
 {
 	return CalcFilesize(exefilename);
@@ -588,17 +599,27 @@ int CalcExeFilesize()
 //	return CalcFileCrcCached(exefilename);
 //}
 
+/** Get the name of the file without the rest of the path.
+ * @see GetExeFilenameWithoutPath()
+ * @param path char* with the filepath
+ * @return path char* with the filename alone
+ */
 const char* GetFilenameWithoutPath(const char* path)
 {
 	const char* slash = max(strrchr(path, '\\'), strrchr(path, '/'));
 	return slash ? slash+1 : path;
 }
 
+/** Get the name of the .exe file without the rest of the path.
+ * @see GetExeFilenameWithoutPath()
+ * @return path char* with the filename alone
+ */
 const char* GetExeFilenameWithoutPath()
 {
 	return GetFilenameWithoutPath(exefilename);
 }
 
+/** TODO */
 struct SharedDataHandle
 {
 	unsigned char*const dataPtr;
@@ -620,6 +641,9 @@ private:
 	SharedDataHandle(const SharedDataHandle& c);
 };
 
+/** See it as a shortcut to clean up the memory
+ * @param c reference to a container, any type of container.
+ */
 template<typename T>
 static void ClearAndDeallocateContainer(T& c)
 {
@@ -628,10 +652,12 @@ static void ClearAndDeallocateContainer(T& c)
 }
 
 
-// holds the state of a Windows process.
-// the goal is for this to be so complete that
-// the process can later be restored to exactly the same state,
-// or at least pretty close to that for simple games during the same session.
+/** Structure for managing savestates.
+ * nitsuja's commentary: 
+ *		holds the state of a Windows process. the goal is for this to be so complete
+ *		that the process can later be restored to exactly the same state,
+ *		or at least pretty close to that for simple games during the samesession.
+ */
 struct SaveState
 {
 	struct MemoryRegion
@@ -641,7 +667,7 @@ struct SaveState
 		SharedDataHandle* dataHandle;
 	};
 	std::vector<MemoryRegion> memory;
-
+	
 	struct Thread
 	{
 		DWORD id;
