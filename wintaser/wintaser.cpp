@@ -619,11 +619,14 @@ const char* GetExeFilenameWithoutPath()
 	return GetFilenameWithoutPath(exefilename);
 }
 
-/** TODO */
+/** TODO clarifying.
+ * Seems to be a handle for data that could be shared. Amongst what?
+ * @see SaveState, FindMarchingDataBlock()
+ */
 struct SharedDataHandle
 {
 	unsigned char*const dataPtr;
-	int userdata;
+	int userdata; // used in functions as "I checked this place already"
 
 	void AddRef() { refCount++; }
 	void Release()
@@ -691,6 +694,7 @@ struct SaveState
 	}
 	SaveState() { Clear(); }
 
+	/** TODO : why Deallocate doesn't completely clean? */
 	void Deallocate()
 	{
 		stale = true;
@@ -705,9 +709,14 @@ struct SaveState
 static const int maxNumSavestates = 21;
 SaveState savestates [maxNumSavestates];
 
-
+/** Find in the samestates the block of memory corresponding (NOTE: containing?)
+ *		the given MemoryRegion. In case of failure, 0 is returned.
+ * @param &region a SaveState::MemoryRegion reference
+ * @return ___ the pointer to the SharedDataHandle structure, or 0 if not found.
+ */
 SharedDataHandle* FindMatchingDataBlock(SaveState::MemoryRegion& region)
 {
+	// Initializes the savestate's memories's datahandles as unchecked for the next loop
 	for(int i = 0; i < maxNumSavestates; i++)
 		for(unsigned int j = 0; j < savestates[i].memory.size(); j++)
 			savestates[i].memory[j].dataHandle->userdata = 0;
@@ -718,16 +727,23 @@ SharedDataHandle* FindMatchingDataBlock(SaveState::MemoryRegion& region)
 		for(unsigned int j = 0; j < savestate.memory.size(); j++)
 		{
 			SaveState::MemoryRegion& region2 = savestate.memory[j];
+			// if for a given MemoryRegion, compared to the parameter : 
+			//		their MEMORY_BASIC_INFORMATION.BaseAddress are the same
+			//		the MemoryRegion region size is at least as big as param's region size
+			//		and the MemoryRegion hasn't been checked already (NOTE: why? concurrency???)
+			// then we compare the memory of current MemoryRegion and the region param
 			if(region2.info.BaseAddress == region.info.BaseAddress
 			&& region2.info.RegionSize >= region.info.RegionSize
 			&& region2.dataHandle->userdata == 0)
 			{
+				// Check if region2's data contains region's data
 				if(0 == memcmp(region.data, region2.data, region.info.RegionSize))
 				{
-					// found a perfectly-matching region of memoroy
+					// found a perfectly-matching region of memory
 					return region2.dataHandle;
 				}
 				region2.dataHandle->userdata = 1; // avoids re-checking same data
+												  // NOTE: why???
 			}
 		}
 	}
