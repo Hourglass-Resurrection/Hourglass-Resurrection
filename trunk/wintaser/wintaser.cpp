@@ -620,7 +620,7 @@ const char* GetExeFilenameWithoutPath()
 }
 
 /** TODO clarifying.
- * Seems to be a handle for data that could be shared. Amongst what?
+ * Seems to be a HANDLE for data that could be shared between savestates.
  * @see SaveState, FindMarchingDataBlock()
  */
 struct SharedDataHandle
@@ -711,7 +711,6 @@ SaveState savestates [maxNumSavestates];
 
 /** Find in the samestates the block of memory corresponding (NOTE: containing?)
  *		the given MemoryRegion. In case of failure, 0 is returned.
- * TODO resolve last obscure things about the function's role
  * @param &region a SaveState::MemoryRegion reference
  * @return ___ the pointer to the SharedDataHandle structure, or 0 if not found.
  */
@@ -731,7 +730,8 @@ SharedDataHandle* FindMatchingDataBlock(SaveState::MemoryRegion& region)
 			// if for a given MemoryRegion, compared to the parameter : 
 			//		their MEMORY_BASIC_INFORMATION.BaseAddress are the same
 			//		the MemoryRegion region size is at least as big as param's region size
-			//		and the MemoryRegion hasn't been checked already (NOTE: why? concurrency???)
+			//		and the MemoryRegion hasn't been checked already
+			//			(note: a MemoryRegion could be shared between two savestates)
 			// then we compare the memory of current MemoryRegion and the region param
 			if(region2.info.BaseAddress == region.info.BaseAddress
 			&& region2.info.RegionSize >= region.info.RegionSize
@@ -743,15 +743,13 @@ SharedDataHandle* FindMatchingDataBlock(SaveState::MemoryRegion& region)
 					// found a perfectly-matching region of memory
 					return region2.dataHandle;
 				}
-				region2.dataHandle->userdata = 1; // avoids re-checking same data
-												  // NOTE: why???
+				// avoids re-checking same data in case it is in another savestate
+				region2.dataHandle->userdata = 1;
 			}
 		}
 	}
-	return 0;
+	return 0; // no match found
 }
-
-
 
 
 
@@ -762,7 +760,9 @@ CRITICAL_SECTION g_gameHWndsCS;
 
 std::set<HWND> gameHWnds;
 HANDLE hGameProcess = 0;
-
+/**
+ * TODO
+ */
 struct ThreadInfo
 {
 	//DWORD threadId; // not included because it's already the map index
