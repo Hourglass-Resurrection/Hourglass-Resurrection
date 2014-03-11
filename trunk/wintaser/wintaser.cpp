@@ -711,6 +711,7 @@ SaveState savestates [maxNumSavestates];
 
 /** Find in the samestates the block of memory corresponding (NOTE: containing?)
  *		the given MemoryRegion. In case of failure, 0 is returned.
+ * TODO resolve last obscure things about the function's role
  * @param &region a SaveState::MemoryRegion reference
  * @return ___ the pointer to the SharedDataHandle structure, or 0 if not found.
  */
