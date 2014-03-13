@@ -21,7 +21,7 @@ enum
 namespace Config{ // A namespace is maybe not the best solution...
 
 	// TODO: Comment *everything* !
-	extern TasFlags localTASflags;
+	extern TasFlags localTASflags; /** TODO What is the role of localTASflags ?*/
 	//extern int audioFrequency;
 	//extern int audioBitsPerSecond;
 	//extern int audioChannels;

@@ -332,7 +332,11 @@ char* NormalizePath(char* output, const char* path)
 /** Translates a path containing the name of a device to a path
  *		containing a drive letter.
  *
+ * GetProcessImageFileName and friends from the PSAPI.dll returns
+ *      paths with devices instead of letters, thus the need to
+ *      convert the paths we get through PSAPI to usable paths.
  * @param *pszFilename TCHAR string with the path to translate.
+ * @return bool true in case of success, false elsewhere.
  */
 static bool TranslateDeviceName(TCHAR* pszFilename)
 {
@@ -373,16 +377,32 @@ static bool TranslateDeviceName(TCHAR* pszFilename)
 	return false;
 }
 
-/** TODO */
+/** Retrieve the path of the executable that generated the given process.
+ *      It is mostly GetProcessImageFileNameA() with a usable path.
+ *
+ * @see GetProcessImageFileName()
+ * TODO hypothesis: this is to differenciate between a thread of the game
+ *      and another thread.
+ * @param hProcess HANDLE to a process.
+ * @param filename char* where the path will be stored.
+ */
 bool GetFileNameFromProcessHandle(HANDLE hProcess, char* filename)
 {
 	if(GetProcessImageFileNameA(hProcess, filename, MAX_PATH))
 		return TranslateDeviceName(filename);
 	return false;
 }
-/** TODO */
+/** Retrieve the path of the executable that generated the given file handle.
+ * TODO why?
+ *
+ * @param hFile HANDLE to a file.
+ * @param pszFilename TCHAR* where the path will be stored.
+ */
 bool GetFileNameFromFileHandle(HANDLE hFile, TCHAR* pszFilename) 
 {
+    // Creates a mapping of a given file, then tries to relate the mapping
+    // to a possibly existing other mapping of the same file.
+    // In case of success, the path we got is translated to be usable.
 	bool bSuccess = false;
 	if(HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 1, NULL)) 
 	{
@@ -644,7 +664,7 @@ private:
 	SharedDataHandle(const SharedDataHandle& c);
 };
 
-/** See it as a shortcut to clean up the memory
+/** See it as a shortcut to clean up the memory for any kind of container
  * @param c reference to a container, any type of container.
  */
 template<typename T>
@@ -694,7 +714,7 @@ struct SaveState
 	}
 	SaveState() { Clear(); }
 
-	/** TODO : why Deallocate doesn't completely clean? */
+	/** TODO : why Deallocate doesn't completely clear? */
 	void Deallocate()
 	{
 		stale = true;
@@ -807,9 +827,12 @@ int gameThreadIdIndex = 0;
 //	noLoadRegions.clear();
 //}
 
-
+/** TODO why */
 static void* remoteCommandSlot = 0;
 
+/** Shortcut to set where does remoteCommandSlot points to.
+ * @param pointerAsInt the int64 value of a pointer.
+ */
 void ReceiveCommandSlotPointer(__int64 pointerAsInt)
 {
 	remoteCommandSlot = (void*)pointerAsInt;
@@ -819,18 +842,26 @@ void SendCommand();
 void ClearCommand();
 
 
-
+/** TODO why */
 static void* remoteInputs = 0;
 
+/** Shortcut to set where does remoteInputs points to.
+ * @param pointerAsInt the int64 value of a pointer.
+ */
 void ReceiveInputsPointer(__int64 pointerAsInt)
 {
 	remoteInputs = (void*)pointerAsInt;
 }
 
+/** TODO why */
 static void* remoteTASflags = 0;
 
 void SendTASFlags();
 
+/** Shortcut to set where does remoteTASflags points to.
+ *      It thus upates the local TAS flags.
+ * @param pointerAsInt the int64 value of a pointer.
+ */
 void ReceiveTASFlagsPointer(__int64 pointerAsInt)
 {
 	remoteTASflags = (void*)pointerAsInt;
@@ -1799,13 +1830,21 @@ void HandleRemotePauseEvents()
 	SendCommand();
 }
 
+/** Updates the flags of the current TAS. */
 void SendTASFlags()
 {
 	if(!started)
 		return;
 	
 	//Some updates that have to be done here
-	localTASflags.emuMode = localTASflags.emuMode | (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))&&localTASflags.fastForward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((localTASflags.threadMode==0||localTASflags.threadMode==4||localTASflags.threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0);
+	localTASflags.emuMode = localTASflags.emuMode
+	    | (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))      
+	         && localTASflags.fastForward)
+           ? EMUMODE_NOPLAYBUFFERS : 0)
+        | ((localTASflags.threadMode==0 
+                || localTASflags.threadMode==4
+                ||localTASflags.threadMode==5)
+           ? EMUMODE_VIRTUALDIRECTSOUND : 0);
 	//localTASflags.fastForwardFlags = localTASflags.fastForwardFlags | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0);
 	localTASflags.appLocale = localTASflags.appLocale ? localTASflags.appLocale : tempAppLocale;
 	localTASflags.includeLogFlags = includeLogFlags | traceLogFlags;
