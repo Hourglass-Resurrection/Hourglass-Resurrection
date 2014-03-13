@@ -5,7 +5,6 @@
  * FIXME dynamically loaded DLL goes through this. 
  * Games loading with LoadLibrary will just not work for now, 
  *                this is a MAJOR project that requires A LOT of code 
- *                re-structure, we're doing enough of that right now merging 
- *                with DxWnd so that we can have portable coordinates.
+ *                re-structure.
  */
 void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, TCHAR *dllPath, bool runDllLast=false);
