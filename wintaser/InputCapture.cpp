@@ -312,6 +312,8 @@ struct Event InputCapture::eventList[] =
 std::map<SingleInput,SingleInput> InputCapture::inputMapping;
 std::map<SingleInput,WORD> InputCapture::eventMapping;
 
+extern HWND HotkeyHWnd;
+
 InputCapture::InputCapture()
 {
 	lpDIDMouse = NULL;
@@ -1124,6 +1126,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			delete inputC;
 			inputC = NULL;
 			EndDialog(hDlg, true);
+			HotkeyHWnd = NULL;
 			return TRUE;
 		} break;
 	}
