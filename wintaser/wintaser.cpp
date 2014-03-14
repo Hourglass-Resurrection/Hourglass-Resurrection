@@ -249,6 +249,7 @@ void DetectWindowsVersion(int *major, int *minor)
 						   6.0 = Vista
 						   6.1 = Win7
 						   6.2 = Win8
+						   6.3 = Win8.1
 						   Now don't these remind a lot of the actual windows versions?
 						*/
 						*major = HIWORD(buffer->dwFileVersionMS);
@@ -631,7 +632,7 @@ const char* GetFilenameWithoutPath(const char* path)
 }
 
 /** Get the name of the .exe file without the rest of the path.
- * @see GetExeFilenameWithoutPath()
+ * @see GetExeFilenameWithoutPath() FIXME why is this here? Maybe it was supposed to be @see GetGilenameWithoutPath?
  * @return path char* with the filename alone
  */
 const char* GetExeFilenameWithoutPath()
@@ -686,7 +687,7 @@ struct SaveState
 	struct MemoryRegion
 	{
 		MEMORY_BASIC_INFORMATION info;
-		unsigned char* data;
+		unsigned char* data; // NOTE: BYTE* data perhaps? Would make it cleaner imo.
 		SharedDataHandle* dataHandle;
 	};
 	std::vector<MemoryRegion> memory;
@@ -729,7 +730,7 @@ struct SaveState
 static const int maxNumSavestates = 21;
 SaveState savestates [maxNumSavestates];
 
-/** Find in the samestates the block of memory corresponding (NOTE: containing?)
+/** Find in the savestates the block of memory corresponding (NOTE: containing?)
  *		the given MemoryRegion. In case of failure, 0 is returned.
  * @param &region a SaveState::MemoryRegion reference
  * @return ___ the pointer to the SharedDataHandle structure, or 0 if not found.
@@ -830,7 +831,7 @@ int gameThreadIdIndex = 0;
 /** TODO why */
 static void* remoteCommandSlot = 0;
 
-/** Shortcut to set where does remoteCommandSlot points to.
+/** Shortcut to set where remoteCommandSlot points.
  * @param pointerAsInt the int64 value of a pointer.
  */
 void ReceiveCommandSlotPointer(__int64 pointerAsInt)
@@ -845,7 +846,7 @@ void ClearCommand();
 /** TODO why */
 static void* remoteInputs = 0;
 
-/** Shortcut to set where does remoteInputs points to.
+/** Shortcut to set where remoteInputs points.
  * @param pointerAsInt the int64 value of a pointer.
  */
 void ReceiveInputsPointer(__int64 pointerAsInt)
@@ -858,7 +859,7 @@ static void* remoteTASflags = 0;
 
 void SendTASFlags();
 
-/** Shortcut to set where does remoteTASflags points to.
+/** Shortcut to set where remoteTASflags points.
  *      It thus upates the local TAS flags.
  * @param pointerAsInt the int64 value of a pointer.
  */
@@ -935,6 +936,7 @@ void ReceiveKeyboardLayout(__int64 pointerAsInt, HANDLE hProcess)
 	else
 		strcpy(movie.keyboardLayoutName, name);
 	// set the possibly-new layout
+	// NOTE: maybe move that under the if? Only needs to be called if name was updated.
 	WriteProcessMemory(hProcess, (void*)pointerAsInt, name, KL_NAMELENGTH, &bytesWritten);
 }
 
@@ -1038,6 +1040,7 @@ void SaveMovie(char* filename)
 // TODO: Dependency on parameter can probably be removed.
 int LoadMovie(char* filename)
 {
+	// NOTE: if ( !LoadMovieFromFile(movie, filename) ) return 0; Maybe do it like that? Cleaner.
 	bool rv = LoadMovieFromFile(movie, filename);
 	if(rv == false) return 0; // Check if LoadMovieFromFile failed, if it did we don't need to continue.
 
@@ -1147,6 +1150,12 @@ int LoadMovie(char* filename)
 	return 1; // We made it!
 }
 
+/**
+* Saves game's threads and (writable) memory into the savestate
+*     of the given slot.
+*
+* @param slot The slot of the savestate to save to.
+*/
 void SaveGameStatePhase2(int slot)
 {
 	AutoCritSect cs(&g_processMemCS);
@@ -1246,9 +1255,11 @@ void SaveGameStatePhase2(int slot)
 				&& WriteProcessMemory(hGameProcess, mbi.BaseAddress, region.data, 1, &bytesRead) // (testing it here speeds up saves)
 				&& ReadProcessMemory(hGameProcess, mbi.BaseAddress, region.data, mbi.RegionSize, &bytesRead))
 				{
+					// If we stored this memory before
 					region.dataHandle = FindMatchingDataBlock(region);
 					if(region.dataHandle)
 					{
+						// Then don't store it again to reduce memory usage.
 						delete[] region.data;
 						region.data = region.dataHandle->dataPtr;
 						region.dataHandle->AddRef();
@@ -1459,7 +1470,12 @@ static void RecoverStaleState(int slot)
 	}
 }
 
-
+/**
+* Loads game's threads and (writable) memory from the savestate
+*     of the given slot.
+*
+* @param slot The slot of the savestate to load from.
+*/
 void LoadGameStatePhase2(int slot)
 {
 	AutoCritSect cs(&g_processMemCS);
@@ -1499,7 +1515,7 @@ void LoadGameStatePhase2(int slot)
 
 
 	// OK, this is going to be way harder than saving the state,
-	// since we have to reconcile differences in allocated threads and memory regions
+	// since we have to reconcile the differences in allocated threads and memory regions
 
 	if(!wasRecoveringStale)
 	{
@@ -1607,7 +1623,7 @@ void LoadGameStatePhase2(int slot)
 				// so we'll simply ask for it to be allocated in case it needs to be
 
 				void* allocAddr = VirtualAllocEx(hGameProcess, mbi.BaseAddress, mbi.RegionSize, mbi.State, mbi.Protect & ~PAGE_GUARD);
-				if(allocAddr != mbi.BaseAddress && mbi.State == MEM_COMMIT && GetLastError() != 0x5)
+				if(allocAddr != mbi.BaseAddress && mbi.State == MEM_COMMIT && GetLastError() != 0x5) // NOTE: Replace with ERROR_ACCESS_DENIED for the sake of cleaner code?
 					allocAddr = VirtualAllocEx(hGameProcess, mbi.BaseAddress, mbi.RegionSize, MEM_COMMIT | MEM_RESERVE, mbi.Protect & ~PAGE_GUARD);
 				//if(allocAddr != mbi.BaseAddress && mbi.State == MEM_COMMIT && GetLastError() != 0x5)
 				//{
