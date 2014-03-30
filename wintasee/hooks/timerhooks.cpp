@@ -8,31 +8,58 @@
 #include "../msgqueue.h"
 #include <vector>
 #include <map>
+#include <set>
 
 void TickMultiMediaTimers(DWORD time=0); // extern? (I mean, move to header)
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
 void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=NULL*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
 HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds); // extern? (I mean, move to header)
 
-struct SetTimerKey
+struct SetTimerData
 {
 	HWND hWnd;
 	UINT_PTR nIDEvent;
-	bool operator < (const SetTimerKey& other) const
+    DWORD targetTime;
+	TIMERPROC lpTimerFunc;
+
+    // Stuff below required?
+	bool killRequested; // The place where this is used (MySetTimerTimerThread) is not used anywhere
+	bool operator < (const SetTimerData& other) const
 	{
 		LARGE_INTEGER a = {(DWORD)hWnd, (LONG)nIDEvent};
 		LARGE_INTEGER b = {(DWORD)other.hWnd, (LONG)other.nIDEvent};
 		return a.QuadPart < b.QuadPart;
 	}
 };
-struct SetTimerValue
+struct SetTimerDataCompare // Struct with functor that helps us sort the elements in the set.
 {
-	DWORD targetTime;
-	TIMERPROC lpTimerFunc;
-	bool killRequested;
+    bool operator() (const SetTimerData& a, const SetTimerData& b) const
+    {
+        return a.nIDEvent < b.nIDEvent;
+    }
 };
-static std::map<SetTimerKey,SetTimerValue> s_pendingSetTimers; 
+// Ordered set, we're sorting on TimerID as that is the most important detail in the struct.
+static std::set<SetTimerData, SetTimerDataCompare> s_pendingSetTimers;
 static CRITICAL_SECTION s_pendingSetTimerCS;
+
+// Creates a guaranteed unique ID that is as low as possible 
+UINT_PTR CreateNewTimerID()
+{
+    UINT_PTR rv = 1;
+    for(std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+    {
+        if(rv == it->nIDEvent)
+        {
+            rv++;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return rv;
+}
 
 //static bool inProcessTimers = false;
 void ProcessTimers()
@@ -45,21 +72,19 @@ void ProcessTimers()
 		DWORD time = detTimer.GetTicks();
 	//	DWORD earliestTriggerTime = (DWORD)(time + 0x7FFFFFFF);
 
-		std::vector<std::pair<SetTimerKey,SetTimerValue> > triggeredTimers;
+		std::vector<SetTimerData> triggeredTimers;
 	//	bool triedAgain = false;
 	//tryAgain:
 		EnterCriticalSection(&s_pendingSetTimerCS);
-		std::map<SetTimerKey,SetTimerValue>::iterator iter;
+		std::set<SetTimerData, SetTimerDataCompare>::iterator iter;
 		for(iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end();)
 		{
-			SetTimerValue& value = iter->second;
 	////		debugprintf("HOO: %d, %d\n", value.targetTime, time);
 	//		if((int)(earliestTriggerTime - value.targetTime) > 0)
 	//			earliestTriggerTime = value.targetTime;
-			if((int)(time - value.targetTime) >= 0)
+			if((int)(time - iter->targetTime) >= 0)
 			{
-				const SetTimerKey& key = iter->first;
-				triggeredTimers.push_back(std::make_pair(key,value));
+				triggeredTimers.push_back(*iter);
 				s_pendingSetTimers.erase(iter++);
 			}
 			else
@@ -85,18 +110,19 @@ void ProcessTimers()
 		{
 			for(unsigned int i = 0; i < triggeredTimers.size(); i++)
 			{
-				SetTimerKey& key = triggeredTimers[i].first;
-				SetTimerValue& value = triggeredTimers[i].second;
+				SetTimerData data = triggeredTimers[i];
 				
-				debuglog(LCF_TIMERS, "timer triggered: 0x%X, 0x%X, %d, 0x%X\n", key.hWnd, key.nIDEvent, value.targetTime, value.lpTimerFunc);
+				debuglog(LCF_TIMERS, "timer triggered: 0x%X, 0x%X, %d, 0x%X\n", data.hWnd, data.nIDEvent, data.targetTime, data.lpTimerFunc);
 
-				if(value.lpTimerFunc)
-					value.lpTimerFunc(key.hWnd, WM_TIMER, key.nIDEvent, time);
+				if(data.lpTimerFunc)
+                {
+					data.lpTimerFunc(data.hWnd, WM_TIMER, data.nIDEvent, time);
+                }
 				else
 				{
 					// posting it doesn't work for some reason (iji hangs on startup)
 					//PostMessageInternal(key.hWnd, WM_TIMER, key.nIDEvent, (LPARAM)value.lpTimerFunc);
-					DispatchMessageInternal(key.hWnd, WM_TIMER, key.nIDEvent, (LPARAM)value.lpTimerFunc, true, MAF_PASSTHROUGH|MAF_RETURN_OS);
+					DispatchMessageInternal(data.hWnd, WM_TIMER, data.nIDEvent, (LPARAM)data.lpTimerFunc, true, MAF_PASSTHROUGH|MAF_RETURN_OS);
 				}
 			}
 		}
@@ -107,7 +133,8 @@ void ProcessTimers()
 	//inProcessTimers = false;
 }
 
-
+// Is this even used anywhere?
+/*
 DWORD WINAPI MySetTimerTimerThread(LPVOID lpParam)
 {
 	debuglog(LCF_TIMERS|LCF_THREAD, __FUNCTION__ " called.\n");
@@ -179,30 +206,69 @@ int fakestarttime = detTimer.GetTicks();
 	delete &key;
 	return 0;
 }
+*/
 
 
 UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC lpTimerFunc)
 {
-	uElapse = max(10, min(2147483647, uElapse)); // USER_TIMER_MINIMUM, USER_TIMER_MAXIMUM
+	EnterCriticalSection(&s_pendingSetTimerCS);
+
+	uElapse = max(USER_TIMER_MINIMUM, min(USER_TIMER_MAXIMUM, uElapse));
 	DWORD targetTime = detTimer.GetTicks() + uElapse;
 
-	SetTimerKey key = {hWnd, nIDEvent};
-	SetTimerValue value = {targetTime, lpTimerFunc, false};
+	SetTimerData data = { hWnd, nIDEvent, targetTime, lpTimerFunc, false };
 
-	EnterCriticalSection(&s_pendingSetTimerCS);
-	if(!nIDEvent)
+	if(nIDEvent != 0)
 	{
-		// generate a unique timer ID
-		while(s_pendingSetTimers.find(key) != s_pendingSetTimers.end())
-			key.nIDEvent++;
+		bool found = false;
+        for (std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+        {
+            // Find the right timer
+            if (it->nIDEvent == data.nIDEvent)
+            {
+                if (data.hWnd == NULL) // Does it replace the most recent timer with this ID? Or is it some other heriarchy? Assuming first created.
+                {
+                    found = true;
+                    data.hWnd = it->hWnd;
+                    (SetTimerData)(*it) = data;
+                    break;
+                }
+                else if (data.hWnd == it->hWnd)
+                {
+                    found = true;
+                    (SetTimerData)(*it) = data;
+                    break;
+                }
+            }
+        }
+
+        if (found == false) // New timer.
+        {
+            if (data.hWnd == NULL) // If hWnd is NOT NULL and timer isn't found, then we use the provided ID for the new timer.
+            {
+                data.hWnd = gamehwnd; // Fix hWnd like this?
+                data.nIDEvent = CreateNewTimerID();
+            }
+
+            s_pendingSetTimers.insert(data);
+        }
 	}
+    else // No ID provided, assuming new timer creation ... TODO: Error if hWnd is not NULL?
+    {
+        data.nIDEvent = CreateNewTimerID();
 
-	bool threadAlreadyExisted = false;
+        if (data.hWnd == NULL) // NULL hWnds are bad?
+            data.hWnd = gamehwnd;
 
-	s_pendingSetTimers[key] = value;
+        // Necessary? Seems not, nothing changes here so... Remove out-comment if everything broke
+        // bool threadAlreadyExisted = false;
+
+        s_pendingSetTimers.insert(data);
+    }
+
 	LeaveCriticalSection(&s_pendingSetTimerCS);
 
-	return key.nIDEvent;
+	return data.nIDEvent;
 }
 
 struct TimerThreadInfo
@@ -505,17 +571,28 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
 		return KillTimer(hWnd, nIDEvent);
 
 	BOOL rv = FALSE;
-	SetTimerKey key = {hWnd, nIDEvent};
 	EnterCriticalSection(&s_pendingSetTimerCS);
-	std::map<SetTimerKey,SetTimerValue>::iterator iter = s_pendingSetTimers.find(key);
-	if(iter != s_pendingSetTimers.end())
-	{
-		rv = TRUE;
-		if(tasflags.threadMode == 2)
-			s_pendingSetTimers[key].killRequested = true;
-		else
-			s_pendingSetTimers.erase(key);
-	}
+
+	for (std::set<SetTimerData, SetTimerDataCompare>::iterator iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end(); iter++)
+    {
+	    if((iter->hWnd == hWnd) && (iter->nIDEvent == nIDEvent))
+	    {
+		    rv = TRUE;
+		    if(tasflags.threadMode == 2)
+            {
+                // Can't modify a value of a set element directly
+                SetTimerData data = *iter;
+                s_pendingSetTimers.erase(iter);
+                data.killRequested = true;
+                s_pendingSetTimers.insert(data);
+            }
+		    else
+            {
+			    s_pendingSetTimers.erase(iter);
+            }
+	    }
+    }
+
 	LeaveCriticalSection(&s_pendingSetTimerCS);
 
 	return rv;
