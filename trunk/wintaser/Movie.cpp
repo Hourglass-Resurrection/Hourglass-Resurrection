@@ -101,7 +101,7 @@ Movie::Movie()
 	const char* author = movie.author;
 	unsigned int authorLen = strlen(author);
 	fwrite(&authorLen, 4, 1, file);
-	if(authorLen) // If the author-field contains something, write that too
+	if (authorLen) // If the author-field contains something, write that too
 	{
 		fwrite(author, authorLen, 1, file);
 	}
