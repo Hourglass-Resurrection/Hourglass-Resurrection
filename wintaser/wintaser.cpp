@@ -347,7 +347,7 @@ static bool TranslateDeviceName(TCHAR* pszFilename)
 
 	if(GetLogicalDriveStrings(BUFSIZE-1, szTemp)) 
 	{
-		//szTemp contains list of valid drives in the system.
+		// szTemp contains list of valid drives in the system.
 		TCHAR szName[MAX_PATH];
 		TCHAR szDrive[3] = TEXT(" :");
 		BOOL bFound = FALSE;
