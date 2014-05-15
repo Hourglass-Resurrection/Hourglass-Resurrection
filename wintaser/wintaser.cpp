@@ -748,7 +748,7 @@ SharedDataHandle* FindMatchingDataBlock(SaveState::MemoryRegion& region)
 		for(unsigned int j = 0; j < savestate.memory.size(); j++)
 		{
 			SaveState::MemoryRegion& region2 = savestate.memory[j];
-			// if for a given MemoryRegion, compared to the parameter : 
+			// if for a given MemoryRegion, compared to the parameter: 
 			//		their MEMORY_BASIC_INFORMATION.BaseAddress are the same
 			//		the MemoryRegion region size is at least as big as param's region size
 			//		and the MemoryRegion hasn't been checked already
