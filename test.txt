@@ -1,1 +1,2 @@
 Just some text to test this.
+Adding another line to this file.
