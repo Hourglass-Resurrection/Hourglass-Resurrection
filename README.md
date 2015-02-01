@@ -9,7 +9,7 @@ The goal is to clean up existing code and improve it where possible. Once the ex
 
 Updates
 -------
-Hourglass Resurrection is developed mainly for the purpose of creating tool assisted superplays for submission to [TASVideos](http://tasvideos.org/). As such, much is done in collaboration and coordination with their community forum. Look in the [Hourglass section](http://tasvideos.org/forum/viewforum.php?f=61) for more up-to-date information.
+Hourglass-Resurrection is developed mainly for the purpose of creating tool assisted superplays for submission to [TASVideos](http://tasvideos.org/). As such, much is done in collaboration and coordination with their community forum. Look in the [Hourglass section](http://tasvideos.org/forum/viewforum.php?f=61) for more up-to-date information.
 
 Helping
 -------
