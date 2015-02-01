@@ -3,11 +3,11 @@ Contributing
 When contributing to Hourglass-Resurrection you agree that your contribution
 is licensed under GPLv2 and that it may become re-licensed in the future.
 
-To contribute, fork the project and make your changes under a branch-name
+To contribute, fork the project and make your changes under a branch name
 different than master, when you're happy, make a Pull Request.
 
 Please format your pull request titles according to:  
-[part]: [oprtional: functionality affected]: [short summary]
+[part]: [optional: functionality affected]: [short summary]
 
 When contributing, please adhere to the coding standard.  
 We know a lot of the code does not follow this standard, that's what happens
@@ -24,7 +24,7 @@ Hourglass-Resurrection Coding Standard
 Applies to all code
 -------------------
 Try to maintain a 100-character line limit. If your code exceeds it with up to
-5 chars, it's OK if the code looks better on one line. Otherwise, break it up.
+5 characters, it's OK if the code looks better on one line. Otherwise, break it up.
 
 Use spaces, and use tab-spacing 4. Always fine-tune alignment when lines are
 broken up.
@@ -87,20 +87,20 @@ Local variables
 Use meaningful names, do _not_ name the variable something like
 `my_awesome_var`.
 
-Always use WINAPI type names when they exist, otherwise use the standard types
+Always use WinAPI type names when they exist, otherwise use the standard types
 where applicable, last use built-in types, unless a built-in type exist that
-replaces the standard type.  
+replaces the standard type.
 Exception: Do _not_ include `<cstdint>` etc to get typenames like `uint32_t`,
 use appropriate counterparts from the allowed ones instead.
 
-Pointer binds to type unless there is a WINAPI typename for the pointer
+Pointer binds to type unless there is a WinAPI typename for the pointer
 variant of the type, so use `LPWCHAR` instead of `WCHAR*`, and `int* p`
 instead of `int *p`.
 
 Struct / Class / Enum
 ---------------------
 **Naming:** CamelCase  
-Use structs if all members will be exposed, otherwise classes with get/set
+Use structs if all members will be exposed, otherwise classes with Get/Set
 function calls. No variable must be public in a class. When a class inherits
 from another class, the class it inherits from is always written on a new
 line.  
@@ -183,7 +183,7 @@ A `goto` must never leave the boundary of the function it's declared in.
 
 Comments
 --------
-Always use `/* */`, unless the comment has to exist mid-line the comments
+Always use `/* */`, and unless the comment has to exist mid-line the comments
 shall have this format:
 ```
 /*
@@ -193,7 +193,7 @@ shall have this format:
 ```
 Sign comments that explain complicated code and/or steps that seem
 unnecessary/weird, and when signing, do so with your GitHub nickname. We know
-about git blame, but it's even easier to track it this way.  
+about git blame, but it's even easier to track things this way.  
 Example of a final line signing:
 ```
  * -- Warepire
@@ -214,7 +214,7 @@ The use of `extern` is only OK if there is no other way to solve the problem
 in a nice manner.
 
 The use of `#define` is only OK if it is used to heavily reduce code,
-specially duplication, in terms of using it for defining anamorphic values,
+especially duplication, in terms of using it for defining anamorphic values,
 and for macros that cannot be declared as inline functions.
 
 Some code in the DLL may have to break coding standard, this may be OK,
