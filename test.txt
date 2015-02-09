@@ -1,6 +1,0 @@
-Just some text to test this.
-Adding another line to this file.
-More testing.
-Even more testing.
-There is a lot of testing going on.
-Test...
