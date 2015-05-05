@@ -1,11 +1,10 @@
 /*  Copyright (C) 2011 nitsuja and contributors
-    Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
+	Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // main EXE cpp
-//
-// TODO: split up this file. at least the AVI recording part can be separated.
+// TODO: split up this file.
 
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
 // Windows Header Files:
 #include <windows.h>
@@ -57,7 +56,7 @@ using namespace Config;
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
 
-#include "AVIDumper.h"
+#include "AVIDumping/AVIDumper.h"
 
 #include "external/ddraw.h"
 #include "shared/logcat.h"
@@ -399,9 +398,9 @@ bool GetFileNameFromProcessHandle(HANDLE hProcess, char* filename)
  */
 bool GetFileNameFromFileHandle(HANDLE hFile, TCHAR* pszFilename) 
 {
-    // Creates a mapping of a given file, then tries to relate the mapping
-    // to a possibly existing other mapping of the same file.
-    // In case of success, the path we got is translated to be usable.
+	// Creates a mapping of a given file, then tries to relate the mapping
+	// to a possibly existing other mapping of the same file.
+	// In case of success, the path we got is translated to be usable.
 	bool bSuccess = false;
 	if(HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 1, NULL)) 
 	{
@@ -893,7 +892,7 @@ static void* remoteGeneralInfoFromDll = 0;
 
 void ReceiveGeneralInfoPointer(LPVOID general_info_pointer)
 {
-    remoteGeneralInfoFromDll = general_info_pointer;
+	remoteGeneralInfoFromDll = general_info_pointer;
 }
 
 void ReceiveSoundCaptureInfoPointer(LPVOID sound_capture_info_pointer)
@@ -960,7 +959,7 @@ static char localCommandSlot_COPY [256];
 
 void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& thread_name)
 {
-    thread_name.SetThreadName("unknown");
+	thread_name.SetThreadName("unknown");
 	// print the callstack of the exception thread
 	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(threadId);
 	if(found != hGameThreads.end())
@@ -1211,7 +1210,7 @@ void SaveGameStatePhase2(int slot)
 	{
 		MEMORY_BASIC_INFORMATION mbi = {0};
 		SYSTEM_INFO si = {0};
- 		GetSystemInfo(&si);
+		GetSystemInfo(&si);
 		// walk process addresses
 		void* lpMem = si.lpMinimumApplicationAddress;
 //		debugprintf("MEM: START\n");
@@ -1848,13 +1847,13 @@ void SendTASFlags()
 	
 	//Some updates that have to be done here
 	localTASflags.emuMode = localTASflags.emuMode
-	    | (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))      
-	         && localTASflags.fastForward)
-           ? EMUMODE_NOPLAYBUFFERS : 0)
-        | ((localTASflags.threadMode==0 
-                || localTASflags.threadMode==4
-                ||localTASflags.threadMode==5)
-           ? EMUMODE_VIRTUALDIRECTSOUND : 0);
+		| (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))      
+			 && localTASflags.fastForward)
+		   ? EMUMODE_NOPLAYBUFFERS : 0)
+		| ((localTASflags.threadMode==0 
+				|| localTASflags.threadMode==4
+				||localTASflags.threadMode==5)
+		   ? EMUMODE_VIRTUALDIRECTSOUND : 0);
 	//localTASflags.fastForwardFlags = localTASflags.fastForwardFlags | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0);
 	localTASflags.appLocale = localTASflags.appLocale ? localTASflags.appLocale : tempAppLocale;
 	//localTASflags.includeLogFlags = includeLogFlags | traceLogFlags;
@@ -2483,94 +2482,94 @@ void SleepFrameBoundary(const char* frameInfo, int threadId)
 
 void FrameBoundary(IPC::FrameBoundaryInfo& frame_info, int threadId)
 {
-    if (!requestedCommandReenter)
-    {
-        // if it's actually a new frame instead of just paused
-        s_lastFrameCount = frame_info.GetTotalRanFrames();
-        int frameCountUpdateFreq = localTASflags.framerate / 2;
-        if (localTASflags.fastForward && !(localTASflags.aviMode & 1))
-            frameCountUpdateFreq = localTASflags.framerate * 8;
-        UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), frameCountUpdateFreq);
+	if (!requestedCommandReenter)
+	{
+		// if it's actually a new frame instead of just paused
+		s_lastFrameCount = frame_info.GetTotalRanFrames();
+		int frameCountUpdateFreq = localTASflags.framerate / 2;
+		if (localTASflags.fastForward && !(localTASflags.aviMode & 1))
+			frameCountUpdateFreq = localTASflags.framerate * 8;
+		UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), frameCountUpdateFreq);
 
-        // temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
-        if (frame_info.GetTotalRanFrames() == 1)
-        {
-            InvalidateRect(hWnd, NULL, TRUE);
-        }
-        HandleAviSplitRequests();
+		// temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
+		if (frame_info.GetTotalRanFrames() == 1)
+		{
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		HandleAviSplitRequests();
 
-        if (frame_info.GetCaptureInfoType() != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
-        {
-            // handle AVI recording
-            if (localTASflags.aviMode & 1)
-            {
-                ProcessCaptureFrameInfo(frame_info.GetCaptureInfo(), frame_info.GetCaptureInfoType());
-            }
-            if (localTASflags.aviMode & 2)
-            {
-                ProcessCaptureSoundInfo();
-            }
-        }
+		if (frame_info.GetCaptureInfoType() != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
+		{
+			// handle AVI recording
+			if (localTASflags.aviMode & 1)
+			{
+				ProcessCaptureFrameInfo(frame_info.GetCaptureInfo(), frame_info.GetCaptureInfoType());
+			}
+			if (localTASflags.aviMode & 2)
+			{
+				ProcessCaptureSoundInfo();
+			}
+		}
 
-        // update ram search/watch windows
-        Update_RAM_Search();
+		// update ram search/watch windows
+		Update_RAM_Search();
 
-        // handle skipping lag frames if that option is enabled
-        temporaryUnpause = (frame_info.GetCaptureInfoType() == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
-    }
-    else
-    {
-        temporaryUnpause = false;
-    }
+		// handle skipping lag frames if that option is enabled
+		temporaryUnpause = (frame_info.GetCaptureInfoType() == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
+	}
+	else
+	{
+		temporaryUnpause = false;
+	}
 
-    if (requestedCommandReenter && !cannotSuspendForCommand)
-    {
-        ResumeAllExcept(threadId);
-    }
+	if (requestedCommandReenter && !cannotSuspendForCommand)
+	{
+		ResumeAllExcept(threadId);
+	}
 
-    // handle hotkeys
-    do
-    {
-        requestedCommandReenter = false;
-        cannotSuspendForCommand = false;
-        RefreshSavestates(frame_info.GetTotalRanFrames());
-        if (!requestedCommandReenter)
-        {
-            CheckHotkeys(frame_info.GetTotalRanFrames(), true);
-        }
-        CheckDialogChanges(frame_info.GetTotalRanFrames());
-        if (paused)
-        {
-            UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), 1);
-            if (!requestedCommandReenter)
-            {
-                Sleep(5);
-            }
-            if (!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
-            {
-                HandleRemotePauseEvents();
-            }
-        }
-    } while (paused && !(temporaryUnpause || requestedCommandReenter));
+	// handle hotkeys
+	do
+	{
+		requestedCommandReenter = false;
+		cannotSuspendForCommand = false;
+		RefreshSavestates(frame_info.GetTotalRanFrames());
+		if (!requestedCommandReenter)
+		{
+			CheckHotkeys(frame_info.GetTotalRanFrames(), true);
+		}
+		CheckDialogChanges(frame_info.GetTotalRanFrames());
+		if (paused)
+		{
+			UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), 1);
+			if (!requestedCommandReenter)
+			{
+				Sleep(5);
+			}
+			if (!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
+			{
+				HandleRemotePauseEvents();
+			}
+		}
+	} while (paused && !(temporaryUnpause || requestedCommandReenter));
 
-    if (requestedCommandReenter && !cannotSuspendForCommand)
-    {
-        SuspendAllExcept(threadId);
-    }
+	if (requestedCommandReenter && !cannotSuspendForCommand)
+	{
+		SuspendAllExcept(threadId);
+	}
 
-    // handle movie playback / recording
-    if (!requestedCommandReenter)
-    {
-        if (!localTASflags.playback)
-        {
-            RecordLocalInputs();
-        }
-        InjectCurrentMovieFrame();
-        if (!(frame_info.GetTotalRanFrames() & (frame_info.GetTotalRanFrames() - 1)))
-        {
-            DoPow2Logic(frame_info.GetTotalRanFrames());
-        }
-    }
+	// handle movie playback / recording
+	if (!requestedCommandReenter)
+	{
+		if (!localTASflags.playback)
+		{
+			RecordLocalInputs();
+		}
+		InjectCurrentMovieFrame();
+		if (!(frame_info.GetTotalRanFrames() & (frame_info.GetTotalRanFrames() - 1)))
+		{
+			DoPow2Logic(frame_info.GetTotalRanFrames());
+		}
+	}
 }
 
 static int s_firstTimerDesyncWarnedFrame = 0x7FFFFFFF;
@@ -2692,7 +2691,7 @@ void ResumeAllExcept(int ignoreThreadID)
 
 void ReceiveFrameRate(IPC::FPSInfo& fps_info)
 {
-    char str[128];
+	char str[128];
 	sprintf(str, "Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
 	const char* pStr = str;
 	if(strlen(str) > 24)
@@ -3160,29 +3159,29 @@ bool AdjustPrivileges(HANDLE hGameHandle, bool bEnable)
 {
 	debugprintf("Attempting adjustment of the game's privileges to: %s\n", bEnable ? "extended" : "normal");
 
-    HANDLE hToken;
-    TOKEN_PRIVILEGES tp;
-    LUID luid;
+	HANDLE hToken;
+	TOKEN_PRIVILEGES tp;
+	LUID luid;
 
 	//HANDLE currentProcess = GetCurrentProcess();
 
 	BOOL opened = OpenProcessToken(hGameHandle, (TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY | TOKEN_READ), &hToken);
-    if (opened == FALSE)
+	if (opened == FALSE)
 	{
 		debugprintf("Failed to get the token for the game process...\n");
 		return false;
 	}
 
 	BOOL lookedUp = LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid);
-    if (lookedUp == FALSE)
+	if (lookedUp == FALSE)
 	{
 		debugprintf("Failed to look up the privileges...\n");
 		CloseHandle(hToken);
 		return false;
 	}
 
-    tp.PrivilegeCount = 1;
-    tp.Privileges[0].Luid = luid;
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = bEnable ? SE_PRIVILEGE_ENABLED : 0;
 
 	BOOL adjusted = AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
@@ -3195,7 +3194,7 @@ bool AdjustPrivileges(HANDLE hGameHandle, bool bEnable)
 
 	debugprintf("Adjustment completed successfully.\n");
 	CloseHandle(hToken);
-    return true;
+	return true;
 }
 #endif
 
@@ -3731,7 +3730,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			if(de.dwDebugEventCode != 8)
 				verbosedebugprintf("WaitForDebugEvent. received debug event: %X\n", de.dwDebugEventCode);
 
-            static LPVOID ipc_address_in_process = nullptr;
+			static LPVOID ipc_address_in_process = nullptr;
 
 			switch(de.dwDebugEventCode)
 			{
@@ -3751,10 +3750,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						const char* pstr = str;
 
 #define MessagePrefixMatch(pre) (!strncmp(pstr, pre": ", sizeof(pre": ")-1) ? pstr += sizeof(pre": ")-1 : false)
-                        if (MessagePrefixMatch("IPCBUFFER"))
-                        {
-                            ipc_address_in_process = reinterpret_cast<LPVOID>(strtol(pstr, nullptr, 16));
-                        }
+						if (MessagePrefixMatch("IPCBUFFER"))
+						{
+							ipc_address_in_process = reinterpret_cast<LPVOID>(strtol(pstr, nullptr, 16));
+						}
 						else if(MessagePrefixMatch("PAUSEEXCEPTIONPRINTING"))
 							exceptionPrintingPaused++;
 						else if(MessagePrefixMatch("RESUMEEXCEPTIONPRINTING"))
@@ -3778,7 +3777,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 #undef MessagePrefixMatch
 					}
-				    delete [] str; // destroying str since it's now a pointer, and we don't need it anymore.
+					delete [] str; // destroying str since it's now a pointer, and we don't need it anymore.
 #pragma endregion
 				}
 				break;
@@ -3810,200 +3809,200 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							}
 						}
 					}
-                    else if (ipc_address_in_process != nullptr)
-                    {
-                        IPC::CommandFrame ipc_frame;
-                        SIZE_T read_bytes;
-                        /*
-                         * HACK: Workaround for limitation in extendedtrace.
-                         * TODO: Write new wrapper for dbghelp.dll then check the break point came from SendIPCMessage
-                         * -- Warepire
-                         */
-                        BOOL rv = ReadProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &read_bytes);
-                        if (rv && read_bytes == sizeof(ipc_frame))
-                        {
-                            if (ipc_frame.m_command > IPC::Command::CMD_DUMMY_ENTRY_MIN_OPCODE &&
-                                static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) % 2 == 0)
-                            {
-                                std::vector<BYTE> buf;
-                                read_bytes = 0;
-                                if (ipc_frame.m_command_data_size != 0)
-                                {
-                                    buf.resize(ipc_frame.m_command_data_size);
-                                    rv = ReadProcessMemory(hGameProcess, ipc_frame.m_command_data, buf.data(), buf.capacity(), &read_bytes);
-                                }
-                                if (rv && read_bytes == ipc_frame.m_command_data_size)
-                                {
-                                    switch (ipc_frame.m_command)
-                                    {
-                                    case IPC::Command::CMD_DEBUG_MESSAGE:
-                                        debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
-                                        break;
-                                    case IPC::Command::CMD_DLL_VERSION:
-                                        CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_COMMAND_BUF:
-                                        ReceiveCommandSlotPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_INPUT_BUF:
-                                        ReceiveInputsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
-                                        ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
-                                        ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-                                        break;
-                                    case IPC::Command::CMD_TAS_FLAGS_BUF:
-                                        ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_SOUND_INFO:
-                                        ReceiveSoundCaptureInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_GENERAL_INFO:
-                                        ReceiveGeneralInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_PALETTE_ENTRIES:
-                                        ReceivePaletteEntriesPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_GIMME_DLL_LOAD_INFOS:
-                                        AddAndSendDllInfo(NULL, true, hGameProcess);
-                                        break;
-                                    case IPC::Command::CMD_KEYBOARD_LAYOUT_NAME:
-                                        ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-                                        break;
-                                    case IPC::Command::CMD_SUGGEST_THREAD_NAME:
-                                        SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
-                                        {
-                                            DWORD bytes_written;
-                                            WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), ipc_frame.m_command_data_size, &bytes_written);
-                                            // print the callstack of the thread
-                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                                            if (found != hGameThreads.end())
-                                            {
-                                                HANDLE hThread = found->second;
-                                                //THREADSTACKTRACE(hThread);
-                                                char msg[16 + 72];
-                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-                                                THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-                                            }
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_POST_DLL_MAIN_DONE:
-                                        postDllMainDone = true;
-                                        if (mainThreadWaitingForPostDllMain)
-                                        {
-                                            debugprintf(L"resuming main thread...\n");
-                                            ResumeThread(processInfo.hThread);
-                                            mainThreadWaitingForPostDllMain = false;
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_KILL_ME:
-                                        terminateRequest = true;
-                                        break;
-                                    case IPC::Command::CMD_FPS_UPDATE:
-                                        ReceiveFrameRate(*reinterpret_cast<IPC::FPSInfo*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_DENIED_THREAD:
-                                        usedThreadMode = localTASflags.threadMode;
-                                        break;
-                                    case IPC::Command::CMD_GAMMA_RAMP_BUF:
-                                        ReceiveGammaRampData(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-                                        break;
-                                    case IPC::Command::CMD_STACK_TRACE:
-                                        {
-                                            // print the callstack of the thread
-                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                                            IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
-                                            if (found != hGameThreads.end())
-                                            {
-                                                HANDLE hThread = found->second;
-                                                char msg[16 + 72];
-                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-                                                StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
-                                            }
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_SAVE_STATE:
-                                        SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_LOAD_STATE:
-                                        LoadGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_SUSPEND_ALL_THREADS:
-                                        SuspendAllExcept(de.dwThreadId);
-                                        break;
-                                    case IPC::Command::CMD_RESUME_ALL_THREADS:
-                                        ResumeAllExcept(de.dwThreadId);
-                                        break;
-                                    case IPC::Command::CMD_HWND:
-                                        ReceiveHWND(*reinterpret_cast<HWND*>(buf.data()));
-                                        break;
-                                    case IPC::Command::CMD_WATCH_ADDRESS:
-                                        {
-                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
-                                            AddressWatcher watch = { auto_watch->GetAddress(),
-                                                                     auto_watch->GetSize(),
-                                                                     auto_watch->GetType() };
-                                            watch.WrongEndian = false;
-                                            if (IsHardwareAddressValid(watch.Address))
-                                            {
-                                                InsertWatch(watch, auto_watch->GetComment());
-                                            }
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_UNWATCH_ADDRESS:
-                                        {
-                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
-                                            AddressWatcher watch = { auto_watch->GetAddress(),
-                                                                     auto_watch->GetSize(),
-                                                                     auto_watch->GetType() };
-                                            watch.WrongEndian = false;
-                                            RemoveWatch(watch);
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_FRAME_BOUNDARY:
-                                        {
-                                            FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
+					else if (ipc_address_in_process != nullptr)
+					{
+						IPC::CommandFrame ipc_frame;
+						SIZE_T read_bytes;
+						/*
+						 * HACK: Workaround for limitation in extendedtrace.
+						 * TODO: Write new wrapper for dbghelp.dll then check the break point came from SendIPCMessage
+						 * -- Warepire
+						 */
+						BOOL rv = ReadProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &read_bytes);
+						if (rv && read_bytes == sizeof(ipc_frame))
+						{
+							if (ipc_frame.m_command > IPC::Command::CMD_DUMMY_ENTRY_MIN_OPCODE &&
+								static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) % 2 == 0)
+							{
+								std::vector<BYTE> buf;
+								read_bytes = 0;
+								if (ipc_frame.m_command_data_size != 0)
+								{
+									buf.resize(ipc_frame.m_command_data_size);
+									rv = ReadProcessMemory(hGameProcess, ipc_frame.m_command_data, buf.data(), buf.capacity(), &read_bytes);
+								}
+								if (rv && read_bytes == ipc_frame.m_command_data_size)
+								{
+									switch (ipc_frame.m_command)
+									{
+									case IPC::Command::CMD_DEBUG_MESSAGE:
+										debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
+										break;
+									case IPC::Command::CMD_DLL_VERSION:
+										CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
+										break;
+									case IPC::Command::CMD_COMMAND_BUF:
+										ReceiveCommandSlotPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_INPUT_BUF:
+										ReceiveInputsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
+										ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
+										ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+										break;
+									case IPC::Command::CMD_TAS_FLAGS_BUF:
+										ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_SOUND_INFO:
+										ReceiveSoundCaptureInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_GENERAL_INFO:
+										ReceiveGeneralInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_PALETTE_ENTRIES:
+										ReceivePaletteEntriesPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+										break;
+									case IPC::Command::CMD_GIMME_DLL_LOAD_INFOS:
+										AddAndSendDllInfo(NULL, true, hGameProcess);
+										break;
+									case IPC::Command::CMD_KEYBOARD_LAYOUT_NAME:
+										ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+										break;
+									case IPC::Command::CMD_SUGGEST_THREAD_NAME:
+										SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
+										{
+											DWORD bytes_written;
+											WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), ipc_frame.m_command_data_size, &bytes_written);
+											// print the callstack of the thread
+											std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+											if (found != hGameThreads.end())
+											{
+												HANDLE hThread = found->second;
+												//THREADSTACKTRACE(hThread);
+												char msg[16 + 72];
+												sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+												THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+											}
+										}
+										break;
+									case IPC::Command::CMD_POST_DLL_MAIN_DONE:
+										postDllMainDone = true;
+										if (mainThreadWaitingForPostDllMain)
+										{
+											debugprintf(L"resuming main thread...\n");
+											ResumeThread(processInfo.hThread);
+											mainThreadWaitingForPostDllMain = false;
+										}
+										break;
+									case IPC::Command::CMD_KILL_ME:
+										terminateRequest = true;
+										break;
+									case IPC::Command::CMD_FPS_UPDATE:
+										ReceiveFrameRate(*reinterpret_cast<IPC::FPSInfo*>(buf.data()));
+										break;
+									case IPC::Command::CMD_DENIED_THREAD:
+										usedThreadMode = localTASflags.threadMode;
+										break;
+									case IPC::Command::CMD_GAMMA_RAMP_BUF:
+										ReceiveGammaRampData(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+										break;
+									case IPC::Command::CMD_STACK_TRACE:
+										{
+											// print the callstack of the thread
+											std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+											IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
+											if (found != hGameThreads.end())
+											{
+												HANDLE hThread = found->second;
+												char msg[16 + 72];
+												sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+												StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
+											}
+										}
+										break;
+									case IPC::Command::CMD_SAVE_STATE:
+										SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+										break;
+									case IPC::Command::CMD_LOAD_STATE:
+										LoadGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+										break;
+									case IPC::Command::CMD_SUSPEND_ALL_THREADS:
+										SuspendAllExcept(de.dwThreadId);
+										break;
+									case IPC::Command::CMD_RESUME_ALL_THREADS:
+										ResumeAllExcept(de.dwThreadId);
+										break;
+									case IPC::Command::CMD_HWND:
+										ReceiveHWND(*reinterpret_cast<HWND*>(buf.data()));
+										break;
+									case IPC::Command::CMD_WATCH_ADDRESS:
+										{
+											IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+											AddressWatcher watch = { auto_watch->GetAddress(),
+																	 auto_watch->GetSize(),
+																	 auto_watch->GetType() };
+											watch.WrongEndian = false;
+											if (IsHardwareAddressValid(watch.Address))
+											{
+												InsertWatch(watch, auto_watch->GetComment());
+											}
+										}
+										break;
+									case IPC::Command::CMD_UNWATCH_ADDRESS:
+										{
+											IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+											AddressWatcher watch = { auto_watch->GetAddress(),
+																	 auto_watch->GetSize(),
+																	 auto_watch->GetType() };
+											watch.WrongEndian = false;
+											RemoveWatch(watch);
+										}
+										break;
+									case IPC::Command::CMD_FRAME_BOUNDARY:
+										{
+											FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
 #ifdef _DEBUG
-                                            if (s_lastFrameCount <= 1 && !requestedCommandReenter)
-                                            {
-                                                debugprintf(L"On Frame %d: \n", s_lastFrameCount);
-                                                // print the callstack of all threads
+											if (s_lastFrameCount <= 1 && !requestedCommandReenter)
+											{
+												debugprintf(L"On Frame %d: \n", s_lastFrameCount);
+												// print the callstack of all threads
 
-                                                int numThreads = gameThreadIdList.size();
-                                                for (int i = 0; i < numThreads; i++)
-                                                {
-                                                    DWORD threadId = gameThreadIdList[i];
-                                                    ThreadInfo& info = hGameThreads[threadId];
-                                                    HANDLE hThread = info.handle;
-                                                    char msg[16 + 72];
-                                                    sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
-                                                    THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
-                                                }
-                                            }
+												int numThreads = gameThreadIdList.size();
+												for (int i = 0; i < numThreads; i++)
+												{
+													DWORD threadId = gameThreadIdList[i];
+													ThreadInfo& info = hGameThreads[threadId];
+													HANDLE hThread = info.handle;
+													char msg[16 + 72];
+													sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
+													THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
+												}
+											}
 #endif
-                                        }
-                                        break;
-                                    case IPC::Command::CMD_MOUSE_REG:
-                                        inputC.InitDIMouse(hWnd, true);
-                                        break;
-                                    default:
-                                        break;
-                                    }
+										}
+										break;
+									case IPC::Command::CMD_MOUSE_REG:
+										inputC.InitDIMouse(hWnd, true);
+										break;
+									default:
+										break;
+									}
 
-                                    /*
-                                     * Hacky...
-                                     * -- Warepire
-                                     */
-                                    ipc_frame.m_command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) + 1);
-                                    DWORD bytes_written;
-                                    WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+									/*
+									 * Hacky...
+									 * -- Warepire
+									 */
+									ipc_frame.m_command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) + 1);
+									DWORD bytes_written;
+									WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
+									break;
+								}
+							}
+						}
+					}
 				}
 
 				//if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT)
@@ -4018,7 +4017,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				{
 				  if(de.u.Exception.ExceptionRecord.ExceptionCode != THREAD_NAME_EXCEPTION)
 				  {
-				    bool couldBeSerious = !de.u.Exception.dwFirstChance || (
+					bool couldBeSerious = !de.u.Exception.dwFirstChance || (
 					   (de.u.Exception.ExceptionRecord.ExceptionCode&0xCFFFFFFF) != /*EXCEPTION_MSVC*/0xC06D7363
 					&& (de.u.Exception.ExceptionRecord.ExceptionCode&0xCFFFFFFF) != 0xC0440001
 					);
@@ -4878,9 +4877,9 @@ DWORD GetErrorModeXP()
 //HACCEL hAccelTable = NULL;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+					 HINSTANCE hPrevInstance,
+					 LPTSTR    lpCmdLine,
+					 int       nCmdShow)
 {
 	GetCurrentDirectory(MAX_PATH, thisprocessPath);
 
@@ -5432,10 +5431,10 @@ BOOL SetWindowTextAndScrollRight(HWND hEdit, LPCSTR lpString)
 
 BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    BOOL rv = TRUE;  
-    switch(message)  
-    {  
-        case WM_INITDIALOG:
+	BOOL rv = TRUE;  
+	switch(message)  
+	{  
+		case WM_INITDIALOG:
 			if(VERSION >= 0)
 			{
 				char title [256];
@@ -5451,10 +5450,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowTextA(hDlg, "Hourglass (debug)");
 			}
 #endif
-            break;
+			break;
 
 		case WM_SHOWWINDOW:
- 			{
+			{
 				char str [256];
 				sprintf(str, "%d", localTASflags.framerate);
 				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
@@ -5486,7 +5485,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					path[0] = 0;
 					//strcpy(path, thisprocessPath);
 					//path[MAX_PATH-23] = 0;
- 					//strcat(path, "\\..\\game\\Doukutsu.exe");
+					//strcat(path, "\\..\\game\\Doukutsu.exe");
 				}
 				else
 				{
@@ -5516,17 +5515,17 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			//EnableDisablePlayRecordButtons(hDlg); // disabled because it breaks being able to set fps or system clock on existing movie
 			break;
 
-        case WM_CLOSE:
+		case WM_CLOSE:
 			SendMessage(hDlg, WM_COMMAND, ID_FILES_STOP, 0);
 			PrepareForExit();
 			PostQuitMessage(0);
-            break;
+			break;
 
 		case WM_DESTROY:
 			hWnd = NULL;
 			PrepareForExit();
 			PostQuitMessage(0);
-            break;
+			break;
 
 
 		//case WM_LBUTTONUP: // auto-switch to game window on left click on unimportant place
@@ -6043,107 +6042,107 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}	break;
 
 
-                case ID_INCLUDE_LCF_NONE:
-                    localTASflags.log_categories.fill(false);
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] = true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_ALL:
-                    localTASflags.log_categories.fill(true);
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_ANY:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_HOOK:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::HOOK)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_TIME:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIME)] ^= true; 
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_DETTIMER:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DETTIMER)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_SYNC:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SYNC)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_DDRAW:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DDRAW)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_D3D:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::D3D)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_OGL:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::OGL)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_GDI:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::GDI)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_SDL:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SDL)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_DINPUT:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DINPUT)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_WINPUT:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINPUT)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_XINPUT:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::XINPUT)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_DSOUND:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DSOUND)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_WSOUND:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WSOUND)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_PROCESS:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::PROCESS)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_MODULE:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MODULE)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_MESSAGES:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MESSAGES)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_WINDOW:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINDOW)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_FILEIO:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::FILEIO)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_REGISTRY:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::REGISTRY)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_THREAD:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::THREAD)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
-                case ID_INCLUDE_LCF_TIMERS:
-                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIMERS)] ^= true;
-                    tasFlagsDirty = true;
-                    break;
+				case ID_INCLUDE_LCF_NONE:
+					localTASflags.log_categories.fill(false);
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] = true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_ALL:
+					localTASflags.log_categories.fill(true);
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_ANY:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_HOOK:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::HOOK)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_TIME:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIME)] ^= true; 
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_DETTIMER:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DETTIMER)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_SYNC:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SYNC)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_DDRAW:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DDRAW)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_D3D:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::D3D)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_OGL:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::OGL)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_GDI:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::GDI)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_SDL:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SDL)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_DINPUT:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DINPUT)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_WINPUT:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINPUT)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_XINPUT:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::XINPUT)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_DSOUND:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DSOUND)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_WSOUND:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WSOUND)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_PROCESS:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::PROCESS)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_MODULE:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MODULE)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_MESSAGES:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MESSAGES)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_WINDOW:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINDOW)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_FILEIO:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::FILEIO)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_REGISTRY:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::REGISTRY)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_THREAD:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::THREAD)] ^= true;
+					tasFlagsDirty = true;
+					break;
+				case ID_INCLUDE_LCF_TIMERS:
+					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIMERS)] ^= true;
+					tasFlagsDirty = true;
+					break;
 
 				case ID_PERFORMANCE_TOGGLESAVEVIDMEM: localTASflags.storeVideoMemoryInSavestates = !localTASflags.storeVideoMemoryInSavestates; tasFlagsDirty = true; break;
 				case ID_PERFORMANCE_TOGGLESAVEGUARDED: storeGuardedPagesInSavestates = !storeGuardedPagesInSavestates; mainMenuNeedsRebuilding = true; break;
@@ -6845,10 +6844,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			rv = 0;
 			break;
 
-        default:  
-            rv = FALSE;  
-            break;  
-    }  
+		default:  
+			rv = FALSE;  
+			break;  
+	}  
  
-    return rv;
+	return rv;
 }

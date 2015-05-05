@@ -21,11 +21,11 @@
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{32713b75-3e7a-4a28-aefb-b7215046ced9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AVIDumping">
+      <UniqueIdentifier>{b06adc34-504b-4b14-80a4-e32cc54d948a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AVIDumper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CustomDLGs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -86,11 +86,20 @@
     <ClCompile Include="MainMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AVIDumping\AudioConverterStream.cpp">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
+    <ClCompile Include="AVIDumping\AVIDumper.cpp">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
+    <ClCompile Include="AVIDumping\WaitableBool.cpp">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
+    <ClCompile Include="AVIDumping\WaveFormat.cpp">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AVIDumper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="CustomDLGs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -172,15 +181,23 @@
     <ClInclude Include="MainMenu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="AVIDumping\AudioConverterStream.h">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
+    <ClInclude Include="AVIDumping\AVIDumper.h">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
+    <ClInclude Include="AVIDumping\WaitableBool.h">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
+    <ClInclude Include="AVIDumping\WaveFormat.h">
+      <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="wintaser.ico">
-      <Filter>Resource Files</Filter>
-    </None>
+    <ResourceCompile Include="wintaser.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="wintaser.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <None Include="wintaser.ico" />
   </ItemGroup>
 </Project>
