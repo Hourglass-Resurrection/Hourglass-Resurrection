@@ -132,14 +132,14 @@ bool Menu::AttachMenu(HWND window)
 {
     loaded_menu = LoadMenuIndirectW(reinterpret_cast<MENUTEMPLATEW*>(menu.data()));
     if(loaded_menu == nullptr)
-	{
-		return false;
-	}
-	if(SetMenu(window, loaded_menu) == FALSE)
-	{
+    {
+        return false;
+    }
+    if(SetMenu(window, loaded_menu) == FALSE)
+    {
         DestroyMenu(loaded_menu);
         loaded_menu = nullptr;
-		return false;
-	}
-	return true;
+        return false;
+    }
+    return true;
 }

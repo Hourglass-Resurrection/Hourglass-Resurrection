@@ -81,8 +81,8 @@ namespace
      * The title must always contain at least a NULL character.
      */
     static const DWORD DLGITEMTEMPLATEEX_BASE_SIZE = (sizeof(DWORD) * 3) +
-            		                                 (sizeof(short) * 4) +
-                	                                 (sizeof(DWORD) * 1) +
+                                                     (sizeof(short) * 4) +
+                                                     (sizeof(DWORD) * 1) +
                                                      (sizeof(WCHAR) * 0) +
                                                      (sizeof(WCHAR) * 1) +
                                                      (sizeof(WORD) * 1);
@@ -181,7 +181,7 @@ void DlgBase::AddPushButton(std::wstring caption,
                             SHORT w, SHORT h,
                             bool default)
 {
-	AddObject(0,
+    AddObject(0,
               WS_GROUP | WS_TABSTOP | (default ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON),
               L"\xFFFF\x0080",
               caption,
@@ -196,7 +196,7 @@ void DlgBase::AddCheckbox(std::wstring caption,
                           SHORT w, SHORT h,
                           bool right_hand)
 {
-	AddObject(0,
+    AddObject(0,
               WS_GROUP | WS_TABSTOP | BS_AUTOCHECKBOX | (right_hand ? BS_RIGHTBUTTON : 0),
               L"\xFFFF\x0080",
               caption,
@@ -213,7 +213,7 @@ void DlgBase::AddRadioButton(std::wstring caption,
                              bool group_with_prev)
 {
     DWORD style = WS_TABSTOP | BS_AUTORADIOBUTTON;
-	AddObject(0,
+    AddObject(0,
               style | (group_with_prev ? 0 : WS_GROUP) | (right_hand ? BS_RIGHTBUTTON : 0),
               L"\xFFFF\x0080",
               caption,
@@ -227,7 +227,7 @@ void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool 
     DWORD multi_line_style;
     multi_line_style = (multi_line ? WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN : 0);
 
-	AddObject(0,
+    AddObject(0,
               WS_GROUP | WS_BORDER | WS_TABSTOP | multi_line_style,
               L"\xFFFF\x0081",
               std::wstring(),
@@ -238,12 +238,12 @@ void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool 
 
 void DlgBase::AddStaticText(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
 {
-	AddObject(0, SS_LEFT, L"\xFFFF\x0082", caption, id, x, y, w, h);
+    AddObject(0, SS_LEFT, L"\xFFFF\x0082", caption, id, x, y, w, h);
 }
 
 void DlgBase::AddStaticPanel(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
 {
-	AddObject(0, SS_GRAYRECT, L"\xFFFF\x0082", std::wstring(), id, x, y, w, h);
+    AddObject(0, SS_GRAYRECT, L"\xFFFF\x0082", std::wstring(), id, x, y, w, h);
 }
 
 void DlgBase::AddGroupBox(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
@@ -253,7 +253,7 @@ void DlgBase::AddGroupBox(std::wstring caption, DWORD id, SHORT x, SHORT y, SHOR
 
 void DlgBase::AddDropDownList(DWORD id, SHORT x, SHORT y, SHORT w, SHORT drop_distance)
 {
-	AddObject(0,
+    AddObject(0,
               WS_GROUP | WS_VSCROLL | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS,
               L"\xFFFF\x0085",
               std::wstring(),
@@ -270,7 +270,7 @@ void DlgBase::AddListView(DWORD id,
 {
     DWORD default_style = WS_GROUP | WS_BORDER | WS_TABSTOP |
                           LVS_REPORT | LVS_ALIGNLEFT | LVS_SHAREIMAGELISTS;
-	AddObject(0,
+    AddObject(0,
               default_style | (editable ? LVS_EDITLABELS : 0) | (single_selection ? LVS_SINGLESEL : 0),
               L"SysListView32",
               std::wstring(),
@@ -332,14 +332,14 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
         iterator += sizeof(WCHAR);
     }
 
-	if (caption.empty() == false)
+    if (caption.empty() == false)
     {
         wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), caption.c_str());
         iterator += (sizeof(WCHAR) * caption.size());
     }
     iterator += sizeof(WCHAR);
 
-	*reinterpret_cast<WORD*>(&(window[CDLGITEMS_OFFSET])) += 1;
+    *reinterpret_cast<WORD*>(&(window[CDLGITEMS_OFFSET])) += 1;
 }
 
 INT_PTR DlgBase::Run(HINSTANCE instance,
