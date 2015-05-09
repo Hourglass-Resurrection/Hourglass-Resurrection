@@ -4,8 +4,6 @@
  * Refer to the file COPYING.txt in the project root.
  */
 
-#pragma warning(disable:4996)
-
 #include <Windows.h>
 #include <CommCtrl.h>
 
@@ -83,11 +81,11 @@ namespace
      * The title must always contain at least a NULL character.
      */
     static const DWORD DLGITEMTEMPLATEEX_BASE_SIZE = (sizeof(DWORD) * 3) +
-					                                 (sizeof(short) * 4) +
-					                                 (sizeof(DWORD) * 1) +
-					                                 (sizeof(WCHAR) * 0) +
-					                                 (sizeof(WCHAR) * 1) +
-					                                 (sizeof(WORD) * 1);
+            		                                 (sizeof(short) * 4) +
+                	                                 (sizeof(DWORD) * 1) +
+                                                     (sizeof(WCHAR) * 0) +
+                                                     (sizeof(WCHAR) * 1) +
+                                                     (sizeof(WORD) * 1);
 };
 
 DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
@@ -171,15 +169,10 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
     wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), L"MS Shell Dlg");
 
     active = false;
-//    listview_checkbox_list = nullptr;
 }
 
 DlgBase::~DlgBase()
 {
-    /*if (listview_checkbox_list != nullptr)
-    {
-        ImageList_Destroy(listview_checkbox_list);
-    }*/
 }
 
 void DlgBase::AddPushButton(std::wstring caption,
@@ -275,14 +268,6 @@ void DlgBase::AddListView(DWORD id,
                           SHORT w, SHORT h,
                           bool editable, bool single_selection)
 {
-    /*
-     * Enable checkboxes
-     */
-    /*if (listview_checkbox_list == nullptr)
-    {
-        InitCheckBoxImageList();
-    }*/
-
     DWORD default_style = WS_GROUP | WS_BORDER | WS_TABSTOP |
                           LVS_REPORT | LVS_ALIGNLEFT | LVS_SHAREIMAGELISTS;
 	AddObject(0,
@@ -357,44 +342,6 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
 	*reinterpret_cast<WORD*>(&(window[CDLGITEMS_OFFSET])) += 1;
 }
 
-/*
- * Normally when using ListView checkboxes, you only get to use them with the first column.
- * This can be used to use an unlimited amount of checkboxes, and in any column.
- * -- Warepire
- */
-//void DlgBase::InitCheckBoxImageList()
-//{
-//    HDC dc = CreateCompatibleDC(nullptr);
-//    HBITMAP checkboxes;
-//    /*
-//     * 2 images in a row
-//     */
-//    RECT rect_full = { 0, 0, 32, 16 };
-//
-//	if (checkboxes = CreateCompatibleBitmap(dc, 32, 16))
-//	{
-//		listview_checkbox_list = ImageList_Create(16, 16, ILC_COLOR, 2, 1);
-//		
-//		if (listview_checkbox_list != nullptr)
-//		{
-//			HBITMAP old_image = static_cast<HBITMAP>(SelectObject(dc, checkboxes));
-//
-//			RECT rect_image = { 1, 1, 16, 16 };
-//
-//			FillRect(dc, &rect_full, reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1));
-//				
-//			DrawFrameControl(dc, &rect_image, DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT);
-//			rect_image.left  += 16;
-//            rect_image.right += 16;
-//			DrawFrameControl(dc, &rect_image, DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT | DFCS_CHECKED);
-//				
-//			SelectObject(dc, old_image);
-//
-//			ImageList_Add(listview_checkbox_list, checkboxes, 0);
-//		}
-//	}
-//}
-
 INT_PTR DlgBase::Run(HINSTANCE instance,
                      HWND parent,
                      DlgProcCallback callback,
@@ -459,7 +406,6 @@ INT_PTR DlgBase::Run(HINSTANCE instance,
 INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param)
 {
     static std::map<HWND, DlgProcCallback> callback_map;
-    //MessageBoxW(window, L"BaseCallback!", L"", MB_OK);
     switch (msg)
     {
     case WM_INITDIALOG:
@@ -482,6 +428,7 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
     /*
      * Every "sub-window" created (i.e. objects) will also come through here,
      * in that case, just return FALSE, saying we didn't handle the message.
+     * TODO: Breaks editable ListView?
      */
     try
     {

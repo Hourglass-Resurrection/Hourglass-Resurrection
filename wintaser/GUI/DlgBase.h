@@ -20,15 +20,14 @@
  *
  * Usage is simple. Just remember that everything is in DialogPoints and not in pixels.
  *
- * Supplying a DLGINDIRECTLOOP is not necessary for Run when using PROMPT mode. In PROMPT mode
- * the dialog box will be given a message loop by Windows. The DLGINDIRECTLOOP is the message
- * dispatcher, NOT the message handler, the DLGPROC must still be supplied!
+ * Supplying a DlgProcIndirectMsgLoop is not necessary for Run when using PROMPT mode. In PROMPT
+ * mode the dialog box will be given a message loop by Windows. The DLGINDIRECTLOOP is the message
+ * dispatcher, NOT the message handler, the DlgProcCallback must still be supplied!
  *
  * Note:
  * Some items like the DropDownList and ListView need further initialization during WM_INITDIALOG
  * as some of their settings are not exposed as style flags, but need setting using SendMessage.
- * These can be set during init by using the param-parameter to the RunAsDialogBoxDialog or
- * RunAsDialogBoxIndirect functions.
+ * These can be set during init by using the param-parameter to the Run function.
  *
  * Important:
  * If ListView is made editable LVN_ENDLABELEDIT must be caught in the message handler and
@@ -36,9 +35,7 @@
  *
  * Hint:
  * This construction allows for enum IDs for the object IDs, and it is encouraged to use this
- * method to declare them. If this class is a member of another class, it is recommended to keep
- * the enum inside the using class as no other part of the application shall need to know the IDs
- * anyway.
+ * method to declare them.
  */
 
 /*
@@ -121,7 +118,6 @@ private:
                    DWORD id,
                    SHORT x, SHORT y,
                    SHORT w, SHORT h);
-    //void InitCheckBoxImageList();
 
     /*
      * Due to DLGPROC types being a C-style function pointer, we cannot std::bind it.
@@ -138,5 +134,4 @@ private:
 
     std::vector<BYTE> window;
     bool active;
-    //HIMAGELIST listview_checkbox_list;
 };

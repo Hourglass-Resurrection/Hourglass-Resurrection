@@ -4,9 +4,6 @@
  * Refer to the file COPYING.txt in the project root.
  */
 
-#pragma warning(disable:4996)
-
-#undef WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #include <cwchar>
@@ -45,31 +42,6 @@
  *     WCHAR szText[];  <-- Variable length NULL terminated WCHAR array
  * };
  */
-
-enum MenuIDs
-{
-	File = 50000, // TODO: Find a better value
-	FileLoadState,
-	FileSaveState,
-	Options,
-	//OptionsCPU, // Has no settings
-	//OptionsGraphics, // Has no settings
-	OptionsSound,
-	OptionsInput,
-	OptionsInputEnableInput,
-	OptionsInputEnableHotkeys,
-	Debug,
-	DebugLogging,
-	DebugLoggingPrint,
-	DebugLoggingTrace,
-	Tools,
-	ToolsSlowMotion,
-	ToolsFastForwardOptions,
-	//ToolsLUA, // No implementation
-	ToolsCaptureAVI,
-	Movie,
-	About, // TODO: Make an About box.
-};
 
 namespace {
     static const DWORD IDC_STATIC = -1;
@@ -149,8 +121,6 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
     {
         wcscpy(reinterpret_cast<WCHAR*>(&(menu[iterator])), name.c_str());
     }
-
-    return;
 }
 
 /*
