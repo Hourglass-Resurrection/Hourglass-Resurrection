@@ -46,7 +46,7 @@ typedef std::function<INT(void)> DlgProcIndirectMsgLoop;
 /*
  * DlgProcCallback type, a callback that contains a more flexible DLGPROC-like function.
  * The declaration is almost the same as a normal DLGPROC, the only difference is that CALLBACK
- * needs to omitted.
+ * needs to be omitted.
  * Example:
  *     INT_PTR MyCallback(HWND window,  UINT msg, WPARAM wparam, LPARAM lparam) {}
  * The flexibility comes from this variant being possible to be bound, meaning std::bind
