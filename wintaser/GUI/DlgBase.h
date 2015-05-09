@@ -126,6 +126,9 @@ private:
      */
     static INT_PTR CALLBACK BaseCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param);
 
+    template<typename T>
+    __forceinline T ChooseValue(bool condition, T eval_true, T eval_false);
+
     struct LParamData
     {
         LPARAM original_data;

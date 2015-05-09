@@ -146,7 +146,7 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
      */
     iterator += (sizeof(WORD) * 2);
 
-    if(caption.empty() == false)
+    if (caption.empty() == false)
     {
         wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), caption.c_str());
         iterator += (sizeof(WCHAR) * caption.size());
@@ -181,8 +181,9 @@ void DlgBase::AddPushButton(std::wstring caption,
                             SHORT w, SHORT h,
                             bool default)
 {
+    DWORD style = ChooseValue<DWORD>(default, BS_DEFPUSHBUTTON, BS_PUSHBUTTON);
     AddObject(0,
-              WS_GROUP | WS_TABSTOP | (default ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON),
+              WS_GROUP | WS_TABSTOP | style,
               L"\xFFFF\x0080",
               caption,
               id,
@@ -196,8 +197,9 @@ void DlgBase::AddCheckbox(std::wstring caption,
                           SHORT w, SHORT h,
                           bool right_hand)
 {
+    DWORD style = ChooseValue<DWORD>(right_hand, BS_RIGHTBUTTON, 0);
     AddObject(0,
-              WS_GROUP | WS_TABSTOP | BS_AUTOCHECKBOX | (right_hand ? BS_RIGHTBUTTON : 0),
+              WS_GROUP | WS_TABSTOP | BS_AUTOCHECKBOX | style,
               L"\xFFFF\x0080",
               caption,
               id,
@@ -212,9 +214,10 @@ void DlgBase::AddRadioButton(std::wstring caption,
                              bool right_hand,
                              bool group_with_prev)
 {
-    DWORD style = WS_TABSTOP | BS_AUTORADIOBUTTON;
+    DWORD style = ChooseValue<DWORD>(group_with_prev, 0, WS_GROUP);
+    style |= ChooseValue<DWORD>(right_hand, BS_RIGHTBUTTON, 0);
     AddObject(0,
-              style | (group_with_prev ? 0 : WS_GROUP) | (right_hand ? BS_RIGHTBUTTON : 0),
+              WS_TABSTOP | BS_AUTORADIOBUTTON | style,
               L"\xFFFF\x0080",
               caption,
               id,
@@ -224,11 +227,11 @@ void DlgBase::AddRadioButton(std::wstring caption,
 
 void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line)
 {
-    DWORD multi_line_style;
-    multi_line_style = (multi_line ? WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN : 0);
-
+    DWORD style = ChooseValue<DWORD>(multi_line,
+                                     WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN,
+                                     0);
     AddObject(0,
-              WS_GROUP | WS_BORDER | WS_TABSTOP | multi_line_style,
+              WS_GROUP | WS_BORDER | WS_TABSTOP | style,
               L"\xFFFF\x0081",
               std::wstring(),
               id,
@@ -268,10 +271,12 @@ void DlgBase::AddListView(DWORD id,
                           SHORT w, SHORT h,
                           bool editable, bool single_selection)
 {
+    DWORD style = ChooseValue<DWORD>(editable, LVS_EDITLABELS, 0);
+    style |= ChooseValue<DWORD>(single_selection, LVS_SINGLESEL, 0);
     DWORD default_style = WS_GROUP | WS_BORDER | WS_TABSTOP |
                           LVS_REPORT | LVS_ALIGNLEFT | LVS_SHAREIMAGELISTS;
     AddObject(0,
-              default_style | (editable ? LVS_EDITLABELS : 0) | (single_selection ? LVS_SINGLESEL : 0),
+              default_style | style,
               L"SysListView32",
               std::wstring(),
               id,
@@ -434,8 +439,18 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
     {
         return callback_map.at(window)(window, msg, w_param, l_param);
     }
-    catch (std::out_of_range& exception)
+    catch (std::out_of_range&)
     {
         return FALSE;
     }
+}
+
+template<typename T>
+__forceinline T DlgBase::ChooseValue(bool condition, T eval_true, T eval_false)
+{
+    if (condition)
+    {
+        return eval_true;
+    }
+    return eval_false;
 }
