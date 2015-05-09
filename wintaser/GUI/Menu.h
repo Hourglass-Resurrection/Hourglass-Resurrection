@@ -29,6 +29,7 @@ public:
     void AddMenuCategory(std::wstring name, DWORD id, bool enabled, bool last);
     void AddSubMenu(std::wstring name, DWORD id, bool enabled, bool last);
     void AddMenuItem(std::wstring name, DWORD id, bool enabled, bool last, bool default);
+    void AddCheckableMenuItem(std::wstring name, DWORD id, bool enabled, bool checked, bool last);
     void AddMenuItemSeparator();
 
     bool AttachMenu(HWND window);
