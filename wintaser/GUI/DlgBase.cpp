@@ -434,7 +434,7 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
     {
         return callback_map.at(window)(window, msg, w_param, l_param);
     }
-    catch (std::out_of_range& exception)
+    catch (std::out_of_range&)
     {
         return FALSE;
     }
