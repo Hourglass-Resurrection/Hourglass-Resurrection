@@ -239,6 +239,8 @@
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
+    <ClCompile Include="GUI\DlgBase.cpp" />
+    <ClCompile Include="GUI\Menu.cpp" />
     <ClCompile Include="InjectDLL.cpp" />
     <ClCompile Include="InputCapture.cpp" />
     <ClCompile Include="logging.cpp" />
@@ -276,6 +278,8 @@
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
+    <ClInclude Include="GUI\DlgBase.h" />
+    <ClInclude Include="GUI\Menu.h" />
     <ClInclude Include="InjectDLL.h" />
     <ClInclude Include="InputCapture.h" />
     <ClInclude Include="logging.h" />
