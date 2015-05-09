@@ -101,7 +101,7 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
     /*
      * Make sure the size is DWORD aligned to put the first child objects at the right offset.
      */
-    struct_size += struct_size % 4;
+    struct_size += struct_size % sizeof(DWORD);
 
     window.resize(struct_size);
 
@@ -299,7 +299,7 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
 
     new_size += (sizeof(WCHAR) * caption.size());
     new_size += iterator;
-    new_size += new_size % 4;
+    new_size += new_size % sizeof(DWORD);
 
     window.resize(new_size);
 

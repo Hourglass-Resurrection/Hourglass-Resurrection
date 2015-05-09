@@ -104,7 +104,7 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
     new_size += (sizeof(WCHAR) * name.size());
     new_size += ((res & 0x01) != 0x00) ? sizeof(DWORD) : 0;
     new_size += iterator;
-    new_size += new_size % 4;
+    new_size += new_size % sizeof(DWORD);
 
     menu.resize(new_size);
 
