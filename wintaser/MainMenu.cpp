@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Menu.h"
+#include "MainMenu.h"
 #include "Config.h"
 #include "resource.h"
 #include "ipc.h"

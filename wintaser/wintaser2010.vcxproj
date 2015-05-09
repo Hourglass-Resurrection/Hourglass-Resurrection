@@ -246,7 +246,7 @@
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="MD5Checksum.cpp" />
-    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
@@ -285,7 +285,7 @@
     <ClInclude Include="logging.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="MD5Checksum.h" />
-    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />

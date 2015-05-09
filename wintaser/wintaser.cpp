@@ -33,7 +33,7 @@
 //#include "CRCMath.h"
 //#include "inputsetup.h"
 #include "MD5Checksum.h"
-#include "Menu.h"
+#include "MainMenu.h"
 #include "Config.h"
 using namespace Config;
 #include "InputCapture.h"
