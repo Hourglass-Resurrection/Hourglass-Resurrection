@@ -32,13 +32,9 @@ public:
     void AddMenuItemSeparator();
 
     bool AttachMenu(HWND window);
-
 private:
+
     void AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, WORD res);
-
-    template<typename T>
-    __forceinline T ChooseValue(bool condition, T eval_true, T eval_false);
-
     std::vector<BYTE> menu;
     HMENU loaded_menu;
 };

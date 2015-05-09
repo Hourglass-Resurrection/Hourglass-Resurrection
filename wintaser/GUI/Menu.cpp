@@ -43,8 +43,7 @@
  * };
  */
 
-namespace
-{
+namespace {
     static const DWORD IDC_STATIC = -1;
     static const DWORD MENUEX_TEMPLATE_HEADER_SIZE = 8;
     static const DWORD MENUEX_TEMPLATE_ITEM_BASE_SIZE = (sizeof(DWORD) * 3) +
@@ -73,8 +72,8 @@ Menu::~Menu()
 
 void Menu::AddMenuCategory(std::wstring name, DWORD id, bool enabled, bool last)
 {
-    DWORD state = ChooseValue<DWORD>(enabled, MFS_ENABLED, MFS_DISABLED);
-    WORD res = ChooseValue<WORD>(last, 0x80, 0x00) | 0x01;
+    DWORD state = ((enabled) ? MFS_ENABLED : MFS_DISABLED);
+    WORD res = ((last) ? 0x80 : 0x00) | 0x01;
     AddMenuObject(name, id, MFT_STRING, state, res);
 }
 
@@ -88,9 +87,8 @@ void Menu::AddSubMenu(std::wstring name, DWORD id, bool enabled, bool last)
 
 void Menu::AddMenuItem(std::wstring name, DWORD id, bool enabled, bool last, bool default)
 {
-    DWORD state = ChooseValue<DWORD>(enabled, MFS_ENABLED, MFS_DISABLED);
-    state |= ChooseValue<DWORD>(default, MFS_DEFAULT, 0);
-    WORD res = ChooseValue<WORD>(last, 0x80, 0x00);
+    DWORD state = ((enabled) ? MFS_ENABLED : MFS_DISABLED) | ((default) ? MFS_DEFAULT : 0);
+    WORD res = ((last) ? 0x80 : 0x00);
     AddMenuObject(name, id, MFT_STRING, state, res);
 }
 
@@ -104,7 +102,7 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
     DWORD iterator = menu.size();
     DWORD new_size = MENUEX_TEMPLATE_ITEM_BASE_SIZE;
     new_size += (sizeof(WCHAR) * name.size());
-    new_size += ChooseValue<DWORD>((res & 0x01) != 0x00, sizeof(DWORD), 0);
+    new_size += ((res & 0x01) != 0x00) ? sizeof(DWORD) : 0;
     new_size += iterator;
     new_size += new_size % sizeof(DWORD);
 
@@ -119,7 +117,7 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
     *reinterpret_cast<WORD*>(&(menu[iterator])) = res;
     iterator += sizeof(WORD);
 
-    if (type != MFT_SEPARATOR)
+    if(type != MFT_SEPARATOR)
     {
         wcscpy(reinterpret_cast<WCHAR*>(&(menu[iterator])), name.c_str());
     }
@@ -133,25 +131,15 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
 bool Menu::AttachMenu(HWND window)
 {
     loaded_menu = LoadMenuIndirectW(reinterpret_cast<MENUTEMPLATEW*>(menu.data()));
-    if (loaded_menu == nullptr)
+    if(loaded_menu == nullptr)
     {
         return false;
     }
-    if (SetMenu(window, loaded_menu) == FALSE)
+    if(SetMenu(window, loaded_menu) == FALSE)
     {
         DestroyMenu(loaded_menu);
         loaded_menu = nullptr;
         return false;
     }
     return true;
-}
-
-template<typename T>
-__forceinline T Menu::ChooseValue(bool condition, T eval_true, T eval_false)
-{
-    if (condition)
-    {
-        return eval_true;
-    }
-    return eval_false;
 }
