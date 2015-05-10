@@ -27,7 +27,7 @@
  * Note:
  * Some items like the DropDownList and ListView need further initialization during WM_INITDIALOG
  * as some of their settings are not exposed as style flags, but need setting using SendMessage.
- * These can be set during init by using the param-parameter to the Run function.
+ * These can be set during init by using the param-parameter to the SpawnDialogBox function.
  *
  * Important:
  * If ListView is made editable LVN_ENDLABELEDIT must be caught in the message handler and
@@ -104,12 +104,12 @@ public:
                      bool editable, bool single_selection);
 
 
-    INT_PTR Run(HINSTANCE instance,
-                HWND parent,
-                DlgProcCallback callback,
-                LPARAM init_param,
-                DlgMode mode,
-                DlgProcIndirectMsgLoop main_loop = nullptr);
+    INT_PTR SpawnDialogBox(HINSTANCE instance,
+                           HWND parent,
+                           DlgProcCallback callback,
+                           LPARAM init_param,
+                           DlgMode mode,
+                           DlgProcIndirectMsgLoop main_loop = nullptr);
 
 private:
     void AddObject(DWORD ex_style, DWORD style,

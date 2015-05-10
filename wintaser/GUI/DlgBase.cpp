@@ -342,12 +342,12 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
     *reinterpret_cast<WORD*>(&(window[CDLGITEMS_OFFSET])) += 1;
 }
 
-INT_PTR DlgBase::Run(HINSTANCE instance,
-                     HWND parent,
-                     DlgProcCallback callback,
-                     LPARAM init_param,
-                     DlgMode mode,
-                     DlgProcIndirectMsgLoop msg_loop)
+INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
+                                HWND parent,
+                                DlgProcCallback callback,
+                                LPARAM init_param,
+                                DlgMode mode,
+                                DlgProcIndirectMsgLoop msg_loop)
 {
     HWND handle;
     INT_PTR result;
@@ -419,7 +419,7 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
     case WM_DESTROY:
         /*
          * Special case, so that we don't just allocate more and more memory.
-         * Drop the callback BEFORE calling it, as the callrback may call ExitProcess etc.
+         * Drop the callback BEFORE calling it, as the callback may call ExitProcess etc.
          */
         DlgProcCallback callback = callback_map[window];
         callback_map.erase(window);
