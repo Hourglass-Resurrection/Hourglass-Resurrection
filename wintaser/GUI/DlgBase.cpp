@@ -212,9 +212,9 @@ void DlgBase::AddRadioButton(std::wstring caption,
                              bool right_hand,
                              bool group_with_prev)
 {
-    DWORD style = WS_TABSTOP | BS_AUTORADIOBUTTON;
+    DWORD style = (group_with_prev ? 0 : WS_GROUP) | (right_hand ? BS_RIGHTBUTTON : 0);
     AddObject(0,
-              style | (group_with_prev ? 0 : WS_GROUP) | (right_hand ? BS_RIGHTBUTTON : 0),
+              WS_TABSTOP | BS_AUTORADIOBUTTON | style,
               L"\xFFFF\x0080",
               caption,
               id,
@@ -224,11 +224,10 @@ void DlgBase::AddRadioButton(std::wstring caption,
 
 void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line)
 {
-    DWORD multi_line_style;
-    multi_line_style = (multi_line ? WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN : 0);
+    DWORD style = (multi_line ? WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN : 0);
 
     AddObject(0,
-              WS_GROUP | WS_BORDER | WS_TABSTOP | multi_line_style,
+              WS_GROUP | WS_BORDER | WS_TABSTOP | style,
               L"\xFFFF\x0081",
               std::wstring(),
               id,

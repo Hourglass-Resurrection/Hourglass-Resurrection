@@ -94,8 +94,8 @@ void Menu::AddMenuItem(std::wstring name, DWORD id, bool enabled, bool last, boo
 
 void Menu::AddCheckableMenuItem(std::wstring name, DWORD id, bool enabled, bool checked, bool last)
 {
-    DWORD state = ((enabled) ? MFS_ENABLED : MFS_DISABLED);
-    state |= ((checked) ? MFS_CHECKED : MFS_UNCHECKED);
+    DWORD state = ((enabled) ? MFS_ENABLED : MFS_DISABLED) |
+                  ((checked) ? MFS_CHECKED : MFS_UNCHECKED);
     WORD res = ((last) ? 0x80 : 0x00);
     AddMenuObject(name, id, MFT_STRING, state, res);
 }
