@@ -146,7 +146,7 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
      */
     iterator += (sizeof(WORD) * 2);
 
-    if(caption.empty() == false)
+    if (caption.empty() == false)
     {
         wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), caption.c_str());
         iterator += (sizeof(WCHAR) * caption.size());
