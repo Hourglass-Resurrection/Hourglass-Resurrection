@@ -18,6 +18,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{32713b75-3e7a-4a28-aefb-b7215046ced9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AVIDumper.cpp">
@@ -62,9 +65,6 @@
     <ClCompile Include="Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CPUinfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,6 +75,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="md5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\DlgBase.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Menu.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -139,9 +148,6 @@
     <ClInclude Include="InputCapture.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\shared\input.h">
       <Filter>Source Files\shared</Filter>
     </ClInclude>
@@ -155,6 +161,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="MD5Checksum.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\DlgBase.h">
+      <Filter>Source Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Menu.h">
+      <Filter>Source Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

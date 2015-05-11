@@ -239,12 +239,14 @@
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
+    <ClCompile Include="GUI\DlgBase.cpp" />
+    <ClCompile Include="GUI\Menu.cpp" />
     <ClCompile Include="InjectDLL.cpp" />
     <ClCompile Include="InputCapture.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="MD5Checksum.cpp" />
-    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
@@ -276,12 +278,14 @@
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
+    <ClInclude Include="GUI\DlgBase.h" />
+    <ClInclude Include="GUI\Menu.h" />
     <ClInclude Include="InjectDLL.h" />
     <ClInclude Include="InputCapture.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="MD5Checksum.h" />
-    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
