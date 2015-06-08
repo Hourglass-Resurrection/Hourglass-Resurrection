@@ -168,7 +168,10 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
 
     wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), L"MS Shell Dlg");
 
-    active = false;
+    /*
+     * For indirect dialogs, so we can send messages to them.
+     */
+    handle = nullptr;
 }
 
 DlgBase::~DlgBase()
@@ -222,6 +225,11 @@ void DlgBase::AddRadioButton(std::wstring caption,
               w, h);
 }
 
+void DlgBase::AddUpDownControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
+{
+    AddObject(0, WS_TABSTOP, L"msctls_updown32", std::wstring(), id, x, y, w, h);
+}
+
 void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line)
 {
     DWORD style = (multi_line ? WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN : 0);
@@ -265,12 +273,13 @@ void DlgBase::AddDropDownList(DWORD id, SHORT x, SHORT y, SHORT w, SHORT drop_di
 void DlgBase::AddListView(DWORD id,
                           SHORT x, SHORT y,
                           SHORT w, SHORT h,
-                          bool editable, bool single_selection)
+                          bool editable, bool single_selection, bool owner_data)
 {
-    DWORD default_style = WS_GROUP | WS_BORDER | WS_TABSTOP |
-                          LVS_REPORT | LVS_ALIGNLEFT | LVS_SHAREIMAGELISTS;
+    DWORD style = (editable ? LVS_EDITLABELS : 0);
+    style |= (single_selection ? LVS_SINGLESEL : 0);
+    style |= (owner_data ? LVS_OWNERDATA : 0);
     AddObject(0,
-              default_style | (editable ? LVS_EDITLABELS : 0) | (single_selection ? LVS_SINGLESEL : 0),
+              WS_GROUP | WS_BORDER | WS_TABSTOP | LVS_REPORT | LVS_SHOWSELALWAYS | style,
               L"SysListView32",
               std::wstring(),
               id,
@@ -345,22 +354,11 @@ INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
                                 HWND parent,
                                 DlgProcCallback callback,
                                 LPARAM init_param,
-                                DlgMode mode,
-                                DlgProcIndirectMsgLoop msg_loop)
+                                DlgMode mode)
 {
-    HWND handle;
+    bool active;
     INT_PTR result;
     LParamData l_param;
-
-    /*
-     * Make sure we don't succeed in running this twice
-     */
-    if (active)
-    {
-        SetLastError(ERROR_CAN_NOT_COMPLETE);
-        return -1;
-    }
-    active = true;
 
     l_param.original_data = init_param;
     l_param.callback = callback;
@@ -368,23 +366,23 @@ INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
     switch (mode)
     {
     case PROMPT:
+        if (active)
+        {
+            break;
+        }
+        active = true;
         result = DialogBoxIndirectParamW(instance,
                                          reinterpret_cast<LPCDLGTEMPLATEA>(window.data()),
                                          parent,
                                          reinterpret_cast<DLGPROC>(DlgBase::BaseCallback),
                                          reinterpret_cast<LPARAM>(&l_param));
-        break;
+        active = false;
+        return result;
     case INDIRECT:
-        /*
-         * Without a message loop we're doomed, so do the cleanest thing we can.
-         */
-        if (msg_loop == nullptr)
+        if (callback_map.find(handle) != callback_map.end())
         {
-            SetLastError(ERROR_INVALID_PARAMETER);
-            active = false;
-            return -1;
+            break;
         }
-
         handle = CreateDialogIndirectParamW(instance,
                                             reinterpret_cast<LPCDLGTEMPLATEA>(window.data()),
                                             parent,
@@ -395,16 +393,43 @@ INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
             active = false;
             return -1;
         }
-
-        result = static_cast<INT_PTR>(msg_loop());
+        return 0;
     }
-    active = false;
-    return result;
+
+    SetLastError(ERROR_CAN_NOT_COMPLETE);
+    return -1;
+}
+
+LRESULT DlgBase::SendMessage(UINT msg, WPARAM w_param, LPARAM l_param)
+{
+    /*
+     * If we don't know the handle to the window, I.e. getting called before Spawn(),
+     * or on a Prompt dialog.
+     */
+    if (handle == nullptr || callback_map.find(handle) == callback_map.end())
+    {
+        SetLastError(ERROR_CAN_NOT_COMPLETE);
+        return -1;
+    }
+    return ::SendMessage(handle, msg, w_param, l_param);
+}
+
+LRESULT DlgBase::SendDlgItemMessage(int item_id, UINT msg, WPARAM w_param, LPARAM l_param)
+{
+    /*
+     * If we don't know the handle to the window, I.e. getting called before Spawn(),
+     * or on a Prompt dialog.
+     */
+    if (handle == nullptr || callback_map.find(handle) == callback_map.end())
+    {
+        SetLastError(ERROR_CAN_NOT_COMPLETE);
+        return -1;
+    }
+    return ::SendDlgItemMessage(handle, item_id, msg, w_param, l_param);
 }
 
 INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param)
 {
-    static std::map<HWND, DlgProcCallback> callback_map;
     switch (msg)
     {
     case WM_INITDIALOG:
@@ -416,13 +441,15 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
         l_param = (reinterpret_cast<LParamData*>(l_param))->original_data;
         break;
     case WM_DESTROY:
-        /*
-         * Special case, so that we don't just allocate more and more memory.
-         * Drop the callback BEFORE calling it, as the callback may call ExitProcess etc.
-         */
-        DlgProcCallback callback = callback_map[window];
-        callback_map.erase(window);
-        return callback(window, msg, w_param, l_param);
+        {
+            /*
+             * Special case, so that we don't just allocate more and more memory.
+             * Drop the callback BEFORE calling it, as the window is about to get destroyed.
+             */
+            DlgProcCallback callback = callback_map[window];
+            callback_map.erase(window);
+            return callback(window, msg, w_param, l_param);
+        }
     }
     /*
      * Every "sub-window" created (i.e. objects) will also come through here,

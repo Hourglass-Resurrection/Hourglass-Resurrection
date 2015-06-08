@@ -20,9 +20,24 @@
  *
  * Usage is simple. Just remember that everything is in DialogPoints and not in pixels.
  *
- * Supplying a DlgProcIndirectMsgLoop is not necessary for Run when using PROMPT mode. In PROMPT
- * mode the dialog box will be given a message loop by Windows. The DLGINDIRECTLOOP is the message
- * dispatcher, NOT the message handler, the DlgProcCallback must still be supplied!
+ * This construction allows for enum IDs for the object IDs, and it is encouraged to use this
+ * method to declare them in order to avoid ID collisions. It is also encouraged to keep the IDs
+ * private to the window class.
+ *
+ * When creating an Indirect dialog, Spawn() will return -1 on creation failure and 0 on success.
+ * When creating a Prompt dialog, Spawn() will return the result of the dialog box when it exits.
+ *
+ * The purpose of SendMessage and SendDlgItemMessage is to send messages to the window and it's
+ * controls, without keeping track of the HWND.
+ * Don't just proxy this call in your window class, wrap it to obscure the message IDs as well.
+ * You're meant to have class members that looks like this (example code, do not actually use):
+ * bool SendCloseMessage()
+ * {
+ *    base.SendMessage(WM_CLOSE, 0, 0);
+ *    return true;
+ * }
+ * These overloaded SendMessage and SendDlgItemMessage functions can now fail with LRESULT -1 and
+ * ERROR_CAN_NOT_COMPLETE, this is not a standard error for these functions.
  *
  * Note:
  * Some items like the DropDownList and ListView need further initialization during WM_INITDIALOG
@@ -34,15 +49,9 @@
  * return TRUE. Otherwise the data is never saved.
  *
  * Hint:
- * This construction allows for enum IDs for the object IDs, and it is encouraged to use this
- * method to declare them.
+ 
  */
 
-/*
- * DlgProcIndirectMsgLoop type, a callback that contains the message dispatcher loop for INDIRECT
- * mode dialogs.
- */
-typedef std::function<INT(void)> DlgProcIndirectMsgLoop;
 /*
  * DlgProcCallback type, a callback that contains a more flexible DLGPROC-like function.
  * The declaration is almost the same as a normal DLGPROC, the only difference is that CALLBACK
@@ -93,6 +102,7 @@ public:
                         SHORT w, SHORT h,
                         bool right_hand,
                         bool group_with_prev);
+    void AddUpDownControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
     void AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line);
     void AddStaticText(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
     void AddStaticPanel(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
@@ -101,15 +111,17 @@ public:
     void AddListView(DWORD id,
                      SHORT x, SHORT y,
                      SHORT w, SHORT h,
-                     bool editable, bool single_selection);
+                     bool editable, bool single_selection, bool owner_data);
 
 
     INT_PTR SpawnDialogBox(HINSTANCE instance,
                            HWND parent,
                            DlgProcCallback callback,
                            LPARAM init_param,
-                           DlgMode mode,
-                           DlgProcIndirectMsgLoop main_loop = nullptr);
+                           DlgMode mode);
+
+    LRESULT SendMessage(UINT msg, WPARAM w_param, LPARAM l_param);
+    LRESULT SendDlgItemMessage(int item_id, UINT msg, WPARAM w_param, LPARAM l_param);
 
 private:
     void AddObject(DWORD ex_style, DWORD style,
@@ -121,9 +133,10 @@ private:
 
     /*
      * Due to DLGPROC types being a C-style function pointer, we cannot std::bind it.
-     * Instead we have this generic callback, which only purpose is to call std:bind bound
+     * Instead we have this generic callback, which only purpose is to call std::bind bound
      * callbacks.
      */
+    static std::map<HWND, DlgProcCallback> callback_map;
     static INT_PTR CALLBACK BaseCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param);
 
     struct LParamData
@@ -133,5 +146,5 @@ private:
     };
 
     std::vector<BYTE> window;
-    bool active;
+    HWND handle;
 };
