@@ -7,6 +7,9 @@
 *.sdf
 *.opensdf
 *.suo
+*.hgr
+*.txt
+*.cfg
 *.vcxproj.user
 wintasee/Debug/
 wintasee/Release/
