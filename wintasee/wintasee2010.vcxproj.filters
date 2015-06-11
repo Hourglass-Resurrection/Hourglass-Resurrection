@@ -11,6 +11,9 @@
     <Filter Include="Source Files\hooks_and_tramps">
       <UniqueIdentifier>{8f45bc76-8410-4dcf-9011-dcc4bf233648}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\MemoryManager">
+      <UniqueIdentifier>{cda166fb-f43a-4037-b34e-60fedf68b2e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dettime.cpp">
@@ -191,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\input.h">
       <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryManager\MemoryManager.h">
+      <Filter>Source Files\MemoryManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

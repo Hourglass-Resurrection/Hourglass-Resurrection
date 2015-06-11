@@ -80,10 +80,10 @@ private:
 
         pointer address(reference x) const;
         const_pointer address(const_reference x) const;
-	
+
         pointer allocate(size_type n, MemoryObjectsAllocator<void>::const_pointer hint);
-	    void deallocate(pointer p, size_type n);
-	
+        void deallocate(pointer p, size_type n);
+
         size_type max_size() const noexcept;
 
         template<class U, class... Args>

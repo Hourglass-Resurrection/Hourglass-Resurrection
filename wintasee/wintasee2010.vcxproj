@@ -366,6 +366,7 @@
     <ClInclude Include="global.h" />
     <ClInclude Include="intercept.h" />
     <ClInclude Include="..\shared\msg.h" />
+    <ClInclude Include="MemoryManager\MemoryManager.h" />
     <ClInclude Include="msgqueue.h" />
     <ClInclude Include="phasedetection.h" />
     <ClInclude Include="print.h" />
