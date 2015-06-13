@@ -94,6 +94,9 @@
     <ClCompile Include="hooks\Xinputhooks.cpp">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryManager\MemoryManager.cpp">
+      <Filter>Source Files\MemoryManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
