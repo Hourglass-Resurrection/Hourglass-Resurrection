@@ -13,12 +13,18 @@
 
 namespace MemoryManager
 {
-    void* Allocate(unsigned int bytes, unsigned int flags, bool internal);
-    void Deallocate(void* object);
+    void* Allocate(unsigned int bytes, unsigned int flags, bool internal)
+    {
+        return nullptr;
+    }
+    void Deallocate(void* object)
+    {
+    }
 };
 
 namespace
 {
+    static const unsigned int large_address_space_start = 0x80000000;
     struct MemoryObjectDescription
     {
         void* address;  // TODO: Can this be gotten from the handle?
@@ -34,8 +40,7 @@ namespace
      * -- Warepire
      */
     template<class T>
-    class MemoryObjectsAllocator :
-          public std::allocator
+    class MemoryObjectsAllocator
     {
     public:
         typedef value_type      T
@@ -53,19 +58,64 @@ namespace
         MemoryObjectsAllocator(const MemoryObjectAllocator<U>& alloc) nothrow;
         ~MemoryObjectsAllocator();
 
-        pointer address(reference x) const;
-        const_pointer address(const_reference x) const;
+        pointer address(reference x) const
+        {
+            return &x;
+        }
+        const_pointer address(const_reference x) const
+        {
+            return &x;
+        }
 
-        pointer allocate(size_type n, MemoryObjectsAllocator<void>::const_pointer hint);
-        void deallocate(pointer p, size_type n);
+        pointer allocate(size_type n, MemoryObjectsAllocator<void>::const_pointer hint = 0)
+        {
+            MemoryManager::Allocate(n * sizeof(value_type), 0, true);
+        }
+        void deallocate(pointer p, size_type n)
+        {
+            MemoryManager::Deallocate(p);
+        }
 
-        size_type max_size() const noexcept;
+        size_type max_size() const noexcept
+        {
+            difference_type gap = 0;
+            difference_type this_gap;
+            difference_type last_memory_block_end = 0;
+            for (auto& mo : memory_objects)
+            {
+                if (mo.address >= large_address_space_start)
+                {
+                    if (last_memory_block_end != 0)
+                    {
+                        this_gap = (last_memory_block_end - mo.address) / sizeof(value_type);
+                        if (gap < this_gap)
+                        {
+                            gap = this_gap;
+                        }
+                    }
+                    last_memory_block_end = mo.address + mo.bytes;
+                }
+            }
+            return static_cast<size_type>(gap);
+        }
 
         template<class U, class... Args>
-        void construct(U* p, Args&&... args);
+        void construct(U* p, Args&&... args)
+        {
+            /*
+             * Placement-new, will not attempt to allocate space.
+             */
+            ::new ((void*)p) U (std::forward<Args>(args)...);
+        }
         template<class U>
-        void destroy(U* p);
+        void destroy(U* p)
+        {
+            p->~U();
+        }
     };
 
-    std::vector<MemoryObjectDescription, MemoryObjectsAllocator<MemoryObjectDescription>> sm_memory_objects;
+    /*
+     * Always insert into this vector, keeping it sorted.
+     */
+    std::vector<MemoryObjectDescription, MemoryObjectsAllocator<MemoryObjectDescription>> memory_objects;
 }

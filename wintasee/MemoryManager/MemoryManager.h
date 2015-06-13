@@ -22,8 +22,12 @@
  * Allocating internally means that we will use an address outside of the regular scope, but still
  * within the 32bit application limit. This is handled by being "large address aware" which gives
  * us this access to the "unreachable" >2 GB address space.
+ * It is really important to keep the allocations apart, since some games that are not capable of
+ * handling addresses of >2 GB may still use as much as possible of the 2 GB as possible. We must
+ * for that reason be really careful about our own allocations in that space and do all we can to
+ * stay in our own allotted region.
  *
- * All of the above means that new and malloc are entirely forbidden(!) in the dll, to handle STL
+ * All of the above means that new and malloc are entirely forbidden(!) in the DLL. To handle STL
  * containers special allocators were implemented, these must be used with any STL container inside
  * the DLL code.
  *
