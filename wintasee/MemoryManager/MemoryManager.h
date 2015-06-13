@@ -33,6 +33,9 @@
  *
  * Implemented as a namespace to prevent it being instanciated.
  *
+ * Reference material (including reference material linked by the webpage):
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/aa366912%28v=vs.85%29.aspx
+ *
  * -- Warepire
  */
 
