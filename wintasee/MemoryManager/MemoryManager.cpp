@@ -43,20 +43,28 @@ namespace
     class MemoryObjectsAllocator
     {
     public:
-        typedef value_type      T
-        typedef pointer         T*
-        typedef const_pointer   const T*
-        typedef reference       T&
-        typedef const_reference const T&
-        typedef size_type       std::size_t
-        typedef difference_type std::ptrdiff_t
-        typedef rebind          template<class U> struct rebind { typedef MemoryObjectsAllocator<U> other; };
+        typedef T               value_type;
+        typedef T*              pointer;
+        typedef const T*        const_pointer;
+        typedef T&              reference;
+        typedef const T&        const_reference;
+        typedef std::size_t     size_type;
+        typedef std::ptrdiff_t  difference_type;
 
-        MemoryObjectsAllocator() nothrow;
-        MemoryObjectsAllocator(const MemoryObjectAllocator& alloc) nothrow;
         template<class U>
-        MemoryObjectsAllocator(const MemoryObjectAllocator<U>& alloc) nothrow;
-        ~MemoryObjectsAllocator();
+        struct rebind
+        {
+            typedef MemoryObjectsAllocator<U> other;
+        };
+
+        /*
+         * Microsoft cannot follow standards with nothrow-declaring stuff... sigh...
+         */
+        __nothrow MemoryObjectsAllocator() {}
+        __nothrow MemoryObjectsAllocator(const MemoryObjectsAllocator& alloc) {}
+        template<class U>
+        __nothrow MemoryObjectsAllocator(const MemoryObjectsAllocator<U>& alloc) {}
+        ~MemoryObjectsAllocator() {}
 
         pointer address(reference x) const
         {
@@ -67,7 +75,7 @@ namespace
             return &x;
         }
 
-        pointer allocate(size_type n, MemoryObjectsAllocator<void>::const_pointer hint = 0)
+        pointer allocate(size_type n, const_pointer hint = 0)
         {
             MemoryManager::Allocate(n * sizeof(value_type), 0, true);
         }
@@ -76,7 +84,7 @@ namespace
             MemoryManager::Deallocate(p);
         }
 
-        size_type max_size() const noexcept
+        size_type max_size() const
         {
             difference_type gap = 0;
             difference_type this_gap;
