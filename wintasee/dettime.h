@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef DETTIME_H_INCL
-#define DETTIME_H_INCL
+#pragma once
 
 #include "tls.h"
 
@@ -587,5 +586,3 @@ private:
 
 
 extern DeterministicTimer detTimer;
-
-#endif

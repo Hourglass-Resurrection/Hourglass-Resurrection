@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef INTERCEPT_H_INCL
-#define INTERCEPT_H_INCL
+#pragma once
 
 // first some helper macros to use when defining trampoline and hook functions
 
@@ -250,7 +249,3 @@ struct InterceptDescriptor
 
 
 void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count);
-
-
-
-#endif

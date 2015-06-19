@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef MODULETRAMPS_H_INCL
-#define MODULETRAMPS_H_INCL
+#pragma once
 
 //#define LoadLibraryExW TrampLoadLibraryExW
 //TRAMPFUNC HMODULE WINAPI LoadLibraryExW(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) TRAMPOLINE_DEF
@@ -145,5 +144,3 @@ TRAMPFUNC LPVOID WINAPI TrampTlsGetValue(DWORD dwTlsIndex) TRAMPOLINE_DEF_CUSTOM
 TRAMPFUNC BOOL WINAPI FlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) TRAMPOLINE_DEF
 #define FlsGetValue TrampFlsGetValue
 TRAMPFUNC PVOID WINAPI FlsGetValue(DWORD dwFlsIndex) TRAMPOLINE_DEF
-
-#endif

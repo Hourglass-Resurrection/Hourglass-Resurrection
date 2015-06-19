@@ -6881,18 +6881,3 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
  
     return rv;
 }
-
-
-
-
-#ifdef UNITY_BUILD
-#undef UNITY_BUILD
-#include "ramwatch.cpp"
-#include "ramsearch.cpp"
-//#include "inputsetup.cpp"
-#include "trace/extendedtrace.cpp"
-#include "inject/process.cpp"
-#include "inject/iatmodifier.cpp"
-#define UNITY_BUILD
-#endif
-

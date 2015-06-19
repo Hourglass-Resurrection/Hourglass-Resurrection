@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef WINUTIL_H_INCL
-#define WINUTIL_H_INCL
+#pragma once
 
 struct AutoCritSect
 {
@@ -10,5 +9,3 @@ struct AutoCritSect
 	~AutoCritSect() { LeaveCriticalSection(m_cs); }
 	CRITICAL_SECTION* m_cs;
 };
-
-#endif // MSG_H_INCL

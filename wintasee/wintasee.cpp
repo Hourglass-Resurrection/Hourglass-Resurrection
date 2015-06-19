@@ -23,44 +23,6 @@
 //#include "svnrev.h" // defines SRCVERSION number
 #include "../shared/version.h"
 
-#ifdef UNITY_BUILD
-#undef UNITY_BUILD
-#if defined(TRAMPS_H_INCL)
-#error alltramps.h got included too early
-#endif
-#define DIRECTINPUT_VERSION 0x0800
-#include "../external/dinput.h"
-#include "../external/dsound.h"
-#include "../external/ddraw.h"
-#include "../external/dmusici.h"
-#include "../external/d3d8.h"
-#include "../external/ddraw.h"
-#include "print.cpp"
-#include "phasedetection.cpp"
-#include "intercept.cpp"
-#include "dettime.cpp"
-#include "hooks/windowhooks.cpp"
-#include "hooks/waithooks.cpp"
-#include "hooks/timerhooks.cpp"
-#include "hooks/timehooks.cpp"
-#include "hooks/threadhooks.cpp"
-#include "hooks/synchooks.cpp"
-#include "hooks/soundhooks.cpp"
-#include "hooks/sdlhooks.cpp"
-#include "hooks/registryhooks.cpp"
-#include "hooks/openglhooks.cpp"
-#include "hooks/modulehooks.cpp"
-#include "hooks/messagehooks.cpp"
-#include "hooks/inputhooks.cpp"
-#include "hooks/gdihooks.cpp"
-#include "hooks/filehooks.cpp"
-#include "hooks/ddrawhooks.cpp"
-//#include "hooks/d3dhooks.cpp"
-//#include "hooks/d3d9hooks.cpp"
-#include "hooks/d3d8hooks.cpp"
-#define UNITY_BUILD
-#endif
-
 
 //#define whitelistMaskFilter(x) ((tasflags.messageSyncMode != 3) ? (x) : 0)
 

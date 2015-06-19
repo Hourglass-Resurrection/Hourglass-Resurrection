@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(PRINT_C_INCL) && !defined(UNITY_BUILD)
-#define PRINT_C_INCL
-
 #include <windows.h>
 #include <cstdio>
 #include "print.h"
@@ -104,8 +101,4 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
     OutputDebugStringA(str);
     return rv;
 }
-#endif
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
 #endif

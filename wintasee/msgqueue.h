@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef MSGQUEUE_H_INCL
-#define MSGQUEUE_H_INCL
+#pragma once
 
 #include "../shared/msg.h"
 
@@ -61,7 +60,5 @@ struct MessageQueue
 //GetCurrentThreadId()
 
 void InternalizeMessageQueue();
-
-#endif
 
 #endif

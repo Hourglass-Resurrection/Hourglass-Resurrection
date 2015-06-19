@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef IPC_H_INCL
-#define IPC_H_INCL
+#pragma once
 
 #include "logcat.h"
 #include <mmsystem.h>
@@ -117,5 +116,3 @@ struct TrustedRangeInfos
 #ifndef SUCCESSFUL_EXITCODE
 #define SUCCESSFUL_EXITCODE 4242
 #endif
-
-#endif // IPC_H_INCL

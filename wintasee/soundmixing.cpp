@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(SOUNDMIXING_C_INCL) //&& !defined(UNITY_BUILD)
-#define SOUNDMIXING_C_INCL
-
 #include "global.h"
 
 // this is used mainly for clamping from -32678 to 32767
@@ -156,7 +153,3 @@ void MixFromToInternal(DWORD pos1, DWORD pos2, DWORD outPos1, DWORD outPos2, boo
 	else if(myChannels == 2 && outChannels == 2)
 		Mix<2,2>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

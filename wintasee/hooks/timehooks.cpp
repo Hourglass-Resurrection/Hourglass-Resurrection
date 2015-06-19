@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(TIMEHOOKS_INCL) && !defined(UNITY_BUILD)
-#define TIMEHOOKS_INCL
-
 #include "../wintasee.h"
 #include "../tls.h"
 
@@ -463,7 +460,3 @@ void ApplyTimeIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

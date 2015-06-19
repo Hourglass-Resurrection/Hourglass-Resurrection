@@ -1,5 +1,4 @@
-#ifndef INPUT_H_INCL
-#define INPUT_H_INCL
+#pragma once
 
 #include "../external/dinput.h"
 #include "../external/Xinput.h"
@@ -165,5 +164,3 @@ struct CurrentInput {
    // This will most likely have a speed impact, specially on games that use the smaller size input types (like VirtualKeys or XInput) since we will copy basically 1.5 kilobytes of junk.
    // Movie frames will of course only contain the important parts, input type, and the data of the devices that has input.
    // The rest of the data will be padded (with 0s) as we feed the input to the game.
-
-#endif

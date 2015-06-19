@@ -7,9 +7,6 @@
 // than do the lower-level APIs.
 // there's little reason not to take advantage of that.
 
-#if !defined(SDLHOOKS_INCL) && !defined(UNITY_BUILD)
-#define SDLHOOKS_INCL
-
 #include "../wintasee.h"
 
 bool PresentOGLD3D(); // extern
@@ -137,8 +134,3 @@ void ApplySDLIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

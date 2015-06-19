@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef PHASEDETECTION_H_INCL
-#define PHASEDETECTION_H_INCL
+#pragma once
 
 #include <map>
 
@@ -24,5 +23,3 @@ private:
 	Time lastFrameTime;
 	std::map<Key,Time> keyTimes;
 };
-
-#endif
