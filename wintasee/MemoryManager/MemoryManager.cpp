@@ -12,6 +12,7 @@
 
 namespace
 {
+    static bool memory_managed_inited = false;
     static const unsigned int large_address_space_start = 0x80000000;
     struct MemoryObjectDescription
     {
@@ -149,17 +150,75 @@ namespace
 
 namespace MemoryManager
 {
+    /*
+     * We need to discover everything that has been allocated before we started running.
+     * This is to make sure we do not try to allocate memory where memory is already allocted.
+     */
+    void Init()
+    {
+        if (memory_managed_inited)
+        {
+            /*
+             * TODO: Print warning about trying to init again!
+             * -- Warepire
+             */
+            return;
+        }
+        MEMORY_BASIC_INFORMATION mbi;
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        void* address = si.lpMinimumApplicationAddress;
+        while (address < si.lpMaximumApplicationAddress)
+        {
+            VirtualQuery(address, &mbi, sizeof(mbi));
+            if (mbi.State != MEM_FREE)
+            {
+                RegisterExistingAllocation(address, mbi.RegionSize);
+            }
+            address =
+                reinterpret_cast<void*>(reinterpret_cast<ptrdiff_t>(mbi.BaseAddress) + mbi.RegionSize);
+        }
+        memory_managed_inited = true;
+    }
     void* Allocate(unsigned int bytes, unsigned int flags, bool internal)
     {
-        return nullptr;
+        /*
+         * TODO: Decide a naming scheme, to easier ID segments in a save state.
+         * TODO: Write  function that scans the memory_objects vector for a
+         *       suitable region of memory.
+         * TODO: Know where EVERYTHING is, incl, threads, stacks etc.
+         *       MapViewOfFileEx doesn't take hints, it takes orders.
+         *       And fails if the address cannot contain the alloc.
+         * -- Warepire
+         */
+        void* hint_address = nullptr;
+        HANDLE map_file =
+            CreateFileMapping(INVALID_HANDLE_VALUE,
+                              nullptr,
+                              PAGE_READWRITE,
+                              0,
+                              bytes,
+                              nullptr);
+        void *allocation =
+            MapViewOfFileEx(map_file,
+                            flags == 0 ? FILE_MAP_WRITE : flags,
+                            0,
+                            0,
+                            bytes,
+                            hint_address);
+        MemoryObjectDescription mod;
+        mod.address = allocation;
+        mod.object = map_file;
+        mod.bytes = bytes;
+        mod.flags = flags;
+        InsertMemoryObjectDescriptionSorted(mod);
+        return allocation;
     }
     /*
-     * This one is so that we can mark memory mapped file addresses as "used" in our
-     * manager, this way we can produce better hints in our Best Fit allocation methods.
-     * If we cannot register the allocation, it's unfortunate, but we should still be able
-     * to provide fair enough hints, so there's no need for fatal failure.
+     * This one is so that we can mark used file addresses as "used" in our
+     * manager, this way we can produce valid addresses for our allocations.
      */
-    void RegisterMemoryMappedFileAllocation(void* address, SIZE_T bytes)
+    void RegisterExistingAllocation(void* address, unsigned int bytes)
     {
         if (bytes == 0)
         {
@@ -171,7 +230,7 @@ namespace MemoryManager
             else
             {
                 /*
-                 * TODO: Log warning that getting size failed.
+                 * TODO: Log warning that getting size failed and that future allocations may crash.
                  * -- Warepire
                  */
             }

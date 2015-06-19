@@ -41,6 +41,8 @@
 
 namespace MemoryManager
 {
+    void Init();
     void* Allocate(unsigned int bytes, unsigned int flags, bool internal = false);
+    void RegisterExistingAllocation(void* address, unsigned int bytes);
     void Deallocate(void* object);
 };

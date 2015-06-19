@@ -18,6 +18,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "MemoryManager\MemoryManager.h"
+
 //#include "svnrev.h" // defines SRCVERSION number
 #include "../shared/version.h"
 
@@ -1767,6 +1769,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			cllApiNum = (IsWindows7() ? 65 : 66);
 		}
 
+        MemoryManager::Init();
 		detTimer.Initialize(tasflags.initialTime);
 		nonDetTimer.Initialize(tasflags.initialTime);
 
