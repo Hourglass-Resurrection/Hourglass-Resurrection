@@ -9,8 +9,8 @@
 // may be too incomplete for other games (some functions are still empty or not display-list capable).
 // lines are rendered incorrectly (need to convert to quads so they can use width and z-buffer).
 
-#include "../../external/d3d8.h"
-#include "../global.h"
+#include <external\d3d8.h>
+#include <global.h>
 #include <vector>
 #include <math.h>
 

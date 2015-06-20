@@ -126,21 +126,6 @@
     <ClInclude Include="wintasee.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\asm.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\ipc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\logcat.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\version.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\winutil.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
     <ClInclude Include="tramps\alltramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
@@ -195,11 +180,32 @@
     <ClInclude Include="tramps\Xinputtramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\input.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryManager\MemoryManager.h">
       <Filter>Source Files\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\asm.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\ipc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\logcat.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\msg.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\version.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\winutil.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="localeutils.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,11 +2,12 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <windows.h>
-#include "print.h"
-#include "global.h"
-#include "intercept.h"
-#include "../shared/asm.h"
-#include "../shared/ipc.h"
+
+#include <global.h>
+#include <intercept.h>
+#include <shared\asm.h>
+#include <shared\ipc.h>
+#include <print.h>
 
 BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, BOOL rvOnSkip)
 {

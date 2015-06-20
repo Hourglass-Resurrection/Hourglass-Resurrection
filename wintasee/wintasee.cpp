@@ -18,10 +18,10 @@
 #include <vector>
 #include <algorithm>
 
-#include "MemoryManager\MemoryManager.h"
+#include <MemoryManager\MemoryManager.h>
 
 //#include "svnrev.h" // defines SRCVERSION number
-#include "../shared/version.h"
+#include <shared\version.h>
 
 
 //#define whitelistMaskFilter(x) ((tasflags.messageSyncMode != 3) ? (x) : 0)
@@ -38,12 +38,12 @@
 #include "wintasee.h"
 #include "print.h"
 
-#include "../shared/msg.h"
+#include <shared\msg.h>
 
 #include "intercept.h"
 #include "tls.h"
 #include "msgqueue.h"
-#include "locale.h"
+#include "localeutils.h"
 
 #include <map>
 

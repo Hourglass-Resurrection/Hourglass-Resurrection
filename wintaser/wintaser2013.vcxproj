@@ -66,7 +66,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\;$(SolutionDir)shared\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -105,7 +105,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\shared;..\shared\SubWCRev;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\;$(SolutionDir)shared\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -152,7 +152,13 @@
     <ClCompile Include="inject\process.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\shared\input.h" />
+    <ClInclude Include="..\shared\shared\asm.h" />
+    <ClInclude Include="..\shared\shared\input.h" />
+    <ClInclude Include="..\shared\shared\ipc.h" />
+    <ClInclude Include="..\shared\shared\logcat.h" />
+    <ClInclude Include="..\shared\shared\msg.h" />
+    <ClInclude Include="..\shared\shared\version.h" />
+    <ClInclude Include="..\shared\shared\winutil.h" />
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
@@ -173,12 +179,6 @@
     <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />
     <ClInclude Include="inject\process.h" />
-    <ClInclude Include="..\shared\asm.h" />
-    <ClInclude Include="..\shared\ipc.h" />
-    <ClInclude Include="..\shared\logcat.h" />
-    <ClInclude Include="..\shared\msg.h" />
-    <ClInclude Include="..\shared\version.h" />
-    <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>

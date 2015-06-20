@@ -1,8 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../tls.h"
+#include <wintasee.h>
+#include <tls.h>
+#include <MemoryManager/MemoryManager.h>
 //#include <setjmp.h>
 
 void CloseHandles(DWORD threadId); // extern
@@ -59,7 +60,7 @@ struct ThreadWrapperInfo
 	bool idling;
 	bool comatose;
 	volatile DWORD exitcode;
-	CONTEXT beforecallcontext;
+	//CONTEXT beforecallcontext;
 	//jmp_buf beforecallbuf;
 	bool beforecallvalid;
 	ThreadWrapperInfo()
@@ -89,11 +90,24 @@ DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
 	DWORD threadId = GetCurrentThreadId();
 	ThreadWrapperInfo& info = *(ThreadWrapperInfo*)lpParam;
+    MEMORY_BASIC_INFORMATION mbi;
+    VirtualQuery(&threadId, &mbi, sizeof(mbi));
+    void* base_address = mbi.AllocationBase;
+    void* region_address = mbi.AllocationBase;
+    VirtualQuery(base_address, &mbi, sizeof(mbi));
+    SIZE_T region_size = 0;// 1 * 1024 * 1024;
+    while (mbi.State != MEM_FREE && base_address == mbi.AllocationBase)
+    {
+        region_size += mbi.RegionSize;
+        region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+        VirtualQuery(region_address, &mbi, sizeof(mbi));
+    }
+    MemoryManager::RegisterExistingAllocation(base_address, region_size);
 	while(true)
 	{
 		info.exitcode = STILL_ACTIVE;
-		info.beforecallcontext.ContextFlags = CONTEXT_FULL;
-		GetThreadContext(GetCurrentThread(), &info.beforecallcontext);
+		//info.beforecallcontext.ContextFlags = CONTEXT_FULL;
+		//GetThreadContext(GetCurrentThread(), &info.beforecallcontext);
 		//setjmp(info.beforecallbuf);
 //		if(info.args.dwCreationFlags & CREATE_SUSPENDED)
 //			SuspendThread(GetCurrentThread());

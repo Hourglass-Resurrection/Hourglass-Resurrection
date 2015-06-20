@@ -7,4 +7,4 @@
 
 #define stricmp _stricmp
 
-#include "tramps/alltramps.h"
+#include <tramps/alltramps.h>

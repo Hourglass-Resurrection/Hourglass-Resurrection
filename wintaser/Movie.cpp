@@ -6,7 +6,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "..\shared\version.h"
+#include <shared\version.h>
 #include "CustomDLGs.h"
 //#include "..\shared\ipc.h"
 

@@ -3,8 +3,8 @@
 #include "Resource.h"
 #include "CustomDLGs.h"
 #include "logging.h"
-#pragma comment(lib, "../external/lib/dinput.lib")
-#pragma comment(lib, "../external/lib/dxguid.lib")
+#pragma comment(lib, "../external/external/lib/dinput.lib")
+#pragma comment(lib, "../external/external/lib/dxguid.lib")
 
 struct ModifierKey InputCapture::modifierKeys[] = 
 {

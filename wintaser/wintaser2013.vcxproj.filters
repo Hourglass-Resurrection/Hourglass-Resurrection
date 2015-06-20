@@ -121,24 +121,6 @@
     <ClInclude Include="inject\process.h">
       <Filter>Source Files\inject</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\asm.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\ipc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\logcat.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\msg.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\version.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\winutil.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
@@ -147,9 +129,6 @@
     </ClInclude>
     <ClInclude Include="InputCapture.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\input.h">
-      <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="CPUinfo.h">
       <Filter>Source Files</Filter>
@@ -171,6 +150,27 @@
     </ClInclude>
     <ClInclude Include="MainMenu.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\asm.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\ipc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\logcat.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\msg.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\version.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\winutil.h">
+      <Filter>Source Files\shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

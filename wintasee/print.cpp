@@ -6,7 +6,7 @@
 #include "print.h"
 #include "global.h"
 
-#include "../shared/ipc.h"
+#include <shared/ipc.h>
 #include "intercept.h"
 
 //#define TRAMPFUNC __declspec(noinline)

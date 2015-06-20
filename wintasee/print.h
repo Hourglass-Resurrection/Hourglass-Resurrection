@@ -68,7 +68,7 @@ int cmdprintf(const char* fmt, ...);
 #endif
 
 
-#include "../shared/logcat.h"
+#include <shared\logcat.h>
 
 extern LogCategoryFlag& g_includeLogFlags;
 extern LogCategoryFlag& g_excludeLogFlags;

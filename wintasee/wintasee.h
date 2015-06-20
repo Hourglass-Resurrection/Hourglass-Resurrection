@@ -7,9 +7,9 @@
 //#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
 
 #define DIRECTINPUT_VERSION 0x0800
-#include "../shared/input.h"
+#include <shared\input.h>
 #include "global.h"
-#include "../shared/ipc.h"
+#include <shared\ipc.h>
 
 void FrameBoundary(void* captureInfo=0, int captureInfoType=CAPTUREINFO_TYPE_NONE);
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height);

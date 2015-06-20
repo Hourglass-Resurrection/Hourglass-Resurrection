@@ -5,7 +5,7 @@
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
-#include "../shared/input.h" // Contains the CurrentInput struct
+#include <shared\input.h> // Contains the CurrentInput struct
 #include <map>
 using namespace std;
 

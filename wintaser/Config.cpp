@@ -5,7 +5,7 @@
 
 #include "ramwatch.h"
 #include "logging.h"
-#include "../shared/version.h"
+#include <shared\version.h>
 
 namespace Config{
 

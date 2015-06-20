@@ -67,7 +67,7 @@
     <ClCompile>
       <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\shared;..\shared\SubWCRev;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\;$(SolutionDir)external\;$(SolutionDir)shared\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WINTASDLL_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500;WINVER=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -112,7 +112,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\shared;..\shared\SubWCRev;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\;$(SolutionDir)shared\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WINTASDLL_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500;WINVER=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -179,11 +179,18 @@
     <ClCompile Include="hooks\windowhooks.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\shared\input.h" />
+    <ClInclude Include="..\shared\shared\asm.h" />
+    <ClInclude Include="..\shared\shared\input.h" />
+    <ClInclude Include="..\shared\shared\ipc.h" />
+    <ClInclude Include="..\shared\shared\logcat.h" />
+    <ClInclude Include="..\shared\shared\msg.h" />
+    <ClInclude Include="..\shared\shared\version.h" />
+    <ClInclude Include="..\shared\shared\winutil.h" />
     <ClInclude Include="dettime.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="intercept.h" />
     <ClInclude Include="..\shared\msg.h" />
+    <ClInclude Include="localeutils.h" />
     <ClInclude Include="MemoryManager\MemoryManager.h" />
     <ClInclude Include="msgqueue.h" />
     <ClInclude Include="phasedetection.h" />
@@ -191,11 +198,6 @@
     <ClInclude Include="tls.h" />
     <ClInclude Include="tramps\Xinputtramps.h" />
     <ClInclude Include="wintasee.h" />
-    <ClInclude Include="..\shared\asm.h" />
-    <ClInclude Include="..\shared\ipc.h" />
-    <ClInclude Include="..\shared\logcat.h" />
-    <ClInclude Include="..\shared\version.h" />
-    <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="tramps\alltramps.h" />
     <ClInclude Include="tramps\dxvideotramps.h" />
     <ClInclude Include="tramps\filetramps.h" />

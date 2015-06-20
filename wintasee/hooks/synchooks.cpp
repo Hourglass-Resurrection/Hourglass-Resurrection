@@ -1,8 +1,8 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../global.h"
-#include "../../shared/ipc.h"
+#include <global.h>
+#include <shared\ipc.h>
 
 #include <map>
 #include <set>

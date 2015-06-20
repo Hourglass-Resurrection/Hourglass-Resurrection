@@ -1,9 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../../external/d3d9.h"
-#include "../wintasee.h"
-#include "../tls.h"
+#include <external/d3d9.h>
+#include <wintasee.h>
+#include <tls.h>
 #include <map>
 
 //#define SAVESTATE_DX9_TEXTURES

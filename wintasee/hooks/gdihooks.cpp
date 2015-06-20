@@ -3,13 +3,13 @@
 
 #include "../wintasee.h"
 #include "../tls.h"
-#include "../../shared/winutil.h"
+#include <shared\winutil.h>
 #include <windowsx.h>
 
 #include "../phasedetection.h"
 //static PhaseDetector s_gdiPhaseDetector;
 
-#include "../locale.h"
+#include <localeutils.h>
 
 
 // TODO: declare these in headers like openglhooks.h?

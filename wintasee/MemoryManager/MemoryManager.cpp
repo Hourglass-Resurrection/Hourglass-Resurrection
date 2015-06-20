@@ -12,7 +12,7 @@
 
 namespace
 {
-    static bool memory_managed_inited = false;
+    static bool memory_manager_inited = false;
     static const unsigned int large_address_space_start = 0x80000000;
     struct MemoryObjectDescription
     {
@@ -156,7 +156,7 @@ namespace MemoryManager
      */
     void Init()
     {
-        if (memory_managed_inited)
+        if (memory_manager_inited)
         {
             /*
              * TODO: Print warning about trying to init again!
@@ -165,20 +165,34 @@ namespace MemoryManager
             return;
         }
         MEMORY_BASIC_INFORMATION mbi;
+        void* allocation_base;
+        SIZE_T region_size = 0;
         SYSTEM_INFO si;
         GetSystemInfo(&si);
-        void* address = si.lpMinimumApplicationAddress;
-        while (address < si.lpMaximumApplicationAddress)
+        void* region_address = si.lpMinimumApplicationAddress;
+        VirtualQuery(region_address, &mbi, sizeof(mbi));
+        allocation_base = mbi.AllocationBase;
+        while (region_address < si.lpMaximumApplicationAddress)
         {
-            VirtualQuery(address, &mbi, sizeof(mbi));
-            if (mbi.State != MEM_FREE)
+            /*
+             * Add full allocations and not page-regions.
+             * This prevents excess MemoryObjectDescriptions for the same object.
+             */
+            while (mbi.State != MEM_FREE && mbi.AllocationBase == allocation_base)
             {
-                RegisterExistingAllocation(address, mbi.RegionSize);
+                region_size += mbi.RegionSize;
+                region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+                VirtualQuery(region_address, &mbi, sizeof(mbi));
             }
-            address =
-                reinterpret_cast<void*>(reinterpret_cast<ptrdiff_t>(mbi.BaseAddress) + mbi.RegionSize);
+            if (mbi.State == MEM_FREE && region_size != 0)
+            {
+                RegisterExistingAllocation(allocation_base, region_size);
+                region_size = 0;
+            }
+            region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+            allocation_base = mbi.AllocationBase;
         }
-        memory_managed_inited = true;
+        memory_manager_inited = true;
     }
     void* Allocate(unsigned int bytes, unsigned int flags, bool internal)
     {

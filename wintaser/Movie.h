@@ -1,7 +1,7 @@
 #pragma once
 
 #define DIRECTINPUT_VERSION 0x0800
-#include "../shared/input.h"
+#include <shared\input.h>
 
 struct MovieFrame
 {

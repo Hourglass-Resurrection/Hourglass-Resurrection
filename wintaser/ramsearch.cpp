@@ -54,7 +54,7 @@
 #include "ramsearch.h"
 #include "ramwatch.h"
 #include "Config.h"
-#include "../shared/winutil.h"
+#include <shared\winutil.h>
 #include <assert.h>
 #include <commctrl.h>
 #include <list>

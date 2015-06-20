@@ -1,9 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../../external/d3d.h"
-#include "../wintasee.h"
-#include "../tls.h"
+#include <external/d3d.h>
+#include <wintasee.h>
+#include <tls.h>
 #include <map>
 
 DEFINE_LOCAL_GUID(IID_IDirect3D, 0x3BBA0080,0x2421,0x11CF,0xA3,0x1A,0x00,0xAA,0x00,0xB9,0x33,0x56); //version  < 0x0500

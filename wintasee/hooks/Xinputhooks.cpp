@@ -3,8 +3,8 @@
 
 #include <cassert>
 
-#include "../wintasee.h"
-#include <../../external/Xinput.h>
+#include <wintasee.h>
+#include <external/Xinput.h>
 
 static bool gs_xinput_enabled = true;
 

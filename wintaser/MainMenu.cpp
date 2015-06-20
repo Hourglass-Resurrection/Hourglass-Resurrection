@@ -2,7 +2,7 @@
 #include "MainMenu.h"
 #include "Config.h"
 #include "resource.h"
-#include "ipc.h"
+#include <shared\ipc.h>
 using namespace Config;
 
 #define MENU_L(smenu, pos, flags, id, suffixe, str, disableReason)	do{									\

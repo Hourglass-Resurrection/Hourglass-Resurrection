@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef LOCALE_H_INCL
-#define LOCALE_H_INCL
+#pragma once
 
 #include <windows.h>
 
@@ -16,5 +15,3 @@ DWORD LocaleToCharset(LCID locale);
 	WCHAR* wstr = (WCHAR*)_alloca(len##wstr*sizeof(WCHAR)); \
 	memset(wstr, 0, len##wstr*sizeof(WCHAR)); \
 	MultiByteToWideChar(codepage, 0, str, -1, wstr, len##wstr);
-
-#endif // LOCALE_H_INCL
