@@ -29,11 +29,11 @@ namespace
     };
 
     /*
-    * Special allocator for the vector we use as a memory object tracker.
-    * A lot of things in this allocator must break coding standard as the internal
-    * implementation of the STL container expects things to be like this.
-    * -- Warepire
-    */
+     * Special allocator for the vector we use as a memory object tracker.
+     * A lot of things in this allocator must break coding standard as the internal
+     * implementation of the STL container expects things to be like this.
+     * -- Warepire
+     */
     template<class T>
     class MemoryObjectsAllocator
     {
@@ -53,8 +53,8 @@ namespace
         };
 
         /*
-        * Microsoft cannot follow standards with nothrow-declaring stuff... sigh...
-        */
+         * Microsoft cannot follow standards with nothrow-declaring stuff... sigh...
+         */
         __nothrow MemoryObjectsAllocator() {}
         __nothrow MemoryObjectsAllocator(const MemoryObjectsAllocator& alloc) {}
         template<class U>
@@ -110,8 +110,8 @@ namespace
         void construct(U* p, Args&&... args)
         {
             /*
-            * Placement-new, will not attempt to allocate space.
-            */
+             * Placement-new, will not attempt to allocate space.
+             */
             ::new ((void*)p) U(std::forward<Args>(args)...);
         }
         template<class U>
@@ -122,14 +122,14 @@ namespace
     };
 
     /*
-    * Do NOT add objects to this vector manually, use the below function.
-    */
+     * Do NOT add objects to this vector manually, use the below function.
+     */
     std::vector<MemoryObjectDescription,
                 MemoryObjectsAllocator<MemoryObjectDescription>> memory_objects;
     /*
-    * Helper function to insert MemoryObjectDescriptions sorted, this way it becomes easier
-    * to find the best spots in memory to place new allocations.
-    */
+     * Helper function to insert MemoryObjectDescriptions sorted, this way it becomes easier
+     * to find the best spots in memory to place new allocations.
+     */
     void InsertMemoryObjectDescriptionSorted(MemoryObjectDescription& mod)
     {
         auto i = memory_objects.begin();
