@@ -90,6 +90,10 @@ DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
 	DWORD threadId = GetCurrentThreadId();
 	ThreadWrapperInfo& info = *(ThreadWrapperInfo*)lpParam;
+    /*
+     * TODO: I don't like having all this in the thread stack.
+     * -- Warepire
+     */
     MEMORY_BASIC_INFORMATION mbi;
     VirtualQuery(&threadId, &mbi, sizeof(mbi));
     void* base_address = mbi.AllocationBase;

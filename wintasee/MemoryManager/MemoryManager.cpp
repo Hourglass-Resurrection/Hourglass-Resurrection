@@ -13,11 +13,17 @@
 namespace
 {
     static bool memory_manager_inited = false;
-    static const unsigned int large_address_space_start = 0x80000000;
+    static const ptrdiff_t LARGE_ADDRESS_SPACE_START = 0x80000000;
+    static const ptrdiff_t LARGE_ADDRESS_SPACE_END = 0xC0000000;
+    static ptrdiff_t minimum_allowed_address = 0;
     struct MemoryObjectDescription
     {
-        void* address;  // TODO: Can this be gotten from the handle?
-        HANDLE object;  // TODO: Can this be gotten from the address?
+        void* address;
+        /*
+         * INVALID_HANDLE_VALUE means that we must never delete the address ourselves.
+         * An INVALID_HANDLE_VALUE entry means that this was allocated by Windows.
+         */
+        HANDLE object;
         unsigned int bytes;
         unsigned int flags;
     };
@@ -80,7 +86,8 @@ namespace
             difference_type last_memory_block_end = 0;
             for (auto& mo : memory_objects)
             {
-                if (reinterpret_cast<difference_type>(mo.address) >= large_address_space_start)
+                if (reinterpret_cast<difference_type>(mo.address) >= LARGE_ADDRESS_SPACE_START &&
+                    reinterpret_cast<difference_type>(mo.address) < LARGE_ADDRESS_SPACE_END)
                 {
                     if (last_memory_block_end != 0)
                     {
@@ -145,6 +152,52 @@ namespace
             memory_objects.insert(--i, mod);
         }
     }
+
+    /*
+     * Returns a nullptr if no suitable address was found.
+     * This lets MapViewOfFileEx try on it's own, but if we failed, the chances are not good.
+     */
+    void* FindBestFitAddress(unsigned int bytes, bool internal = false)
+    {
+        struct FreeSpace {
+            void* address;
+            SIZE_T size;
+        };
+
+        ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : minimum_allowed_address;
+        ptrdiff_t end_address = internal ? LARGE_ADDRESS_SPACE_END : LARGE_ADDRESS_SPACE_START;
+        FreeSpace best_gap;
+        ZeroMemory(&best_gap, sizeof(best_gap));
+        FreeSpace this_gap;
+        void* candidate_address = nullptr;
+
+        for (auto& mo : memory_objects)
+        {
+            if (reinterpret_cast<ptrdiff_t>(mo.address) >= start_address &&
+                reinterpret_cast<ptrdiff_t>(mo.address) < end_address)
+            {
+                if (candidate_address != nullptr)
+                {
+                    this_gap.address = candidate_address;
+                    this_gap.size = static_cast<char*>(candidate_address)
+                                    - static_cast<char*>(mo.address);
+                    if (this_gap.size > bytes)
+                    {
+                        if (best_gap.size > this_gap.size || best_gap.size == 0)
+                        {
+                            best_gap = this_gap;
+                        }
+                    }
+                }
+                candidate_address = static_cast<char*>(mo.address) + mo.bytes;
+            }
+        }
+        if (best_gap.size == 0)
+        {
+            return nullptr;
+        }
+        return best_gap.address;
+    }
 }
 
 
@@ -159,7 +212,8 @@ namespace MemoryManager
         if (memory_manager_inited)
         {
             /*
-             * TODO: Print warning about trying to init again!
+             * TODO: Print warning about trying to init again! Or assert?
+             *       Trying to init again would be a horrible bug somewhere.
              * -- Warepire
              */
             return;
@@ -169,6 +223,7 @@ namespace MemoryManager
         SIZE_T region_size = 0;
         SYSTEM_INFO si;
         GetSystemInfo(&si);
+        minimum_allowed_address = reinterpret_cast<ptrdiff_t>(si.lpMinimumApplicationAddress);
         void* region_address = si.lpMinimumApplicationAddress;
         VirtualQuery(region_address, &mbi, sizeof(mbi));
         allocation_base = mbi.AllocationBase;
@@ -191,6 +246,7 @@ namespace MemoryManager
             }
             region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
             allocation_base = mbi.AllocationBase;
+            VirtualQuery(region_address, &mbi, sizeof(mbi));
         }
         memory_manager_inited = true;
     }
@@ -198,28 +254,33 @@ namespace MemoryManager
     {
         /*
          * TODO: Decide a naming scheme, to easier ID segments in a save state.
-         * TODO: Write  function that scans the memory_objects vector for a
-         *       suitable region of memory.
-         * TODO: Know where EVERYTHING is, incl, threads, stacks etc.
-         *       MapViewOfFileEx doesn't take hints, it takes orders.
-         *       And fails if the address cannot contain the alloc.
          * -- Warepire
          */
-        void* hint_address = nullptr;
-        HANDLE map_file =
-            CreateFileMapping(INVALID_HANDLE_VALUE,
-                              nullptr,
-                              PAGE_READWRITE,
-                              0,
-                              bytes,
-                              nullptr);
-        void *allocation =
-            MapViewOfFileEx(map_file,
-                            flags == 0 ? FILE_MAP_WRITE : flags,
-                            0,
-                            0,
-                            bytes,
-                            hint_address);
+        void* target_address = FindBestFitAddress(bytes, internal);
+        /*
+         * Ensure GetLastError() returns an error-code from CreateFileMapping.
+         */
+        SetLastError(ERROR_SUCCESS);
+        HANDLE map_file = CreateFileMapping(INVALID_HANDLE_VALUE,
+                                            nullptr,
+                                            PAGE_READWRITE,
+                                            0,
+                                            bytes,
+                                            nullptr);
+        if (GetLastError() == ERROR_ALREADY_EXISTS || map_file == nullptr)
+        {
+            return nullptr;
+        }
+        void *allocation = MapViewOfFileEx(map_file,
+                                           flags == 0 ? FILE_MAP_WRITE : flags,
+                                           0,
+                                           0,
+                                           bytes,
+                                           target_address);
+        if (allocation == nullptr)
+        {
+            return nullptr;
+        }
         MemoryObjectDescription mod;
         mod.address = allocation;
         mod.object = map_file;
