@@ -209,6 +209,10 @@ namespace MemoryManager
      */
     void Init()
     {
+        /*
+         * TODO: Inform wintaser about added regions.
+         * -- Warepire
+         */
         if (memory_manager_inited)
         {
             /*
@@ -254,6 +258,7 @@ namespace MemoryManager
     {
         /*
          * TODO: Decide a naming scheme, to easier ID segments in a save state.
+         * TODO: Inform wintaser about added region.
          * -- Warepire
          */
         void* target_address = FindBestFitAddress(bytes, internal);
@@ -295,6 +300,10 @@ namespace MemoryManager
      */
     void RegisterExistingAllocation(void* address, unsigned int bytes)
     {
+        /*
+         * TODO: Inform wintaser about added region.
+         * -- Warepire
+         */
         if (bytes == 0)
         {
             MEMORY_BASIC_INFORMATION mbi;
@@ -322,5 +331,38 @@ namespace MemoryManager
     }
     void Deallocate(void* object)
     {
+        auto it = memory_objects.begin();
+        for (; it != memory_objects.end(); it++)
+        {
+            if (it->address == object)
+            {
+                /*
+                 * TODO: Inform wintaser about removed region.
+                 * -- Warepire
+                 */
+                /*
+                 * Only unmap and close allocations that are not set to INVALID_HANDLE_VALUE,
+                 * INVALID_HANDLE_VALUE is used to denote an allocation not made by us, so we
+                 * cannot safely destroy it.
+                 * Since this scenario would only occur if a stack is deallocated or DLL is
+                 * unloaded, we shouldn't in theory leak any memory doing it like this.
+                 * -- Warepire
+                 */
+                if (it->object != INVALID_HANDLE_VALUE)
+                {
+                    UnmapViewOfFile(it->address);
+                    CloseHandle(it->object);
+                }
+                memory_objects.erase(it);
+                break;
+            }
+        }
+        if (it == memory_objects.end())
+        {
+            /*
+             * TODO: Log warning about trying to remove something we don't have a entry of!
+             * -- Warepire
+             */
+        }
     }
 };
