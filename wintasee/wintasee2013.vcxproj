@@ -138,6 +138,8 @@
       </ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
+      <BaseAddress>0x80000000</BaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
