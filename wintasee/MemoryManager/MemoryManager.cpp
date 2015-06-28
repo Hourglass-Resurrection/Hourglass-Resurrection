@@ -111,6 +111,7 @@ namespace
         {
             /*
              * Placement-new, will not attempt to allocate space.
+             * Have to use a C-cast here unfortunately.
              */
             ::new ((void*)p) U(std::forward<Args>(args)...);
         }
@@ -123,6 +124,7 @@ namespace
 
     /*
      * Do NOT add objects to this vector manually, use the below function.
+     * MSVC fails to auto-deduct the template argument for the Allocator. Sigh.
      */
     std::vector<MemoryObjectDescription,
                 MemoryObjectsAllocator<MemoryObjectDescription>> memory_objects;
@@ -133,11 +135,13 @@ namespace
     void InsertMemoryObjectDescriptionSorted(MemoryObjectDescription& mod)
     {
         auto i = memory_objects.begin();
-        for (; i != memory_objects.end(); i++)
+        while (i != memory_objects.end())
         {
-            if (i->address > mod.address) {
+            if (i->address > mod.address)
+            {
                 break;
             }
+            i++;
         }
         if (i == memory_objects.begin())
         {
@@ -149,7 +153,7 @@ namespace
         }
         else
         {
-            memory_objects.insert(--i, mod);
+            memory_objects.insert(i, mod);
         }
     }
 
