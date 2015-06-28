@@ -1,10 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <external/d3d8.h>
+#include <map>
+
+#include <external\d3d8.h>
 #include <wintasee.h>
 #include <tls.h>
-#include <map>
+
+#include <MemoryManager\MemoryManager.h>
 
 //#define SAVESTATE_DX8_TEXTURES
 
@@ -29,7 +32,11 @@ static HWND s_savedD3D8HWND = NULL;
 static HWND s_savedD3D8DefaultHWND = NULL;
 static RECT s_savedD3D8ClientRect = {};
 
-std::map<IDirect3DSwapChain8*,IDirect3DDevice8*> d3d8SwapChainToDeviceMap;
+std::map<IDirect3DSwapChain8*,
+         IDirect3DDevice8*,
+         std::less<IDirect3DSwapChain8*>,
+         ManagedAllocator<std::pair<IDirect3DSwapChain8*,IDirect3DDevice8*>>>
+             d3d8SwapChainToDeviceMap;
 
 static bool d3d8BackBufActive = true;
 static bool d3d8BackBufDirty = true;
@@ -45,14 +52,22 @@ struct IDirect3DSurface8_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static std::map<IDirect3DSurface8*, IDirect3DSurface8_CustomData> surface8data;
+static std::map<IDirect3DSurface8*,
+                IDirect3DSurface8_CustomData,
+                std::less<IDirect3DSurface8*>,
+                ManagedAllocator<std::pair<IDirect3DSurface8*,IDirect3DSurface8_CustomData>>>
+                    surface8data;
 
 struct IDirect3DTexture8_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static std::map<IDirect3DTexture8*, IDirect3DTexture8_CustomData> texture8data;
+static std::map<IDirect3DTexture8*,
+                IDirect3DTexture8_CustomData,
+                std::less<IDirect3DTexture8*>,
+                ManagedAllocator<std::pair<IDirect3DTexture8*, IDirect3DTexture8_CustomData>>>
+                    texture8data;
 
 
 static void ProcessPresentationParams8(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D8* d3d, IDirect3DDevice8* d3dDevice)

@@ -8,6 +8,8 @@
 #include <tls.h>
 #include <phasedetection.h>
 
+#include <MemoryManager\MemoryManager.h>
+
 static PhaseDetector s_phaseDetector;
 
 void FakeBroadcastDisplayChange(int width, int height, int depth);
@@ -46,7 +48,10 @@ struct ManualHDCInfo
 {
 	HBITMAP oldBitmap;
 };
-std::map<HDC,ManualHDCInfo> manuallyCreatedSurfaceDCs;
+std::map<HDC,
+         ManualHDCInfo,
+         std::less<HDC>,
+         ManagedAllocator<std::pair<HDC, ManualHDCInfo>>> manuallyCreatedSurfaceDCs;
 
 
 void RescaleRect(RECT& rect, RECT from, RECT to);
@@ -121,7 +126,10 @@ struct IDirectDrawOwnerInfo
 	void* ddrawInterface;
 	int ddrawVersionNumber;
 };
-static std::map<void*,IDirectDrawOwnerInfo> s_ddrawSurfaceToOwner;
+static std::map<void*,
+                IDirectDrawOwnerInfo,
+                std::less<void*>,
+                ManagedAllocator<std::pair<void*, IDirectDrawOwnerInfo>>> s_ddrawSurfaceToOwner;
 
 
 // instead of inheriting from IDirectDrawSurface and returning one as a wrapper of the original,
@@ -270,8 +278,7 @@ struct MyDirectDrawSurface
 #else // MUCH faster. (BltFast to system memory surface instead of locking and reading from video memory)
 				DIRECTDRAWSURFACEN* pBackBuffer = pSource;
 				DIRECTDRAWSURFACEN* pDDBackBufCopy;
-				std::map<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>::iterator found;
-				found = sysMemCopySurfaces.find(pThis);
+				auto found = sysMemCopySurfaces.find(pThis);
 				if(found != sysMemCopySurfaces.end())
 				{
 					pDDBackBufCopy = found->second;
@@ -845,7 +852,7 @@ struct MyDirectDrawSurface
 	static HRESULT STDMETHODCALLTYPE MyReleaseDC(DIRECTDRAWSURFACEN* pThis, HDC hdc)
 	{
 		DDRAW_ENTER();
-		std::map<HDC,ManualHDCInfo>::iterator found = manuallyCreatedSurfaceDCs.find(hdc);
+		auto found = manuallyCreatedSurfaceDCs.find(hdc);
 		if(found == manuallyCreatedSurfaceDCs.end())
 		{
 			// normal case
@@ -1073,16 +1080,14 @@ struct MyDirectDrawSurface
 
 	static void RestoreVideoMemoryOfAllSurfaces()
 	{
-		std::map<IDirectDrawSurfaceN*, void*>::iterator iter;
-		for(iter = videoMemoryPixelBackup.begin(); iter != videoMemoryPixelBackup.end(); iter++)
+		for(auto iter = videoMemoryPixelBackup.begin(); iter != videoMemoryPixelBackup.end(); iter++)
 			if(iter->second)
 				RestoreVideoMemory(iter->first);
 	}
 
 	static void BackupVideoMemoryOfAllSurfaces()
 	{
-		std::map<IDirectDrawSurfaceN*, BOOL>::iterator iter;
-		for(iter = videoMemoryBackupDirty.begin(); iter != videoMemoryBackupDirty.end(); iter++)
+		for(auto iter = videoMemoryBackupDirty.begin(); iter != videoMemoryBackupDirty.end(); iter++)
 			if(iter->second)
 				BackupVideoMemory(iter->first);
 	}
@@ -1126,10 +1131,24 @@ struct MyDirectDrawSurface
 		return pSysMemSurface;
 	}
 
-	static std::map<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*> attachedSurfaces;
-	static std::map<IDirectDrawSurfaceN*, void*> videoMemoryPixelBackup;
-	static std::map<IDirectDrawSurfaceN*, BOOL> videoMemoryBackupDirty;
-	static std::map<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*> sysMemCopySurfaces; // for avi speedup
+	static std::map<IDirectDrawSurfaceN*,
+                    IDirectDrawSurfaceN*,
+                    std::less<IDirectDrawSurfaceN*>,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>
+                        attachedSurfaces;
+	static std::map<IDirectDrawSurfaceN*,
+                    void*,
+                    std::less<IDirectDrawSurfaceN*>,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, void*>>> videoMemoryPixelBackup;
+	static std::map<IDirectDrawSurfaceN*,
+                    BOOL,
+                    std::less<IDirectDrawSurfaceN*>,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, BOOL>>> videoMemoryBackupDirty;
+	static std::map<IDirectDrawSurfaceN*,
+                    IDirectDrawSurfaceN*,
+                    std::less<IDirectDrawSurfaceN*>,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>
+                        sysMemCopySurfaces; // for avi speedup
 };
 
 
@@ -1163,10 +1182,10 @@ struct MyDirectDrawSurface
                template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::GetFlipStatus)(x* pThis, DWORD flags) = 0; \
 			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetPalette)(x* pThis, LPDIRECTDRAWPALETTE pPalette) = 0; \
 			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetColorKey)(x* pThis, DWORD dwFlags, LPDDCOLORKEY pKey) = 0; \
-               template<> std::map<x*,x*> MyDirectDrawSurface<x>::attachedSurfaces; \
-               template<> std::map<x*,x*> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
-               template<> std::map<x*,void*> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
-               template<> std::map<x*,BOOL> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
+               template<> std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>> MyDirectDrawSurface<x>::attachedSurfaces; \
+               template<> std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
+               template<> std::map<x*,void*,std::less<x*>, ManagedAllocator<std::pair<x*,void*>>> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
+               template<> std::map<x*,BOOL,std::less<x*>, ManagedAllocator<std::pair<x*,BOOL>>> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
 
 	DEF(IDirectDrawSurface)
 	DEF(IDirectDrawSurface2)

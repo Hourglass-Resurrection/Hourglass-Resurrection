@@ -1,10 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
+#include <map>
+
 #include <wintasee.h>
 #include <shared\winutil.h>
 #include <tls.h>
-#include <map>
+
+#include <MemoryManager\MemoryManager.h>
 
 bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 
@@ -815,7 +818,7 @@ struct _tiddata {
 
 typedef struct _tiddata * _ptiddata;
 BOOL FlsRecursing = FALSE;
-std::map<DWORD,DWORD *> fseeds;
+std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>> fseeds;
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
 	if ((!FlsRecursing) && (lpFlsData != NULL)) {
@@ -831,7 +834,7 @@ HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	return rv;
 }
 BOOL TlsRecursing = FALSE;
-std::map<DWORD,DWORD *> tseeds;
+std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>> tseeds;
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
 	BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
 	if ((!TlsRecursing) && (lpTlsValue != NULL)) {

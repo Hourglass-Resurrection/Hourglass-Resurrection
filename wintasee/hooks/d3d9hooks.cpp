@@ -1,10 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <external/d3d9.h>
+#include <map>
+
+#include <external\d3d9.h>
 #include <wintasee.h>
 #include <tls.h>
-#include <map>
+
+#include <MemoryManager\MemoryManager.h>
 
 //#define SAVESTATE_DX9_TEXTURES
 
@@ -28,7 +31,11 @@ static HWND s_savedD3D9HWND = NULL;
 static HWND s_savedD3D9DefaultHWND = NULL;
 static RECT s_savedD3D9ClientRect = {};
 
-std::map<IDirect3DSwapChain9*,IDirect3DDevice9*> d3d9SwapChainToDeviceMap;
+std::map<IDirect3DSwapChain9*,
+         IDirect3DDevice9*,
+         std::less<IDirect3DSwapChain9*>,
+         ManagedAllocator<std::pair<IDirect3DSwapChain9*, IDirect3DDevice9*>>>
+             d3d9SwapChainToDeviceMap;
 
 static bool d3d9BackBufActive = true;
 static bool d3d9BackBufDirty = true;
@@ -44,14 +51,22 @@ struct IDirect3DSurface9_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static std::map<IDirect3DSurface9*, IDirect3DSurface9_CustomData> surface9data;
+static std::map<IDirect3DSurface9*,
+                IDirect3DSurface9_CustomData,
+                std::less<IDirect3DSurface9*>,
+                ManagedAllocator<std::pair<IDirect3DSurface9*,IDirect3DSurface9_CustomData>>>
+                    surface9data;
 
 struct IDirect3DTexture9_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static std::map<IDirect3DTexture9*, IDirect3DTexture9_CustomData> texture9data;
+static std::map<IDirect3DTexture9*,
+                IDirect3DTexture9_CustomData,
+                std::less<IDirect3DTexture9*>,
+                ManagedAllocator<std::pair<IDirect3DTexture9*, IDirect3DTexture9_CustomData>>>
+                    texture9data;
 
 
 static void ProcessPresentationParams9(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D9* d3d, IDirect3DDevice9* d3dDevice)

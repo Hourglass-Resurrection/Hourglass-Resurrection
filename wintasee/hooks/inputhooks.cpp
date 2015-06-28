@@ -1,8 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
+#include <vector>
+#include <algorithm>
+
+#include <wintasee.h>
 //#include "../tls.h"
+
+#include <MemoryManager\MemoryManager.h>
 
 #if defined(_DEBUG) || 0//0
     #define _DINPUTDEBUG
@@ -91,9 +96,8 @@ struct MyDIDEVICEOBJECTINSTANCE {
 #define BUTTON1 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x31, 0x00 }// "Button 1\0"
 #define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
 
-#include <vector>
-#include <algorithm>
-typedef std::vector<struct BufferedInput*> BufferedInputList;
+
+typedef std::vector<struct BufferedInput*, ManagedAllocator<BufferedInput*>> BufferedInputList;
 static BufferedInputList s_bufferedKeySlots;
 
 HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread);

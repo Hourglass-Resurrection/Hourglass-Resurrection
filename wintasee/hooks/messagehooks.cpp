@@ -1,13 +1,19 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../msgqueue.h"
 #include <map>
 #include <vector>
 
-extern std::map<HWND, WNDPROC> hwndToOrigHandler;
+#include <wintasee.h>
+#include <tls.h>
+#include <msgqueue.h>
+
+#include <MemoryManager\MemoryManager.h>
+
+extern std::map<HWND,
+                WNDPROC,
+                std::less<HWND>,
+                ManagedAllocator<std::pair<HWND, WNDPROC>>> hwndToOrigHandler;
 
 
 static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPARAM lParam);
@@ -888,7 +894,7 @@ struct PostedMessage
 	WPARAM wParam;
 	LPARAM lParam;
 };
-std::vector<PostedMessage> postedMessages;
+std::vector<PostedMessage, ManagedAllocator<PostedMessage>> postedMessages;
 static CRITICAL_SECTION s_postedMessagesCS;
 bool hasPostedMessages = false;
 
@@ -2096,8 +2102,7 @@ HOOKFUNC DWORD WINAPI MyGetMessagePos(VOID)
 // if send is true, sends instead of posts to probably-top-level windows.
 void FakeBroadcastMessage(bool send, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	std::map<HWND, WNDPROC>::iterator iter;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;

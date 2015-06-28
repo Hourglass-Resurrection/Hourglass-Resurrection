@@ -1,15 +1,21 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
+#include <map>
+
 #include <wintasee.h>
 #include <tls.h>
 #include <msgqueue.h>
 #include <localeutils.h>
-#include <map>
+
+#include <MemoryManager\MemoryManager.h>
 
 static int createWindowDepth = 0;
 
-std::map<HWND, WNDPROC> hwndToOrigHandler;
+std::map<HWND,
+         WNDPROC,
+         std::less<HWND>,
+         ManagedAllocator<std::pair<HWND, WNDPROC>>> hwndToOrigHandler;
 //std::map<HWND, BOOL> hwndDeniedDeactivate;
 //std::map<HWND, BOOL> hwndRespondingToPaintMessage;
 

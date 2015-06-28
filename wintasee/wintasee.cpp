@@ -140,7 +140,10 @@ void ApplyRegistryIntercepts();
 void ApplyXinputIntercepts();
 
 
-extern std::map<HWND, WNDPROC> hwndToOrigHandler;
+extern std::map<HWND,
+                WNDPROC,
+                std::less<HWND>,
+                ManagedAllocator<std::pair<HWND, WNDPROC>>> hwndToOrigHandler;
 
 
 
