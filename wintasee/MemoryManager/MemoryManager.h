@@ -136,6 +136,22 @@ public:
 };
 
 /*
+ * Comparators for the ManagedAllocator.
+ * since it's a stateless allocator, they're equal by default.
+ */
+template<class T1, class T2>
+bool operator==(const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
+{
+    return true;
+}
+
+template<class T1, class T2>
+bool operator!= (const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
+{
+    return false;
+}
+
+/*
  * I don't like exposing this class as much as I am, but it's necessary since the STL allocator
  * class needs access to internal functions here to be able to perform the max_size() operation.
  * At least everything here is private.

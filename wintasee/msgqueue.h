@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <shared/msg.h>
+#include <shared\msg.h>
 
 typedef int MessageActionFlags; enum
 {

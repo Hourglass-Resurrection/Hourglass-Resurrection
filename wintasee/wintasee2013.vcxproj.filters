@@ -108,9 +108,6 @@
     <ClInclude Include="intercept.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\msg.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="msgqueue.h">
       <Filter>Source Files</Filter>
     </ClInclude>

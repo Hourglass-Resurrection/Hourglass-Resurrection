@@ -190,9 +190,35 @@ enum { s_isDebug = true };
 enum { s_isDebug = false };
 #endif
 
-#define HOOKRIID(x,n) case IID_I##x##n##_Data1: if(IID_I##x##n == riid && (uncheckedFastNew || type_needs_hooking<I##x##n*,My##x<I##x##n>*>(reinterpret_cast<I##x##n*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)), *ppvOut = new My##x<I##x##n>(reinterpret_cast<I##x##n*>(*ppvOut)); break
-#define HOOKRIID2(x,my) case IID_I##x##_Data1: if(IID_I##x == riid && (uncheckedFastNew || type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut)), *ppvOut = new my<I##x>(reinterpret_cast<I##x*>(*ppvOut)); break
-#define HOOKRIID2EX(x,my,param) case IID_I##x##_Data1: if(IID_I##x == riid && (uncheckedFastNew || type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut)), *ppvOut = new my<I##x>(reinterpret_cast<I##x*>(*ppvOut),param); break
+template<class iface, template<class iface> class hook, REFGUID iid>
+__forceinline void HookRIID(REFIID riid, LPVOID *ppvOut, const bool& unchecked_fast_new, const char* name)
+{
+    if (riid == iid &&
+        (unchecked_fast_new ||
+        type_needs_hooking<iface*, hook<iface>*>(static_cast<iface*>(*ppvOut))))
+    {
+        if (unchecked_fast_new && !s_isDebug)
+        {
+            debugprintf("HOOKED COM INTERFACE: %s (0x%X)\n", name, *ppvOut);
+        }
+        *ppvOut = MemoryManager::Allocate(sizeof(hook<iface>), 0, true);
+        *ppvOut = ::new hook<iface>(static_cast<iface*>(*ppvOut));
+    }
+}
+
+/*
+ * TODO: Get rid of defines and use the template directly?
+ * -- Warepire
+ */
+#define HOOKRIID(x, n) \
+    case IID_I##x##n##_Data1: \
+        HookRIID<I##x##n, My##x##, IID_I##x##n>(riid, ppvOut, uncheckedFastNew, "I"#x#n""); \
+        break
+#define HOOKRIID2(x, my) \
+    case IID_I##x##_Data1: \
+        HookRIID<I##x, my, IID_I##x>(riid, ppvOut, uncheckedFastNew, "I"#x""); \
+        break
+#define HOOKRIID2EX(x, my, param) case IID_I##x##_Data1: if(IID_I##x == riid && (uncheckedFastNew || type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut)), *ppvOut = new my<I##x>(reinterpret_cast<I##x*>(*ppvOut),param); break
 #define HOOKRIID3(x,my) case IID_##x##_Data1: if(IID_##x == riid && (uncheckedFastNew || type_needs_hooking<x*,my*>(reinterpret_cast<x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut)), *ppvOut = new my(reinterpret_cast<x*>(*ppvOut)); break
 //#define HOOKRIID4(x,my) case IID_##x##_Data1: if(IID_##x == riid && (uncheckedFastNew || type_needs_hooking<x*,my*>(reinterpret_cast<x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut)), *ppvOut = new my(reinterpret_cast<x*>(*ppvOut)); break
 #define VTHOOKRIID(x,n) case IID_I##x##n##_Data1: if(IID_I##x##n == riid) if(My##x<I##x##n>::Hook(reinterpret_cast<I##x##n*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)); break

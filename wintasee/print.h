@@ -67,9 +67,6 @@ int cmdprintf(const char* fmt, ...);
     #define VERBOSE_ENTER(...) ((void)0)
 #endif
 
-
-#include <shared\logcat.h>
-
 extern LogCategoryFlag& g_includeLogFlags;
 extern LogCategoryFlag& g_excludeLogFlags;
 

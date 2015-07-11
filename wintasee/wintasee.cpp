@@ -14,15 +14,19 @@
 
 #include <stdio.h>
 
-
-#include <vector>
 #include <algorithm>
+#include <vector>
+#include <map>
 
+#include <intercept.h>
+#include <localeutils.h>
 #include <MemoryManager\MemoryManager.h>
-
-//#include "svnrev.h" // defines SRCVERSION number
+#include <msgqueue.h>
+#include <print.h>
+#include <shared\msg.h>
 #include <shared\version.h>
-
+#include <tls.h>
+#include <wintasee.h>
 
 //#define whitelistMaskFilter(x) ((tasflags.messageSyncMode != 3) ? (x) : 0)
 
@@ -34,18 +38,6 @@
 //#include "wintasee.h"
 
 //#pragma check_stack (off) // not sure if it's needed... doesn't seem to help, but I'll leave it here anyway
-
-#include "wintasee.h"
-#include "print.h"
-
-#include <shared\msg.h>
-
-#include "intercept.h"
-#include "tls.h"
-#include "msgqueue.h"
-#include "localeutils.h"
-
-#include <map>
 
 
 // FIXME: should get things working with EMULATE_MESSAGE_QUEUES enabled, currently it breaks Iji arrow key input
@@ -596,18 +588,13 @@ bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer)
 
 
 HWND extHWnd = 0;
-
 char keyboardLayoutName [KL_NAMELENGTH*2];
 HKL g_hklOverride = 0;
 
 static DWORD g_videoFramesPrepared = 0;
 //static DWORD g_soundMixedTicks = 0;
 
-
-#include <map>
-static std::map<HWND, BOOL> hwndSizeLocked;
-
-
+static std::map<HWND, BOOL, std::less<HWND>, ManagedAllocator<std::pair<HWND, BOOL>>> hwndSizeLocked;
 
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 {
@@ -776,9 +763,8 @@ void HandlePausedEvents()
 	MSG msg;
 
 	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -1065,8 +1051,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		if((prevWindowActivateFlags&2) != (tasflags.windowActivateFlags&2))
 		{
 		// handle toggling "always on top" status when allow deactivate checkbox changes
-			std::map<HWND, WNDPROC>::iterator iter;
-			for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
+			for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
 			{
 				HWND hwnd = iter->first;
 				if(IsWindow(hwnd))
@@ -1090,9 +1075,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 
 	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;

@@ -1,7 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "global.h"
+#include <global.h>
 
 // this is used mainly for clamping from -32678 to 32767
 //#define clamptofullsignedrange(x,lo,hi) ((x)>=(lo)?((x)<=(hi)?(x):(hi)):(lo))

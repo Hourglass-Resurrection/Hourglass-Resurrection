@@ -7,7 +7,7 @@
 // than do the lower-level APIs.
 // there's little reason not to take advantage of that.
 
-#include "../wintasee.h"
+#include <wintasee.h>
 
 bool PresentOGLD3D(); // extern
 

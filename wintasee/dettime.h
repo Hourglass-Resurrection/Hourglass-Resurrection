@@ -3,7 +3,10 @@
 
 #pragma once
 
-#include "tls.h"
+#include <print.h>
+#include <shared\ipc.h>
+#include <tls.h>
+#include <wintasee.h>
 
 enum TimeCallType
 {

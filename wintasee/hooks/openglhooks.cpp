@@ -9,10 +9,13 @@
 // may be too incomplete for other games (some functions are still empty or not display-list capable).
 // lines are rendered incorrectly (need to convert to quads so they can use width and z-buffer).
 
+#include <vector>
+
+#include <math.h>
+
 #include <external\d3d8.h>
 #include <global.h>
-#include <vector>
-#include <math.h>
+#include <MemoryManager\MemoryManager.h>
 
 bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer); // extern (didn't want to include wintasee.h and everything it includes just for this one function)
 
@@ -119,7 +122,8 @@ struct OpenGLImmediateVertex
 	OGLCOLOR c;
 	FLOAT u,v;
 };
-static std::vector<OpenGLImmediateVertex> oglImmediateVertices;
+static std::vector<OpenGLImmediateVertex,
+                   ManagedAllocator<OpenGLImmediateVertex>> oglImmediateVertices;
 
 
 
@@ -127,10 +131,10 @@ static const int GL_MODELVIEW = 0x1700;
 static const int GL_PROJECTION = 0x1701;
 static const int GL_TEXTURE = 0x1702;
 
-static std::vector<D3DMATRIX> oglMatrixStackMV; // GL_MODELVIEW
-static std::vector<D3DMATRIX> oglMatrixStackP; // GL_PROJECTION
-static std::vector<D3DMATRIX> oglMatrixStackT; // GL_TEXTURE
-static std::vector<D3DMATRIX>* oglMatrixStack = &oglMatrixStackMV;
+static std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>> oglMatrixStackMV; // GL_MODELVIEW
+static std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>> oglMatrixStackP; // GL_PROJECTION
+static std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>> oglMatrixStackT; // GL_TEXTURE
+static std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>>* oglMatrixStack = &oglMatrixStackMV;
 static D3DMATRIX oglMatrixMV; // GL_MODELVIEW
 static D3DMATRIX oglMatrixP; // GL_PROJECTION
 static D3DMATRIX oglMatrixT; // GL_TEXTURE
@@ -320,7 +324,7 @@ struct OpenGLClientState // see glEnableClientState docs
 	}
 };
 static OpenGLClientState oglClientState;
-static std::vector<OpenGLClientState> oglClientStateStack;
+static std::vector<OpenGLClientState, ManagedAllocator<OpenGLClientState>> oglClientStateStack;
 
 
 struct OpenGLServerState // see glEnableState docs
@@ -357,7 +361,7 @@ struct OpenGLServerState // see glEnableState docs
 	} other;
 };
 static OpenGLServerState oglServerState;
-static std::vector<OpenGLServerState> oglServerStateStack;
+static std::vector<OpenGLServerState, ManagedAllocator<OpenGLServerState>> oglServerStateStack;
 
 
 
@@ -732,7 +736,7 @@ struct OpenGLDisplayListEntry
 	};
 
 	FuncID id;
-	std::vector<GLArg> args;
+	std::vector<GLArg, ManagedAllocator<GLArg>> args;
 protected:
 	char* buffer;
 public:
@@ -779,7 +783,7 @@ public:
 struct OpenGLDisplayList
 {
 	bool valid;
-	std::vector<OpenGLDisplayListEntry> entries;
+	std::vector<OpenGLDisplayListEntry, ManagedAllocator<OpenGLDisplayListEntry>> entries;
 
 	void Call()
 	{
@@ -797,7 +801,7 @@ struct OpenGLDisplayList
 		valid = false;
 	}
 };
-static std::vector<OpenGLDisplayList> oglDisplayLists;
+static std::vector<OpenGLDisplayList, ManagedAllocator<OpenGLDisplayList>> oglDisplayLists;
 
 
 struct OpenGLTexture
@@ -835,7 +839,7 @@ struct OpenGLTexture
 		Clear();
 	}
 };
-static std::vector<OpenGLTexture> oglTextures;
+static std::vector<OpenGLTexture, ManagedAllocator<OpenGLTexture>> oglTextures;
 int oglTexture1DTarget = 0;
 int oglTexture2DTarget = 0;
 float oglTextureOffsets [2] = {}; // because opengl and directx use different texel origins

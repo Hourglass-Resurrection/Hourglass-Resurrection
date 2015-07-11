@@ -2,12 +2,13 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <windows.h>
-#include <cstdio>
-#include "print.h"
-#include "global.h"
 
+#include <cstdio>
+
+#include <intercept.h>
+#include <global.h>
+#include <print.h>
 #include <shared/ipc.h>
-#include "intercept.h"
 
 //#define TRAMPFUNC __declspec(noinline)
 ////#define GetAsyncKeyState TrampGetAsyncKeyState

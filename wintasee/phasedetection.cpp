@@ -1,13 +1,16 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "phasedetection.h"
-#include "print.h"
+#include <map>
+
+#include <MemoryManager\MemoryManager.h>
+#include <phasedetection.h>
+#include <print.h>
 
 bool PhaseDetector::AdvanceAndCheckCycleBoundary(Key key)
 {
 	bool isCycleBoundary = true;
-	std::map<Key,Time>::iterator keyFound = keyTimes.find(key);
+	auto& keyFound = keyTimes.find(key);
 	if(keyFound != keyTimes.end())
 	{
 		if(keyFound->second < lastFrameTime)

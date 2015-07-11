@@ -3,12 +3,11 @@
 
 #include <map>
 
-#include <wintasee.h>
-#include <tls.h>
-#include <msgqueue.h>
 #include <localeutils.h>
-
 #include <MemoryManager\MemoryManager.h>
+#include <msgqueue.h>
+#include <tls.h>
+#include <wintasee.h>
 
 static int createWindowDepth = 0;
 

@@ -1,10 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <wintasee.h>
-#include <tls.h>
-#include <localeutils.h>
 #include <memory>
+
+#include <localeutils.h>
+#include <tls.h>
+#include <wintasee.h>
 
 typedef struct _KEY_NAME_INFORMATION {
   ULONG NameLength;
