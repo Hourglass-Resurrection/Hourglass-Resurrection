@@ -10,6 +10,11 @@
 
 #include "MemoryManager.h"
 
+/*
+ * TODO: Critical sections around allocations?
+ * -- Warepire
+ */
+
 bool MemoryManagerInternal::memory_manager_inited = false;
 ptrdiff_t MemoryManagerInternal::minimum_allowed_address = 0;
 std::vector<MemoryManagerInternal::MemoryObjectDescription,
@@ -142,7 +147,7 @@ void MemoryManager::Init()
         while (mbi.State != MEM_FREE && mbi.AllocationBase == allocation_base)
         {
             region_size += mbi.RegionSize;
-            region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+            region_address = static_cast<BYTE*>(mbi.BaseAddress) + mbi.RegionSize;
             VirtualQuery(region_address, &mbi, sizeof(mbi));
         }
         if (mbi.State == MEM_FREE && region_size != 0)
@@ -150,7 +155,7 @@ void MemoryManager::Init()
             RegisterExistingAllocation(allocation_base, region_size);
             region_size = 0;
         }
-        region_address = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+        region_address = static_cast<BYTE*>(mbi.BaseAddress) + mbi.RegionSize;
         allocation_base = mbi.AllocationBase;
         VirtualQuery(region_address, &mbi, sizeof(mbi));
     }
@@ -180,11 +185,11 @@ void* MemoryManager::Allocate(unsigned int bytes, unsigned int flags, bool inter
         return nullptr;
     }
     void *allocation = MapViewOfFileEx(map_file,
-                                        flags == 0 ? FILE_MAP_WRITE : flags,
-                                        0,
-                                        0,
-                                        bytes,
-                                        target_address);
+                                       flags == 0 ? FILE_MAP_WRITE : flags,
+                                       0,
+                                       0,
+                                       bytes,
+                                       target_address);
     if (allocation == nullptr)
     {
         return nullptr;
