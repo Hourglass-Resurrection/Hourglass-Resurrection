@@ -88,7 +88,10 @@ namespace
                                                      (sizeof(WORD) * 1);
 };
 
-DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
+std::map<HWND, DlgBase*> DlgBase::ms_hwnd_to_dlgbase_map;
+
+DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool tab_page) :
+    m_handle(nullptr)
 {
     DWORD iterator = 0;
     std::vector<BYTE>::size_type struct_size = DLGTEMPLATEEX_BASE_SIZE;
@@ -103,28 +106,33 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
      */
     struct_size += struct_size % sizeof(DWORD);
 
-    window.resize(struct_size);
+    m_window.resize(struct_size);
 
     /*
-     * Required value
+     * Required values
      */
-    *reinterpret_cast<WORD*>(&(window[iterator])) = 0x0001;
+    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0x0001;
+    iterator += sizeof(WORD);
+    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0xFFFF;
     iterator += sizeof(WORD);
 
-    /*
-     * EX-type DLGTEMPLATE
-     */
-    *reinterpret_cast<WORD*>(&(window[iterator])) = 0xFFFF;
-    iterator += sizeof(WORD);
     /*
      * Leave HelpID and exStyle alone
      */
     iterator += (sizeof(DWORD) * 2);
 
-    *reinterpret_cast<DWORD*>(&(window[iterator])) = DS_SETFONT | DS_FIXEDSYS |
-                                                     DS_MODALFRAME | WS_POPUP |
-                                                     WS_CAPTION | WS_SYSMENU |
-                                                     WS_MINIMIZEBOX;
+    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = DS_SETFONT | DS_FIXEDSYS;
+    if (tab_page == true)
+    {
+        *reinterpret_cast<DWORD*>(&(m_window[iterator])) |= WS_CHILD | WS_CLIPSIBLINGS |
+                                                            WS_VISIBLE;
+    }
+    else
+    {
+        *reinterpret_cast<DWORD*>(&(m_window[iterator])) |= DS_MODALFRAME | WS_POPUP |
+                                                            WS_CAPTION | WS_SYSMENU |
+                                                            WS_MINIMIZEBOX;
+    }
     iterator += sizeof(DWORD);
 
     /*
@@ -132,13 +140,13 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
      */
     iterator += sizeof(WORD);
 
-    *reinterpret_cast<short*>(&(window[iterator])) = x;
+    *reinterpret_cast<short*>(&(m_window[iterator])) = x;
     iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = y;
+    *reinterpret_cast<short*>(&(m_window[iterator])) = y;
     iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = w;
+    *reinterpret_cast<short*>(&(m_window[iterator])) = w;
     iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = h;
+    *reinterpret_cast<short*>(&(m_window[iterator])) = h;
     iterator += sizeof(short);
 
     /*
@@ -148,7 +156,9 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
 
     if (caption.empty() == false)
     {
-        wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), caption.c_str());
+        wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+                caption.c_str(),
+                caption.size());
         iterator += (sizeof(WCHAR) * caption.size());
     }
     iterator += sizeof(WCHAR);
@@ -156,22 +166,19 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h)
     /*
      * pointsize 8
      */
-    *reinterpret_cast<WORD*>(&(window[iterator])) = 0x0008;
+    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0x0008;
     iterator += sizeof(WORD);
 
-    *reinterpret_cast<WORD*>(&(window[iterator])) = static_cast<WORD>(FW_NORMAL);
+    *reinterpret_cast<WORD*>(&(m_window[iterator])) = static_cast<WORD>(FW_NORMAL);
     iterator += sizeof(WORD);
-    window[iterator] = static_cast<BYTE>(FALSE);
+    m_window[iterator] = static_cast<BYTE>(FALSE);
     iterator += sizeof(BYTE);
-    window[iterator] = 0x01;
+    m_window[iterator] = 0x01;
     iterator += sizeof(BYTE);
 
-    wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), L"MS Shell Dlg");
-
-    /*
-     * For indirect dialogs, so we can send messages to them.
-     */
-    handle = nullptr;
+    wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+            L"MS Shell Dlg",
+            wcslen(L"MS Shell Dlg"));
 }
 
 DlgBase::~DlgBase()
@@ -273,18 +280,28 @@ void DlgBase::AddDropDownList(DWORD id, SHORT x, SHORT y, SHORT w, SHORT drop_di
 void DlgBase::AddListView(DWORD id,
                           SHORT x, SHORT y,
                           SHORT w, SHORT h,
-                          bool editable, bool single_selection, bool owner_data)
+                          bool single_selection, bool owner_data)
 {
-    DWORD style = (editable ? LVS_EDITLABELS : 0);
+    DWORD style = LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS;
     style |= (single_selection ? LVS_SINGLESEL : 0);
     style |= (owner_data ? LVS_OWNERDATA : 0);
     AddObject(0,
-              WS_GROUP | WS_BORDER | WS_TABSTOP | LVS_REPORT | LVS_SHOWSELALWAYS | style,
+              WS_GROUP | WS_BORDER | WS_TABSTOP | style,
               L"SysListView32",
               std::wstring(),
               id,
               x, y,
               w, h);
+}
+
+void DlgBase::AddIPEditControl(DWORD id, SHORT x, SHORT y)
+{
+    AddObject(0, WS_GROUP | WS_TABSTOP, L"SysIPAddress32", std::wstring(), id, x, y, 100, 15);
+}
+
+void DlgBase::AddTabControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
+{
+    AddObject(0, WS_GROUP, L"SysTabControl32", std::wstring(), id, x, y, w, h);
 }
 
 void DlgBase::AddObject(DWORD ex_style, DWORD style,
@@ -294,7 +311,7 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
                         SHORT x, SHORT y,
                         SHORT w, SHORT h)
 {
-    DWORD iterator = window.size();
+    DWORD iterator = m_window.size();
     std::vector<BYTE>::size_type new_size = DLGITEMTEMPLATEEX_BASE_SIZE;
     new_size += (sizeof(WCHAR) * window_class.size());
     /*
@@ -309,31 +326,33 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
     new_size += iterator;
     new_size += new_size % sizeof(DWORD);
 
-    window.resize(new_size);
+    m_window.resize(new_size);
 
     /*
      * Leave helpID alone
      */
     iterator += sizeof(DWORD);
 
-    *reinterpret_cast<DWORD*>(&(window[iterator])) = ex_style;
+    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = ex_style;
     iterator += sizeof(DWORD);
-    *reinterpret_cast<DWORD*>(&(window[iterator])) = WS_CHILD | WS_VISIBLE | style;
-    iterator += sizeof(DWORD);
-
-    *reinterpret_cast<short*>(&(window[iterator])) = x;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = y;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = w;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(window[iterator])) = h;
-    iterator += sizeof(short);
-
-    *reinterpret_cast<DWORD*>(&(window[iterator])) = id;
+    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = WS_CHILD | WS_VISIBLE | style;
     iterator += sizeof(DWORD);
 
-    wcsncpy(reinterpret_cast<WCHAR*>(&(window[iterator])), window_class.c_str(), window_class.size());
+    *reinterpret_cast<short*>(&(m_window[iterator])) = x;
+    iterator += sizeof(short);
+    *reinterpret_cast<short*>(&(m_window[iterator])) = y;
+    iterator += sizeof(short);
+    *reinterpret_cast<short*>(&(m_window[iterator])) = w;
+    iterator += sizeof(short);
+    *reinterpret_cast<short*>(&(m_window[iterator])) = h;
+    iterator += sizeof(short);
+
+    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = id;
+    iterator += sizeof(DWORD);
+
+    wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+            window_class.c_str(),
+            window_class.size());
     iterator += (sizeof(WCHAR) * window_class.size());
     if (window_class[0] != L'\xFFFF')
     {
@@ -342,58 +361,57 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
 
     if (caption.empty() == false)
     {
-        wcscpy(reinterpret_cast<WCHAR*>(&(window[iterator])), caption.c_str());
+        wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+                caption.c_str(),
+                caption.size());
         iterator += (sizeof(WCHAR) * caption.size());
     }
     iterator += sizeof(WCHAR);
 
-    *reinterpret_cast<WORD*>(&(window[CDLGITEMS_OFFSET])) += 1;
+    *reinterpret_cast<WORD*>(&(m_window[CDLGITEMS_OFFSET])) += 1;
 }
 
-INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
-                                HWND parent,
+INT_PTR DlgBase::SpawnDialogBox(const DlgBase* parent,
                                 DlgProcCallback callback,
                                 LPARAM init_param,
                                 DlgMode mode)
 {
-    bool active;
+    SetLastError(ERROR_SUCCESS);
     INT_PTR result;
-    LParamData l_param;
+    HWND parent_hwnd = (parent != nullptr ? parent->m_handle : nullptr);
+    LParamData l_param(init_param, this);
 
-    l_param.original_data = init_param;
-    l_param.callback = callback;
-
-    switch (mode)
+    if (m_handle == nullptr)
     {
-    case PROMPT:
-        if (active)
+
+        m_callback = callback;
+
+        switch (mode)
         {
-            break;
+        case DlgMode::PROMPT:
+            result = DialogBoxIndirectParamW(GetModuleHandleW(nullptr),
+                                             reinterpret_cast<LPCDLGTEMPLATEA>(m_window.data()),
+                                             parent_hwnd,
+                                             reinterpret_cast<DLGPROC>(DlgBase::BaseCallback),
+                                             reinterpret_cast<LPARAM>(&l_param));
+            return result;
+        case DlgMode::INDIRECT:
+            /*
+             * Don't save the HWND directly here, save it from the callback to unify the saving
+             * process with the PROMPT dialogs. CreateDialog[X] will not return until the window
+             * has processed the WM_INITDIALOG message.
+             */
+            HWND ret = CreateDialogIndirectParamW(GetModuleHandleW(nullptr),
+                                                  reinterpret_cast<LPCDLGTEMPLATE>(m_window.data()),
+                                                  parent_hwnd,
+                                                  reinterpret_cast<DLGPROC>(DlgBase::BaseCallback),
+                                                  reinterpret_cast<LPARAM>(&l_param));
+            if (ret == nullptr)
+            {
+                return -1;
+            }
+            return 0;
         }
-        active = true;
-        result = DialogBoxIndirectParamW(instance,
-                                         reinterpret_cast<LPCDLGTEMPLATEA>(window.data()),
-                                         parent,
-                                         reinterpret_cast<DLGPROC>(DlgBase::BaseCallback),
-                                         reinterpret_cast<LPARAM>(&l_param));
-        active = false;
-        return result;
-    case INDIRECT:
-        if (callback_map.find(handle) != callback_map.end())
-        {
-            break;
-        }
-        handle = CreateDialogIndirectParamW(instance,
-                                            reinterpret_cast<LPCDLGTEMPLATEA>(window.data()),
-                                            parent,
-                                            reinterpret_cast<DLGPROC>(DlgBase::BaseCallback),
-                                            reinterpret_cast<LPARAM>(&l_param));
-        if (handle == nullptr)
-        {
-            active = false;
-            return -1;
-        }
-        return 0;
     }
 
     SetLastError(ERROR_CAN_NOT_COMPLETE);
@@ -402,66 +420,128 @@ INT_PTR DlgBase::SpawnDialogBox(HINSTANCE instance,
 
 LRESULT DlgBase::SendMessage(UINT msg, WPARAM w_param, LPARAM l_param)
 {
-    /*
-     * If we don't know the handle to the window, I.e. getting called before Spawn(),
-     * or on a Prompt dialog.
-     */
-    if (handle == nullptr || callback_map.find(handle) == callback_map.end())
+    SetLastError(ERROR_SUCCESS);
+    if (m_handle == nullptr)
     {
         SetLastError(ERROR_CAN_NOT_COMPLETE);
         return -1;
     }
-    return ::SendMessage(handle, msg, w_param, l_param);
+    return ::SendMessageW(m_handle, msg, w_param, l_param);
 }
 
 LRESULT DlgBase::SendDlgItemMessage(int item_id, UINT msg, WPARAM w_param, LPARAM l_param)
 {
-    /*
-     * If we don't know the handle to the window, I.e. getting called before Spawn(),
-     * or on a Prompt dialog.
-     */
-    if (handle == nullptr || callback_map.find(handle) == callback_map.end())
+    SetLastError(ERROR_SUCCESS);
+    if (m_handle == nullptr)
     {
         SetLastError(ERROR_CAN_NOT_COMPLETE);
         return -1;
     }
-    return ::SendDlgItemMessage(handle, item_id, msg, w_param, l_param);
+    return ::SendDlgItemMessageW(m_handle, item_id, msg, w_param, l_param);
+}
+
+BOOL DlgBase::ShowDialogBox(int show_window_cmd)
+{
+    SetLastError(ERROR_SUCCESS);
+    if (m_handle == nullptr)
+    {
+        SetLastError(ERROR_CAN_NOT_COMPLETE);
+        return FALSE;
+    }
+    return ::ShowWindow(m_handle, show_window_cmd);
+}
+
+BOOL DlgBase::UpdateWindow()
+{
+    SetLastError(ERROR_SUCCESS);
+    if (m_handle == nullptr)
+    {
+        SetLastError(ERROR_CAN_NOT_COMPLETE);
+        return FALSE;
+    }
+    return ::UpdateWindow(m_handle);
+}
+
+bool DlgBase::AddTabPageToTabControl(HWND tab_control, unsigned int pos, LPTCITEMW data)
+{
+    if (m_handle == nullptr)
+    {
+        return false;
+    }
+    /*
+     * TODO: More error handling
+     * -- Warepire
+     */
+    ::SendMessageW(tab_control, TCM_INSERTITEM, pos, reinterpret_cast<LPARAM>(data));
+    /*
+     * Re-position the window to fit within the tab space.
+     */
+    RECT new_pos;
+    ::GetClientRect(m_handle, &new_pos);
+    ::SendMessageW(tab_control, TCM_ADJUSTRECT, FALSE, reinterpret_cast<LPARAM>(&new_pos));
+    ::SetWindowPos(m_handle, NULL, new_pos.left, new_pos.top, NULL, NULL, SWP_NOSIZE);
+
+    return true;
 }
 
 INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param)
+{
+    if (msg == WM_INITDIALOG)
+    {
+        /*
+         * Window init extra step: Map the DlgBase pointer to the window handle.
+         * Then re-use the LPARAM to send what the owner wanted to pass to the callback.
+         */
+        LParamData* data = reinterpret_cast<LParamData*>(l_param);
+        ms_hwnd_to_dlgbase_map[window] = data->dialog;
+        l_param = data->original_data;
+        return data->dialog->LocalCallback(window, msg, w_param, l_param);
+    }
+
+    /*
+     * Find the callback in the map. If we cannot find it, return FALSE as it is impossible to
+     * handle a message we don't have a callback for.
+     */
+    auto it = ms_hwnd_to_dlgbase_map.find(window);
+    if (it == ms_hwnd_to_dlgbase_map.end())
+    {
+        return FALSE;
+    }
+    DlgBase* dialog = it->second;
+
+
+    if (msg == WM_NCDESTROY)
+    {
+        /*
+         * Special case, so that we don't just allocate more and more memory.
+         * Drop the mapping before calling the LocalCallback, as the window is being destroyed.
+         */
+        ms_hwnd_to_dlgbase_map.erase(it);
+        return dialog->LocalCallback(window, msg, w_param, l_param);
+    }
+
+    return dialog->m_callback(window, msg, w_param, l_param);
+}
+
+INT_PTR DlgBase::LocalCallback(HWND window, UINT msg, WPARAM w_param, LPARAM l_param)
 {
     switch (msg)
     {
     case WM_INITDIALOG:
         /*
-         * Map the callback to the HWND. Then re-use the LPARAM to send what the owner wanted to
-         * pass to the callback.
+         * The window handle must be saved here instead of in the SpawnDialogBox method,
+         * otherwise the PROMPT-mode dialog boxes never have their handle saved.
+         * When creating a TabPage, the Create[X]IndirectParam() method will return NULL if
+         * the TabPage does not have a parent. Other dialogs will just be "orphans" instead,
+         * which isn't great either.
          */
-        callback_map[window] = (reinterpret_cast<LParamData*>(l_param))->callback;
-        l_param = (reinterpret_cast<LParamData*>(l_param))->original_data;
+        m_handle = window;
         break;
-    case WM_DESTROY:
-        {
-            /*
-             * Special case, so that we don't just allocate more and more memory.
-             * Drop the callback BEFORE calling it, as the window is about to get destroyed.
-             */
-            DlgProcCallback callback = callback_map[window];
-            callback_map.erase(window);
-            return callback(window, msg, w_param, l_param);
-        }
+    case WM_NCDESTROY:
+        m_handle = nullptr;
+        break;
+    default:
+        break;
     }
-    /*
-     * Every "sub-window" created (i.e. objects) will also come through here,
-     * in that case, just return FALSE, saying we didn't handle the message.
-     * TODO: Breaks editable ListView?
-     */
-    try
-    {
-        return callback_map.at(window)(window, msg, w_param, l_param);
-    }
-    catch (std::out_of_range&)
-    {
-        return FALSE;
-    }
+    return m_callback(window, msg, w_param, l_param);
 }
