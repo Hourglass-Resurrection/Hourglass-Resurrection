@@ -128,7 +128,7 @@ void Menu::AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, 
 
     if (type != MFT_SEPARATOR)
     {
-        wcscpy(reinterpret_cast<WCHAR*>(&(menu[iterator])), name.c_str());
+        swprintf(reinterpret_cast<WCHAR*>(&(menu[iterator])), name.size(), name.c_str());
     }
 }
 
