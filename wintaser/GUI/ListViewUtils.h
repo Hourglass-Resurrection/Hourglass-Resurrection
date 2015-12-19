@@ -1,3 +1,9 @@
+/*
+ * (c) 2015- Hourglass Resurrection Team
+ * Hourglass Resurrection is licensed under GPL v2.
+ * Refer to the file COPYING.txt in the project root.
+ */
+
 #pragma once
 
 #include <Windows.h>
@@ -25,7 +31,7 @@
 class ListViewUtils
 {
 public:
-    enum CheckboxStates : int
+    enum CheckboxStates : INT
     {
         CHECKBOX_STATE_UNCHECKED = 0,
         CHECKBOX_STATE_CHECKED = 1,
@@ -37,37 +43,34 @@ public:
     bool EnableGridView();
     bool EnableCheckboxes();
 
-    bool AddColumn(int format, std::wstring name, int width, bool protect);
+    bool AddColumn(INT format, const std::wstring& name, INT width, bool protect);
     /*
      * Add an item to the ListView, an entire row must be completed before starting the next.
      */
-    bool AddCheckboxItem(int column, int state);
-    bool AddTextItem(int column, std::wstring text);
+    bool AddCheckboxItem(INT column, INT state);
+    bool AddTextItem(INT column, const std::wstring& text);
 
-    bool DeleteItem(int item);
+    bool DeleteItem(INT item);
 
 private:
-    HWND listview;
-    HWND edit_control;
-    HWND parent;
-    int num_columns;
+    HWND m_parent;
+    HWND m_listview;
+    WNDPROC m_listview_previous_cb;
 
-    bool enabled_editing;
-    bool enabled_checkboxes;
+    INT m_num_columns;
+    bool m_editing_enabled;
+    bool m_checkboxes_enabled;
 
-    std::set<int> protected_columns;
-    std::set<int> checkbox_columns;
+    std::set<INT> m_protected_columns;
+    std::set<INT> m_checkbox_columns;
 
-    LRESULT ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-    WNDPROC listview_previous_cb;
-    WNDPROC editcontrol_prebious_cb;
+    HWND m_editcontrol;
+    HFONT m_editcontrol_font;
+    WNDPROC m_editcontrol_previous_cb;
+    INT m_item_being_edited;
+    INT m_subitem_being_edited;
 
-    int item_being_edited;
-    int subitem_being_edited;
-
-    HFONT edit_control_font;
-
-    static std::map<HWND, ListViewUtils*> list_view_utils_by_handle;
-
+    static std::map<HWND, ListViewUtils*> ms_listviewutils_by_handle;
     static LRESULT CALLBACK BaseCallback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    LRESULT ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 };

@@ -26,16 +26,17 @@ public:
     Menu();
     ~Menu();
 
-    void AddMenuCategory(std::wstring name, DWORD id, bool enabled, bool last);
-    void AddSubMenu(std::wstring name, DWORD id, bool enabled, bool last);
-    void AddMenuItem(std::wstring name, DWORD id, bool enabled, bool last, bool default);
-    void AddCheckableMenuItem(std::wstring name, DWORD id, bool enabled, bool checked, bool last);
+    void AddMenuCategory(const std::wstring& name, DWORD id, bool enabled, bool last);
+    void AddSubMenu(const std::wstring& name, DWORD id, bool enabled, bool last);
+    void AddMenuItem(const std::wstring& name, DWORD id, bool enabled, bool last, bool default);
+    void AddCheckableMenuItem(const std::wstring& name, DWORD id,
+                              bool enabled, bool checked, bool last);
     void AddMenuItemSeparator();
 
     bool AttachMenu(HWND window);
 private:
 
-    void AddMenuObject(std::wstring& name, DWORD id, DWORD type, DWORD state, WORD res);
-    std::vector<BYTE> menu;
-    HMENU loaded_menu;
+    void AddMenuObject(const std::wstring& name, DWORD id, DWORD type, DWORD state, WORD res);
+    std::vector<BYTE> m_menu;
+    HMENU m_loaded_menu;
 };

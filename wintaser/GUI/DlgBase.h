@@ -39,7 +39,7 @@
  * The purpose of SendMessage and SendDlgItemMessage is to send messages to the window and it's
  * controls, without keeping track of the HWND.
  * Don't just proxy this call in your window class, wrap it to obscure the message IDs as well.
- * You're meant to have class members that looks like this (example code, do not actually use):
+ * You're meant to have class members that look like this (example code, do not actually use):
  * bool SendCloseMessage()
  * {
  *    SendMessage(WM_CLOSE, 0, 0);
@@ -75,13 +75,19 @@ class DlgBase
 protected:
     using DlgProcCallback = std::function<INT_PTR(HWND,UINT,WPARAM,LPARAM)>;
 
+    enum class DlgType
+    {
+        NORMAL,
+        TAB_PAGE,
+    };
+
     enum class DlgMode
     {
         PROMPT,
         INDIRECT,
     };
 
-    DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool tab_page = false);
+    DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h, DlgType type);
     ~DlgBase();
 
     /*
@@ -89,17 +95,17 @@ protected:
      * -- Warepire
      */
 
-    void AddPushButton(std::wstring caption,
+    void AddPushButton(const std::wstring& caption,
                        DWORD id,
                        SHORT x, SHORT y,
                        SHORT w, SHORT h,
                        bool default);
-    void AddCheckbox(std::wstring caption,
+    void AddCheckbox(const std::wstring& caption,
                      DWORD id,
                      SHORT x, SHORT y,
                      SHORT w, SHORT h,
                      bool right_hand);
-    void AddRadioButton(std::wstring caption,
+    void AddRadioButton(const std::wstring& caption,
                         DWORD id,
                         SHORT x, SHORT y,
                         SHORT w, SHORT h,
@@ -107,9 +113,9 @@ protected:
                         bool group_with_prev);
     void AddUpDownControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
     void AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line);
-    void AddStaticText(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
+    void AddStaticText(const std::wstring& caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
     void AddStaticPanel(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
-    void AddGroupBox(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
+    void AddGroupBox(const std::wstring& caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h);
     void AddDropDownList(DWORD id, SHORT x, SHORT y, SHORT w, SHORT drop_distance);
     void AddListView(DWORD id,
                      SHORT x, SHORT y,
@@ -122,7 +128,7 @@ protected:
     INT_PTR SpawnDialogBox(const DlgBase* parent,
                            DlgProcCallback callback,
                            LPARAM init_param,
-                           DlgMode mode);
+                           const DlgMode mode);
 
     LRESULT SendMessage(UINT msg, WPARAM w_param, LPARAM l_param);
     LRESULT SendDlgItemMessage(int item_id, UINT msg, WPARAM w_param, LPARAM l_param);
@@ -132,8 +138,8 @@ protected:
 
 private:
     void AddObject(DWORD ex_style, DWORD style,
-                   std::wstring window_class,
-                   std::wstring& caption,
+                   const std::wstring& window_class,
+                   const std::wstring& caption,
                    DWORD id,
                    SHORT x, SHORT y,
                    SHORT w, SHORT h);
@@ -148,12 +154,12 @@ private:
 
     struct LParamData
     {
-        LParamData(LPARAM init_data, DlgBase* dlg) :
-            original_data(init_data),
-            dialog(dlg) {}
+        LParamData(LPARAM init_data, DlgBase* dialog) :
+            m_original_data(init_data),
+            m_dialog(dialog) {}
 
-        LPARAM original_data;
-        DlgBase* dialog;
+        LPARAM m_original_data;
+        DlgBase* m_dialog;
     };
 
     static std::map<HWND, DlgBase*> ms_hwnd_to_dlgbase_map;

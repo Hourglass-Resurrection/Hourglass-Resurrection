@@ -16,6 +16,13 @@
 #include "DlgBase.h"
 
 /*
+ * wmemcpy is used over wcscpy, swprintf etc in this code. This is due to these methods end up
+ * corrupting the DLGTEMPLATE structures causing Windows to read memory continously until it
+ * reaches a memory access violation exception (and thus the program crashes).
+ * -- Warepire
+ */
+
+/*
  * Reference DLGTEMPLATEEX structure:
  * struct DLGTEMPLATEEX
  * {
@@ -58,39 +65,42 @@
 
 namespace
 {
+    enum : DWORD
+    {
     /*
      * The title must always contain at least a NULL character.
      * The typeface is the string L"MS Shell Dlg\0".
      */
-    static const DWORD DLGTEMPLATEEX_BASE_SIZE = (sizeof(WORD) * 2) +
-                                                 (sizeof(DWORD) * 3) +
-                                                 (sizeof(WORD) * 1) +
-                                                 (sizeof(short) * 4) +
-                                                 (sizeof(WORD) * 1) +
-                                                 (sizeof(WORD) * 1) +
-                                                 (sizeof(WCHAR) * 1) +
-                                                 (sizeof(WORD) * 2) +
-                                                 (sizeof(BYTE) * 2) +
-                                                 (sizeof(WCHAR) * 13);
+        DLGTEMPLATEEX_BASE_SIZE = (sizeof(WORD) * 2) +
+                                  (sizeof(DWORD) * 3) +
+                                  (sizeof(WORD) * 1) +
+                                  (sizeof(SHORT) * 4) +
+                                  (sizeof(WORD) * 1) +
+                                  (sizeof(WORD) * 1) +
+                                  (sizeof(WCHAR) * 1) +
+                                  (sizeof(WORD) * 2) +
+                                  (sizeof(BYTE) * 2) +
+                                  (sizeof(WCHAR) * 13),
 
-    static const DWORD CDLGITEMS_OFFSET =  (sizeof(WORD) * 2) +
-                                           (sizeof(DWORD) * 3);
+        CDLGITEMS_OFFSET = (sizeof(WORD) * 2) +
+                           (sizeof(DWORD) * 3),
 
     /*
      * The windowClass will be evaluated during object construction.
      * The title must always contain at least a NULL character.
      */
-    static const DWORD DLGITEMTEMPLATEEX_BASE_SIZE = (sizeof(DWORD) * 3) +
-                                                     (sizeof(short) * 4) +
-                                                     (sizeof(DWORD) * 1) +
-                                                     (sizeof(WCHAR) * 0) +
-                                                     (sizeof(WCHAR) * 1) +
-                                                     (sizeof(WORD) * 1);
+        DLGITEMTEMPLATEEX_BASE_SIZE = (sizeof(DWORD) * 3) +
+                                      (sizeof(SHORT) * 4) +
+                                      (sizeof(DWORD) * 1) +
+                                      (sizeof(WCHAR) * 0) +
+                                      (sizeof(WCHAR) * 1) +
+                                      (sizeof(WORD) * 1),
+    };
 };
 
 std::map<HWND, DlgBase*> DlgBase::ms_hwnd_to_dlgbase_map;
 
-DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool tab_page) :
+DlgBase::DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h, DlgType type) :
     m_handle(nullptr)
 {
     DWORD iterator = 0;
@@ -104,16 +114,16 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool 
     /*
      * Make sure the size is DWORD aligned to put the first child objects at the right offset.
      */
-    struct_size += struct_size % sizeof(DWORD);
+    struct_size += (sizeof(DWORD) - (struct_size % sizeof(DWORD))) % sizeof(DWORD);
 
     m_window.resize(struct_size);
 
     /*
      * Required values
      */
-    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0x0001;
+    *reinterpret_cast<LPWORD>(&(m_window[iterator])) = 0x0001;
     iterator += sizeof(WORD);
-    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0xFFFF;
+    *reinterpret_cast<LPWORD>(&(m_window[iterator])) = 0xFFFF;
     iterator += sizeof(WORD);
 
     /*
@@ -121,17 +131,20 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool 
      */
     iterator += (sizeof(DWORD) * 2);
 
-    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = DS_SETFONT | DS_FIXEDSYS;
-    if (tab_page == true)
+    *reinterpret_cast<LPDWORD>(&(m_window[iterator])) = DS_SETFONT | DS_FIXEDSYS;
+    switch (type)
     {
-        *reinterpret_cast<DWORD*>(&(m_window[iterator])) |= WS_CHILD | WS_CLIPSIBLINGS |
-                                                            WS_VISIBLE;
-    }
-    else
-    {
-        *reinterpret_cast<DWORD*>(&(m_window[iterator])) |= DS_MODALFRAME | WS_POPUP |
-                                                            WS_CAPTION | WS_SYSMENU |
-                                                            WS_MINIMIZEBOX;
+    case DlgType::NORMAL:
+        *reinterpret_cast<LPDWORD>(&(m_window[iterator])) |= DS_MODALFRAME | WS_POPUP |
+                                                             WS_CAPTION | WS_SYSMENU |
+                                                             WS_MINIMIZEBOX;
+        break;
+    case DlgType::TAB_PAGE:
+        *reinterpret_cast<LPDWORD>(&(m_window[iterator])) |= WS_CHILD | WS_CLIPSIBLINGS |
+                                                             WS_VISIBLE;
+        break;
+    default:
+        break;
     }
     iterator += sizeof(DWORD);
 
@@ -140,14 +153,14 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool 
      */
     iterator += sizeof(WORD);
 
-    *reinterpret_cast<short*>(&(m_window[iterator])) = x;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = y;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = w;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = h;
-    iterator += sizeof(short);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = x;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = y;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = w;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = h;
+    iterator += sizeof(SHORT);
 
     /*
      * Leave menu and windowClass alone
@@ -156,7 +169,7 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool 
 
     if (caption.empty() == false)
     {
-        wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+        wmemcpy(reinterpret_cast<LPWSTR>(&(m_window[iterator])),
                 caption.c_str(),
                 caption.size());
         iterator += (sizeof(WCHAR) * caption.size());
@@ -166,26 +179,26 @@ DlgBase::DlgBase(std::wstring caption, SHORT x, SHORT y, SHORT w, SHORT h, bool 
     /*
      * pointsize 8
      */
-    *reinterpret_cast<WORD*>(&(m_window[iterator])) = 0x0008;
+    *reinterpret_cast<LPWORD>(&(m_window[iterator])) = 0x0008;
     iterator += sizeof(WORD);
 
-    *reinterpret_cast<WORD*>(&(m_window[iterator])) = static_cast<WORD>(FW_NORMAL);
+    *reinterpret_cast<LPWORD>(&(m_window[iterator])) = static_cast<WORD>(FW_NORMAL);
     iterator += sizeof(WORD);
     m_window[iterator] = static_cast<BYTE>(FALSE);
     iterator += sizeof(BYTE);
     m_window[iterator] = 0x01;
     iterator += sizeof(BYTE);
 
-    wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+    wmemcpy(reinterpret_cast<LPWSTR>(&(m_window[iterator])),
             L"MS Shell Dlg",
-            wcslen(L"MS Shell Dlg"));
+            ARRAYSIZE(L"MS Shell Dlg") - 1);
 }
 
 DlgBase::~DlgBase()
 {
 }
 
-void DlgBase::AddPushButton(std::wstring caption,
+void DlgBase::AddPushButton(const std::wstring& caption,
                             DWORD id,
                             SHORT x, SHORT y,
                             SHORT w, SHORT h,
@@ -200,7 +213,7 @@ void DlgBase::AddPushButton(std::wstring caption,
               w, h);
 }
 
-void DlgBase::AddCheckbox(std::wstring caption,
+void DlgBase::AddCheckbox(const std::wstring& caption,
                           DWORD id,
                           SHORT x, SHORT y,
                           SHORT w, SHORT h,
@@ -215,7 +228,7 @@ void DlgBase::AddCheckbox(std::wstring caption,
               w, h);
 }
 
-void DlgBase::AddRadioButton(std::wstring caption,
+void DlgBase::AddRadioButton(const std::wstring& caption,
                              DWORD id,
                              SHORT x, SHORT y,
                              SHORT w, SHORT h,
@@ -234,7 +247,7 @@ void DlgBase::AddRadioButton(std::wstring caption,
 
 void DlgBase::AddUpDownControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
 {
-    AddObject(0, WS_TABSTOP, L"msctls_updown32", std::wstring(), id, x, y, w, h);
+    AddObject(0, WS_TABSTOP, L"msctls_updown32", L"", id, x, y, w, h);
 }
 
 void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool multi_line)
@@ -244,23 +257,25 @@ void DlgBase::AddEditControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h, bool 
     AddObject(0,
               WS_GROUP | WS_BORDER | WS_TABSTOP | style,
               L"\xFFFF\x0081",
-              std::wstring(),
+              L"",
               id,
               x, y,
               w, h);
 }
 
-void DlgBase::AddStaticText(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
+void DlgBase::AddStaticText(const std::wstring& caption, DWORD id,
+                            SHORT x, SHORT y, SHORT w, SHORT h)
 {
     AddObject(0, SS_LEFT, L"\xFFFF\x0082", caption, id, x, y, w, h);
 }
 
 void DlgBase::AddStaticPanel(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
 {
-    AddObject(0, SS_GRAYRECT, L"\xFFFF\x0082", std::wstring(), id, x, y, w, h);
+    AddObject(0, SS_GRAYRECT, L"\xFFFF\x0082", L"", id, x, y, w, h);
 }
 
-void DlgBase::AddGroupBox(std::wstring caption, DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
+void DlgBase::AddGroupBox(const std::wstring& caption, DWORD id,
+                          SHORT x, SHORT y, SHORT w, SHORT h)
 {
     AddObject(WS_EX_TRANSPARENT, BS_GROUPBOX, L"\xFFFF\x0080", caption, id, x, y, w, h);
 }
@@ -270,7 +285,7 @@ void DlgBase::AddDropDownList(DWORD id, SHORT x, SHORT y, SHORT w, SHORT drop_di
     AddObject(0,
               WS_GROUP | WS_VSCROLL | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS,
               L"\xFFFF\x0085",
-              std::wstring(),
+              L"",
               id,
               x, y,
               w,
@@ -288,7 +303,7 @@ void DlgBase::AddListView(DWORD id,
     AddObject(0,
               WS_GROUP | WS_BORDER | WS_TABSTOP | style,
               L"SysListView32",
-              std::wstring(),
+              L"",
               id,
               x, y,
               w, h);
@@ -296,17 +311,17 @@ void DlgBase::AddListView(DWORD id,
 
 void DlgBase::AddIPEditControl(DWORD id, SHORT x, SHORT y)
 {
-    AddObject(0, WS_GROUP | WS_TABSTOP, L"SysIPAddress32", std::wstring(), id, x, y, 100, 15);
+    AddObject(0, WS_GROUP | WS_TABSTOP, L"SysIPAddress32", L"", id, x, y, 100, 15);
 }
 
 void DlgBase::AddTabControl(DWORD id, SHORT x, SHORT y, SHORT w, SHORT h)
 {
-    AddObject(0, WS_GROUP, L"SysTabControl32", std::wstring(), id, x, y, w, h);
+    AddObject(0, WS_GROUP, L"SysTabControl32", L"", id, x, y, w, h);
 }
 
 void DlgBase::AddObject(DWORD ex_style, DWORD style,
-                        std::wstring window_class,
-                        std::wstring& caption,
+                        const std::wstring& window_class,
+                        const std::wstring& caption,
                         DWORD id,
                         SHORT x, SHORT y,
                         SHORT w, SHORT h)
@@ -324,7 +339,8 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
 
     new_size += (sizeof(WCHAR) * caption.size());
     new_size += iterator;
-    new_size += new_size % sizeof(DWORD);
+
+    new_size += (sizeof(DWORD) - (new_size % sizeof(DWORD))) % sizeof(DWORD);
 
     m_window.resize(new_size);
 
@@ -333,24 +349,24 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
      */
     iterator += sizeof(DWORD);
 
-    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = ex_style;
+    *reinterpret_cast<LPDWORD>(&(m_window[iterator])) = ex_style;
     iterator += sizeof(DWORD);
-    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = WS_CHILD | WS_VISIBLE | style;
-    iterator += sizeof(DWORD);
-
-    *reinterpret_cast<short*>(&(m_window[iterator])) = x;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = y;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = w;
-    iterator += sizeof(short);
-    *reinterpret_cast<short*>(&(m_window[iterator])) = h;
-    iterator += sizeof(short);
-
-    *reinterpret_cast<DWORD*>(&(m_window[iterator])) = id;
+    *reinterpret_cast<LPDWORD>(&(m_window[iterator])) = WS_CHILD | WS_VISIBLE | style;
     iterator += sizeof(DWORD);
 
-    wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = x;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = y;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = w;
+    iterator += sizeof(SHORT);
+    *reinterpret_cast<PSHORT>(&(m_window[iterator])) = h;
+    iterator += sizeof(SHORT);
+
+    *reinterpret_cast<LPDWORD>(&(m_window[iterator])) = id;
+    iterator += sizeof(DWORD);
+
+    wmemcpy(reinterpret_cast<LPWSTR>(&(m_window[iterator])),
             window_class.c_str(),
             window_class.size());
     iterator += (sizeof(WCHAR) * window_class.size());
@@ -361,20 +377,20 @@ void DlgBase::AddObject(DWORD ex_style, DWORD style,
 
     if (caption.empty() == false)
     {
-        wmemcpy(reinterpret_cast<WCHAR*>(&(m_window[iterator])),
+        wmemcpy(reinterpret_cast<LPWSTR>(&(m_window[iterator])),
                 caption.c_str(),
                 caption.size());
         iterator += (sizeof(WCHAR) * caption.size());
     }
     iterator += sizeof(WCHAR);
 
-    *reinterpret_cast<WORD*>(&(m_window[CDLGITEMS_OFFSET])) += 1;
+    *reinterpret_cast<LPWORD>(&(m_window[CDLGITEMS_OFFSET])) += 1;
 }
 
 INT_PTR DlgBase::SpawnDialogBox(const DlgBase* parent,
                                 DlgProcCallback callback,
                                 LPARAM init_param,
-                                DlgMode mode)
+                                const DlgMode mode)
 {
     SetLastError(ERROR_SUCCESS);
     INT_PTR result;
@@ -383,7 +399,6 @@ INT_PTR DlgBase::SpawnDialogBox(const DlgBase* parent,
 
     if (m_handle == nullptr)
     {
-
         m_callback = callback;
 
         switch (mode)
@@ -493,9 +508,9 @@ INT_PTR CALLBACK DlgBase::BaseCallback(HWND window, UINT msg, WPARAM w_param, LP
          * Then re-use the LPARAM to send what the owner wanted to pass to the callback.
          */
         LParamData* data = reinterpret_cast<LParamData*>(l_param);
-        ms_hwnd_to_dlgbase_map[window] = data->dialog;
-        l_param = data->original_data;
-        return data->dialog->LocalCallback(window, msg, w_param, l_param);
+        ms_hwnd_to_dlgbase_map[window] = data->m_dialog;
+        l_param = data->m_original_data;
+        return data->m_dialog->LocalCallback(window, msg, w_param, l_param);
     }
 
     /*
