@@ -8,7 +8,7 @@
 
 #include <Windows.h>
 
-#include <vector>
+#include <list>
 
 /*
  * Memory Manager
@@ -20,6 +20,16 @@
  * Another benefit to Shared Memory Objects is that it becomes easier to manage save states with
  * these over regular RAM pages as we can have full READ / WRITE access from the executable side,
  * as well as shared ownership.
+ *
+ * There is a downside to this approach, and that is if the games use any libc, libc++ or STL
+ * contaners in it's own code, as there will be 2 layers doing the same thing, which means both the
+ * game and we will be keeping a memory map, wasting a bit of RAM. This is unavoidable.
+ * Microsoft also opted for enforcing an Allocation Granularity that may be much larger than the
+ * page size in the system. This is to be fully compatible with the exotic Alpha AVX RISC CPU.
+ * The compatibility with this CPU puts extra strain on this implementation, as it becomes extra
+ * important to put small allocations in the same block, or code like
+ * "char* ptr = malloc(sizeof(char));" is going to provide a very nice chock, instead of allocating
+ * a small number of bytes, it will allocate at least 64 kilobytes.
  *
  * The memory manager is also responsible for the heap allocations done by the DLL itself, the way
  * it is solved is that the Allocation function takes an optional boolean to allocate internally.
@@ -45,6 +55,7 @@
  *
  * Reference material (including reference material linked by the webpage):
  * https://msdn.microsoft.com/en-us/library/windows/desktop/aa366912%28v=vs.85%29.aspx
+ * https://blogs.msdn.microsoft.com/oldnewthing/20031008-00/?p=42223/
  *
  * -- Warepire
  */
@@ -56,13 +67,10 @@ public:
      * This is to make sure we do not try to allocate memory where memory is already allocted.
      */
     static void Init();
-    static void* Allocate(unsigned int bytes, unsigned int flags, bool internal = false);
-    /*
-     * This one is so that we can mark used file addresses as "used" in our manager, this way we
-     * can produce valid addresses for our allocations.
-     */
-    static void RegisterExistingAllocation(void* address, unsigned int bytes);
-    static void Deallocate(void* object);
+
+    static LPVOID Allocate(UINT bytes, UINT flags, bool internal = false);
+    static LPVOID Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal = false);
+    static void Deallocate(LPVOID address);
 };
 
 /*
@@ -126,7 +134,7 @@ public:
         /*
          * Placement-new, will not attempt to allocate space.
          */
-        ::new (reinterpret_cast<void*>(p)) U(std::forward<Args>(args)...);
+        ::new (reinterpret_cast<LPVOID>(p)) U(std::forward<Args>(args)...);
     }
     template<class U>
     void destroy(U* p)
@@ -164,39 +172,38 @@ private:
     template<class T>
     friend class ManagedAllocator;
 
-    static bool memory_manager_inited;
+    static bool ms_memory_manager_inited;
     static const ptrdiff_t LARGE_ADDRESS_SPACE_START = 0x80000000;
     static const ptrdiff_t LARGE_ADDRESS_SPACE_END = 0xC0000000;
-    static ptrdiff_t minimum_allowed_address;
-    struct MemoryObjectDescription
+    static ptrdiff_t ms_minimum_allowed_address;
+    static ptrdiff_t ms_maximum_allowed_address;
+    static DWORD ms_allocation_granularity;
+
+    struct MemoryBlockDescription
     {
-        void* address;
-        /*
-         * INVALID_HANDLE_VALUE means that we must never delete the address ourselves.
-         * An INVALID_HANDLE_VALUE entry means that this was allocated by Windows.
-         */
-        HANDLE object;
-        unsigned int bytes;
-        unsigned int flags;
+        LPVOID block_address;
+        UINT bytes;
+        bool free;
     };
 
-    /*
-     * Do NOT add objects to this vector manually, use the below function.
-     */
-    static std::vector<MemoryObjectDescription,
-                       ManagedAllocator<MemoryObjectDescription>> memory_objects;
+    struct MemoryObjectDescription
+    {
+        LPVOID address;
+        HANDLE object;
+        UINT bytes;
+        UINT flags;
+        std::list<MemoryBlockDescription,
+                  ManagedAllocator<MemoryBlockDescription>> blocks;
+    };
+
+    static std::list<MemoryObjectDescription,
+                     ManagedAllocator<MemoryObjectDescription>> ms_memory_objects;
+
+    static LPVOID AllocateInExistingBlock(UINT bytes, bool internal = false);
+    static LPVOID AllocateWithNewBlock(UINT bytes, UINT flags, bool internal = false);
 
     /*
-     * Helper function to insert MemoryObjectDescriptions sorted, this way it becomes easier
-     * to find the best spots in memory to place new allocations.
+     * Used by the ManagedAllocator class.
      */
-    static void InsertMemoryObjectDescription(MemoryObjectDescription& mod);
-
-    /*
-     * Returns a nullptr if no suitable address was found.
-     * This lets MapViewOfFileEx try on it's own, but if we failed, the chances are not good.
-     */
-    static void* FindBestFitAddress(unsigned int bytes, bool internal = false);
-
     static SIZE_T FindLargestInternalGap();
 };
