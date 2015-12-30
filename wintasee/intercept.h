@@ -24,7 +24,7 @@
 	static int x__ = 0; \
 	x__++; \
 	x__++; \
-	if(x__==2){debugprintf("Function \""__FUNCTION__"\" got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function \""__FUNCTION__"\". This should never happen.", "Error", MB_ICONERROR);} \
+	if(x__==2){debugprintf("Function '" __FUNCTION__ "' got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function '" __FUNCTION__ "'. This should never happen.", "Error", MB_ICONERROR);} \
 	x__++; \
 	x__++;
 #define INTERNAL_TRAMPOLINE_DEF { TRAMPOLINE_CONTENTS return 0; }

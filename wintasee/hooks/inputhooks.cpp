@@ -1343,7 +1343,7 @@ return MMSYSERR_NODRIVER; // NYI
 	char threadTypeName[64];
 	sprintf(threadTypeName, "JoypadThread(%d)", uJoyID);
 	tls.curThreadCreateName = threadTypeName;
-debuglog(LCF_JOYPAD|LCF_UNTESTED, "in "__FUNCTION__", tls.curThreadCreateName = %s\n", tls.curThreadCreateName);
+debuglog(LCF_JOYPAD|LCF_UNTESTED, "in " __FUNCTION__ ", tls.curThreadCreateName = %s\n", tls.curThreadCreateName);
 
 	MMRESULT rv = joyGetPosEx(uJoyID, pji);
 
