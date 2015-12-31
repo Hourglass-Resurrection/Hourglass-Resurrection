@@ -1298,7 +1298,7 @@ struct MyClassFactory : IClassFactory
 		//ENTER();
 		ULONG count = m_cf->Release();
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 
 		return count;
 	}

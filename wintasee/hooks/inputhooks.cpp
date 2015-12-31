@@ -323,7 +323,7 @@ public:
 		ULONG count = m_device->Release();
 		dinputdebugprintf(__FUNCTION__ " called (returned %d).\n", count);
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -988,7 +988,7 @@ public:
 		DINPUT_ENTER();
 		ULONG count = m_di->Release();
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 
 		return count;
 	}

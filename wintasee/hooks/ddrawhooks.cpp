@@ -215,7 +215,7 @@ struct MyDirectDrawSurface
 			videoMemoryBackupDirty[pThis] = FALSE;
 
 			void*& pixels = videoMemoryPixelBackup[pThis];
-			free(pixels);
+            MemoryManager::Deallocate(pixels);
 			pixels = NULL;
 		}
 		return rv;
@@ -1276,7 +1276,7 @@ public:
 		DDRAW_ENTER();
 		ULONG count = m_dd->Release();
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 
 		return count;
 	}

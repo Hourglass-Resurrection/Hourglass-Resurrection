@@ -750,15 +750,17 @@ public:
 
 	void* AllocBuffer(int numBytes, int alignment=4)
 	{
-#if _MSC_VER > 1310
-		if(buffer)
-			_aligned_free(buffer);
-		buffer = (char*)_aligned_malloc(numBytes, alignment);
-#else
-		if(buffer)
-			free(buffer);
-		buffer = (char*)malloc(numBytes);
-#endif
+//#if _MSC_VER > 1310
+//		if(buffer)
+//			_aligned_free(buffer);
+//		buffer = (char*)_aligned_malloc(numBytes, alignment);
+//#else
+        if (buffer)
+        {
+            MemoryManager::Deallocate(buffer);
+        }
+		buffer = static_cast<char*>(MemoryManager::Allocate(numBytes, 0, true));
+//#endif
 		return (void*)buffer;
 	}
 
@@ -770,11 +772,11 @@ public:
 		args.clear();
 		if(buffer)
 		{
-#if _MSC_VER > 1310
-			_aligned_free(buffer);
-#else
-			free(buffer);
-#endif
+//#if _MSC_VER > 1310
+//			_aligned_free(buffer);
+//#else
+            MemoryManager::Deallocate(buffer);
+//#endif
 			buffer = NULL;
 		}
 	}

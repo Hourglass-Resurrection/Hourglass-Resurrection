@@ -454,7 +454,7 @@ void TickMultiMediaTimers(DWORD time)
 				info->next->prev = info->prev;
 			if(info == ttiTail)
 				ttiTail = info->prev;
-			delete info;
+			MemoryManager::Deallocate(info);
 			info = next;
 		}
 		else

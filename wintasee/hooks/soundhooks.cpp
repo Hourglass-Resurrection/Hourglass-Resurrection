@@ -115,10 +115,10 @@ public:
 			soundBuffers.erase(found);
 		LeaveCriticalSection(&s_soundBufferListCS);
 		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
-		free(buffer);
-		free(lockBuf);
-		free(waveformat);
-		free(notifies);
+		MemoryManager::Deallocate(buffer);
+		MemoryManager::Deallocate(lockBuf);
+		MemoryManager::Deallocate(waveformat);
+		MemoryManager::Deallocate(notifies);
 		DeleteCriticalSection(&m_bufferCS);
 		DeleteCriticalSection(&m_lockBufferCS);
 	}
@@ -188,7 +188,7 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -493,7 +493,7 @@ public:
 		if(numRemainingUnlocksBeforeLeavingLockBufResident)
 		{
 			numRemainingUnlocksBeforeLeavingLockBufResident--;
-			free(lockBuf);
+			MemoryManager::Deallocate(lockBuf);
 			lockBuf = NULL;
 		}
 		ReplicateBufferIntoExtraAllocated();
@@ -540,7 +540,7 @@ public:
 		if(dwPositionNotifies > DSBNOTIFICATIONS_MAX || pcPositionNotifies == NULL)
 			return DSERR_INVALIDPARAM;
 
-		free(notifies);
+		MemoryManager::Deallocate(notifies);
 		numNotifies = 0;
 		notifies =
             static_cast<DSBPOSITIONNOTIFY*>
@@ -1118,7 +1118,7 @@ public:
 		tls.callerisuntrusted--;
 		//disableSelfTicking = dst;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -1551,7 +1551,7 @@ public:
 			count = --m_fallbackRefcount;
 		}
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		s_releasingDirectSound = false;
 
 		return count;
@@ -2196,7 +2196,7 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -2461,7 +2461,7 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
