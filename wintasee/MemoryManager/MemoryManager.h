@@ -125,7 +125,10 @@ public:
 
     size_type max_size() const
     {
-        return MemoryManagerInternal::FindLargestInternalGap();
+        /*
+         * Copy Microsoft's own implementation of max_size.
+         */
+        return static_cast<size_type>(-1) / sizeof(value_type);
     }
 
     template<class U, class... Args>
@@ -201,9 +204,4 @@ private:
 
     static LPVOID AllocateInExistingBlock(UINT bytes, bool internal = false);
     static LPVOID AllocateWithNewBlock(UINT bytes, UINT flags, bool internal = false);
-
-    /*
-     * Used by the ManagedAllocator class.
-     */
-    static SIZE_T FindLargestInternalGap();
 };

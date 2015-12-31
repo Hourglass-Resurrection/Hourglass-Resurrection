@@ -196,34 +196,6 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     return allocation;
 }
 
-/*
- * TODO: Broken
- */
-SIZE_T MemoryManagerInternal::FindLargestInternalGap()
-{
-    ptrdiff_t gap = 0;
-    ptrdiff_t this_gap;
-    ptrdiff_t last_memory_block_end = 0;
-    for (auto& mo : ms_memory_objects)
-    {
-        if (reinterpret_cast<ptrdiff_t>(mo.address) >= LARGE_ADDRESS_SPACE_START &&
-            reinterpret_cast<ptrdiff_t>(mo.address) < LARGE_ADDRESS_SPACE_END)
-        {
-            if (last_memory_block_end != 0)
-            {
-                this_gap =
-                    (last_memory_block_end - reinterpret_cast<ptrdiff_t>(mo.address));
-                if (gap < this_gap)
-                {
-                    gap = this_gap;
-                }
-            }
-            last_memory_block_end = reinterpret_cast<ptrdiff_t>(mo.address) + mo.bytes;
-        }
-    }
-    return static_cast<SIZE_T>(gap);
-}
-
 void MemoryManager::Init()
 {
     if (MemoryManagerInternal::ms_memory_manager_inited)
