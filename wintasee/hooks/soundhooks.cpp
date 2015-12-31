@@ -319,7 +319,7 @@ public:
 		EnterCriticalSection(&m_bufferCS);
 		bufferSize = min(max(bufferSize, DSBSIZE_MIN), DSBSIZE_MAX);
 		allocated = bufferSize;
-		buffer = (unsigned char*)realloc(buffer, allocated);
+		buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, 0, true));
 		memset(buffer, (waveformat->wBitsPerSample <= 8) ? 0x80 : 0, allocated);
 		LeaveCriticalSection(&m_bufferCS);
 
@@ -337,7 +337,7 @@ public:
 		int wfxsize = sizeof(WAVEFORMATEX);
 		if(pFormat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += pFormat->cbSize;
-		waveformat = (WAVEFORMATEX*)realloc(waveformat, wfxsize);
+		waveformat = static_cast<WAVEFORMATEX*>(MemoryManager::Reallocate(waveformat, wfxsize, 0, true));
 		memcpy(waveformat, pFormat, wfxsize);
 		if(pFormat->wFormatTag == WAVE_FORMAT_PCM)
 			waveformat->cbSize = 0;
@@ -353,7 +353,7 @@ public:
 		EnterCriticalSection(&m_lockBufferCS);
 
 		if(!lockBuf)
-			lockBuf = (unsigned char*)realloc(lockBuf, bufferSize);
+			lockBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(lockBuf, bufferSize, 0, true));
 		memcpy(lockBuf, buffer, bufferSize);
 
 		if(dwFlags & DSBLOCK_FROMWRITECURSOR)
@@ -656,7 +656,7 @@ public:
 			if(contiguousMixOutBufAllocated < contiguousMixOutBufSize+16)
 			{
 				contiguousMixOutBufAllocated = contiguousMixOutBufSize+16;
-				contiguousMixOutBuf = (unsigned char*)realloc(contiguousMixOutBuf, contiguousMixOutBufAllocated);
+				contiguousMixOutBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(contiguousMixOutBuf, contiguousMixOutBufAllocated, 0, true));
 			}
 			if(contiguousMixOutBufSize)
 				memset(contiguousMixOutBuf, (format.wBitsPerSample <= 8) ? 0x80 : 0, contiguousMixOutBufSize);
@@ -826,8 +826,8 @@ public:
 						{
 							EnterCriticalSection(&m_bufferCS);
 							allocated = unwrappedPlayCursor + waveformat->nBlockAlign;
-							buffer = (unsigned char*)realloc(buffer, allocated);
-							if(!buffer) { buffer = (unsigned char*)realloc(buffer, allocated); }
+							buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, 0, true));
+							if(!buffer) { buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, 0, true)); }
 							if(!buffer) { debuglog(LCF_ERROR, "FAILED TO ALLOCATE LOOP BUFFER\n"); }
 							ReplicateBufferIntoExtraAllocated();
 							LeaveCriticalSection(&m_bufferCS);

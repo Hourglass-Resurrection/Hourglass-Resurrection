@@ -812,7 +812,7 @@ static void BackupVideoMemory8(IDirect3DSurface8* pThis)
 		{
 			int size = lockedRect.Pitch * desc.Height;
 			void*& pixels = surf8.videoMemoryPixelBackup;
-			pixels = realloc(pixels, size);
+			pixels = MemoryManager::Reallocate(pixels, size, 0, true);
 			memcpy(pixels, lockedRect.pBits, size);
 			pThis->UnlockRect();
 		}

@@ -1035,7 +1035,7 @@ struct MyDirectDrawSurface
 				if(SUCCEEDED(Lock(pThis, NULL, &desc, DDLOCK_WAIT|DDLOCK_READONLY|DDLOCK_NOSYSLOCK, NULL)))
 				{
 					int size = desc.lPitch * desc.dwHeight;
-					pixels = realloc(pixels, size);
+					pixels = MemoryManager::Reallocate(pixels, size, 0, true);
 					memcpy(pixels, desc.lpSurface, size);
 					Unlock(pThis, NULL);
 					ddrawdebugprintf("videoMemoryPixelBackup[0x%X] is 0x%X, size=0x%X\n", pThis, pixels, size);
