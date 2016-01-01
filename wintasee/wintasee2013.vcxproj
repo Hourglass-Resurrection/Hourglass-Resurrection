@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dettime.cpp" />
+    <ClCompile Include="hooks\memoryhooks.cpp" />
     <ClCompile Include="hooks\Xinputhooks.cpp" />
     <ClCompile Include="intercept.cpp" />
     <ClCompile Include="MemoryManager\MemoryManager.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="phasedetection.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="tls.h" />
+    <ClInclude Include="tramps\memorytramps.h" />
     <ClInclude Include="tramps\Xinputtramps.h" />
     <ClInclude Include="wintasee.h" />
     <ClInclude Include="tramps\alltramps.h" />

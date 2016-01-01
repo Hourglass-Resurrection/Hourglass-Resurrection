@@ -128,6 +128,7 @@ void ApplyWindowIntercepts();
 void ApplyInputIntercepts();
 void ApplyWaitIntercepts();
 void ApplyFileIntercepts();
+void ApplyMemoryIntercepts();
 void ApplyRegistryIntercepts();
 void ApplyXinputIntercepts();
 
@@ -1616,6 +1617,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		MessageDllMainInit();
 		SoundDllMainInit();
 		ModuleDllMainInit();
+        MemoryManager::Init();
 
 		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
 		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
@@ -1663,6 +1665,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		//}
 
 		//ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        ApplyMemoryIntercepts();
 		ApplyTimeIntercepts();
 		ApplyTimerIntercepts();
 		ApplyModuleIntercepts();
@@ -1718,7 +1721,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			cllApiNum = (IsWindows7() ? 65 : 66);
 		}
 
-        MemoryManager::Init();
 		detTimer.Initialize(tasflags.initialTime);
 		nonDetTimer.Initialize(tasflags.initialTime);
 

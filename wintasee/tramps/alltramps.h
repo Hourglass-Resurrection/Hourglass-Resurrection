@@ -76,6 +76,7 @@
 #include "timertramps.h"
 #include "waittramps.h"
 #include "synctramps.h"
+#include "memorytramps.h"
 #include "messagetramps.h"
 #include "windowtramps.h"
 #include "registrytramps.h"

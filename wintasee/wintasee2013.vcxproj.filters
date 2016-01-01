@@ -97,6 +97,9 @@
     <ClCompile Include="MemoryManager\MemoryManager.cpp">
       <Filter>Source Files\MemoryManager</Filter>
     </ClCompile>
+    <ClCompile Include="hooks\memoryhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
@@ -203,6 +206,9 @@
     </ClInclude>
     <ClInclude Include="localeutils.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\memorytramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
