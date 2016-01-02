@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include <print.h>
 #include "MemoryManager.h"
 
 /*
@@ -23,7 +24,7 @@ std::list<MemoryManagerInternal::MemoryObjectDescription,
           ManagedAllocator<MemoryManagerInternal::MemoryObjectDescription>>
               MemoryManagerInternal::ms_memory_objects;
 
-LPVOID MemoryManagerInternal::AllocateInExistingBlock(UINT bytes, bool internal)
+LPVOID MemoryManagerInternal::AllocateInExistingBlock(UINT bytes, UINT flags, bool internal)
 {
     ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : ms_minimum_allowed_address;
     /*
@@ -34,9 +35,11 @@ LPVOID MemoryManagerInternal::AllocateInExistingBlock(UINT bytes, bool internal)
     ptrdiff_t end_address = internal ? LARGE_ADDRESS_SPACE_END : LARGE_ADDRESS_SPACE_START;
     MemoryObjectDescription* best_object = nullptr;
     MemoryBlockDescription* best_block = nullptr;
+    bytes += (8 - (bytes % 8));
+    debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
     for (auto& mo : ms_memory_objects)
     {
-        if (mo.flags != 0 &&
+        if ((mo.flags & 0x3) != (flags & 0x3) &&
             reinterpret_cast<ptrdiff_t>(mo.address) < start_address &&
             reinterpret_cast<ptrdiff_t>(mo.address) > end_address)
         {
@@ -92,15 +95,21 @@ memory_block_search_done:
         best_object->blocks.sort(Comparator);
     }
 
+    if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
+    {
+        memset(allocation, 0, bytes);
+    }
     return allocation;
 }
 
 LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool internal)
 {
     /*
-     * Calculate the size of the mapped file.
+     * Calculate the size of the mapped file and make sure the allocation is a multible of 8 bytes.
      */
     SIZE_T file_size = ms_allocation_granularity;
+    bytes += (8 - (bytes % 8));
+    debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
     while (bytes > file_size)
     {
         file_size += ms_allocation_granularity;
@@ -145,13 +154,14 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     {
         return nullptr;
     }
+
     /*
      * Ensure GetLastError() returns an error-code from CreateFileMapping.
      */
     SetLastError(ERROR_SUCCESS);
     HANDLE map_file = CreateFileMapping(INVALID_HANDLE_VALUE,
                                         nullptr,
-                                        PAGE_READWRITE,
+                                        PAGE_EXECUTE_READWRITE,
                                         0,
                                         file_size,
                                         nullptr);
@@ -159,15 +169,31 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     {
         return nullptr;
     }
+
+    DWORD access = FILE_MAP_WRITE;
+    if ((flags & MemoryManager::ALLOC_READONLY) == MemoryManager::ALLOC_READONLY)
+    {
+        access = FILE_MAP_READ;
+    }
+    if ((flags & MemoryManager::ALLOC_EXECUTE) == MemoryManager::ALLOC_EXECUTE)
+    {
+        access |= FILE_MAP_EXECUTE;
+    }
     void *allocation = MapViewOfFileEx(map_file,
-                                       flags == 0 ? FILE_MAP_WRITE : flags,
+                                       access,
                                        0,
                                        0,
                                        file_size,
                                        best_gap.BaseAddress);
     if (allocation == nullptr)
     {
+        CloseHandle(map_file);
         return nullptr;
+    }
+
+    if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
+    {
+        memset(allocation, 0, bytes);
     }
     MemoryManagerInternal::MemoryObjectDescription mod;
     MemoryManagerInternal::MemoryBlockDescription mbd;
@@ -198,6 +224,7 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
 
 void MemoryManager::Init()
 {
+    debugprintf(__FUNCTION__ "(void) called.\n");
     if (MemoryManagerInternal::ms_memory_manager_inited)
     {
         /*
@@ -207,6 +234,10 @@ void MemoryManager::Init()
          */
         return;
     }
+    /*
+     * TODO: Call GetSystemInfo in the executable?
+     * -- Warepire
+     */
     SYSTEM_INFO si;
     GetSystemInfo(&si);
 
@@ -224,6 +255,7 @@ void MemoryManager::Init()
 
 void* MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
 {
+    debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
     if (bytes == 0)
     {
         return nullptr;
@@ -233,14 +265,14 @@ void* MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
      *       Inform wintaser about region changes.
      * -- Warepire
      */
-    if (flags == 0 &&
-        /*
-         * If the allocation needs 50% or more of a block, go immediately for a new block.
-         * This includes allocations that needs more than one block.
-         */
-        (bytes * 2) < MemoryManagerInternal::ms_allocation_granularity)
+    /*
+     * If the allocation needs 50% or more of a block, go immediately for a new block.
+     * This includes allocations that needs more than one block.
+     */
+    if ((bytes * 2) < MemoryManagerInternal::ms_allocation_granularity)
     {
-        LPVOID allocation = MemoryManagerInternal::AllocateInExistingBlock(bytes * 2, internal);
+        LPVOID allocation =
+            MemoryManagerInternal::AllocateInExistingBlock(bytes * 2, flags, internal);
         if (allocation != nullptr)
         {
             return allocation;
@@ -251,6 +283,9 @@ void* MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
 
 void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal)
 {
+    debugprintf(__FUNCTION__ "(0x%p 0x%X 0x%X %s) called.\n", address, bytes, flags, internal == true ? "true" : "false");
+    using MemoryBlockDescription = MemoryManagerInternal::MemoryBlockDescription;
+
     if (address == nullptr)
     {
         return Allocate(bytes, flags, internal);
@@ -260,6 +295,8 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
         Deallocate(address);
         return nullptr;
     }
+
+    UINT realloc_bytes = (bytes * 2) + (8 - ((bytes * 2) % 8));
 
     for (auto mod = MemoryManagerInternal::ms_memory_objects.begin();
          mod != MemoryManagerInternal::ms_memory_objects.end();
@@ -275,29 +312,67 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
                     /*
                      * Attempt to adjust at the current location.
                      */
-                    if (flags == 0 && mod->flags == 0 &&
-                        (bytes * 2) < MemoryManagerInternal::ms_allocation_granularity)
+                    if ((mod->flags & 0x3) == (flags & 0x3) &&
+                        realloc_bytes < MemoryManagerInternal::ms_allocation_granularity)
                     {
-                        INT adjustment = ((bytes * 2) - mbd->bytes);
+                        INT adjustment = (realloc_bytes - mbd->bytes);
                         auto temp_mbd = mbd;
                         ++temp_mbd;
                         if (temp_mbd != mod->blocks.end() &&
-                            temp_mbd->free == true &&
                             static_cast<INT64>(temp_mbd->bytes) > static_cast<INT64>(adjustment))
                         {
-                            if (temp_mbd->bytes == adjustment)
+                            bool adjusted = true;
+                            if (temp_mbd->free == true)
                             {
-                                mod->blocks.erase(temp_mbd);
+                                if (temp_mbd->bytes == adjustment)
+                                {
+                                    mod->blocks.erase(temp_mbd);
+                                }
+                                else
+                                {
+                                    temp_mbd->block_address =
+                                        static_cast<LPBYTE>(temp_mbd->block_address) + adjustment;
+                                    temp_mbd->bytes -= adjustment;
+                                }
+                            }
+                            else if (adjustment < 0)
+                            {
+                                MemoryBlockDescription new_mbd;
+                                new_mbd.block_address =
+                                    static_cast<LPBYTE>(temp_mbd->block_address) - adjustment;
+                                new_mbd.bytes = abs(adjustment);
+                                new_mbd.free = true;
+                                mod->blocks.push_back(new_mbd);
+
+                                auto Comparator = [](const MemoryBlockDescription& first,
+                                                     const MemoryBlockDescription& second)
+                                {
+                                    return first.block_address < second.block_address;
+                                };
+                                mod->blocks.sort(Comparator);
                             }
                             else
                             {
-                                temp_mbd->block_address =
-                                    static_cast<LPBYTE>(temp_mbd->block_address) + adjustment;
-                                temp_mbd->bytes -= adjustment;
+                                adjusted = false;
                             }
-                            mbd->bytes = bytes * 2;
-                            return mbd->block_address;
+                            if (adjusted == true)
+                            {
+                                mbd->bytes = realloc_bytes;
+                                if ((flags & MemoryManager::ALLOC_ZEROINIT) ==
+                                        MemoryManager::ALLOC_ZEROINIT &&
+                                    adjustment > 0)
+                                {
+                                    memset(static_cast<LPBYTE>(mbd->block_address) + adjustment,
+                                           0,
+                                           adjustment);
+                                }
+                                return mbd->block_address;
+                            }
                         }
+                    }
+                    if ((flags & MemoryManager::REALLOC_NO_MOVE) == MemoryManager::REALLOC_NO_MOVE)
+                    {
+                        return nullptr;
                     }
                     /*
                      * Adjustment is not possible, allocate somewhere else.
@@ -319,6 +394,7 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
 
 void MemoryManager::Deallocate(LPVOID address)
 {
+    debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
     if (address == nullptr)
     {
         return;
@@ -378,8 +454,35 @@ void MemoryManager::Deallocate(LPVOID address)
             }
         }
     }
-    /*
-     * TODO: Log warning about trying to remove something we don't have a entry of!
-     * -- Warepire
-     */
+    debugprintf(__FUNCTION__ " WARNING: Attempted removal of unknown memory!.\n");
+}
+
+SIZE_T MemoryManager::GetSizeOfAllocation(LPCVOID address)
+{
+    debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
+    if (address == nullptr)
+    {
+        return 0;
+    }
+    for (auto mod = MemoryManagerInternal::ms_memory_objects.begin();
+         mod != MemoryManagerInternal::ms_memory_objects.end();
+         ++mod)
+    {
+        if (mod->address <= address &&
+            (static_cast<LPBYTE>(mod->address) + mod->bytes) > address)
+        {
+            for (auto mbd = mod->blocks.begin(); mbd != mod->blocks.end(); ++mbd)
+            {
+                if (mbd->block_address == address)
+                {
+                    if (mbd->free == true)
+                    {
+                        return 0;
+                    }
+                    return mbd->bytes;
+                }
+            }
+        }
+    }
+    return 0;
 }

@@ -10,6 +10,8 @@
 
 #include <list>
 
+#include <print.h>
+
 /*
  * Memory Manager
  * --------------
@@ -62,6 +64,14 @@
 class MemoryManager
 {
 public:
+    enum AllocationFlags : UINT
+    {
+        ALLOC_WRITE     = 0x00000000,
+        ALLOC_READONLY  = 0x00000001,
+        ALLOC_EXECUTE   = 0x00000002,
+        ALLOC_ZEROINIT  = 0x00000004,
+        REALLOC_NO_MOVE = 0x00000008,
+    };
     /*
      * We need to discover everything that has been allocated before we started running.
      * This is to make sure we do not try to allocate memory where memory is already allocted.
@@ -71,6 +81,8 @@ public:
     static LPVOID Allocate(UINT bytes, UINT flags, bool internal = false);
     static LPVOID Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal = false);
     static void Deallocate(LPVOID address);
+
+    static SIZE_T GetSizeOfAllocation(LPCVOID address);
 };
 
 /*
@@ -107,24 +119,29 @@ public:
 
     pointer address(reference x) const
     {
+        debugprintf(__FUNCTION__ " called.\n");
         return &x;
     }
     const_pointer address(const_reference x) const
     {
+        debugprintf(__FUNCTION__ " called.\n");
         return &x;
     }
 
     pointer allocate(size_type n, const_pointer hint = 0)
     {
+        debugprintf(__FUNCTION__ " called.\n");
         return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), 0, true));
     }
     void deallocate(pointer p, size_type n)
     {
+        debugprintf(__FUNCTION__ " called.\n");
         MemoryManager::Deallocate(p);
     }
 
     size_type max_size() const
     {
+        debugprintf(__FUNCTION__ " called.\n");
         /*
          * Copy Microsoft's own implementation of max_size.
          */
@@ -134,6 +151,7 @@ public:
     template<class U, class... Args>
     void construct(U* p, Args&&... args)
     {
+        debugprintf(__FUNCTION__ " called.\n");
         /*
          * Placement-new, will not attempt to allocate space.
          */
@@ -142,6 +160,7 @@ public:
     template<class U>
     void destroy(U* p)
     {
+        debugprintf(__FUNCTION__ " called.\n");
         p->~U();
     }
 };
@@ -202,6 +221,6 @@ private:
     static std::list<MemoryObjectDescription,
                      ManagedAllocator<MemoryObjectDescription>> ms_memory_objects;
 
-    static LPVOID AllocateInExistingBlock(UINT bytes, bool internal = false);
+    static LPVOID AllocateInExistingBlock(UINT bytes, UINT flags, bool internal = false);
     static LPVOID AllocateWithNewBlock(UINT bytes, UINT flags, bool internal = false);
 };
