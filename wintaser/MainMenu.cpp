@@ -199,8 +199,8 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	
 	i = 0;
 
-	//MENU_L(Graphics, i++, Flags | (!localTASflags.forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
-	//InsertMenu(Graphics, i++, MF_SEPARATOR, NULL, NULL);
+	MENU_L(Graphics, i++, Flags | (!localTASflags.forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
+	InsertMenu(Graphics, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Graphics, i++, Flags | (!localTASflags.forceSoftware ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_FORCESOFTWARE, "", "&Allow Hardware Acceleration", "can't change while running");
 	MENU_L(Graphics, i++, Flags | MF_POPUP | ((localTASflags.forceSoftware||started) ? MF_GRAYED : 0), (UINT)GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
 
