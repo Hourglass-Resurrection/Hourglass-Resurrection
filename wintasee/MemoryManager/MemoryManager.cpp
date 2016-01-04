@@ -6,27 +6,116 @@
 
 #include <Windows.h>
 
+#include <atomic>
 #include <list>
 
 #include <print.h>
 #include "MemoryManager.h"
 
-/*
- * TODO: Critical sections around allocations?
- * -- Warepire
- */
+namespace MemoryManagerInternal
+{
+    static bool memory_manager_inited = false;
 
-bool MemoryManagerInternal::ms_memory_manager_inited = false;
-ptrdiff_t MemoryManagerInternal::ms_minimum_allowed_address = 0;
-ptrdiff_t MemoryManagerInternal::ms_maximum_allowed_address = 0;
-DWORD MemoryManagerInternal::ms_allocation_granularity = 0;
-std::list<MemoryManagerInternal::MemoryObjectDescription,
-          ManagedAllocator<MemoryManagerInternal::MemoryObjectDescription>>
-              MemoryManagerInternal::ms_memory_objects;
+    static const ptrdiff_t LARGE_ADDRESS_SPACE_START = 0x80000000;
+    static const ptrdiff_t LARGE_ADDRESS_SPACE_END = 0xC0000000;
+    static ptrdiff_t minimum_allowed_address = 0;
+    static ptrdiff_t maximum_allowed_address = 0;
+    static DWORD allocation_granularity = 0;
+
+    template<class T>
+    class InternalAllocator :
+        public ManagedAllocator<T>
+    {
+    public:
+        typedef typename ManagedAllocator<T>::value_type           value_type;
+        typedef typename ManagedAllocator<T>::pointer              pointer;
+        typedef typename ManagedAllocator<T>::const_pointer        const_pointer;
+        typedef typename ManagedAllocator<T>::reference            reference;
+        typedef typename ManagedAllocator<T>::const_reference      const_reference;
+        typedef typename ManagedAllocator<T>::size_type            size_type;
+        typedef typename ManagedAllocator<T>::difference_type      difference_type;
+
+        template<class U>
+        struct rebind
+        {
+            typedef InternalAllocator<U>    other;
+        };
+
+        __nothrow InternalAllocator() {}
+        __nothrow InternalAllocator(const InternalAllocator& alloc) {}
+        template<class U>
+        __nothrow InternalAllocator(const InternalAllocator<U>& alloc) {}
+
+        pointer allocate(size_type n, const_pointer hint = 0)
+        {
+            debugprintf(__FUNCTION__ " called.\n");
+            return reinterpret_cast<pointer>(AllocateUnprotected(n * sizeof(value_type), 0, true));
+        }
+        void deallocate(pointer p, size_type n)
+        {
+            debugprintf(__FUNCTION__ " called.\n");
+            DeallocateUnprotected(p);
+        }
+    };
+
+    struct MemoryBlockDescription
+    {
+        LPVOID block_address;
+        UINT bytes;
+        bool free;
+    };
+
+    struct MemoryObjectDescription
+    {
+        LPVOID address;
+        HANDLE object;
+        UINT bytes;
+        UINT flags;
+        std::list<MemoryBlockDescription,
+                  InternalAllocator<MemoryBlockDescription>> blocks;
+    };
+
+    static std::list<MemoryObjectDescription,
+                     InternalAllocator<MemoryObjectDescription>> memory_objects;
+
+    static LPVOID AllocateUnprotected(UINT bytes, UINT flags, bool internal);
+    static LPVOID AllocateInExistingBlock(UINT bytes, UINT flags, bool internal);
+    static LPVOID AllocateWithNewBlock(UINT bytes, UINT flags, bool internal);
+
+    static LPVOID ReallocateUnprotected(LPVOID address, UINT bytes, UINT flags, bool internal);
+
+    static void DeallocateUnprotected(LPVOID address);
+
+    bool ObjectComparator(const MemoryObjectDescription& first,
+                          const MemoryObjectDescription& second)
+    {
+        return first.address < second.address;
+    }
+
+    bool BlockComparator(const MemoryBlockDescription& first,
+                         const MemoryBlockDescription& second)
+    {
+        return first.block_address < second.block_address;
+    }
+};
+
+template<class T1, class T2>
+bool operator==(const MemoryManagerInternal::InternalAllocator<T1>&,
+                const MemoryManagerInternal::InternalAllocator<T2>&)
+{
+    return true;
+}
+
+template<class T1, class T2>
+bool operator!= (const MemoryManagerInternal::InternalAllocator<T1>&,
+                 const MemoryManagerInternal::InternalAllocator<T2>&)
+{
+    return false;
+}
 
 LPVOID MemoryManagerInternal::AllocateInExistingBlock(UINT bytes, UINT flags, bool internal)
 {
-    ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : ms_minimum_allowed_address;
+    ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : minimum_allowed_address;
     /*
      * TODO: Check for large address awareness and decide upon that instead of internal when
      *       deciding the end_address.
@@ -37,7 +126,7 @@ LPVOID MemoryManagerInternal::AllocateInExistingBlock(UINT bytes, UINT flags, bo
     MemoryBlockDescription* best_block = nullptr;
     bytes += (8 - (bytes % 8));
     debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
-    for (auto& mo : ms_memory_objects)
+    for (auto& mo : memory_objects)
     {
         if ((mo.flags & 0x3) != (flags & 0x3) &&
             reinterpret_cast<ptrdiff_t>(mo.address) < start_address &&
@@ -87,18 +176,14 @@ memory_block_search_done:
 
         best_object->blocks.push_back(mbd);
 
-        auto Comparator = [](const MemoryBlockDescription& first,
-                             const MemoryBlockDescription& second)
+        best_object->blocks.sort(BlockComparator);
+
+        if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
         {
-            return first.block_address < second.block_address;
-        };
-        best_object->blocks.sort(Comparator);
+            memset(allocation, 0, bytes);
+        }
     }
 
-    if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
-    {
-        memset(allocation, 0, bytes);
-    }
     return allocation;
 }
 
@@ -107,18 +192,18 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     /*
      * Calculate the size of the mapped file and make sure the allocation is a multible of 8 bytes.
      */
-    SIZE_T file_size = ms_allocation_granularity;
+    SIZE_T file_size = allocation_granularity;
     bytes += (8 - (bytes % 8));
     debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
     while (bytes > file_size)
     {
-        file_size += ms_allocation_granularity;
+        file_size += allocation_granularity;
     }
 
     /*
      * Find the best suitable address to allocate at.
      */
-    ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : ms_minimum_allowed_address;
+    ptrdiff_t start_address = internal ? LARGE_ADDRESS_SPACE_START : minimum_allowed_address;
     /*
      * TODO: Check for large address awareness and decide upon that instead of internal when
      *       deciding the end_address.
@@ -133,7 +218,7 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     while (reinterpret_cast<ptrdiff_t>(current_address) < end_address)
     {
         VirtualQuery(current_address, &this_gap, sizeof(this_gap));
-        current_address = static_cast<LPBYTE>(current_address) + ms_allocation_granularity;
+        current_address = static_cast<LPBYTE>(current_address) + allocation_granularity;
         if (this_gap.State == MEM_FREE && this_gap.RegionSize >= file_size &&
             (best_gap.RegionSize > this_gap.RegionSize || best_gap.RegionSize == 0))
         {
@@ -195,8 +280,8 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     {
         memset(allocation, 0, bytes);
     }
-    MemoryManagerInternal::MemoryObjectDescription mod;
-    MemoryManagerInternal::MemoryBlockDescription mbd;
+    MemoryObjectDescription mod;
+    MemoryBlockDescription mbd;
     mod.address = allocation;
     mod.object = map_file;
     mod.bytes = file_size;
@@ -210,50 +295,14 @@ LPVOID MemoryManagerInternal::AllocateWithNewBlock(UINT bytes, UINT flags, bool 
     mbd.free = true;
     mod.blocks.push_back(mbd);
 
-    ms_memory_objects.push_back(mod);
+    memory_objects.push_back(mod);
 
-    auto Comparator = [](const MemoryObjectDescription& first,
-                         const MemoryObjectDescription& second)
-    {
-        return first.address < second.address;
-    };
-    ms_memory_objects.sort(Comparator);
+    memory_objects.sort(ObjectComparator);
 
     return allocation;
 }
 
-void MemoryManager::Init()
-{
-    debugprintf(__FUNCTION__ "(void) called.\n");
-    if (MemoryManagerInternal::ms_memory_manager_inited)
-    {
-        /*
-         * TODO: Assert?
-         *       Trying to init twice or more would be a horrible bug somewhere.
-         * -- Warepire
-         */
-        return;
-    }
-    /*
-     * TODO: Call GetSystemInfo in the executable?
-     * -- Warepire
-     */
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-
-    MemoryManagerInternal::ms_minimum_allowed_address =
-        reinterpret_cast<ptrdiff_t>(si.lpMinimumApplicationAddress);
-    MemoryManagerInternal::ms_maximum_allowed_address =
-        reinterpret_cast<ptrdiff_t>(si.lpMaximumApplicationAddress);
-    /*
-     * TODO: Will this need to be calculated using dwPageSize?
-     * -- Warepire
-     */
-    MemoryManagerInternal::ms_allocation_granularity = si.dwAllocationGranularity;
-    MemoryManagerInternal::ms_memory_manager_inited = true;
-}
-
-void* MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
+LPVOID MemoryManagerInternal::AllocateUnprotected(UINT bytes, UINT flags, bool internal)
 {
     debugprintf(__FUNCTION__ "(0x%X 0x%X %s) called.\n", bytes, flags, internal == true ? "true" : "false");
     if (bytes == 0)
@@ -269,38 +318,34 @@ void* MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
      * If the allocation needs 50% or more of a block, go immediately for a new block.
      * This includes allocations that needs more than one block.
      */
-    if ((bytes * 2) < MemoryManagerInternal::ms_allocation_granularity)
+    if ((bytes * 2) < allocation_granularity)
     {
-        LPVOID allocation =
-            MemoryManagerInternal::AllocateInExistingBlock(bytes * 2, flags, internal);
+        LPVOID allocation = AllocateInExistingBlock(bytes * 2, flags, internal);
         if (allocation != nullptr)
         {
             return allocation;
         }
     }
-    return MemoryManagerInternal::AllocateWithNewBlock(bytes, flags, internal);
+    return AllocateWithNewBlock(bytes, flags, internal);
 }
 
-void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal)
+LPVOID MemoryManagerInternal::ReallocateUnprotected(LPVOID address, UINT bytes, UINT flags, bool internal)
 {
     debugprintf(__FUNCTION__ "(0x%p 0x%X 0x%X %s) called.\n", address, bytes, flags, internal == true ? "true" : "false");
-    using MemoryBlockDescription = MemoryManagerInternal::MemoryBlockDescription;
 
     if (address == nullptr)
     {
-        return Allocate(bytes, flags, internal);
+        return AllocateUnprotected(bytes, flags, internal);
     }
     if (bytes == 0)
     {
-        Deallocate(address);
+        DeallocateUnprotected(address);
         return nullptr;
     }
 
     UINT realloc_bytes = (bytes * 2) + (8 - ((bytes * 2) % 8));
 
-    for (auto mod = MemoryManagerInternal::ms_memory_objects.begin();
-         mod != MemoryManagerInternal::ms_memory_objects.end();
-         ++mod)
+    for (auto mod = memory_objects.begin(); mod != memory_objects.end(); ++mod)
     {
         if (mod->address <= address &&
             (static_cast<LPBYTE>(mod->address) + mod->bytes) > address)
@@ -313,9 +358,13 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
                      * Attempt to adjust at the current location.
                      */
                     if ((mod->flags & 0x3) == (flags & 0x3) &&
-                        realloc_bytes < MemoryManagerInternal::ms_allocation_granularity)
+                        realloc_bytes < allocation_granularity)
                     {
                         INT adjustment = (realloc_bytes - mbd->bytes);
+                        if (adjustment == 0)
+                        {
+                            return mbd->block_address;
+                        }
                         auto temp_mbd = mbd;
                         ++temp_mbd;
                         if (temp_mbd != mod->blocks.end() &&
@@ -344,12 +393,7 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
                                 new_mbd.free = true;
                                 mod->blocks.push_back(new_mbd);
 
-                                auto Comparator = [](const MemoryBlockDescription& first,
-                                                     const MemoryBlockDescription& second)
-                                {
-                                    return first.block_address < second.block_address;
-                                };
-                                mod->blocks.sort(Comparator);
+                                mod->blocks.sort(BlockComparator);
                             }
                             else
                             {
@@ -377,13 +421,13 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
                     /*
                      * Adjustment is not possible, allocate somewhere else.
                      */
-                    LPVOID allocation = Allocate(bytes, flags, internal);
+                    LPVOID allocation = AllocateUnprotected(bytes, flags, internal);
                     if (allocation == nullptr)
                     {
                         return nullptr;
                     }
                     memcpy(allocation, address, mbd->bytes);
-                    Deallocate(address);
+                    DeallocateUnprotected(address);
                     return allocation;
                 }
             }
@@ -392,7 +436,7 @@ void* MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool int
     return nullptr;
 }
 
-void MemoryManager::Deallocate(LPVOID address)
+void MemoryManagerInternal::DeallocateUnprotected(LPVOID address)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
     if (address == nullptr)
@@ -400,9 +444,7 @@ void MemoryManager::Deallocate(LPVOID address)
         return;
     }
 
-    for (auto mod = MemoryManagerInternal::ms_memory_objects.begin();
-         mod != MemoryManagerInternal::ms_memory_objects.end();
-         ++mod)
+    for (auto mod = memory_objects.begin(); mod != memory_objects.end(); ++mod)
     {
         if (mod->address <= address &&
             (static_cast<LPBYTE>(mod->address) + mod->bytes) > address)
@@ -447,7 +489,7 @@ void MemoryManager::Deallocate(LPVOID address)
                          * TODO: Inform wintaser about removed region.
                          * -- Warepire
                          */
-                        MemoryManagerInternal::ms_memory_objects.erase(mod);
+                        memory_objects.erase(mod);
                         return;
                     }
                 }
@@ -457,32 +499,93 @@ void MemoryManager::Deallocate(LPVOID address)
     debugprintf(__FUNCTION__ " WARNING: Attempted removal of unknown memory!.\n");
 }
 
+std::atomic_flag MemoryManager::allocation_lock;
+
+void MemoryManager::Init()
+{
+    debugprintf(__FUNCTION__ "(void) called.\n");
+    if (MemoryManagerInternal::memory_manager_inited)
+    {
+        /*
+         * TODO: Assert?
+         *       Trying to init twice or more would be a horrible bug somewhere.
+         * -- Warepire
+         */
+        return;
+    }
+    /*
+     * TODO: Call GetSystemInfo in the executable?
+     * -- Warepire
+     */
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+
+    MemoryManagerInternal::minimum_allowed_address =
+        reinterpret_cast<ptrdiff_t>(si.lpMinimumApplicationAddress);
+    MemoryManagerInternal::maximum_allowed_address =
+        reinterpret_cast<ptrdiff_t>(si.lpMaximumApplicationAddress);
+    /*
+     * TODO: Will this need to be calculated using dwPageSize?
+     * -- Warepire
+     */
+    MemoryManagerInternal::allocation_granularity = si.dwAllocationGranularity;
+    allocation_lock.clear();
+    MemoryManagerInternal::memory_manager_inited = true;
+}
+
+LPVOID MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
+{
+    while (allocation_lock.test_and_set() == true);
+    LPVOID rv = MemoryManagerInternal::AllocateUnprotected(bytes, flags, internal);
+    allocation_lock.clear();
+    return rv;
+}
+
+LPVOID MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal)
+{
+    while (allocation_lock.test_and_set() == true);
+    LPVOID rv = MemoryManagerInternal::ReallocateUnprotected(address, bytes, flags, internal);
+    allocation_lock.clear();
+    return rv;
+}
+
+void MemoryManager::Deallocate(LPVOID address)
+{
+    while (allocation_lock.test_and_set() == true);
+    MemoryManagerInternal::DeallocateUnprotected(address);
+    allocation_lock.clear();
+}
+
 SIZE_T MemoryManager::GetSizeOfAllocation(LPCVOID address)
 {
+    while (allocation_lock.test_and_set() == true);
+    SIZE_T rv = 0;
     debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
-    if (address == nullptr)
+    if (address != nullptr)
     {
-        return 0;
-    }
-    for (auto mod = MemoryManagerInternal::ms_memory_objects.begin();
-         mod != MemoryManagerInternal::ms_memory_objects.end();
-         ++mod)
-    {
-        if (mod->address <= address &&
-            (static_cast<LPBYTE>(mod->address) + mod->bytes) > address)
+        for (auto mod = MemoryManagerInternal::memory_objects.begin();
+             mod != MemoryManagerInternal::memory_objects.end();
+             ++mod)
         {
-            for (auto mbd = mod->blocks.begin(); mbd != mod->blocks.end(); ++mbd)
+            if (mod->address <= address &&
+                (static_cast<LPBYTE>(mod->address) + mod->bytes) > address)
             {
-                if (mbd->block_address == address)
+                for (auto mbd = mod->blocks.begin(); mbd != mod->blocks.end(); ++mbd)
                 {
-                    if (mbd->free == true)
+                    if (mbd->block_address == address)
                     {
-                        return 0;
+                        if (mbd->free != true)
+                        {
+                            rv = mbd->bytes;
+                        }
+                        goto get_size_of_allocation_done;
+
                     }
-                    return mbd->bytes;
                 }
             }
         }
     }
-    return 0;
+get_size_of_allocation_done:
+    allocation_lock.clear();
+    return rv;
 }

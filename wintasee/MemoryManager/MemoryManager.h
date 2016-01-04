@@ -8,6 +8,7 @@
 
 #include <Windows.h>
 
+#include <atomic>
 #include <list>
 
 #include <print.h>
@@ -83,6 +84,9 @@ public:
     static void Deallocate(LPVOID address);
 
     static SIZE_T GetSizeOfAllocation(LPCVOID address);
+
+private:
+    static std::atomic_flag allocation_lock;
 };
 
 /*
@@ -115,7 +119,7 @@ public:
     __nothrow ManagedAllocator(const ManagedAllocator& alloc) {}
     template<class U>
     __nothrow ManagedAllocator(const ManagedAllocator<U>& alloc) {}
-    ~ManagedAllocator() {}
+    virtual ~ManagedAllocator() {}
 
     pointer address(reference x) const
     {
@@ -128,12 +132,12 @@ public:
         return &x;
     }
 
-    pointer allocate(size_type n, const_pointer hint = 0)
+    virtual pointer allocate(size_type n, const_pointer hint = 0)
     {
         debugprintf(__FUNCTION__ " called.\n");
         return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), 0, true));
     }
-    void deallocate(pointer p, size_type n)
+    virtual void deallocate(pointer p, size_type n)
     {
         debugprintf(__FUNCTION__ " called.\n");
         MemoryManager::Deallocate(p);
@@ -176,51 +180,7 @@ bool operator==(const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
 }
 
 template<class T1, class T2>
-bool operator!= (const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
+bool operator!=(const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
 {
     return false;
 }
-
-/*
- * I don't like exposing this class as much as I am, but it's necessary since the STL allocator
- * class needs access to internal functions here to be able to perform the max_size() operation.
- * At least everything here is private.
- * -- Warepire
- */
-class MemoryManagerInternal
-{
-private:
-    friend class MemoryManager;
-    template<class T>
-    friend class ManagedAllocator;
-
-    static bool ms_memory_manager_inited;
-    static const ptrdiff_t LARGE_ADDRESS_SPACE_START = 0x80000000;
-    static const ptrdiff_t LARGE_ADDRESS_SPACE_END = 0xC0000000;
-    static ptrdiff_t ms_minimum_allowed_address;
-    static ptrdiff_t ms_maximum_allowed_address;
-    static DWORD ms_allocation_granularity;
-
-    struct MemoryBlockDescription
-    {
-        LPVOID block_address;
-        UINT bytes;
-        bool free;
-    };
-
-    struct MemoryObjectDescription
-    {
-        LPVOID address;
-        HANDLE object;
-        UINT bytes;
-        UINT flags;
-        std::list<MemoryBlockDescription,
-                  ManagedAllocator<MemoryBlockDescription>> blocks;
-    };
-
-    static std::list<MemoryObjectDescription,
-                     ManagedAllocator<MemoryObjectDescription>> ms_memory_objects;
-
-    static LPVOID AllocateInExistingBlock(UINT bytes, UINT flags, bool internal = false);
-    static LPVOID AllocateWithNewBlock(UINT bytes, UINT flags, bool internal = false);
-};

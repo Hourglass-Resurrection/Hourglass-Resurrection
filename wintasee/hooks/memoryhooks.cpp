@@ -4,6 +4,7 @@
  * Refer to the file COPYING.txt in the project root.
  */
 
+#include <atomic>
 #include <map>
 #include <vector>
 
@@ -33,16 +34,16 @@ struct HeapObject
 {
     std::vector<LPVOID, ManagedAllocator<LPVOID>> heap_segments;
     DWORD heap_flags;
-    volatile DWORD heap_lock_counter;
+    std::atomic_flag heap_lock;
     SIZE_T heap_current_size;
     SIZE_T heap_maximum_size;
 
     HeapObject(DWORD flags, SIZE_T current_size, SIZE_T max_size) :
         heap_flags(flags),
-        heap_lock_counter(0),
         heap_current_size(current_size),
         heap_maximum_size(max_size)
     {
+        heap_lock.clear();
     }
 };
 HeapObject* g_default_heap = nullptr;
@@ -600,8 +601,7 @@ HOOKFUNC BOOL WINAPI MyHeapLock(HANDLE hHeap)
     {
         if (h == hHeap)
         {
-            while (h->heap_lock_counter > 0);
-            h->heap_lock_counter++;
+            while (h->heap_lock.test_and_set() == true);
             return TRUE;
         }
     }
@@ -779,7 +779,7 @@ HOOKFUNC BOOL WINAPI MyHeapUnlock(HANDLE hHeap)
     {
         if (h == hHeap)
         {
-            h->heap_lock_counter--;
+            h->heap_lock.clear();
             return TRUE;
         }
     }
