@@ -13,12 +13,14 @@
 
 #if defined(_DINPUTDEBUG)
 	#define dinputdebugprintf debugprintf
+	#define DINPUT_ENTER ENTER
 #else
 	#if _MSC_VER > 1310
 		#define dinputdebugprintf(...) ((void)0)
+		#define DINPUT_ENTER(...) ((void)0)
 	#else
 		#define dinputdebugprintf() ((void)0)
-		#pragma warning(disable:4002)
+		#define DINPUT_ENTER(...) ((void)0)
 	#endif
 #endif
 
@@ -147,7 +149,7 @@ struct BufferedInput
 	}
 	HRESULT GetData(DWORD elemSize, LPDIDEVICEOBJECTDATA dataOut, LPDWORD numElements, DWORD flags)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//dinputdebugprintf(__FUNCTION__ " numElements=0x%X, dataOut=0x%X\n", numElements, dataOut);
 		if(!numElements)
 			return DIERR_INVALIDPARAM;
@@ -223,7 +225,7 @@ struct BufferedInput
 	}
 	void AddEvent(DIDEVICEOBJECTDATA inputEvent)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		if(used >= size)
 			overflowed = TRUE;
 		else
@@ -247,13 +249,13 @@ struct BufferedInput
 	}
 	static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		for(int i = (int)bufferList.size()-1; i >= 0; i--)
 			bufferList[i]->AddEvent(inputEvent);
 	}
 	void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		if(used >= size)
 			overflowed = TRUE;
 		else
@@ -268,7 +270,7 @@ struct BufferedInput
 	}
 	static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		for(int i = (int)bufferList.size()-1; i >= 0; i--)
 			bufferList[i]->AddMouseEvent(inputEvent);
 	}
@@ -307,7 +309,7 @@ public:
 	/*** IUnknown methods ***/
 	STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		HRESULT rv = m_device->QueryInterface(riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -333,7 +335,7 @@ public:
 	/*** IDirectInputDevice methods ***/
 	STDMETHOD(GetCapabilities)(LPDIDEVCAPS lpDIDevCaps)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		if(m_type == GUID_SysMouse)
 		{
 			// This function requires that lpDIDevCaps exists and that it's dwSize member is initialized to either
@@ -435,7 +437,7 @@ public:
 
 	STDMETHOD(GetProperty)(REFGUID rguid, LPDIPROPHEADER ph)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->GetProperty(rguid, ph));
 		if(&rguid == &DIPROP_BUFFERSIZE)
 		{
@@ -451,7 +453,7 @@ public:
 
 	STDMETHOD(SetProperty)(REFGUID rguid, LPCDIPROPHEADER ph)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->SetProperty(rguid, ph);
 		if(&rguid == &DIPROP_BUFFERSIZE)
 		{
@@ -469,7 +471,7 @@ public:
 
 	STDMETHOD(Acquire)()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->Acquire();
 		if(m_acquired)
 			return DI_NOEFFECT;
@@ -479,7 +481,7 @@ public:
 
 	STDMETHOD(Unacquire)()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->Unacquire();
 		if(!m_acquired)
 			return DI_NOEFFECT;
@@ -489,7 +491,7 @@ public:
 
 	STDMETHOD(GetDeviceState)(DWORD size, LPVOID data)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->GetDeviceState(size, data));
 
 		if(!m_acquired)
@@ -566,7 +568,7 @@ public:
 
 	STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->GetDeviceData(size, data, numElements, flags);
 		if(!m_acquired)
 			return DIERR_NOTACQUIRED;
@@ -579,7 +581,7 @@ public:
 
 	STDMETHOD(SetDataFormat)(LPCDIDATAFORMAT lpdf)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->SetDataFormat(df));
 		
 		//debugprintf("df = 0x%X\n", df); // can't get at c_dfDIKeyboard... so do it at a lower level
@@ -603,7 +605,7 @@ public:
 
 	STDMETHOD(SetEventNotification)(HANDLE event)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->SetEventNotification(event));
 		if(m_acquired)
 			return DIERR_ACQUIRED;
@@ -613,7 +615,7 @@ public:
 
 	STDMETHOD(SetCooperativeLevel)(HWND window, DWORD level)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		if(IsWindow(window))
 			gamehwnd = window;
 		if(m_type == GUID_SysMouse){
@@ -753,21 +755,21 @@ public:
 
 	STDMETHOD(GetDeviceInfo)(LPDIDEVICEINSTANCEN di)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->GetDeviceInfo(di));
 		return DIERR_INVALIDPARAM; // NYI!
 	}
 
 	STDMETHOD(RunControlPanel)(HWND owner, DWORD flags)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->RunControlPanel(owner, flags));
 		return DI_OK;
 	}
 
 	STDMETHOD(Initialize)(HINSTANCE instance, DWORD version, REFGUID rguid)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->Initialize(instance, version, rguid));
 		return DI_OK;
 	}
@@ -775,49 +777,49 @@ public:
 	// DirectInputDevice2 methods
     STDMETHOD(CreateEffect)(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT * c, LPUNKNOWN d)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->CreateEffect(a,b,c,d);
 		return DIERR_DEVICEFULL;
 	}
     STDMETHOD(EnumEffects)(LPDIENUMEFFECTSCALLBACKN a, LPVOID b, DWORD c)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->EnumEffects(a,b,c);
 		return DI_OK;
 	}
     STDMETHOD(GetEffectInfo)(LPDIEFFECTINFON a, REFGUID b)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->GetEffectInfo(a,b);
 		return E_POINTER;
 	}
     STDMETHOD(GetForceFeedbackState)(LPDWORD a)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->GetForceFeedbackState(a);
 		return DIERR_UNSUPPORTED;
 	}
     STDMETHOD(SendForceFeedbackCommand)(DWORD a)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->SendForceFeedbackCommand(a);
 		return DIERR_UNSUPPORTED;
 	}
     STDMETHOD(EnumCreatedEffectObjects)(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->EnumCreatedEffectObjects(a,b,c);
 		return DI_OK;
 	}
     STDMETHOD(Escape)(LPDIEFFESCAPE a)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->Escape(a);
 		return DI_OK;
 	}
     STDMETHOD(Poll)()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->Poll());
 		if(!m_acquired)
 			return DIERR_NOTACQUIRED;
@@ -826,39 +828,39 @@ public:
 
 	STDMETHOD(SendDeviceData)(DWORD a, LPCDIDEVICEOBJECTDATA b, LPDWORD c, DWORD d)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return rvfilter(m_device->SendDeviceData(a,b,c,d));
 		return DI_OK; // according to the documentation, this function never does anything anyway and should not be called
 	}
 	// IDirectInputDevice7 methods
     STDMETHOD(EnumEffectsInFile)(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->EnumEffectsInFile(a,b,c,d);
 		return DI_OK;
 	}
     STDMETHOD(WriteEffectToFile)(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->WriteEffectToFile(a,b,c,d);
 		return DIERR_INVALIDPARAM; // more like DIERR_NYI
 	}
 	// IDirectInputDevice8 methods
     STDMETHOD(BuildActionMap)(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->BuildActionMap(a,b,c);
 		return DIERR_MAPFILEFAIL; // more like DIERR_NYI
 	}
     STDMETHOD(SetActionMap)(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->SetActionMap(a,b,c);
 		return DIERR_INVALIDPARAM; // more like DIERR_NYI
 	}
     STDMETHOD(GetImageInfo)(LPDIDEVICEIMAGEINFOHEADERN a)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		//return m_device->GetImageInfo(a);
 		return DIERR_MAPFILEFAIL; // more like DIERR_NYI
 	}
@@ -963,17 +965,17 @@ public:
 
 	MyDirectInput(IDirectInputN* di) : m_di(di)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 	}
 	~MyDirectInput()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 	}
 
 	/*** IUnknown methods ***/
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		HRESULT rv = m_di->QueryInterface(riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -982,13 +984,13 @@ public:
 
     ULONG STDMETHODCALLTYPE AddRef()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->AddRef();
 	}
 
     ULONG STDMETHODCALLTYPE Release()
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		ULONG count = m_di->Release();
 		if(0 == count)
 			delete this;
@@ -999,7 +1001,7 @@ public:
     /*** IDirectInputN methods ***/
     STDMETHOD(CreateDevice)(REFGUID rguid, IDirectInputDeviceN** device, LPUNKNOWN unknown)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		ThreadLocalStuff& curtls = tls;
 		curtls.callerisuntrusted++;
 		HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
@@ -1017,7 +1019,7 @@ public:
 
     STDMETHOD(EnumDevices)(DWORD devType,LPDIENUMDEVICESCALLBACKN callback, LPVOID ref, DWORD flags)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		// FIXME: NYI.
 		// this is leaking data to the game!
 		// for now, let's at least untrust it.
@@ -1030,19 +1032,19 @@ public:
 
     STDMETHOD(GetDeviceStatus)(REFGUID rguid)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->GetDeviceStatus(rguid);
 	}
 
     STDMETHOD(RunControlPanel)(HWND owner, DWORD flags)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->RunControlPanel(owner, flags);
 	}
 
     STDMETHOD(Initialize)(HINSTANCE instance, DWORD version)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->Initialize(instance, version);
 	}
 
@@ -1060,17 +1062,17 @@ public:
 
     STDMETHOD(FindDevice)(REFGUID a, LPCNSTR b, LPGUID c)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->FindDevice(a,b,c);
 	}
     STDMETHOD(EnumDevicesBySemantics)(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->EnumDevicesBySemantics(a,b,c,d,e);
 	}
     STDMETHOD(ConfigureDevices)(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d)
 	{
-		dinputdebugprintf(__FUNCTION__ " called.\n");
+		DINPUT_ENTER();
 		return m_di->ConfigureDevices(a,b,c,d);
 	}
 
