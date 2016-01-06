@@ -9,7 +9,6 @@
 #include <Windows.h>
 
 #include <atomic>
-#include <list>
 
 #include <print.h>
 
@@ -73,10 +72,7 @@ public:
         ALLOC_ZEROINIT  = 0x00000004,
         REALLOC_NO_MOVE = 0x00000008,
     };
-    /*
-     * We need to discover everything that has been allocated before we started running.
-     * This is to make sure we do not try to allocate memory where memory is already allocted.
-     */
+
     static void Init();
 
     static LPVOID Allocate(UINT bytes, UINT flags, bool internal = false);

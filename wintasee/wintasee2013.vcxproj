@@ -201,6 +201,7 @@
     <ClInclude Include="tls.h" />
     <ClInclude Include="tramps\memorytramps.h" />
     <ClInclude Include="tramps\Xinputtramps.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="wintasee.h" />
     <ClInclude Include="tramps\alltramps.h" />
     <ClInclude Include="tramps\dxvideotramps.h" />

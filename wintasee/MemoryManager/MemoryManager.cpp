@@ -9,8 +9,9 @@
 #include <atomic>
 #include <list>
 
-#include <print.h>
 #include "MemoryManager.h"
+#include <print.h>
+#include <Utils.h>
 
 namespace MemoryManagerInternal
 {
@@ -506,12 +507,7 @@ void MemoryManager::Init()
     debugprintf(__FUNCTION__ "(void) called.\n");
     if (MemoryManagerInternal::memory_manager_inited)
     {
-        /*
-         * TODO: Assert?
-         *       Trying to init twice or more would be a horrible bug somewhere.
-         * -- Warepire
-         */
-        return;
+        DLL_ASSERT();
     }
     /*
      * TODO: Call GetSystemInfo in the executable?
@@ -535,6 +531,10 @@ void MemoryManager::Init()
 
 LPVOID MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
 {
+    if (MemoryManagerInternal::memory_manager_inited == false)
+    {
+        DLL_ASSERT();
+    }
     while (allocation_lock.test_and_set() == true);
     LPVOID rv = MemoryManagerInternal::AllocateUnprotected(bytes, flags, internal);
     allocation_lock.clear();
@@ -543,6 +543,10 @@ LPVOID MemoryManager::Allocate(UINT bytes, UINT flags, bool internal)
 
 LPVOID MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal)
 {
+    if (MemoryManagerInternal::memory_manager_inited == false)
+    {
+        DLL_ASSERT();
+    }
     while (allocation_lock.test_and_set() == true);
     LPVOID rv = MemoryManagerInternal::ReallocateUnprotected(address, bytes, flags, internal);
     allocation_lock.clear();
@@ -551,6 +555,10 @@ LPVOID MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags, bool in
 
 void MemoryManager::Deallocate(LPVOID address)
 {
+    if (MemoryManagerInternal::memory_manager_inited == false)
+    {
+        DLL_ASSERT();
+    }
     while (allocation_lock.test_and_set() == true);
     MemoryManagerInternal::DeallocateUnprotected(address);
     allocation_lock.clear();
@@ -558,6 +566,10 @@ void MemoryManager::Deallocate(LPVOID address)
 
 SIZE_T MemoryManager::GetSizeOfAllocation(LPCVOID address)
 {
+    if (MemoryManagerInternal::memory_manager_inited == false)
+    {
+        DLL_ASSERT();
+    }
     while (allocation_lock.test_and_set() == true);
     SIZE_T rv = 0;
     debugprintf(__FUNCTION__ "(0x%p) called.\n", address);

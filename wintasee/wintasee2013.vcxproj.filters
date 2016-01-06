@@ -210,5 +210,8 @@
     <ClInclude Include="tramps\memorytramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
