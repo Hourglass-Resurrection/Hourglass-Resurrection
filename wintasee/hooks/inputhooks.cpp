@@ -21,6 +21,7 @@
 	#else
 		#define dinputdebugprintf() ((void)0)
 		#define DINPUT_ENTER(...) ((void)0)
+        #pragma warning(disable:4002)
 	#endif
 #endif
 
