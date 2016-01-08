@@ -40,11 +40,11 @@ int debugprintf(const char* fmt, ...)
     int threadStamp = getCurrentThreadstamp();
     if (threadStamp)
     {
-        sprintf(str, "MSG: %08X: (f=%d, t=%d) ", getCurrentThreadstamp(), getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, sizeof(str), "MSG: %08X: (f=%d, t=%d) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp());
     }
     else
     {
-        sprintf(str, "MSG: MAIN: (f=%d, t=%d) ", getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, sizeof(str), "MSG: MAIN: (f=%d, t=%d) ", getCurrentFramestamp(), getCurrentTimestamp());
     }
 
     va_list args;
@@ -58,41 +58,45 @@ int debugprintf(const char* fmt, ...)
 }
 #endif
 
-int cmdprintf(const char * fmt, ...)
+int cmdprintf(const char* fmt, ...)
 {
 	char str[4096];
-	//str[sizeof(str)-1] = 0x67;
+
 	va_list args;
-	va_start (args, fmt);
-	int rv = vsprintf(str, fmt, args);
-	va_end (args);
+	va_start(args, fmt);
+	int rv = vsnprintf(str, sizeof(str), fmt, args);
+	va_end(args);
+
 	OutputDebugStringA(str);
-	//if(str[sizeof(str)-1] != 0x67) { _asm{int 3} } // buffer overrun alert
 	return rv;
 }
 
 #ifdef ENABLE_LOGGING
-int logprintf_internal(LogCategoryFlag cat, const char * fmt, ...)
+int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
 {
-	if(tasflags.debugPrintMode == 0)
-		return 0;
+    if (tasflags.debugPrintMode == 0)
+    {
+        return 0;
+    }
 
 	char str[4096];
-	//str[sizeof(str)-1] = 0x69;
-	va_list args;
-	va_start (args, fmt);
-	strcpy(str, "LOG: ");
 	int threadStamp = getCurrentThreadstamp();
-	if(threadStamp)
-		sprintf(str+(sizeof("LOG: ")-1), "%08X: (f=%d, t=%d, c=%08X) ", getCurrentThreadstamp(), getCurrentFramestamp(), getCurrentTimestamp(), cat, notramps?0:TramptimeGetTime());
-	else
-		sprintf(str+(sizeof("LOG: ")-1), "MAIN: (f=%d, t=%d, c=%08X) ", getCurrentFramestamp(), getCurrentTimestamp(), cat, notramps?0:TramptimeGetTime());
-	int headerlen = strlen(str);
-	//int rv = vsprintf(str+5+10, fmt, args);
-	int rv = vsprintf(str+headerlen, fmt, args);
-	va_end (args);
+    if (threadStamp)
+    {
+        _snprintf(str, sizeof(str), "LOG: %08X: (f=%d, t=%d, c=%08X) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp(), cat);
+    }
+    else
+    {
+        _snprintf(str, sizeof(str), "LOG: MAIN: (f=%d, t=%d, c=%08X) ", getCurrentFramestamp(), getCurrentTimestamp(), cat);
+    }
+
+    va_list args;
+    va_start(args, fmt);
+    int headerlen = strlen(str);
+	int rv = vsnprintf(str + headerlen, sizeof(str) - headerlen, fmt, args);
+	va_end(args);
+
 	OutputDebugStringA(str);
-	//if(str[sizeof(str)-1] != 0x69) { _asm{int 3} } // buffer overrun alert
 	return rv;
 }
 #endif
