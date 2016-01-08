@@ -33,7 +33,7 @@ int cmdprintf(const char* fmt, ...);
 #define FMT_ARGS_(N, ...) CONCATENATE(FMT_ARGS_, N)(__VA_ARGS__)
 #define FMT_ARGS(...) FMT_ARGS_(FOR_EACH_NARG(__VA_ARGS__), __VA_ARGS__)
 
-#define ENTER(...) debugprintf("%s(" FMT_ARGS(__VA_ARGS__) ") called.\n", __FUNCTION__, __VA_ARGS__);
+#define ENTER(...) debugprintf("%s(" FMT_ARGS(__VA_ARGS__) ") called.\n", __FUNCTION__, __VA_ARGS__)
 
 //#define dinputdebugprintf verbosedebugprintf
 #define ddrawdebugprintf verbosedebugprintf

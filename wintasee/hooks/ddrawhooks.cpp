@@ -893,7 +893,7 @@ struct MyDirectDrawSurface
     static HRESULT(STDMETHODCALLTYPE *SetPalette)(DIRECTDRAWSURFACEN* pThis, LPDIRECTDRAWPALETTE pPalette);
     static HRESULT STDMETHODCALLTYPE MySetPalette(DIRECTDRAWSURFACEN* pThis, LPDIRECTDRAWPALETTE pPalette)
 	{
-		debugprintf(__FUNCTION__ " called.\n");
+        ENTER();
 		HRESULT rv = SetPalette(pThis, pPalette);
 		if(tasflags.forceWindowed)
 		{

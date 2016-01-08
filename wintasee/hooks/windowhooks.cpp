@@ -618,22 +618,22 @@ HOOKFUNC int WINAPI MyMessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption
 }
 HOOKFUNC INT_PTR WINAPI MyDialogBoxParamA(HINSTANCE hInstance,LPCSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
-	debugprintf(__FUNCTION__ " called.\n");
+    ENTER();
 	return IDOK;
 }
 HOOKFUNC INT_PTR WINAPI MyDialogBoxParamW(HINSTANCE hInstance,LPCWSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
-	debugprintf(__FUNCTION__ " called.\n");
+	ENTER();
 	return IDOK;
 }
 HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamA(HINSTANCE hInstance,LPCDLGTEMPLATEA hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
-	debugprintf(__FUNCTION__ " called.\n");
+	ENTER();
 	return IDOK;
 }
 HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamW(HINSTANCE hInstance,LPCDLGTEMPLATEW hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
-	debugprintf(__FUNCTION__ " called.\n");
+	ENTER();
 	return IDOK;
 }
 

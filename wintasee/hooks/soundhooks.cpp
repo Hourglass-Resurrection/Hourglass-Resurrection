@@ -508,7 +508,7 @@ public:
     // IDirectSoundBuffer8 methods
     STDMETHOD(SetFX)                (DWORD dwEffectsCount, LPDSEFFECTDESC pDSFXDesc, LPDWORD pdwResultCodes)
 	{
-		/*dsound*/debugprintf(__FUNCTION__ " called.\n");
+        /*dsound*/ENTER();
 		if(!(capsFlags & DSBCAPS_CTRLFX))
 			return DSERR_CONTROLUNAVAIL;
 		// NYI! chorus (GUID_DSFX_STANDARD_CHORUS), echo, flanger, gargle, distortion, etc.
@@ -518,13 +518,13 @@ public:
 	}
     STDMETHOD(AcquireResources)     (DWORD dwFlags, DWORD dwEffectsCount, LPDWORD pdwResultCodes)
 	{
-		/*dsound*/debugprintf(__FUNCTION__ " called.\n");
+        /*dsound*/ENTER();
 		// NYI
 		return DSERR_CONTROLUNAVAIL;
 	}
     STDMETHOD(GetObjectInPath)      (REFGUID rguidObject, DWORD dwIndex, REFGUID rguidInterface, LPVOID *ppObject)
 	{
-		/*dsound*/debugprintf(__FUNCTION__ " called.\n");
+        /*dsound*/ENTER();
 		// NYI
 		return DSERR_CONTROLUNAVAIL;
 	}
@@ -1086,7 +1086,7 @@ public:
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	{
 		while(lockdown) Sleep(1); 
-		/*dsound*/debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+		/*dsound*/ENTER(riid.Data1);
 		HRESULT rv = m_dsb->QueryInterface(riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -1844,7 +1844,7 @@ struct MyDirectMusicPerformance
     static HRESULT(STDMETHODCALLTYPE *Init)(IDirectMusicPerformanceN* pThis, IDirectMusic** ppDirectMusic, LPDIRECTSOUND pDirectSound, HWND hWnd);
     static HRESULT STDMETHODCALLTYPE MyInit(IDirectMusicPerformanceN* pThis, IDirectMusic** ppDirectMusic, LPDIRECTSOUND pDirectSound, HWND hWnd)
 	{
-		/*dmusic*/debugprintf(__FUNCTION__ " called.\n");
+        /*dmusic*/ENTER();
 		const char* oldName = tls.curThreadCreateName;
 		tls.curThreadCreateName = "DirectMusic";
 		HRESULT rv = Init(pThis, ppDirectMusic, pDirectSound, hWnd);
@@ -1857,7 +1857,8 @@ struct MyDirectMusicPerformance
     static HRESULT(STDMETHODCALLTYPE *InitAudio)(IDirectMusicPerformanceN* pThis, IDirectMusic** ppDirectMusic, IDirectSound** ppDirectSound, HWND hWnd, DWORD dwDefaultPathType, DWORD dwPChannelCount, DWORD dwFlags, DMUS_AUDIOPARAMS *pParams);
     static HRESULT STDMETHODCALLTYPE MyInitAudio(IDirectMusicPerformanceN* pThis, IDirectMusic** ppDirectMusic, IDirectSound** ppDirectSound, HWND hWnd, DWORD dwDefaultPathType, DWORD dwPChannelCount, DWORD dwFlags, DMUS_AUDIOPARAMS *pParams)
 	{
-		/*dmusic*/debugprintf(__FUNCTION__ "(ppDirectMusic=0x%X, ppDirectSound=0x%X, *pDirectSound=0x%X, dwFlags=0x%X, pParams=0x%X) called.\n", ppDirectMusic, ppDirectSound, ppDirectSound?*ppDirectSound:0, dwFlags, pParams);
+        auto pDirectSound = ppDirectSound ? *ppDirectSound : 0;
+		/*dmusic*/ENTER(ppDirectMusic, ppDirectSound, pDirectSound, dwFlags, pParams);
 		const char* oldName = tls.curThreadCreateName;
 		tls.curThreadCreateName = "DirectMusic";
 		HRESULT rv = InitAudio(pThis, ppDirectMusic, ppDirectSound, hWnd, dwDefaultPathType, dwPChannelCount, dwFlags, pParams);
