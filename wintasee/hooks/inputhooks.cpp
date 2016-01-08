@@ -131,7 +131,7 @@ struct BufferedInput
 	}
 	void Resize(DWORD newSize)
 	{
-		dinputdebugprintf(__FUNCTION__ "(%d) called.\n", newSize);
+        DINPUT_ENTER(newSize);
 		DWORD oldSize = size;
 		size = newSize;
 
@@ -150,12 +150,11 @@ struct BufferedInput
 	}
 	HRESULT GetData(DWORD elemSize, LPDIDEVICEOBJECTDATA dataOut, LPDWORD numElements, DWORD flags)
 	{
-		DINPUT_ENTER();
-		//dinputdebugprintf(__FUNCTION__ " numElements=0x%X, dataOut=0x%X\n", numElements, dataOut);
+		DINPUT_ENTER(elemSize, dataOut, numElements, flags);
 		if(!numElements)
 			return DIERR_INVALIDPARAM;
 
-		dinputdebugprintf(__FUNCTION__ " size=%d, used=%d, elemSize=%d, *numElements=%d, flags=%d\n", size,used,elemSize,*numElements,flags);
+		dinputdebugprintf(__FUNCTION__ " size=%d, used=%d, *numElements=%d\n", size, used, *numElements);
 
 		DWORD retrieved = 0;
 		DWORD requested = *numElements;
@@ -364,7 +363,7 @@ public:
 
 	STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)	
 	{
-		dinputdebugprintf(__FUNCTION__ " called with flags: 0x%X.\n", dwFlags);
+        DINPUT_ENTER(dwFlags);
 
 		if(m_type == GUID_SysMouse)
 		{
@@ -628,7 +627,7 @@ public:
 
 	STDMETHOD(GetObjectInfo)(LPDIDEVICEOBJECTINSTANCEN pdidoi, DWORD dwObj, DWORD dwHow)
 	{
-		dinputdebugprintf(__FUNCTION__ " called with dwObj %u and dwHow %u.\n", dwObj, dwHow);
+        DINPUT_ENTER(dwObj, dwHow);
 		if(m_type == GUID_SysMouse)
 		{
 			// This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
@@ -1051,7 +1050,7 @@ public:
 
 	STDMETHOD(CreateDeviceEx)(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d)
 	{
-		dinputdebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", a.Data1, b.Data1);
+        DINPUT_ENTER(a.Data1, b.Data1);
 		ThreadLocalStuff& curtls = tls;
 		curtls.callerisuntrusted++;
 		HRESULT hr = m_di->CreateDeviceEx(a,b,c,d);

@@ -1577,7 +1577,7 @@ bool IsWindows7()     { return tasflags.osVersionMajor == 6 && tasflags.osVersio
 // PostDllMain is the code we run after DllMain to finish up initialization without restrictions.
 DWORD WINAPI PostDllMain(LPVOID lpParam)
 {
-	ENTER(lpParam);
+    ENTER(lpParam);
 	dllInitializationDone = true;
 
 	detTimer.OnSystemTimerRecalibrated();
