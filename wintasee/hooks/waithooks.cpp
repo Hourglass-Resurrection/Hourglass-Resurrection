@@ -331,7 +331,7 @@ HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHan
 		// (actually this isn't that hacky, except it should be done to all WaitFor* cases instead of only this case)
 		if(tasflags.threadMode == 1 && (int)nCount > 0)
 		{
-			HANDLE* handles = (HANDLE*)MemoryManager::Allocate(nCount * sizeof(HANDLE), 0, true);
+			HANDLE* handles = static_cast<HANDLE*>(MemoryManager::Allocate(nCount * sizeof(HANDLE), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
 			for(DWORD i = 0; i < nCount; i++)
 			{
 				HANDLE pHandle = lpHandles[i];
@@ -461,7 +461,7 @@ HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pH
 
 		TransferWait(dwMilliseconds);
 
-		HANDLE* handles = (HANDLE*)MemoryManager::Allocate(nCount * sizeof(HANDLE), 0, true);
+		HANDLE* handles = static_cast<HANDLE*>(MemoryManager::Allocate(nCount * sizeof(HANDLE), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
 		if(tasflags.threadMode == 1 && (int)nCount > 0)
 		{
 			// try to convert thread handles to thread exit event handles

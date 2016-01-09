@@ -100,7 +100,13 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
     HeapObject* rv = g_default_heap;
     if (rv == nullptr)
     {
-        rv = static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*rv), 0, true));
+        /*
+         * TODO: Make this code path use MyHeapCreate
+         * -- Warepire
+         */
+        rv = static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*rv),
+                                                              MemoryManager::ALLOC_WRITE |
+                                                                  MemoryManager::ALLOC_INTERNAL));
         if (rv == nullptr)
         {
             SetLastError(ERROR_OUTOFMEMORY);
@@ -489,7 +495,10 @@ HOOKFUNC SIZE_T WINAPI MyHeapCompact(HANDLE hHeap, DWORD dwFlags)
 HOOKFUNC HANDLE WINAPI MyHeapCreate(DWORD flOptions, SIZE_T dwInitialSize, SIZE_T dwMaximumSize)
 {
     debugprintf(__FUNCTION__ "(0x%X 0x%X 0x%X) called.\n", flOptions, dwInitialSize, dwMaximumSize);
-    HeapObject* heap = static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*heap), 0, true));
+    HeapObject* heap =
+        static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*heap),
+                                                         MemoryManager::ALLOC_WRITE |
+                                                             MemoryManager::ALLOC_INTERNAL));
     if (heap == nullptr)
     {
         SetLastError(ERROR_OUTOFMEMORY);

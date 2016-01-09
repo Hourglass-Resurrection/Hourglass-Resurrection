@@ -516,7 +516,7 @@ HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution, LPTIMECAL
 	if(tasflags.timersMode == 2)
 		return timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
     TimerThreadInfo* threadInfo =
-        static_cast<TimerThreadInfo*>(MemoryManager::Allocate(sizeof(threadInfo), 0, true));
+        static_cast<TimerThreadInfo*>(MemoryManager::Allocate(sizeof(threadInfo), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
     threadInfo = ::new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
 	threadInfo->prevTime = detTimer.GetTicks();
 	threadInfo->prev = ttiTail;

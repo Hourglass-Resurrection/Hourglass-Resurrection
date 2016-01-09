@@ -12,8 +12,14 @@
  * rest of the log gives us an idea how the bad state was reached.
  * This can't be a function call as that may in some cases alter the call stack too much.
  */
- #define DLL_ASSERT() \
-    _asm \
+ #define DLL_ASSERT(expression) \
+    do \
     { \
-        int 3\
-    }
+        if ((expression) == false) \
+        { \
+            _asm \
+            { \
+                int 3\
+            }; \
+        } \
+    } while (false)

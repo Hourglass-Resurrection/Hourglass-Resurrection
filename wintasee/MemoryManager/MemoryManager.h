@@ -8,8 +8,6 @@
 
 #include <Windows.h>
 
-#include <atomic>
-
 #include <print.h>
 
 /*
@@ -44,16 +42,7 @@
  * our own allotted region.
  *
  * All of the above means that new and malloc are entirely forbidden(!) in the DLL. To handle STL
- * containers special allocators were implemented, these must be used with any STL container inside
- * the DLL code.
- *
- * The best approach would be to use namespaces, as that would be much prettier, but unfortunately
- * that does not play along with STL allocators as they cannot be forward-declared.
- * This causes the problem that the entire anonymous namespace would be defined in the header-file,
- * eliminating all the advantages of an anonymous namespace. Therefor this class variant with all
- * static members is used instead, and to protect the memory manager core as much as possible, it's
- * declared fully private, and defines the classes that shall have access to it's internals as
- * friends.
+ * containers use the ManagedAllocator.
  *
  * Reference material (including reference material linked by the webpage):
  * https://msdn.microsoft.com/en-us/library/windows/desktop/aa366912%28v=vs.85%29.aspx
@@ -61,28 +50,25 @@
  *
  * -- Warepire
  */
-class MemoryManager
+namespace MemoryManager
 {
-public:
     enum AllocationFlags : UINT
     {
-        ALLOC_WRITE     = 0x00000000,
-        ALLOC_READONLY  = 0x00000001,
-        ALLOC_EXECUTE   = 0x00000002,
-        ALLOC_ZEROINIT  = 0x00000004,
-        REALLOC_NO_MOVE = 0x00000008,
+        ALLOC_WRITE     = 0x00000001,
+        ALLOC_READONLY  = 0x00000002,
+        ALLOC_EXECUTE   = 0x00000004,
+        ALLOC_ZEROINIT  = 0x00000008,
+        REALLOC_NO_MOVE = 0x00000010,
+        ALLOC_INTERNAL  = 0x80000000,
     };
 
-    static void Init();
+    void Init();
 
-    static LPVOID Allocate(UINT bytes, UINT flags, bool internal = false);
-    static LPVOID Reallocate(LPVOID address, UINT bytes, UINT flags, bool internal = false);
-    static void Deallocate(LPVOID address);
+    LPVOID Allocate(UINT bytes, UINT flags);
+    LPVOID Reallocate(LPVOID address, UINT bytes, UINT flags);
+    void Deallocate(LPVOID address);
 
-    static SIZE_T GetSizeOfAllocation(LPCVOID address);
-
-private:
-    static std::atomic_flag allocation_lock;
+    SIZE_T GetSizeOfAllocation(LPCVOID address);
 };
 
 /*
@@ -115,7 +101,7 @@ public:
     __nothrow ManagedAllocator(const ManagedAllocator& alloc) {}
     template<class U>
     __nothrow ManagedAllocator(const ManagedAllocator<U>& alloc) {}
-    virtual ~ManagedAllocator() {}
+    ~ManagedAllocator() {}
 
     pointer address(reference x) const
     {
@@ -128,12 +114,13 @@ public:
         return &x;
     }
 
-    virtual pointer allocate(size_type n, const_pointer hint = 0)
+    pointer allocate(size_type n, const_pointer hint = 0)
     {
         debugprintf(__FUNCTION__ " called.\n");
-        return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), 0, true));
+        static const UINT flags = MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL;
+        return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), flags));
     }
-    virtual void deallocate(pointer p, size_type n)
+    void deallocate(pointer p, size_type n)
     {
         debugprintf(__FUNCTION__ " called.\n");
         MemoryManager::Deallocate(p);

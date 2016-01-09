@@ -200,7 +200,7 @@ enum { s_isDebug = false };
             { \
                 debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); \
             } \
-            *ppvOut = MemoryManager::Allocate(sizeof(My##x<I##x##n>), 0, true); \
+            *ppvOut = MemoryManager::Allocate(sizeof(My##x<I##x##n>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL); \
             *ppvOut = ::new My##x<I##x##n>(reinterpret_cast<I##x##n*>(*ppvOut)); \
         } \
         break
@@ -214,7 +214,7 @@ enum { s_isDebug = false };
             { \
                 debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut); \
             } \
-            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), 0, true); \
+            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL); \
             *ppvOut = ::new my<I##x>(reinterpret_cast<I##x*>(*ppvOut)); \
         } \
         break
@@ -228,7 +228,7 @@ enum { s_isDebug = false };
             { \
                 debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut); \
             } \
-            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), 0, true); \
+            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL); \
             *ppvOut = ::new my<I##x>(reinterpret_cast<I##x*>(*ppvOut), param); \
         } \
         break
@@ -242,7 +242,7 @@ enum { s_isDebug = false };
             { \
                 debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut); \
             } \
-            *ppvOut = MemoryManager::Allocate(sizeof(my), 0, true); \
+            *ppvOut = MemoryManager::Allocate(sizeof(my), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL); \
             *ppvOut = ::new my(reinterpret_cast<x*>(*ppvOut)); \
         } \
         break

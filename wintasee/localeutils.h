@@ -12,6 +12,6 @@ DWORD LocaleToCharset(LCID locale);
 // leaves result on the stack in a variable of a name specified by wstr.
 #define str_to_wstr(wstr, str, codepage) \
 	int len##wstr = MultiByteToWideChar(codepage, 0, str, -1, NULL, 0); \
-	WCHAR* wstr = static_cast<WCHAR*>(MemoryManager::Allocate(len##wstr * sizeof(WCHAR), 0, true)); \
+	WCHAR* wstr = static_cast<WCHAR*>(MemoryManager::Allocate(len##wstr * sizeof(WCHAR), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL)); \
 	memset(wstr, 0, len##wstr*sizeof(WCHAR)); \
 	MultiByteToWideChar(codepage, 0, str, -1, wstr, len##wstr);
