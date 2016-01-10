@@ -37,20 +37,22 @@ int debugprintf(const char* fmt, ...)
     }
 
     char str[4096];
+    str[ARRAYSIZE(str) - 1] = '\0';
+
     int threadStamp = getCurrentThreadstamp();
     if (threadStamp)
     {
-        _snprintf(str, sizeof(str), "MSG: %08X: (f=%d, t=%d) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: %08X: (f=%d, t=%d) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp());
     }
     else
     {
-        _snprintf(str, sizeof(str), "MSG: MAIN: (f=%d, t=%d) ", getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: MAIN: (f=%d, t=%d) ", getCurrentFramestamp(), getCurrentTimestamp());
     }
 
     va_list args;
     va_start(args, fmt);
     int headerlen = strlen(str);
-    int rv = vsnprintf(str + headerlen, sizeof(str) - headerlen, fmt, args);
+    int rv = vsnprintf(str + headerlen, (ARRAYSIZE(str) - 1) - headerlen, fmt, args);
     va_end(args);
 
     OutputDebugStringA(str);
@@ -60,15 +62,16 @@ int debugprintf(const char* fmt, ...)
 
 int cmdprintf(const char* fmt, ...)
 {
-	char str[4096];
+    char str[4096];
+    str[ARRAYSIZE(str) - 1] = '\0';
 
-	va_list args;
-	va_start(args, fmt);
-	int rv = vsnprintf(str, sizeof(str), fmt, args);
-	va_end(args);
+    va_list args;
+    va_start(args, fmt);
+    int rv = vsnprintf(str, ARRAYSIZE(str) - 1, fmt, args);
+    va_end(args);
 
-	OutputDebugStringA(str);
-	return rv;
+    OutputDebugStringA(str);
+    return rv;
 }
 
 #ifdef ENABLE_LOGGING
@@ -79,25 +82,27 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
         return 0;
     }
 
-	char str[4096];
-	int threadStamp = getCurrentThreadstamp();
+    char str[4096];
+    str[ARRAYSIZE(str) - 1] = '\0';
+
+    int threadStamp = getCurrentThreadstamp();
     if (threadStamp)
     {
-        _snprintf(str, sizeof(str), "LOG: %08X: (f=%d, t=%d, c=%08X) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp(), cat);
+        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: %08X: (f=%d, t=%d, c=%08X) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp(), cat);
     }
     else
     {
-        _snprintf(str, sizeof(str), "LOG: MAIN: (f=%d, t=%d, c=%08X) ", getCurrentFramestamp(), getCurrentTimestamp(), cat);
+        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: MAIN: (f=%d, t=%d, c=%08X) ", getCurrentFramestamp(), getCurrentTimestamp(), cat);
     }
 
     va_list args;
     va_start(args, fmt);
     int headerlen = strlen(str);
-	int rv = vsnprintf(str + headerlen, sizeof(str) - headerlen, fmt, args);
-	va_end(args);
+    int rv = vsnprintf(str + headerlen, (ARRAYSIZE(str) - 1) - headerlen, fmt, args);
+    va_end(args);
 
-	OutputDebugStringA(str);
-	return rv;
+    OutputDebugStringA(str);
+    return rv;
 }
 #endif
 
