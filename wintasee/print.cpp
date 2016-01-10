@@ -37,7 +37,7 @@ int debugprintf(const char* fmt, ...)
     }
 
     char str[4096];
-    str[ARRAYSIZE(str) - 1] = '\0';
+    memset(str, '\0', sizeof(str));
 
     int threadStamp = getCurrentThreadstamp();
     if (threadStamp)
@@ -63,7 +63,7 @@ int debugprintf(const char* fmt, ...)
 int cmdprintf(const char* fmt, ...)
 {
     char str[4096];
-    str[ARRAYSIZE(str) - 1] = '\0';
+    memset(str, '\0', sizeof(str));
 
     va_list args;
     va_start(args, fmt);
@@ -83,7 +83,7 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
     }
 
     char str[4096];
-    str[ARRAYSIZE(str) - 1] = '\0';
+    memset(str, '\0', sizeof(str));
 
     int threadStamp = getCurrentThreadstamp();
     if (threadStamp)
