@@ -434,7 +434,7 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 
 HOOKFUNC VOID NTAPI MyKiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength)
 {
-	//debugprintf(__FUNCTION__ "(ApiNumber=%d) called.\n",ApiNumber);
+	//ENTER(ApiNumber);
 
 	// maybe should instead scan the stack in MyLdrLoadDll for something we put on the stack in MyKiUserCallbackDispatcher? but I couldn't get it to work...
 //	char test [8] = {0,0x42,0x42,0x42,0x42,0x42,0x42,0x42,};

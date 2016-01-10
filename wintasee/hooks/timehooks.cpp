@@ -50,17 +50,17 @@ DEFINE_LOCAL_GUID(IID_IReferenceClock,0x56a86897,0x0ad4,0x11ce,0xb0,0x3a,0x00,0x
 //{
 //	MyReferenceClock()
 //	{
-//		ddrawdebugprintf(__FUNCTION__ " called.\n");
+//		DDRAW_ENTER();
 //	}
 //	~MyReferenceClock()
 //	{
-//		ddrawdebugprintf(__FUNCTION__ " called.\n");
+//		DDRAW_ENTER();
 //	}
 //
 //	/*** IUnknown methods ***/
 //    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 //	{
-//		ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+//		DDRAW_ENTER(riid.Data1);
 //		HRESULT rv = m_dd->QueryInterface(riid, ppvObj);
 //		if(SUCCEEDED(rv))
 //			HookCOMInterface(riid, ppvObj);
@@ -69,13 +69,13 @@ DEFINE_LOCAL_GUID(IID_IReferenceClock,0x56a86897,0x0ad4,0x11ce,0xb0,0x3a,0x00,0x
 //
 //    ULONG STDMETHODCALLTYPE AddRef()
 //	{
-//		ddrawdebugprintf(__FUNCTION__ " called.\n");
+//		DDRAW_ENTER();
 //		return m_dd->AddRef();
 //	}
 //
 //    ULONG STDMETHODCALLTYPE Release()
 //	{
-//		ddrawdebugprintf(__FUNCTION__ " called.\n");
+//		DDRAW_ENTER();
 //		ULONG count = m_dd->Release();
 //		if(0 == count)
 //			delete this;
@@ -103,7 +103,7 @@ struct MyReferenceClock : IReferenceClock
 	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IReferenceClock* pThis, REFIID riid, void** ppvObj);
 	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IReferenceClock* pThis, REFIID riid, void** ppvObj)
 	{
-		verbosedebugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+		VERBOSE_ENTER(riid.Data1);
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -215,7 +215,7 @@ struct MyReferenceClock : IReferenceClock
 //	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IAMOpenProgress* pThis, REFIID riid, void** ppvObj);
 //	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IAMOpenProgress* pThis, REFIID riid, void** ppvObj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+//		ENTER(riid.Data1);
 //		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 //		if(SUCCEEDED(rv))
 //			HookCOMInterface(riid, ppvObj);

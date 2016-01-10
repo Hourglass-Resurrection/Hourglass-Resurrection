@@ -45,15 +45,21 @@ int cmdprintf(const char* fmt, ...);
 #define registrydebugprintf verbosedebugprintf
 #define timedebugprintf verbosedebugprintf
 
+#define DDRAW_ENTER VERBOSE_ENTER
+#define D3D_ENTER VERBOSE_ENTER
+#define DSOUND_ENTER VERBOSE_ENTER
+#define DMUSIC_ENTER VERBOSE_ENTER
+#define SDL_ENTER VERBOSE_ENTER
+#define GL_ENTER VERBOSE_ENTER
+#define REGISTRY_ENTER VERBOSE_ENTER
+#define TIME_ENTER VERBOSE_ENTER
+
 #if defined(_DEBUG) && 0//1
-	#define verbosedebugprintf debugprintf
+    #define verbosedebugprintf debugprintf
+    #define VERBOSE_ENTER ENTER
 #else
-	#if _MSC_VER > 1310
-		#define verbosedebugprintf(...) ((void)0)
-	#else
-		#define verbosedebugprintf() ((void)0)
-		#pragma warning(disable:4002)
-	#endif
+    #define verbosedebugprintf(...) ((void)0)
+    #define VERBOSE_ENTER(...) ((void)0)
 #endif
 
 
@@ -67,18 +73,10 @@ extern LogCategoryFlag& g_excludeLogFlags;
 #define ENABLE_LOGGING
 
 #ifdef ENABLE_LOGGING
-	int logprintf_internal(LogCategoryFlag cat, const char * fmt, ...);
-	#if _MSC_VER > 1310
-		#define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
-	#else
-		#define debuglog(cat, __VA_ARGS__) ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
-	#endif
+    int logprintf_internal(LogCategoryFlag cat, const char * fmt, ...);
+    #define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
 #else
-	#if _MSC_VER > 1310
-		#define debuglog(cat, ...)         0
-	#else
-		#define debuglog(cat, __VA_ARGS__) 0
-	#endif
+    #define debuglog(cat, ...)         0
 #endif
 
 

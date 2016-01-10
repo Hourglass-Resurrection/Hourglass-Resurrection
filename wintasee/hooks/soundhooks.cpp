@@ -534,7 +534,7 @@ public:
     // IDirectSoundNotify methods
     STDMETHOD(SetNotificationPositions) (DWORD dwPositionNotifies, LPCDSBPOSITIONNOTIFY pcPositionNotifies)
 	{
-		dsounddebugprintf(__FUNCTION__ "(%d) called.\n", dwPositionNotifies);
+		DSOUND_ENTER(dwPositionNotifies);
 		if(dwPositionNotifies > DSBNOTIFICATIONS_MAX || pcPositionNotifies == NULL)
 			return DSERR_INVALIDPARAM;
 
@@ -1459,7 +1459,7 @@ public:
 	/*** IUnknown methods ***/
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	{
-		dsounddebugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+		DSOUND_ENTER(riid.Data1);
 		if(ppvObj)
 		{
 			if(riid == IID_IUnknown) { *ppvObj = (IUnknown*)this; AddRef(); return S_OK; }
@@ -1834,7 +1834,7 @@ struct MyDirectMusicPerformance
 	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirectMusicPerformanceN* pThis, REFIID riid, void** ppvObj);
 	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirectMusicPerformanceN* pThis, REFIID riid, void** ppvObj)
 	{
-		dmusicdebugprintf(__FUNCTION__ " called.\n");
+        DMUSIC_ENTER();
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -1902,7 +1902,7 @@ struct MyDirectMusic
 	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirectMusicN* pThis, REFIID riid, void** ppvObj);
 	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirectMusicN* pThis, REFIID riid, void** ppvObj)
 	{
-		dmusicdebugprintf(__FUNCTION__ " called.\n");
+        DMUSIC_ENTER();
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -1921,7 +1921,7 @@ struct MyDirectMusic
 	static HRESULT(STDMETHODCALLTYPE *SetMasterClock)(IDirectMusicN* pThis, REFGUID rguidClock);
 	static HRESULT STDMETHODCALLTYPE MySetMasterClock(IDirectMusicN* pThis, REFGUID rguidClock)
 	{
-		dmusicdebugprintf(__FUNCTION__ " called.\n");
+		DMUSIC_ENTER();
 		return DMUS_E_PORTS_OPEN; // disallow changing the clock
 	}
 
@@ -1982,7 +1982,7 @@ struct MyMediaFilter
 	static HRESULT(STDMETHODCALLTYPE *SetSyncSource)             (IMediaFilter* pThis, IReferenceClock* pClock);
 	static HRESULT STDMETHODCALLTYPE MySetSyncSource             (IMediaFilter* pThis, IReferenceClock* pClock)
 	{
-		dmusicdebugprintf(__FUNCTION__ "(0x%X) called.\n", pClock);
+		DMUSIC_ENTER(pClock);
 		if(pClock)
 			HookCOMInterface(IID_IReferenceClock, (LPVOID*)&pClock);
 		HRESULT rv = MyMediaFilter::SetSyncSource(pThis, pClock);
@@ -2018,7 +2018,7 @@ struct MyBaseFilter
 //{
 //	static BOOL Hook(IUnknown* obj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", obj);
+//		ENTER(obj);
 //		cmdprintf("SHORTTRACE: 3,50");
 //		BOOL rv = FALSE;
 //		//for(int i = 0; i < 1000; i++)
@@ -2456,7 +2456,7 @@ public:
 //{
 //	static BOOL Hook(IDirectSoundSink* obj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", obj);
+//		ENTER(obj);
 //		BOOL rv = FALSE;
 //		rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
 //		rv |= VTHOOKFUNC(IDirectSoundSink, GetSoundBufferBusIDs);
@@ -2467,7 +2467,7 @@ public:
 //	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirectSoundSink* pThis, REFIID riid, void** ppvObj);
 //	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirectSoundSink* pThis, REFIID riid, void** ppvObj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+//		ENTER(riid.Data1);
 //		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 //		if(SUCCEEDED(rv))
 //			HookCOMInterface(riid, ppvObj);
@@ -2501,7 +2501,7 @@ public:
 //{
 //	static BOOL Hook(IDirectSoundSinkFactory* obj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", obj);
+//		ENTER(obj);
 //		BOOL rv = FALSE;
 //		rv |= VTHOOKFUNC(IDirectSoundSinkFactory, CreateSoundSink);
 //		rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
@@ -2511,7 +2511,7 @@ public:
 //	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirectSoundSinkFactory* pThis, REFIID riid, void** ppvObj);
 //	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirectSoundSinkFactory* pThis, REFIID riid, void** ppvObj)
 //	{
-//		debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+//		ENTER(riid.Data1);
 //		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 //		if(SUCCEEDED(rv))
 //			HookCOMInterface(riid, ppvObj);

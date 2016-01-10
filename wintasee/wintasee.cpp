@@ -222,7 +222,7 @@ bool redrawingScreen = false;
 
 bool RedrawScreen()
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+    VERBOSE_ENTER();
 	redrawingScreen = true;
 	if(RedrawScreenD3D8())
 	{}
@@ -713,7 +713,7 @@ bool pauseHandlerSuspendedSound = false;
 
 void SaveOrLoad(int slot, bool save)
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+    VERBOSE_ENTER();
 	tls.callerisuntrusted++;
 	if(save && tasflags.storeVideoMemoryInSavestates)
 	{
@@ -752,7 +752,7 @@ void SaveOrLoad(int slot, bool save)
 
 void GetFrameInput()
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+    VERBOSE_ENTER();
 	ProcessFrameInput();
 }
 
@@ -764,7 +764,7 @@ LRESULT CALLBACK MyWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 // pausehelper
 void HandlePausedEvents()
 {
-	//verbosedebugprintf(__FUNCTION__ " called. (%d, %d)\n", pauseHandlerContiguousCallCount, pauseHandlerSuspendedSound);
+	//VERBOSE_ENTER(pauseHandlerContiguousCallCount, pauseHandlerSuspendedSound);
 	if(inPauseHandler)
 		return;
 	inPauseHandler = true;
@@ -1320,7 +1320,7 @@ struct MyClassFactory : IClassFactory
 
 	MyClassFactory(IClassFactory* cf) : m_cf(cf)
 	{
-//		debugprintf(__FUNCTION__ " called.\n");
+//		ENTER();
 //		cmdprintf("SHORTTRACE: 3,50");
 	}
 
@@ -1329,7 +1329,7 @@ struct MyClassFactory : IClassFactory
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	{
-		//debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+		//ENTER(riid.Data1);
 		HRESULT rv = m_cf->QueryInterface(riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -1338,13 +1338,13 @@ struct MyClassFactory : IClassFactory
 
     ULONG STDMETHODCALLTYPE AddRef()
 	{
-		//debugprintf(__FUNCTION__ " called.\n");
+		//ENTER();
 		return m_cf->AddRef();
 	}
 
     ULONG STDMETHODCALLTYPE Release()
 	{
-		//debugprintf(__FUNCTION__ " called.\n");
+		//ENTER();
 		ULONG count = m_cf->Release();
 		if(0 == count)
 			delete this;

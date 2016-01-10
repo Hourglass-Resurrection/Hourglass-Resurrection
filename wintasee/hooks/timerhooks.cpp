@@ -316,7 +316,7 @@ static int timerListSize = 0;
 // MULTI-THREADED APPROACH
 DWORD WINAPI MyTimerThread(LPVOID lpParam)
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+	VERBOSE_ENTER();
 	TimerThreadInfo* info = (TimerThreadInfo*)lpParam;
 
 	int isSetEvent = info->event & TIME_CALLBACK_EVENT_SET;
@@ -383,7 +383,7 @@ HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution,
 LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
 {
 //	return timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+	VERBOSE_ENTER();
 	TimerThreadInfo* threadInfo = new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
 	threadInfo->prev = ttiTail;
 	ttiTail->next = threadInfo;
@@ -403,7 +403,7 @@ LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
 HOOKFUNC MMRESULT WINAPI MytimeKillEvent(UINT uTimerID)
 {
 //	return timeKillEvent(uTimerID);
-	verbosedebugprintf(__FUNCTION__ " called.\n");
+	VERBOSE_ENTER();
 
 	verbosedebugprintf(__FUNCTION__ "(0x%X)\n", uTimerID);
 	TimerThreadInfo* info = ttiHead;

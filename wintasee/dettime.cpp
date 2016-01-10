@@ -27,14 +27,14 @@ extern int lastSetTickValue;
 	void NonDeterministicTimer::ExitFrameBoundary()
 	{
 		debuglog(LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ " called.\n");
-		//timedebugprintf(__FUNCTION__ " called.\n");
+		//TIME_ENTER();
 		lastExitTime = timeGetTime();
 	}
 	void NonDeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 	{
 		debuglog(LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ "(%d) called.\n", framesPerSecond);
 
-		//timedebugprintf(__FUNCTION__ " called.\n");
+		//TIME_ENTER();
 		lastEnterTime = timeGetTime();
 
 		GetTicks();
@@ -43,7 +43,7 @@ extern int lastSetTickValue;
 	}
 	void NonDeterministicTimer::Initialize(DWORD startTicks)
 	{
-		//timedebugprintf(__FUNCTION__ " called.\n");
+		//TIME_ENTER();
 		ticks = startTicks;
 		lastEnterTicks = startTicks;
 		lasttime = timeGetTime();
@@ -61,7 +61,7 @@ extern int lastSetTickValue;
 		ticksAddedSinceLastFrame = 0;
 		replaceReserveUsed = 0;
 
-		//timedebugprintf(__FUNCTION__ " called.\n");
+		//TIME_ENTER();
 		if(tasflags.framerate <= 0)
 			return nonDetTimer.ExitFrameBoundary(); // 0 framerate means disable deterministic timer
 
@@ -84,7 +84,7 @@ extern int lastSetTickValue;
 	void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 	{
 		debuglog(LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ "(%d) called.\n", framesPerSecond);
-		//timedebugprintf(__FUNCTION__ " called.\n");
+		//TIME_ENTER();
 		if(tasflags.framerate <= 0)
 			return nonDetTimer.EnterFrameBoundary(framesPerSecond); // 0 framerate means disable deterministic timer
 
@@ -243,7 +243,7 @@ int getCurrentFramestampLogical();
 	}
 //	void SleepAndAccumulateOutput(DWORD sleepTicks, BOOL doSleep) // sync hack, usually not used (except when waitSyncMode is 2)
 //	{
-//		timedebugprintf(__FUNCTION__ " (%d, %d) called.", sleepTicks, doSleep);
+//		TIME_ENTER(sleepTicks, doSleep);
 //	
 //		// add sleep time
 //		if(doSleep && !tasflags.fastForward)
@@ -319,7 +319,7 @@ int getCurrentFramestampLogical();
 	}
 	void DeterministicTimer::Initialize(DWORD startTicks)
 	{
-		timedebugprintf(__FUNCTION__ " called.\n");
+		TIME_ENTER();
 		InitializeWithoutDependencies(startTicks);
 		lastEnterTime = timeGetTime();
 		OnSystemTimerRecalibrated(); // in case

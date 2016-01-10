@@ -218,7 +218,7 @@ struct MyDirectDrawSurface
 	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(DIRECTDRAWSURFACEN* pThis, REFIID riid, void** ppvObj);
 	static HRESULT STDMETHODCALLTYPE MyQueryInterface(DIRECTDRAWSURFACEN* pThis, REFIID riid, void** ppvObj)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called (0x%X).\n", riid.Data1);
+		DDRAW_ENTER(riid.Data1);
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 		{
@@ -312,7 +312,7 @@ struct MyDirectDrawSurface
 	static HRESULT(STDMETHODCALLTYPE *Blt)(DIRECTDRAWSURFACEN* pThis, LPRECT destRect,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags, LPDDBLTFX bltfx);
 	static HRESULT STDMETHODCALLTYPE MyBlt(DIRECTDRAWSURFACEN* pThis, LPRECT destRect,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags, LPDDBLTFX bltfx)
 	{
-		ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+		DDRAW_ENTER(pThis);
 		//cmdprintf("SHORTTRACE: 3,50");
 
 
@@ -474,15 +474,13 @@ struct MyDirectDrawSurface
 	static HRESULT(STDMETHODCALLTYPE *BltFast)(DIRECTDRAWSURFACEN* pThis, DWORD xDest,DWORD yDest,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags);
 	static HRESULT STDMETHODCALLTYPE MyBltFast(DIRECTDRAWSURFACEN* pThis, DWORD xDest,DWORD yDest,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags)
 	{
-		ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+		DDRAW_ENTER(pThis);
 
 		// FIXME: probably doesn't handle forced windowed mode correctly (as regular Blt does)
 		// I don't know of any games that use it to draw to the fullscreen mode front buffer, though.
 
 		flags |= DDBLTFAST_WAIT;
 		flags &= ~DDBLTFAST_DONOTWAIT;
-
-		//ddrawdebugprintf(__FUNCTION__ " called.\n");
 
 		DDSCAPSN caps;
 		GetCaps(pThis, &caps);
@@ -586,7 +584,7 @@ struct MyDirectDrawSurface
 	static HRESULT STDMETHODCALLTYPE MyBltBatch(DIRECTDRAWSURFACEN* pThis, LPDDBLTBATCH a, DWORD b, DWORD c)
 	{
 		// NYI... do any games use this?
-		ddrawdebugprintf(__FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X) called.\n", pThis, a, b, c);
+		DDRAW_ENTER(pThis, a, b, c);
 		HRESULT rv = BltBatch(pThis, a, b, c);
 		return rv;
 	}
@@ -596,7 +594,7 @@ struct MyDirectDrawSurface
 	{
 		HRESULT rv = GetCaps(pThis, lpddscaps);
 
-		ddrawdebugprintf(__FUNCTION__ " called. dwCaps = 0x%X.\n", lpddscaps->dwCaps);
+        DDRAW_ENTER(lpddscaps->dwCaps);
 
 		return rv;
 	}
@@ -606,7 +604,7 @@ struct MyDirectDrawSurface
 	{
 		HRESULT rv = GetSurfaceDesc(pThis, lpddsdesc);
 
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		DDSURFACEDESCN& ddsd = *lpddsdesc;
 		ddrawdebugprintf("dwFlags = 0x%X.\n", ddsd.dwFlags);
 		ddrawdebugprintf("dwWidth,dwHeight = %d,%d.\n", ddsd.dwWidth,ddsd.dwHeight);
@@ -660,7 +658,7 @@ struct MyDirectDrawSurface
 //#pragma message("FIXMEEE")
 //		cmdprintf("DEBUGREDALERT: 0");
 
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		if(lpddpfmt)
 			ddrawdebugprintf("dwRGBBitCount = %d.\n", lpddpfmt->dwRGBBitCount);
 
@@ -670,7 +668,7 @@ struct MyDirectDrawSurface
 	static HRESULT(STDMETHODCALLTYPE *Flip)(DIRECTDRAWSURFACEN* pThis, DIRECTDRAWSURFACEN* pOther, DWORD flags);
 	static HRESULT STDMETHODCALLTYPE MyFlip(DIRECTDRAWSURFACEN* pThis, DIRECTDRAWSURFACEN* pOther, DWORD flags)
 	{
-		ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+		DDRAW_ENTER(pThis);
 
 		HRESULT rv;
 		if(!(tasflags.forceWindowed))
@@ -710,7 +708,7 @@ struct MyDirectDrawSurface
 		GetCaps(pThis, &caps);
 		BOOL isPrimary = (caps.dwCaps & (DDSCAPS_PRIMARYSURFACE|DDSCAPS_FRONTBUFFER));
 
-		ddrawdebugprintf(__FUNCTION__ "(0x%X, lockFlags=0x%X, primary=%d) called.\n", pThis, lockFlags, isPrimary);
+		DDRAW_ENTER(pThis, lockFlags, isPrimary);
 
 		lockFlags |= DDLOCK_WAIT;
 
@@ -762,7 +760,7 @@ struct MyDirectDrawSurface
 		GetCaps(pThis, &caps);
 		BOOL isPrimary = (caps.dwCaps & (DDSCAPS_PRIMARYSURFACE|DDSCAPS_FRONTBUFFER));
 
-		ddrawdebugprintf(__FUNCTION__ "(0x%X, primary=%d) called.\n", pThis, isPrimary);
+		DDRAW_ENTER(pThis, isPrimary);
 
 		if(!isPrimary || IDirectDrawSurfaceTraits<IDirectDrawSurfaceN>::NUMBER > 3) // hack
 		{
@@ -848,7 +846,7 @@ struct MyDirectDrawSurface
 	static HRESULT(STDMETHODCALLTYPE *ReleaseDC)(DIRECTDRAWSURFACEN* pThis, HDC hdc);
 	static HRESULT STDMETHODCALLTYPE MyReleaseDC(DIRECTDRAWSURFACEN* pThis, HDC hdc)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		std::map<HDC,ManualHDCInfo>::iterator found = manuallyCreatedSurfaceDCs.find(hdc);
 		if(found == manuallyCreatedSurfaceDCs.end())
 		{
@@ -1036,7 +1034,7 @@ struct MyDirectDrawSurface
 					memcpy(pixels, desc.lpSurface, size);
 					Unlock(pThis, NULL);
 					ddrawdebugprintf("videoMemoryPixelBackup[0x%X] is 0x%X, size=0x%X\n", pThis, pixels, size);
-					// ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+					// DDRAW_ENTER(pThis);
 				}
 			}
 		}
@@ -1063,7 +1061,7 @@ struct MyDirectDrawSurface
 							memcpy(desc.lpSurface, pixels, size);
 							Unlock(pThis, NULL);
 							ddrawdebugprintf("videoMemoryPixelBackup[0x%X] is 0x%X, size=0x%X (restoring)\n", pThis, pixels, size);
-							// ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+							// DDRAW_ENTER(pThis);
 						}
 					}
 					else
@@ -1243,7 +1241,7 @@ public:
 	/*** IUnknown methods ***/
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	{
-		ddrawdebugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+		DDRAW_ENTER(riid.Data1);
 		HRESULT rv = m_dd->QueryInterface(riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
@@ -1252,13 +1250,13 @@ public:
 
     ULONG STDMETHODCALLTYPE AddRef()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->AddRef();
 	}
 
     ULONG STDMETHODCALLTYPE Release()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		ULONG count = m_dd->Release();
 		if(0 == count)
 			delete this;
@@ -1269,12 +1267,12 @@ public:
     /*** IDirectDraw methods ***/
     STDMETHOD(Compact)()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->Compact();
 	}
     STDMETHOD(CreateClipper)(DWORD a, LPDIRECTDRAWCLIPPER FAR* b, IUnknown FAR * c)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->CreateClipper(a,b,c);
 	}
     STDMETHOD(CreatePalette)(DWORD dwFlags, LPPALETTEENTRY b, LPDIRECTDRAWPALETTE FAR* c, IUnknown FAR * d)
@@ -1330,7 +1328,7 @@ public:
 			//}
 		}
 
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		ddrawdebugprintf("dwFlags = 0x%X.\n", ddsd.dwFlags);
 		ddrawdebugprintf("dwWidth,dwHeight = %d,%d.\n", ddsd.dwWidth,ddsd.dwHeight);
 		ddrawdebugprintf("lPitch = %d.\n", ddsd.lPitch);
@@ -1473,7 +1471,7 @@ public:
 	}
     STDMETHOD(DuplicateSurface)( DIRECTDRAWSURFACEN* a, DIRECTDRAWSURFACEN* FAR * b)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		HRESULT rv = m_dd->DuplicateSurface(a,b);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(IID_IDirectDrawSurfaceN, (LPVOID*)b);
@@ -1481,27 +1479,27 @@ public:
 	}
     STDMETHOD(EnumDisplayModes)( DWORD a, DDSURFACEDESCN* b, LPVOID c, LPDDENUMMODESCALLBACKN d)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->EnumDisplayModes(a,b,c,d);
 	}
     STDMETHOD(EnumSurfaces)(DWORD a, DDSURFACEDESCN* b, LPVOID c,LPDDENUMSURFACESCALLBACKN d)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->EnumSurfaces(a,b,c,d);
 	}
     STDMETHOD(FlipToGDISurface)()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->FlipToGDISurface();
 	}
     STDMETHOD(GetCaps)( LPDDCAPS a, LPDDCAPS b)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->GetCaps(a,b);
 	}
     STDMETHOD(GetDisplayMode)( DDSURFACEDESCN* lpddsd)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		HRESULT rv = m_dd->GetDisplayMode(lpddsd);
 		if(SUCCEEDED(rv) && fakeDisplayValid)
 		{
@@ -1514,17 +1512,17 @@ public:
 	}
     STDMETHOD(GetFourCCCodes)( LPDWORD a, LPDWORD b)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->GetFourCCCodes(a,b);
 	}
     STDMETHOD(GetGDISurface)(DIRECTDRAWSURFACEN* FAR * a)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->GetGDISurface(a);
 	}
     STDMETHOD(GetMonitorFrequency)(LPDWORD a)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 //		return m_dd->GetMonitorFrequency(a);
 		if(fakeDisplayRefresh >= 10 && fakeDisplayRefresh <= 300)
 			return fakeDisplayRefresh;
@@ -1561,19 +1559,20 @@ public:
 	}
     STDMETHOD(Initialize)(GUID FAR * a)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->Initialize(a);
 	}
     STDMETHOD(RestoreDisplayMode)()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->RestoreDisplayMode();
 	}
     STDMETHOD(SetCooperativeLevel)(HWND hwnd, DWORD flags)
-	{
+    {
+        DDRAW_ENTER(hwnd, flags);
+
 		if(IsWindow(hwnd))
 			gamehwnd = hwnd;
-		ddrawdebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", hwnd, flags);
 
 		if(tasflags.forceWindowed)
 		{
@@ -1634,36 +1633,36 @@ public:
 	{
 //		if(tasflags.fastForward)
 			return DD_OK;
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->WaitForVerticalBlank(a,b);
 	}
 	
 	// IDirectDraw2
 	STDMETHOD(GetAvailableVidMem)(DDSCAPSN* a, LPDWORD b, LPDWORD c)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->GetAvailableVidMem(a,b,c);
 	}
 
 	// IDirectDraw4
 	STDMETHOD(GetSurfaceFromDC) (HDC a, DIRECTDRAWSURFACEN* * b)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->GetSurfaceFromDC(a,b);
 	}
     STDMETHOD(RestoreAllSurfaces)()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->RestoreAllSurfaces();
 	}
     STDMETHOD(TestCooperativeLevel)()
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		return m_dd->TestCooperativeLevel();
 	}
     STDMETHOD(GetDeviceIdentifier)(DDDEVICEIDENTIFIERN* a, DWORD b)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 
 		ThreadLocalStuff& curtls = tls;
 
@@ -1743,14 +1742,14 @@ template<> HRESULT MyDirectDraw<IDirectDraw>::SetDisplayMode(DWORD width, DWORD 
 
 template<> HRESULT MyDirectDraw<IDirectDraw7>::StartModeTest(LPSIZE a, DWORD b, DWORD c)
 {
-	ddrawdebugprintf(__FUNCTION__ " called.\n");
+	DDRAW_ENTER();
 //	if(tasflags.forceWindowed)
 //		return DD_OK;
 	return m_dd->StartModeTest(a,b,c);
 }
 template<> HRESULT MyDirectDraw<IDirectDraw7>::EvaluateMode(DWORD a, DWORD* b)
 {
-	ddrawdebugprintf(__FUNCTION__ " called.\n");
+	DDRAW_ENTER();
 //	if(tasflags.forceWindowed)
 //		return DD_OK;
 	return m_dd->EvaluateMode(a,b);
@@ -1785,7 +1784,7 @@ struct MyDirectDrawGammaControl
     static HRESULT(STDMETHODCALLTYPE *GetGammaRamp)(IDirectDrawGammaControl* pThis, DWORD dwFlags, LPDDGAMMARAMP pRamp);
     static HRESULT STDMETHODCALLTYPE MyGetGammaRamp(IDirectDrawGammaControl* pThis, DWORD dwFlags, LPDDGAMMARAMP pRamp)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called.\n");
+		DDRAW_ENTER();
 		//HRESULT rv = GetGammaRamp(pThis, dwFlags, pRamp);
 		HRESULT rv;
 		if(pRamp)
@@ -1848,7 +1847,7 @@ struct MyDirectDrawGammaControl
 	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirectDrawGammaControl* pThis, REFIID riid, void** ppvObj);
 	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirectDrawGammaControl* pThis, REFIID riid, void** ppvObj)
 	{
-		ddrawdebugprintf(__FUNCTION__ " called (0x%X).\n", riid.Data1);
+		DDRAW_ENTER(riid.Data1);
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObj);
