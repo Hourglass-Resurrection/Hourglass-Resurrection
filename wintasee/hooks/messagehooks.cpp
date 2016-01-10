@@ -762,7 +762,7 @@ HOOKFUNC LRESULT WINAPI MyCallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LP
 
 //HOOKFUNC BOOL WINAPI MyRegisterUserApiHook(HINSTANCE hInst, FARPROC func)
 //{
-//	//debugprintf(__FUNCTION__ " called.\n");
+//	//ENTER();
 //	return 1;
 //}
 
@@ -1597,7 +1597,7 @@ HOOKFUNC LRESULT WINAPI MyDispatchMessageW(CONST MSG *lpMsg)
 
 HOOKFUNC BOOL WINAPI MyGetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 {
-//	verbosedebugprintf(__FUNCTION__"(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+//	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 	debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 #ifdef EMULATE_MESSAGE_QUEUES
 	if(!lpMsg)
@@ -1701,7 +1701,7 @@ HOOKFUNC BOOL WINAPI MyGetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, U
 }
 HOOKFUNC BOOL WINAPI MyGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 {
-//	verbosedebugprintf(__FUNCTION__"(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+//	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 	debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 #ifdef EMULATE_MESSAGE_QUEUES
 	if(!lpMsg)
@@ -1802,7 +1802,7 @@ HOOKFUNC BOOL WINAPI MyGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, U
 }
 HOOKFUNC BOOL WINAPI MyPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
-//	verbosedebugprintf(__FUNCTION__"(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+//	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 ////	FrameBoundary();
 	debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	if(!lpMsg)
@@ -1895,7 +1895,7 @@ HOOKFUNC BOOL WINAPI MyPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, 
 }
 HOOKFUNC BOOL WINAPI MyPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
-//	verbosedebugprintf(__FUNCTION__"(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+//	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	if(!lpMsg)
 		return FALSE;

@@ -615,10 +615,14 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
 
 HOOKFUNC LONG WINAPI MyChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlags)
 {
-	if(lpDevMode)
-		debugprintf(__FUNCTION__ "(width=%d, height=%d, flags=0x%X) called.\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, dwFlags);
-	else
-		debugprintf(__FUNCTION__ "(flags=0x%X) called.\n", dwFlags);
+    if (lpDevMode)
+    {
+        ENTER(lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, dwFlags);
+    }
+    else
+    {
+        ENTER(dwFlags);
+    }
 	if(tasflags.forceWindowed && lpDevMode /*&& (dwFlags & CDS_FULLSCREEN)*/)
 	{
 		fakeDisplayWidth = lpDevMode->dmPelsWidth;
@@ -638,9 +642,9 @@ HOOKFUNC LONG WINAPI MyChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlag
 HOOKFUNC LONG WINAPI MyChangeDisplaySettingsW(LPDEVMODEW lpDevMode, DWORD dwFlags)
 {
 	if(lpDevMode)
-		debugprintf(__FUNCTION__ "(width=%d, height=%d, flags=0x%X) called.\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, dwFlags);
+		ENTER(lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, dwFlags);
 	else
-		debugprintf(__FUNCTION__ "(flags=0x%X) called.\n", dwFlags);
+		ENTER(dwFlags);
 	if(tasflags.forceWindowed && lpDevMode /*&& (dwFlags & CDS_FULLSCREEN)*/)
 	{
 		fakeDisplayWidth = lpDevMode->dmPelsWidth;
