@@ -11,6 +11,7 @@
 #include <global.h>
 #include <MemoryManager\MemoryManager.h>
 #include <shared\ipc.h>
+#include <Utils.h>
 /*
  * TODO: Including this breaks input hooks.
  * -- Warepire
@@ -25,7 +26,10 @@
  * Since [X]_FIXED allocations cannot be discarded, or carry a lock count, they are indicated by
  * the value UINT_MAX. This is because they must be separated from unknown (invalid) pointers.
  */
-std::map<LPVOID, UINT, std::less<LPVOID>, ManagedAllocator<std::pair<LPVOID, UINT>>> g_alloc_flags;
+LazyType<std::map<LPVOID,
+                  UINT,
+                  std::less<LPVOID>,
+                  ManagedAllocator<std::pair<LPVOID, UINT>>>> g_alloc_flags;
 
 /*
  * Emulate the Windows Heap objects using the minimum information necessary.
@@ -47,7 +51,7 @@ struct HeapObject
     }
 };
 HeapObject* g_default_heap = nullptr;
-std::vector<HeapObject*, ManagedAllocator<HeapObject*>> g_heaps;
+LazyType<std::vector<HeapObject*, ManagedAllocator<HeapObject*>>> g_heaps;
 
 HOOKFUNC LPVOID WINAPI MyGlobalLock(HGLOBAL hMem);
 HOOKFUNC BOOL WINAPI MyGlobalUnlock(HGLOBAL hMem);
@@ -128,7 +132,7 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
                 /*
                  * Keep the default heap in the front of the vector.
                  */
-                g_heaps.insert(g_heaps.begin(), rv);
+                g_heaps().insert(g_heaps().begin(), rv);
             }
         }
     }
@@ -138,6 +142,7 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
 HOOKFUNC DWORD WINAPI MyGetProcessHeaps(DWORD NumberOfHeaps, PHANDLE ProcessHeaps)
 {
     debugprintf(__FUNCTION__ "(0x%X 0x%p) called.\n", NumberOfHeaps, ProcessHeaps);
+    DWORD rv = (g_heaps().size() > NumberOfHeaps) ? NumberOfHeaps : g_heaps().size();
     if (g_default_heap == nullptr)
     {
         if (MyGetProcessHeap() == nullptr)
@@ -146,8 +151,11 @@ HOOKFUNC DWORD WINAPI MyGetProcessHeaps(DWORD NumberOfHeaps, PHANDLE ProcessHeap
             return 0;
         }
     }
-    *ProcessHeaps = g_heaps.data();
-    return (g_heaps.size() > NumberOfHeaps) ? NumberOfHeaps : g_heaps.size();
+    for (DWORD i = 0; i < rv; ++i)
+    {
+        ProcessHeaps[i] = g_heaps()[i];
+    }
+    return rv;
 }
 
 HOOKFUNC HGLOBAL WINAPI MyGlobalAlloc(UINT uFlags, SIZE_T dwBytes)
@@ -165,11 +173,11 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalAlloc(UINT uFlags, SIZE_T dwBytes)
     {
         if ((uFlags & GMEM_MOVEABLE) == GMEM_MOVEABLE)
         {
-            g_alloc_flags[address] = (uFlags & GMEM_DISCARDABLE);
+            g_alloc_flags()[address] = (uFlags & GMEM_DISCARDABLE);
         }
         else
         {
-            g_alloc_flags[address] = UINT_MAX;
+            g_alloc_flags()[address] = UINT_MAX;
         }
     }
     else
@@ -194,8 +202,8 @@ HOOKFUNC void WINAPI MyGlobalFix(HGLOBAL hMem)
 HOOKFUNC UINT WINAPI MyGlobalFlags(HGLOBAL hMem)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
-    auto it = g_alloc_flags.find(hMem);
-    if (it != g_alloc_flags.end())
+    auto it = g_alloc_flags().find(hMem);
+    if (it != g_alloc_flags().end())
     {
         if (it->second == UINT_MAX)
         {
@@ -210,7 +218,7 @@ HOOKFUNC UINT WINAPI MyGlobalFlags(HGLOBAL hMem)
 HOOKFUNC HGLOBAL WINAPI MyGlobalFree(HGLOBAL hMem)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
-    if (g_alloc_flags.find(hMem) != g_alloc_flags.end())
+    if (g_alloc_flags().find(hMem) != g_alloc_flags().end())
     {
         MemoryManager::Deallocate(hMem);
         return nullptr;
@@ -231,7 +239,7 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalHandle(LPCVOID pMem)
         SetLastError(ERROR_INVALID_PARAMETER);
         address = nullptr;
     }
-    else if (g_alloc_flags.find(address) == g_alloc_flags.end())
+    else if (g_alloc_flags().find(address) == g_alloc_flags().end())
     {
         SetLastError(ERROR_INVALID_HANDLE);
         address = nullptr;
@@ -243,13 +251,13 @@ HOOKFUNC LPVOID WINAPI MyGlobalLock(HGLOBAL hMem)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
     LPVOID rv = hMem;
-    auto it = g_alloc_flags.find(hMem);
+    auto it = g_alloc_flags().find(hMem);
     if (hMem == nullptr)
     {
         SetLastError(ERROR_DISCARDED);
         rv = nullptr;
     }
-    else if (it == g_alloc_flags.end())
+    else if (it == g_alloc_flags().end())
     {
         SetLastError(ERROR_INVALID_HANDLE);
         rv = nullptr;
@@ -281,14 +289,14 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalReAlloc(HGLOBAL hMem, SIZE_T dwBytes, UINT uFlag
     debugprintf(__FUNCTION__ "(0x%p 0x%X 0x%X) called.\n", hMem, dwBytes, uFlags);
     UINT alloc_flags = 0;
     HGLOBAL rv = nullptr;
-    auto it = g_alloc_flags.find(hMem);
+    auto it = g_alloc_flags().find(hMem);
 
     if ((uFlags & GMEM_ZEROINIT) == GMEM_ZEROINIT)
     {
         alloc_flags |= MemoryManager::ALLOC_ZEROINIT;
     }
 
-    if (it == g_alloc_flags.end())
+    if (it == g_alloc_flags().end())
     {
         SetLastError(ERROR_NOACCESS);
     }
@@ -347,8 +355,8 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalReAlloc(HGLOBAL hMem, SIZE_T dwBytes, UINT uFlag
                     temp_flags &= ~GMEM_DISCARDABLE;
                 }
                 temp_flags &= ~GMEM_DISCARDED;
-                g_alloc_flags.erase(it);
-                g_alloc_flags[rv] = temp_flags;
+                g_alloc_flags().erase(it);
+                g_alloc_flags()[rv] = temp_flags;
             }
         }
         else if ((it->second & GMEM_LOCKCOUNT) == 0 &&
@@ -369,8 +377,8 @@ HOOKFUNC SIZE_T WINAPI MyGlobalSize(HGLOBAL hMem)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
     SIZE_T rv = 0;
-    auto it = g_alloc_flags.find(hMem);
-    if (it == g_alloc_flags.end())
+    auto it = g_alloc_flags().find(hMem);
+    if (it == g_alloc_flags().end())
     {
         SetLastError(ERROR_INVALID_HANDLE);
     }
@@ -398,8 +406,8 @@ HOOKFUNC BOOL WINAPI MyGlobalUnlock(HGLOBAL hMem)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
     BOOL rv = TRUE;
-    auto it = g_alloc_flags.find(hMem);
-    if (it == g_alloc_flags.end())
+    auto it = g_alloc_flags().find(hMem);
+    if (it == g_alloc_flags().end())
     {
         SetLastError(ERROR_INVALID_HANDLE);
         rv = FALSE;
@@ -433,7 +441,7 @@ HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
     debugprintf(__FUNCTION__ "(0x%X 0x%X) called: 0x%p\n", dwFlags, dwBytes, hHeap);
     LPVOID rv = nullptr;
     UINT alloc_flags = 0;
-    for (auto& h : g_heaps)
+    for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
@@ -506,13 +514,13 @@ HOOKFUNC HANDLE WINAPI MyHeapCreate(DWORD flOptions, SIZE_T dwInitialSize, SIZE_
     else
     {
         heap = ::new HeapObject(flOptions, dwInitialSize, dwMaximumSize);
-        g_heaps.push_back(heap);
+        g_heaps().push_back(heap);
         LPVOID alloc = MyHeapAlloc(heap, 0, dwInitialSize);
         if (alloc == nullptr)
         {
             SetLastError(ERROR_OUTOFMEMORY);
             MemoryManager::Deallocate(heap);
-            g_heaps.pop_back();
+            g_heaps().pop_back();
             heap = nullptr;
         }
     }
@@ -523,19 +531,19 @@ HOOKFUNC BOOL WINAPI MyHeapDestroy(HANDLE hHeap)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hHeap);
     BOOL rv = TRUE;
-    auto it = g_heaps.begin();
+    auto it = g_heaps().begin();
     if (hHeap == nullptr)
     {
         SetLastError(ERROR_INVALID_HANDLE);
     }
     else if (hHeap != g_default_heap)
     {
-        if (g_heaps.front() == g_default_heap)
+        if (g_heaps().front() == g_default_heap)
         {
             it++;
         }
         SetLastError(ERROR_INVALID_HANDLE);
-        for (; it != g_heaps.end(); ++it)
+        for (; it != g_heaps().end(); ++it)
         {
             HeapObject* h = *it;
             if (h == hHeap)
@@ -545,7 +553,7 @@ HOOKFUNC BOOL WINAPI MyHeapDestroy(HANDLE hHeap)
                     MemoryManager::Deallocate(h->heap_segments.back());
                     h->heap_segments.pop_back();
                 }
-                g_heaps.erase(it);
+                g_heaps().erase(it);
                 MemoryManager::Deallocate(hHeap);
                 rv = FALSE;
                 SetLastError(ERROR_SUCCESS);
@@ -570,7 +578,7 @@ HOOKFUNC BOOL WINAPI MyHeapFree(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem)
     }
     else
     {
-        for (auto& h : g_heaps)
+        for (auto& h : g_heaps())
         {
             if (h == hHeap)
             {
@@ -606,7 +614,7 @@ heap_segment_freed:
 HOOKFUNC BOOL WINAPI MyHeapLock(HANDLE hHeap)
 {
     debugprintf(__FUNCTION__ "(0x%p) called.\n", hHeap);
-    for (auto& h : g_heaps)
+    for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
@@ -660,7 +668,7 @@ HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, 
     BOOL heap_locked = FALSE;
     UINT alloc_flags = 0;
     SIZE_T old_size = 0;
-    for (auto& h : g_heaps)
+    for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
@@ -750,7 +758,7 @@ HOOKFUNC SIZE_T WINAPI MyHeapSize(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
     debugprintf(__FUNCTION__ "(0x%X 0x%p) called: 0x%p\n", dwFlags, lpMem, hHeap);
     BOOL heap_locked = FALSE;
     SIZE_T rv = 0;
-    for (auto& h : g_heaps)
+    for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
@@ -784,7 +792,7 @@ heap_size_done:
 HOOKFUNC BOOL WINAPI MyHeapUnlock(HANDLE hHeap)
 {
     debugprintf(__FUNCTION__ " called: 0x%p\n", hHeap);
-    for (auto& h : g_heaps)
+    for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
@@ -803,7 +811,7 @@ HOOKFUNC BOOL WINAPI MyHeapValidate(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
     BOOL rv = FALSE;
     if (hHeap != nullptr)
     {
-        for (auto &h : g_heaps)
+        for (auto &h : g_heaps())
         {
             if (h == hHeap)
             {

@@ -7,6 +7,7 @@
 
 #include <MemoryManager\MemoryManager.h>
 #include <msgqueue.h>
+#include <Utils.h>
 #include <wintasee.h>
 
 void TickMultiMediaTimers(DWORD time=0); // extern? (I mean, move to header)
@@ -38,16 +39,16 @@ struct SetTimerDataCompare // Struct with functor that helps us sort the element
     }
 };
 // Ordered set, we're sorting on TimerID as that is the most important detail in the struct.
-static std::set<SetTimerData,
+static LazyType<std::set<SetTimerData,
                 SetTimerDataCompare,
-                ManagedAllocator<SetTimerData>> s_pendingSetTimers;
+                ManagedAllocator<SetTimerData>>> s_pendingSetTimers;
 static CRITICAL_SECTION s_pendingSetTimerCS;
 
 // Creates a guaranteed unique ID that is as low as possible 
 UINT_PTR CreateNewTimerID()
 {
     UINT_PTR rv = 1;
-    for(auto& it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+    for(auto& it = s_pendingSetTimers().begin(); it != s_pendingSetTimers().end(); it++)
     {
         if(rv == it->nIDEvent)
         {
@@ -77,7 +78,7 @@ void ProcessTimers()
 	//	bool triedAgain = false;
 	//tryAgain:
 		EnterCriticalSection(&s_pendingSetTimerCS);
-		for(auto& iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end();)
+		for(auto& iter = s_pendingSetTimers().begin(); iter != s_pendingSetTimers().end();)
 		{
 	////		debugprintf("HOO: %d, %d\n", value.targetTime, time);
 	//		if((int)(earliestTriggerTime - value.targetTime) > 0)
@@ -85,7 +86,7 @@ void ProcessTimers()
 			if((int)(time - iter->targetTime) >= 0)
 			{
 				triggeredTimers.push_back(*iter);
-				s_pendingSetTimers.erase(iter++);
+				s_pendingSetTimers().erase(iter++);
 			}
 			else
 			{
@@ -221,7 +222,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
 	if(nIDEvent != 0)
 	{
 		bool found = false;
-        for (auto& it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+        for (auto& it = s_pendingSetTimers().begin(); it != s_pendingSetTimers().end(); it++)
         {
             // Find the right timer
             if (it->nIDEvent == data.nIDEvent)
@@ -250,7 +251,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
                 data.nIDEvent = CreateNewTimerID();
             }
 
-            s_pendingSetTimers.insert(data);
+            s_pendingSetTimers().insert(data);
         }
 	}
     else // No ID provided, assuming new timer creation ... TODO: Error if hWnd is not NULL?
@@ -263,7 +264,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
         // Necessary? Seems not, nothing changes here so... Remove out-comment if everything broke
         // bool threadAlreadyExisted = false;
 
-        s_pendingSetTimers.insert(data);
+        s_pendingSetTimers().insert(data);
     }
 
 	LeaveCriticalSection(&s_pendingSetTimerCS);
@@ -575,7 +576,7 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
 	BOOL rv = FALSE;
 	EnterCriticalSection(&s_pendingSetTimerCS);
 
-	for (auto& iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end(); iter++)
+	for (auto& iter = s_pendingSetTimers().begin(); iter != s_pendingSetTimers().end(); iter++)
     {
 	    if((iter->hWnd == hWnd) && (iter->nIDEvent == nIDEvent))
 	    {
@@ -584,13 +585,13 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
             {
                 // Can't modify a value of a set element directly
                 SetTimerData data = *iter;
-                s_pendingSetTimers.erase(iter);
+                s_pendingSetTimers().erase(iter);
                 data.killRequested = true;
-                s_pendingSetTimers.insert(data);
+                s_pendingSetTimers().insert(data);
             }
 		    else
             {
-			    s_pendingSetTimers.erase(iter);
+			    s_pendingSetTimers().erase(iter);
             }
 	    }
     }

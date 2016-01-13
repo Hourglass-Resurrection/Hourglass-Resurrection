@@ -3,11 +3,11 @@
 
 #include <map>
 
-#include <wintasee.h>
+#include <MemoryManager\MemoryManager.h>
 #include <shared\winutil.h>
 #include <tls.h>
-
-#include <MemoryManager\MemoryManager.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 
@@ -818,32 +818,32 @@ struct _tiddata {
 
 typedef struct _tiddata * _ptiddata;
 BOOL FlsRecursing = FALSE;
-std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>> fseeds;
+LazyType<std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>>> fseeds;
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
 	if ((!FlsRecursing) && (lpFlsData != NULL)) {
 		FlsRecursing = TRUE;
-		if (fseeds.find(dwFlsIndex) == fseeds.end()) {
+		if (fseeds().find(dwFlsIndex) == fseeds().end()) {
 			_ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
 			debuglog(LCF_THREAD,"FlsSetValue(%d,lpFlsData), set _tiddata structure at %08X",dwFlsIndex,ptd);
 			cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d",&(ptd->_holdrand),dwFlsIndex);
-			fseeds[dwFlsIndex] = &(ptd->_holdrand);
+			fseeds()[dwFlsIndex] = &(ptd->_holdrand);
 		}
 		FlsRecursing = FALSE;
 	}
 	return rv;
 }
 BOOL TlsRecursing = FALSE;
-std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>> tseeds;
+LazyType<std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>>> tseeds;
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
 	BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
 	if ((!TlsRecursing) && (lpTlsValue != NULL)) {
 		TlsRecursing = TRUE;
-		if (tseeds.find(dwTlsIndex) == tseeds.end()) {
+		if (tseeds().find(dwTlsIndex) == tseeds().end()) {
 			_ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
 			debuglog(LCF_THREAD,"TlsSetValue(%d,lpTlsValue), set _tiddata structure at %08X",dwTlsIndex,ptd);
 			cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d",&(ptd->_holdrand),dwTlsIndex);
-			tseeds[dwTlsIndex] = &(ptd->_holdrand);
+			tseeds()[dwTlsIndex] = &(ptd->_holdrand);
 		}
 		TlsRecursing = FALSE;
 	}

@@ -8,12 +8,13 @@
 #include <global.h>
 #include <MemoryManager\MemoryManager.h>
 #include <shared\ipc.h>
+#include <Utils.h>
 
-typedef std::set<HANDLE, std::less<HANDLE>, ManagedAllocator<HANDLE>> HandleSet;
-static std::map<DWORD,
+typedef LazyType<std::set<HANDLE, std::less<HANDLE>, ManagedAllocator<HANDLE>>> HandleSet;
+static LazyType<std::map<DWORD,
                 HandleSet,
                 std::less<DWORD>,
-                ManagedAllocator<std::pair<DWORD, HandleSet>>> s_threadIdHandles;
+                ManagedAllocator<std::pair<DWORD, HandleSet>>>> s_threadIdHandles;
 static CRITICAL_SECTION s_handleCS;
 
 //static std::map<DWORD,HANDLE> s_threadHandleToFakeThreadHandle;
@@ -22,18 +23,18 @@ static CRITICAL_SECTION s_handleCS;
 void CloseHandles(DWORD threadId)
 {
 	EnterCriticalSection(&s_handleCS);
-	auto& handles = s_threadIdHandles.find(threadId);
-    if (handles == s_threadIdHandles.end())
+	auto& handles = s_threadIdHandles().find(threadId);
+    if (handles == s_threadIdHandles().end())
     {
         return;
     }
-	for (auto& iter = handles->second.begin(); iter != handles->second.end(); iter++)
+	for (auto& iter = handles->second().begin(); iter != handles->second().end(); iter++)
 	{
 		HANDLE handle = *iter;
 		debugprintf("CLOSING HANDLE: 0x%X\n", (void*)handle);
 		CloseHandle(handle);
 	}
-	handles->second.clear();
+	handles->second().clear();
 	LeaveCriticalSection(&s_handleCS);
 }
 
@@ -49,8 +50,8 @@ HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,
     }
 	//verbosedebugprintf("%d %d %s\n", bManualReset, bInitialState, lpName);
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -64,8 +65,8 @@ HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes,
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	//for(unsigned int i = 0; i < handles.size(); i++)
 	//	debugprintf(" . 0x%X . ", handles[i]);
 	LeaveCriticalSection(&s_handleCS);
@@ -80,8 +81,8 @@ HOOKFUNC HANDLE WINAPI MyOpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, 
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -94,8 +95,8 @@ HOOKFUNC HANDLE WINAPI MyOpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, 
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -121,8 +122,8 @@ HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, B
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -135,8 +136,8 @@ HOOKFUNC HANDLE WINAPI MyOpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, 
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -149,8 +150,8 @@ HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, B
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -163,8 +164,8 @@ HOOKFUNC HANDLE WINAPI MyOpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, 
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -218,11 +219,11 @@ HOOKFUNC BOOL WINAPI MyDuplicateHandle(HANDLE hSourceProcessHandle,
 	debuglog(LCF_SYNCOBJ, __FUNCTION__ "(0x%X -> 0x%X).\n", hSourceProcessHandle, *lpTargetHandle);
 
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(*lpTargetHandle);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(*lpTargetHandle);
 	if(dwOptions & DUPLICATE_CLOSE_SOURCE)
 	{
-		handles.erase(hSourceProcessHandle);
+		handles().erase(hSourceProcessHandle);
 		//std::vector<HANDLE>::iterator iter = std::find(handles.begin(), handles.end(), hSourceProcessHandle);
 		//if(iter != handles.end())
 		//	handles.erase(iter);
@@ -247,8 +248,8 @@ HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttri
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -261,8 +262,8 @@ HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttri
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -275,8 +276,8 @@ HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess,BOOL bInheritHandl
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -289,8 +290,8 @@ HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess,BOOL bInheritHandl
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -303,8 +304,8 @@ HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttri
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -317,8 +318,8 @@ HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttri
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -331,8 +332,8 @@ HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess,BOOL bInheritH
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
@@ -345,8 +346,8 @@ HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess,BOOL bInheritH
         return nullptr;
     }
 	EnterCriticalSection(&s_handleCS);
-	HandleSet& handles = s_threadIdHandles[GetCurrentThreadId()];
-	handles.insert(rv);
+	HandleSet& handles = s_threadIdHandles()[GetCurrentThreadId()];
+	handles().insert(rv);
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }

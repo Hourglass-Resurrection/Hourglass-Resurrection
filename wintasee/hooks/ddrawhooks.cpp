@@ -4,13 +4,13 @@
 #include <map>
 
 #include <external\ddraw.h>
-#include <wintasee.h>
-#include <tls.h>
-#include <phasedetection.h>
-
 #include <MemoryManager\MemoryManager.h>
+#include <phasedetection.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
-static PhaseDetector s_phaseDetector;
+static LazyType<PhaseDetector> s_phaseDetector;
 
 void FakeBroadcastDisplayChange(int width, int height, int depth);
 
@@ -48,10 +48,10 @@ struct ManualHDCInfo
 {
 	HBITMAP oldBitmap;
 };
-std::map<HDC,
+LazyType<std::map<HDC,
          ManualHDCInfo,
          std::less<HDC>,
-         ManagedAllocator<std::pair<HDC, ManualHDCInfo>>> manuallyCreatedSurfaceDCs;
+         ManagedAllocator<std::pair<HDC, ManualHDCInfo>>>> manuallyCreatedSurfaceDCs;
 
 
 void RescaleRect(RECT& rect, RECT from, RECT to);
@@ -126,10 +126,10 @@ struct IDirectDrawOwnerInfo
 	void* ddrawInterface;
 	int ddrawVersionNumber;
 };
-static std::map<void*,
+static LazyType<std::map<void*,
                 IDirectDrawOwnerInfo,
                 std::less<void*>,
-                ManagedAllocator<std::pair<void*, IDirectDrawOwnerInfo>>> s_ddrawSurfaceToOwner;
+                ManagedAllocator<std::pair<void*, IDirectDrawOwnerInfo>>>> s_ddrawSurfaceToOwner;
 
 
 // instead of inheriting from IDirectDrawSurface and returning one as a wrapper of the original,
@@ -183,10 +183,10 @@ struct MyDirectDrawSurface
 		if(s_hookAttachPass)
 		{
 			ddrawdebugprintf("copy attached: 0x%X -> 0x%X\n", obj, s_hookAttachPass);
-			attachedSurfaces[obj] = (DIRECTDRAWSURFACEN*)s_hookAttachPass; // TODO: wrong type, does it matter?
+			attachedSurfaces()[obj] = (DIRECTDRAWSURFACEN*)s_hookAttachPass; // TODO: wrong type, does it matter?
 		}
 
-		videoMemoryBackupDirty[obj] = TRUE;
+		videoMemoryBackupDirty()[obj] = TRUE;
 
 		//if(std::find(surfaceList.begin(), surfaceList.end(), obj) == surfaceList.end())
 		//	surfaceList.push_back(obj);
@@ -212,9 +212,9 @@ struct MyDirectDrawSurface
 			if((void*)s_theBackBuffer == (void*)pThis)
 				s_theBackBuffer = 0;
 
-			videoMemoryBackupDirty[pThis] = FALSE;
+			videoMemoryBackupDirty()[pThis] = FALSE;
 
-			void*& pixels = videoMemoryPixelBackup[pThis];
+			void*& pixels = videoMemoryPixelBackup()[pThis];
             MemoryManager::Deallocate(pixels);
 			pixels = NULL;
 		}
@@ -228,7 +228,7 @@ struct MyDirectDrawSurface
 		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
 		if(SUCCEEDED(rv))
 		{
-			s_hookAttachPass = attachedSurfaces[pThis];
+			s_hookAttachPass = attachedSurfaces()[pThis];
 			HookCOMInterface(riid, ppvObj);
 			s_hookAttachPass = NULL;
 		}
@@ -240,7 +240,7 @@ struct MyDirectDrawSurface
 		usingSDLOrDD = true;
 
 		// check to eliminate most spurious frames of dirty-region using games
-		if(s_phaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xOrigin,yOrigin)))
+		if(s_phaseDetector().AdvanceAndCheckCycleBoundary(MAKELONG(xOrigin,yOrigin)))
 		{
 			// it's a new frame, so do frame boundary calculations
 
@@ -278,18 +278,18 @@ struct MyDirectDrawSurface
 #else // MUCH faster. (BltFast to system memory surface instead of locking and reading from video memory)
 				DIRECTDRAWSURFACEN* pBackBuffer = pSource;
 				DIRECTDRAWSURFACEN* pDDBackBufCopy;
-				auto found = sysMemCopySurfaces.find(pThis);
-				if(found != sysMemCopySurfaces.end())
+				auto found = sysMemCopySurfaces().find(pThis);
+				if(found != sysMemCopySurfaces().end())
 				{
 					pDDBackBufCopy = found->second;
 				}
 				else
 				{
-					IDirectDrawOwnerInfo info = s_ddrawSurfaceToOwner[pThis];
+					IDirectDrawOwnerInfo info = s_ddrawSurfaceToOwner()[pThis];
 					if(!info.ddrawInterface)
-						info = s_ddrawSurfaceToOwner[pSource]; // needed in fake fullscreen? at least in la-mulana
+						info = s_ddrawSurfaceToOwner()[pSource]; // needed in fake fullscreen? at least in la-mulana
 					pDDBackBufCopy = CreateSysMemSurface(pSource, info);
-					sysMemCopySurfaces[pThis] = pDDBackBufCopy;
+					sysMemCopySurfaces()[pThis] = pDDBackBufCopy;
 				}
 				DIRECTDRAWSURFACEN* pSurface = pDDBackBufCopy;
 				if(pSurface != pBackBuffer)
@@ -454,9 +454,9 @@ struct MyDirectDrawSurface
 
 
 			if(!destIsPrimary)
-				videoMemoryBackupDirty[pThis] = TRUE;
+				videoMemoryBackupDirty()[pThis] = TRUE;
 			else if(pSource) // catch the case where the back buffer changes but is never blitted to:
-				videoMemoryBackupDirty[pSource] = TRUE;
+				videoMemoryBackupDirty()[pSource] = TRUE;
 		}
 
 		if(!srcIsPrimary)
@@ -527,7 +527,7 @@ struct MyDirectDrawSurface
 #endif
 
 				rv = BltFast(pThis, xDest,yDest,pSource,srcRect,flags);
-				videoMemoryBackupDirty[pThis] = TRUE;
+				videoMemoryBackupDirty()[pThis] = TRUE;
 			}
 			else
 			{
@@ -632,7 +632,7 @@ struct MyDirectDrawSurface
 		// not sure
 		if(ddsd.ddsCaps.dwCaps & DDSCAPS_OFFSCREENPLAIN)
 		{
-			if(s_ddrawSurfaceToOwner.find(pThis) != s_ddrawSurfaceToOwner.end())
+			if(s_ddrawSurfaceToOwner().find(pThis) != s_ddrawSurfaceToOwner().end())
 			{
 				ddsd.ddsCaps.dwCaps &= ~DDSCAPS_OFFSCREENPLAIN;
 				ddsd.ddsCaps.dwCaps |= DDSCAPS_BACKBUFFER | DDSCAPS_COMPLEX | DDSCAPS_FLIP;
@@ -680,9 +680,9 @@ struct MyDirectDrawSurface
 		{
 			rv = Flip(pThis, pOther, flags);
 
-			videoMemoryBackupDirty[pThis] = TRUE;
+			videoMemoryBackupDirty()[pThis] = TRUE;
 			if(pOther)
-				videoMemoryBackupDirty[pOther] = TRUE;
+				videoMemoryBackupDirty()[pOther] = TRUE;
 			s_theBackBuffer = pThis;
 
 			if(!redrawingScreen)
@@ -802,7 +802,7 @@ struct MyDirectDrawSurface
 			}
 		}
 
-		videoMemoryBackupDirty[pThis] = TRUE;
+		videoMemoryBackupDirty()[pThis] = TRUE;
 
 		return rv;
 	}
@@ -842,7 +842,7 @@ struct MyDirectDrawSurface
 			Unlock(pThis,NULL);
 			ManualHDCInfo info;
 			info.oldBitmap = (HBITMAP)::SelectObject(hdc, hbmp);
-			manuallyCreatedSurfaceDCs[hdc] = info;
+			manuallyCreatedSurfaceDCs()[hdc] = info;
 			*lphDC = hdc;
 		}
 		return DD_OK;
@@ -852,19 +852,19 @@ struct MyDirectDrawSurface
 	static HRESULT STDMETHODCALLTYPE MyReleaseDC(DIRECTDRAWSURFACEN* pThis, HDC hdc)
 	{
 		DDRAW_ENTER();
-		auto found = manuallyCreatedSurfaceDCs.find(hdc);
-		if(found == manuallyCreatedSurfaceDCs.end())
+		auto found = manuallyCreatedSurfaceDCs().find(hdc);
+		if(found == manuallyCreatedSurfaceDCs().end())
 		{
 			// normal case
 			HRESULT rv = ReleaseDC(pThis, hdc);
 			if(SUCCEEDED(rv))
-				videoMemoryBackupDirty[pThis] = TRUE;
+				videoMemoryBackupDirty()[pThis] = TRUE;
 			return rv;
 		}
 
 		// fallback for video cards that have bugs with GetDC on a DirectDraw surface
 		ManualHDCInfo info = found->second;
-		manuallyCreatedSurfaceDCs.erase(found);
+		manuallyCreatedSurfaceDCs().erase(found);
 		DDSURFACEDESCN desc = { sizeof(DDSURFACEDESCN), DDSD_HEIGHT };
 		GetSurfaceDesc(pThis, &desc);
 		Lock(pThis,NULL,&desc,DDLOCK_WAIT|DDLOCK_WRITEONLY,NULL);
@@ -1009,7 +1009,7 @@ struct MyDirectDrawSurface
 	{
 		if(ppsurf)
 		{
-			*ppsurf = attachedSurfaces[pThis];
+			*ppsurf = attachedSurfaces()[pThis];
 			ddrawdebugprintf(__FUNCTION__ " got: 0x%X -> 0x%X\n", pThis, *ppsurf);
 		}
 	}
@@ -1017,12 +1017,12 @@ struct MyDirectDrawSurface
 	static void SetAttachedFakeBackBuf(DIRECTDRAWSURFACEN* pThis, DIRECTDRAWSURFACEN* lpsurf)
 	{
 		ddrawdebugprintf(__FUNCTION__ " set: 0x%X -> 0x%X\n", pThis, lpsurf);
-		attachedSurfaces[pThis] = lpsurf;
+		attachedSurfaces()[pThis] = lpsurf;
 	}
 
 	static void BackupVideoMemory(DIRECTDRAWSURFACEN* pThis)
 	{
-		if(!videoMemoryBackupDirty[pThis])
+		if(!videoMemoryBackupDirty()[pThis])
 			return;
 		DDSURFACEDESCN desc = { sizeof(DDSURFACEDESCN) };
 		if(SUCCEEDED(GetCaps(pThis, &desc.ddsCaps)))
@@ -1030,7 +1030,7 @@ struct MyDirectDrawSurface
 			if(desc.ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY
 			&& !(desc.ddsCaps.dwCaps & (DDSCAPS_PRIMARYSURFACE | DDSCAPS_FRONTBUFFER)))
 			{
-				void*& pixels = videoMemoryPixelBackup[pThis];
+				void*& pixels = videoMemoryPixelBackup()[pThis];
 				ddrawdebugprintf("videoMemoryPixelBackup[0x%X] was 0x%X\n", pThis, pixels);
 				if(SUCCEEDED(Lock(pThis, NULL, &desc, DDLOCK_WAIT|DDLOCK_READONLY|DDLOCK_NOSYSLOCK, NULL)))
 				{
@@ -1043,7 +1043,7 @@ struct MyDirectDrawSurface
 				}
 			}
 		}
-		videoMemoryBackupDirty[pThis] = FALSE;
+		videoMemoryBackupDirty()[pThis] = FALSE;
 	}
 
 	static void RestoreVideoMemory(DIRECTDRAWSURFACEN* pThis)
@@ -1054,10 +1054,10 @@ struct MyDirectDrawSurface
 			if(desc.ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY
 			&& !(desc.ddsCaps.dwCaps & (DDSCAPS_PRIMARYSURFACE | DDSCAPS_FRONTBUFFER)))
 			{
-				void*& pixels = videoMemoryPixelBackup[pThis];
+				void*& pixels = videoMemoryPixelBackup()[pThis];
 				if(pixels)
 				{
-					if(!videoMemoryBackupDirty[pThis])
+					if(!videoMemoryBackupDirty()[pThis])
 					{
 						ddrawdebugprintf("videoMemoryPixelBackup[0x%X] was 0x%X (restoring)\n", pThis, pixels);
 						if(SUCCEEDED(Lock(pThis, NULL, &desc, DDLOCK_WAIT|DDLOCK_WRITEONLY|DDLOCK_NOSYSLOCK, NULL)))
@@ -1080,14 +1080,14 @@ struct MyDirectDrawSurface
 
 	static void RestoreVideoMemoryOfAllSurfaces()
 	{
-		for(auto iter = videoMemoryPixelBackup.begin(); iter != videoMemoryPixelBackup.end(); iter++)
+		for(auto iter = videoMemoryPixelBackup().begin(); iter != videoMemoryPixelBackup().end(); iter++)
 			if(iter->second)
 				RestoreVideoMemory(iter->first);
 	}
 
 	static void BackupVideoMemoryOfAllSurfaces()
 	{
-		for(auto iter = videoMemoryBackupDirty.begin(); iter != videoMemoryBackupDirty.end(); iter++)
+		for(auto iter = videoMemoryBackupDirty().begin(); iter != videoMemoryBackupDirty().end(); iter++)
 			if(iter->second)
 				BackupVideoMemory(iter->first);
 	}
@@ -1131,23 +1131,23 @@ struct MyDirectDrawSurface
 		return pSysMemSurface;
 	}
 
-	static std::map<IDirectDrawSurfaceN*,
+	static LazyType<std::map<IDirectDrawSurfaceN*,
                     IDirectDrawSurfaceN*,
                     std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>>
                         attachedSurfaces;
-	static std::map<IDirectDrawSurfaceN*,
+	static LazyType<std::map<IDirectDrawSurfaceN*,
                     void*,
                     std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, void*>>> videoMemoryPixelBackup;
-	static std::map<IDirectDrawSurfaceN*,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, void*>>>> videoMemoryPixelBackup;
+	static LazyType<std::map<IDirectDrawSurfaceN*,
                     BOOL,
                     std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, BOOL>>> videoMemoryBackupDirty;
-	static std::map<IDirectDrawSurfaceN*,
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, BOOL>>>> videoMemoryBackupDirty;
+	static LazyType<std::map<IDirectDrawSurfaceN*,
                     IDirectDrawSurfaceN*,
                     std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>
+                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>>
                         sysMemCopySurfaces; // for avi speedup
 };
 
@@ -1182,10 +1182,10 @@ struct MyDirectDrawSurface
                template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::GetFlipStatus)(x* pThis, DWORD flags) = 0; \
 			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetPalette)(x* pThis, LPDIRECTDRAWPALETTE pPalette) = 0; \
 			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetColorKey)(x* pThis, DWORD dwFlags, LPDDCOLORKEY pKey) = 0; \
-               template<> std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>> MyDirectDrawSurface<x>::attachedSurfaces; \
-               template<> std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
-               template<> std::map<x*,void*,std::less<x*>, ManagedAllocator<std::pair<x*,void*>>> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
-               template<> std::map<x*,BOOL,std::less<x*>, ManagedAllocator<std::pair<x*,BOOL>>> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
+               template<> LazyType<std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>>> MyDirectDrawSurface<x>::attachedSurfaces; \
+               template<> LazyType<std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>>> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
+               template<> LazyType<std::map<x*,void*,std::less<x*>, ManagedAllocator<std::pair<x*,void*>>>> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
+               template<> LazyType<std::map<x*,BOOL,std::less<x*>, ManagedAllocator<std::pair<x*,BOOL>>>> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
 
 	DEF(IDirectDrawSurface)
 	DEF(IDirectDrawSurface2)
@@ -1435,7 +1435,7 @@ public:
 						// since IDirectDrawSurface doesn't always provide a way to access the IDirectDraw interface,
 						// store enough info to get this interface given a pointer to the primary surface.
 						IDirectDrawOwnerInfo info = {(void*)this, IDirectDrawTraits<IDirectDrawN>::NUMBER};
-						s_ddrawSurfaceToOwner[(LPVOID)pAttachedSurface] = info;
+						s_ddrawSurfaceToOwner()[(LPVOID)pAttachedSurface] = info;
 					}
 				}
 			}
@@ -1445,7 +1445,7 @@ public:
 				// since IDirectDrawSurface doesn't always provide a way to access the IDirectDraw interface,
 				// store enough info to get this interface given a pointer to the primary surface.
 				IDirectDrawOwnerInfo info = {(void*)this, IDirectDrawTraits<IDirectDrawN>::NUMBER};
-				s_ddrawSurfaceToOwner[*(LPVOID*)ppdds] = info;
+				s_ddrawSurfaceToOwner()[*(LPVOID*)ppdds] = info;
 			}
 
 			if(autoClipSurface && gamehwnd)

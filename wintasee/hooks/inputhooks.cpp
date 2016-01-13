@@ -4,10 +4,10 @@
 #include <vector>
 #include <algorithm>
 
+#include <MemoryManager\MemoryManager.h>
+#include <Utils.h>
 #include <wintasee.h>
 //#include "../tls.h"
-
-#include <MemoryManager\MemoryManager.h>
 
 #if defined(_DEBUG) || 0//0
     #define _DINPUTDEBUG
@@ -97,7 +97,7 @@ struct MyDIDEVICEOBJECTINSTANCE {
 #define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
 
 
-typedef std::vector<struct BufferedInput*, ManagedAllocator<BufferedInput*>> BufferedInputList;
+typedef LazyType<std::vector<struct BufferedInput*, ManagedAllocator<BufferedInput*>>> BufferedInputList;
 static BufferedInputList s_bufferedKeySlots;
 
 HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread);
@@ -115,14 +115,14 @@ struct BufferedInput
 	BufferedInput(BufferedInputList& buflist) : data(NULL), size(0), used(0), startOffset(0), overflowed(FALSE), event(NULL), bufferList(buflist)
 	{
 		dinputdebugprintf(__FUNCTION__ "(0x%X) adding self to list.\n", this);
-		bufferList.push_back(this);
+		bufferList().push_back(this);
 	}
 	~BufferedInput()
 	{
 		Resize(0);
 
 		dinputdebugprintf(__FUNCTION__ "(0x%X) removing self from list.\n", this);
-		bufferList.erase(std::remove(bufferList.begin(), bufferList.end(), this), bufferList.end());
+		bufferList().erase(std::remove(bufferList().begin(), bufferList().end(), this), bufferList().end());
 	}
 	void Resize(DWORD newSize)
 	{
@@ -245,8 +245,8 @@ struct BufferedInput
 	static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
 		DINPUT_ENTER();
-		for(int i = (int)bufferList.size()-1; i >= 0; i--)
-			bufferList[i]->AddEvent(inputEvent);
+		for(int i = (int)bufferList().size()-1; i >= 0; i--)
+			bufferList()[i]->AddEvent(inputEvent);
 	}
 	void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
 	{
@@ -266,8 +266,8 @@ struct BufferedInput
 	static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
 		DINPUT_ENTER();
-		for(int i = (int)bufferList.size()-1; i >= 0; i--)
-			bufferList[i]->AddMouseEvent(inputEvent);
+		for(int i = (int)bufferList().size()-1; i >= 0; i--)
+			bufferList()[i]->AddMouseEvent(inputEvent);
 	}
 };
 

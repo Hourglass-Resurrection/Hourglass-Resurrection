@@ -6,6 +6,7 @@
 #include <MemoryManager/MemoryManager.h>
 //#include <setjmp.h>
 #include <tls.h>
+#include <Utils.h>
 #include <wintasee.h>
 
 void CloseHandles(DWORD threadId); // extern
@@ -78,14 +79,14 @@ struct ThreadWrapperInfo
 	}
 };
 
-std::map<DWORD,
+LazyType<std::map<DWORD,
          ThreadWrapperInfo*,
          std::less<DWORD>,
-         ManagedAllocator<std::pair<DWORD,ThreadWrapperInfo>>> threadWrappers;
-std::map<HANDLE,
+         ManagedAllocator<std::pair<DWORD,ThreadWrapperInfo>>>> threadWrappers;
+LazyType<std::map<HANDLE,
          DWORD,
          std::less<HANDLE>,
-         ManagedAllocator<std::pair<HANDLE,DWORD>>> threadWrappersOriginalHandleToId;
+         ManagedAllocator<std::pair<HANDLE,DWORD>>>> threadWrappersOriginalHandleToId;
 
 DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 {
@@ -228,8 +229,8 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 	// try to reuse a thread, to avoid leaking lots of thread handles:
 	if(dwStackSize == 0) dwStackSize = tasflags.threadStackSize; // In the case of 0 (default) assign it the default stack size.
-	auto iter = threadWrappers.begin();
-	for(; iter != threadWrappers.end(); iter++)
+	auto iter = threadWrappers().begin();
+	for(; iter != threadWrappers().end(); iter++)
 	{
 		ThreadWrapperInfo* twi = iter->second;
 		//debugprintf("!!! 0x%X\n",twi);
@@ -263,9 +264,9 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 			// generate a new public handle (because the game might have closed the old one with CloseHandle)
 			HANDLE oldHandle = twi->handle;
-			threadWrappersOriginalHandleToId[twi->handle] = NULL;
+			threadWrappersOriginalHandleToId()[twi->handle] = NULL;
 			DuplicateHandle(GetCurrentProcess(), twi->privateHandle, GetCurrentProcess(), &twi->handle, 0,FALSE,DUPLICATE_SAME_ACCESS);
-			threadWrappersOriginalHandleToId[twi->handle] = twi->threadId;
+			threadWrappersOriginalHandleToId()[twi->handle] = twi->threadId;
 
 			ResetEvent(twi->exitEvent);
 
@@ -320,8 +321,8 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 	twi->handle = handle;
 	DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(), &twi->privateHandle, 0,FALSE,DUPLICATE_SAME_ACCESS);
 	threadId = *lpThreadId;
-	threadWrappers[threadId] = twi;
-	threadWrappersOriginalHandleToId[handle] = threadId;
+	threadWrappers()[threadId] = twi;
+	threadWrappersOriginalHandleToId()[handle] = threadId;
 	twi->threadId = threadId;
 
 	twi->exitEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
@@ -346,8 +347,8 @@ HOOKFUNC VOID WINAPI MyExitThread(DWORD dwExitCode)
 {
 	DWORD threadId = GetCurrentThreadId();
 	debuglog(LCF_THREAD, __FUNCTION__ "(%d) called on 0x%X.\n", dwExitCode, threadId);
-    auto it = threadWrappers.find(threadId);
-    if (it != threadWrappers.end())
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
     {
 	    ThreadWrapperInfo* twi = it->second;
 		if(twi->idling)
@@ -385,9 +386,9 @@ HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 	debuglog(LCF_THREAD, __FUNCTION__ "(%d) called.\n", dwExitCode);
 
 	//DWORD threadId = GetThreadId(hThread); // function doesn't exist on windows 2000...
-	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
-    auto it = threadWrappers.find(threadId);
-    if (it != threadWrappers.end())
+	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId()[hThread];
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
     {
         ThreadWrapperInfo* twi = it->second;
 		if(twi->idling || twi->comatose)
@@ -406,9 +407,9 @@ HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
 {
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
-	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
-    auto it = threadWrappers.find(threadId);
-    if (it != threadWrappers.end())
+	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId()[hThread];
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
     {
         ThreadWrapperInfo* twi = it->second;
         if (twi->comatose || twi->idling)
@@ -444,11 +445,11 @@ HOOKFUNC NTSTATUS NTAPI MyNtSetInformationThread(HANDLE ThreadHandle, DWORD Thre
 
 void ThreadHandleToExitHandle(HANDLE& hHandle)
 {
-	auto found = threadWrappersOriginalHandleToId.find(hHandle);
-	if(found != threadWrappersOriginalHandleToId.end())
+	auto found = threadWrappersOriginalHandleToId().find(hHandle);
+	if(found != threadWrappersOriginalHandleToId().end())
 	{
-		auto found2 = threadWrappers.find(found->second);
-		if(found2 != threadWrappers.end())
+		auto found2 = threadWrappers().find(found->second);
+		if(found2 != threadWrappers().end())
 		{
 			ThreadWrapperInfo* twi = found2->second;
 			hHandle = twi->exitEvent;

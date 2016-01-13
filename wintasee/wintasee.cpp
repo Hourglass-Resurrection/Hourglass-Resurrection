@@ -26,6 +26,7 @@
 #include <shared\msg.h>
 #include <shared\version.h>
 #include <tls.h>
+#include <Utils.h>
 #include <wintasee.h>
 
 //#define whitelistMaskFilter(x) ((tasflags.messageSyncMode != 3) ? (x) : 0)
@@ -133,10 +134,10 @@ void ApplyRegistryIntercepts();
 void ApplyXinputIntercepts();
 
 
-extern std::map<HWND,
-                WNDPROC,
-                std::less<HWND>,
-                ManagedAllocator<std::pair<HWND, WNDPROC>>> hwndToOrigHandler;
+extern LazyType<std::map<HWND,
+                         WNDPROC,
+                         std::less<HWND>,
+                         ManagedAllocator<std::pair<HWND, WNDPROC>>>> hwndToOrigHandler;
 
 
 
@@ -595,7 +596,10 @@ HKL g_hklOverride = 0;
 static DWORD g_videoFramesPrepared = 0;
 //static DWORD g_soundMixedTicks = 0;
 
-static std::map<HWND, BOOL, std::less<HWND>, ManagedAllocator<std::pair<HWND, BOOL>>> hwndSizeLocked;
+static LazyType<std::map<HWND,
+                         BOOL,
+                         std::less<HWND>,
+                         ManagedAllocator<std::pair<HWND, BOOL>>>> hwndSizeLocked;
 
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 {
@@ -606,12 +610,12 @@ void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 	SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 	//SetWindowPos(hwnd, 0, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
 	SetWindowPos(hwnd, 0, 0, 0, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
-	hwndSizeLocked[hwnd] = TRUE;
+	hwndSizeLocked()[hwnd] = TRUE;
 }
 
 bool IsWindowFakeFullscreen(HWND hwnd)
 {
-	return hwndSizeLocked.find(hwnd) != hwndSizeLocked.end();
+	return hwndSizeLocked().find(hwnd) != hwndSizeLocked().end();
 }
 
 
@@ -765,7 +769,7 @@ void HandlePausedEvents()
 
 	// using gamehwnd isn't reliable enough
 	bool sentToAny = false;
-	for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -1052,7 +1056,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		if((prevWindowActivateFlags&2) != (tasflags.windowActivateFlags&2))
 		{
 		// handle toggling "always on top" status when allow deactivate checkbox changes
-			for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
+			for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end(); iter++)
 			{
 				HWND hwnd = iter->first;
 				if(IsWindow(hwnd))
@@ -1077,7 +1081,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 	// using gamehwnd isn't reliable enough
 	bool sentToAny = false;
-	for(auto& iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -1086,7 +1090,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
 		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
 		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
-		 || (!sentToAny && iter == hwndToOrigHandler.end()))
+		 || (!sentToAny && iter == hwndToOrigHandler().end()))
 		 )
 		{
 			sentToAny = true;

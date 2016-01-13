@@ -11,6 +11,7 @@
 #include <external\dsound.h>
 #include <MemoryManager\MemoryManager.h>
 #include <tls.h>
+#include <Utils.h>
 #include <wintasee.h>
 
 // TODO: add MIDI support (for music in Eternal Daughter)
@@ -68,7 +69,7 @@ class EmulatedDirectSoundBuffer : public IDirectSoundBuffer8, public IDirectSoun
 public:
 	typedef EmulatedDirectSoundBuffer MyType;
 	//typedef std::map<MyType*, DWORD> MyBufferMap;
-	typedef std::vector<MyType*, ManagedAllocator<MyType*>> MyBufferList;
+	typedef LazyType<std::vector<MyType*, ManagedAllocator<MyType*>>> MyBufferList;
 
 	EmulatedDirectSoundBuffer(bool isFakePrimary=false) : m_isFakePrimary(isFakePrimary)
 	{
@@ -76,9 +77,9 @@ public:
 		EnterCriticalSection(&s_soundBufferListCS);
 		//if(soundBuffers.find(this) == soundBuffers.end())
 		//	soundBuffers.insert(std::make_pair(this, GetCurrentThreadId()));
-		soundBuffers.push_back(this);
+		soundBuffers().push_back(this);
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d emulated sound buffers\n", soundBuffers.size());
+		debuglog(LCF_DSOUND, "%d emulated sound buffers\n", soundBuffers().size());
 
 		buffer = NULL;
 		bufferSize = 0;
@@ -110,11 +111,11 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		EnterCriticalSection(&s_soundBufferListCS);
 		//soundBuffers.erase(this);
-		MyBufferList::iterator found = std::find(soundBuffers.begin(), soundBuffers.end(), this);
-		if(found != soundBuffers.end())
-			soundBuffers.erase(found);
+		auto found = std::find(soundBuffers().begin(), soundBuffers().end(), this);
+		if(found != soundBuffers().end())
+			soundBuffers().erase(found);
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
+		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers().size());
 		MemoryManager::Deallocate(buffer);
 		MemoryManager::Deallocate(lockBuf);
 		MemoryManager::Deallocate(waveformat);
@@ -667,7 +668,7 @@ public:
 		}
 
 		EnterCriticalSection(&s_soundBufferListCS);
-		for(MyBufferList::iterator iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 			(*iter)->AdvanceTimeAndMix(ticks, doMix);
 		LeaveCriticalSection(&s_soundBufferListCS);
 
@@ -1045,20 +1046,20 @@ class MyDirectSoundBuffer : public IDirectSoundBufferN
 {
 public:
 	typedef MyDirectSoundBuffer<IDirectSoundBufferN> MyType;
-	typedef std::map<MyType*,
+	typedef LazyType<std::map<MyType*,
                      DWORD,
                      std::less<MyType*>,
-                     ManagedAllocator<std::pair<MyType*, DWORD>>> MyBufferMap;
+                     ManagedAllocator<std::pair<MyType*, DWORD>>>> MyBufferMap;
 
 	MyDirectSoundBuffer(IDirectSoundBufferN* dsb) : m_dsb(dsb)
 	{
 		while(lockdown) Sleep(1); 
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		EnterCriticalSection(&s_soundBufferListCS);
-		if(soundBuffers.find(this) == soundBuffers.end())
-			soundBuffers.insert(std::make_pair(this, GetCurrentThreadId()));
+		if(soundBuffers().find(this) == soundBuffers().end())
+			soundBuffers().insert(std::make_pair(this, GetCurrentThreadId()));
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
+		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers().size());
 		tempAudioPtr1 = 0;
 		tempAudioSize1 = 0;
 		tempAudioPtr2 = 0;
@@ -1356,8 +1357,7 @@ public:
 
 	static void BackDoorLockAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorAcquireLock(); // other threads must NOT be suspended when this is called!
@@ -1365,8 +1365,7 @@ public:
 	}
 	static void BackDoorStopAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorSuspend();
@@ -1381,8 +1380,7 @@ public:
 	}
 	static void FrontDoorStopAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->Stop();
@@ -1390,8 +1388,7 @@ public:
 	}
 	static void BackDoorRestoreAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorResume(); // other threads must NOT be suspended when this is called!
