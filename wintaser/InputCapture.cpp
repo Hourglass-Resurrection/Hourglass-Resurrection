@@ -640,7 +640,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
 			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK){
 				currentI->gamepad[siMapped.key >> 8].wButtons |= 1 << (siMapped.key & 0xFF);
-				debugprintf("X Key regsitered: %d", (siMapped.key & 0xFF));
+				debugprintf("currentI->gamepad[%d].wButtons |= %d\n", (siMapped.key >> 8), (1 << (siMapped.key & 0xFF)));
 			}
 		}
 
