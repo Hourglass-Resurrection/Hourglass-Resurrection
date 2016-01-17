@@ -3,11 +3,17 @@
 
 #include <windows.h>
 
+#include <string>
+#include <map>
+#include <vector>
+
 #include <global.h>
 #include <intercept.h>
 #include <shared\asm.h>
 #include <shared\ipc.h>
 #include <print.h>
+#include <MemoryManager\MemoryManager.h>
+#include <Utils.h>
 
 BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, BOOL rvOnSkip)
 {
@@ -134,10 +140,6 @@ BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer
 }
 
 
-
-#include <string>
-#include <map>
-#include <vector>
 struct InterceptAPIArgs
 {
     LPCSTR funcName;
@@ -150,12 +152,12 @@ struct InterceptAPIArgs
 };
 struct lessicmp
 {
-   bool operator() (const std::string& a, const std::string& b) const
+   bool operator() (const std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>& a, const std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>& b) const
    {
       return(stricmp(a.c_str(), b.c_str()) < 0);
    }
 };
-std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> pendingInterceptAPICalls;
+LazyType<std::map<std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>, lessicmp, ManagedAllocator<std::pair<std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>>>>> pendingInterceptAPICalls;
 //std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> delayHookedInterceptAPICalls;
 //std::vector<InterceptAPIArgs> multiDllInterceptAPICalls;
 
@@ -210,13 +212,13 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 	if(/*!rv && */allowTrack)
 	{
 		InterceptAPIArgs args = {c_szApiName, dwReplaced, dwTrampoline, trampolineOnly, c_szDllName, ordinal};
-		pendingInterceptAPICalls[c_szDllName].push_back(args);
+		pendingInterceptAPICalls()[c_szDllName].push_back(args);
 	}
 
 	return rv;
 }
 
-static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPIArgs>& vec)
+static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>& vec)
 {
 	for(int i = (int)vec.size()-1; i >= 0; i--)
 	{
@@ -299,7 +301,7 @@ static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPI
 
 void RetryInterceptAPIs(const char* c_szDllName)
 {
-	std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
+	//std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
 
 	//for(found = pendingInterceptAPICalls.begin(); found != pendingInterceptAPICalls.end(); found++)
 	//{
@@ -307,8 +309,8 @@ void RetryInterceptAPIs(const char* c_szDllName)
 	//	debugprintf("check: \"%s\" vs \"%s\"\n", c_szDllName, dllnamecheck);
 	//}
 
-	found = pendingInterceptAPICalls.find(c_szDllName);
-	if(found != pendingInterceptAPICalls.end() && !found->second.empty())
+	auto found = pendingInterceptAPICalls().find(c_szDllName);
+	if(found != pendingInterceptAPICalls().end() && !found->second.empty())
 	{
 		debugprintf("Hooking delayed load DLL: %s\n", c_szDllName);
 		HookDelayLoadedDll(c_szDllName, found->second);

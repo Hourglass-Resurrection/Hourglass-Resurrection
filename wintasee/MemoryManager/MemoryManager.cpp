@@ -52,6 +52,10 @@ namespace MemoryManagerInternal
 
     bool memory_manager_inited = false;
 
+    /*
+     * TODO: Decide end address using the game's /LARGEADDRESS flag.
+     * -- Warepire
+     */
     LPCVOID LARGE_ADDRESS_SPACE_START = reinterpret_cast<LPVOID>(0x80000000);
     LPCVOID LARGE_ADDRESS_SPACE_END = reinterpret_cast<LPVOID>(0xC0000000);
     LPVOID minimum_allowed_address = 0;
@@ -61,6 +65,8 @@ namespace MemoryManagerInternal
     std::atomic_flag allocation_lock;
 
     MemoryObjectDescription* memory_objects = nullptr;
+
+    void DumpAllocationTable();
 
     /*
      * Internal allocation functions
@@ -161,12 +167,12 @@ namespace MemoryManagerInternal
          */
         LPCVOID start_address = nullptr;
         LPCVOID end_address = nullptr;
-        if ((flags & MemoryManager::ALLOC_INTERNAL) == MemoryManager::ALLOC_INTERNAL)
-        {
-            start_address = LARGE_ADDRESS_SPACE_START;
-            end_address = LARGE_ADDRESS_SPACE_END;
-        }
-        else
+        //if ((flags & MemoryManager::ALLOC_INTERNAL) == MemoryManager::ALLOC_INTERNAL)
+        //{
+        //    start_address = LARGE_ADDRESS_SPACE_START;
+        //    end_address = LARGE_ADDRESS_SPACE_END;
+        //}
+        //else
         {
             start_address = minimum_allowed_address;
             end_address = LARGE_ADDRESS_SPACE_START;
@@ -226,24 +232,25 @@ namespace MemoryManagerInternal
         LPCVOID start_address = nullptr;
         LPCVOID end_address = nullptr;
         MemoryBlockDescription* rv = nullptr;
-        if ((object_flags & MemoryManager::ALLOC_INTERNAL) == MemoryManager::ALLOC_INTERNAL)
-        {
-            start_address = LARGE_ADDRESS_SPACE_START;
-            end_address = LARGE_ADDRESS_SPACE_END;
-        }
-        else
+        //if ((object_flags & MemoryManager::ALLOC_INTERNAL) == MemoryManager::ALLOC_INTERNAL)
+        //{
+        //    start_address = LARGE_ADDRESS_SPACE_START;
+        //    end_address = LARGE_ADDRESS_SPACE_END;
+        //}
+        //else
         {
             start_address = minimum_allowed_address;
             end_address = LARGE_ADDRESS_SPACE_START;
         }
-        if ((address != nullptr && address < start_address || address >= end_address) ||
+        if ((address != nullptr && address >= start_address || address < end_address) ||
             address == nullptr)
         {
             for (MemoryObjectDescription* mod = memory_objects;
                  mod != nullptr;
                  mod = static_cast<MemoryObjectDescription*>(mod->next))
             {
-                if (((address != nullptr && address >= mod->address && address < mod->address) ||
+                LPVOID mod_end_address = static_cast<LPBYTE>(mod->address) + mod->bytes;
+                if (((address != nullptr && address >= mod->address && address < mod_end_address) ||
                         address == nullptr) &&
                     ((object_flags != 0 && object_flags == mod->flags) || object_flags == 0))
                 {
@@ -305,6 +312,7 @@ namespace MemoryManagerInternal
             memset(best_block->address, 0, best_block->bytes);
         }
 
+        debugprintf(__FUNCTION__ " returned: 0x%p\n", best_block->address);
         return best_block->address;
     }
 
@@ -426,6 +434,7 @@ namespace MemoryManagerInternal
             LinkedListInsertSorted(mod->blocks, mbd);
         }
 
+        debugprintf(__FUNCTION__ " returned: 0x%p\n", mod->blocks->address);
         return mod->blocks->address;
     }
 
@@ -487,7 +496,7 @@ namespace MemoryManagerInternal
             /*
              * Reallocating to smaller buffer and it would actually free a useful memory block.
              */
-            if (adjustment + size_of_mbd < 0)
+            if (adjustment + static_cast<INT>(size_of_mbd) < 0)
             {
                 LPVOID addr = static_cast<LPBYTE>(mbd->address) + realloc_bytes;
                 MemoryBlockDescription *new_mbd = reinterpret_cast<MemoryBlockDescription*>(addr);
@@ -626,14 +635,14 @@ namespace MemoryManagerInternal
             UnmapViewOfFile(mod->address);
             CloseHandle(mod->object);
         }
+        debugprintf(__FUNCTION__ " left.\n");
     }
-
 };
 
 void MemoryManager::Init()
 {
     debugprintf(__FUNCTION__ "(void) called.\n");
-    DLL_ASSERT(MemoryManagerInternal::memory_manager_inited == true);
+    DLL_ASSERT(MemoryManagerInternal::memory_manager_inited == false);
     /*
      * TODO: Call GetSystemInfo in the executable?
      * -- Warepire
@@ -699,4 +708,23 @@ SIZE_T MemoryManager::GetSizeOfAllocation(LPCVOID address)
 
     MemoryManagerInternal::allocation_lock.clear();
     return rv;
+}
+
+void MemoryManagerInternal::DumpAllocationTable()
+{
+    MemoryObjectDescription* mod = memory_objects;
+    MemoryBlockDescription* mbd = nullptr;
+    while (mod != nullptr)
+    {
+        mbd = mod->blocks;
+        debugprintf("MOD prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X blocks=0x%p\n",
+                    mod->prev, mod->next, *mod->head, mod->address, mod->bytes, mod->flags, mod->blocks);
+        while (mbd != nullptr)
+        {
+            debugprintf("MBD prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X\n",
+                        mbd->prev, mbd->next, *mbd->head, mbd->address, mbd->bytes, mbd->flags);
+            mbd = static_cast<MemoryBlockDescription*>(mbd->next);
+        }
+        mod = static_cast<MemoryObjectDescription*>(mod->next);
+    }
 }
