@@ -296,7 +296,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 	// actually make a new thread:
 	ThreadWrapperInfo* twi =
-         static_cast<ThreadWrapperInfo*>(MemoryManager::Allocate(sizeof(*twi), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+         static_cast<ThreadWrapperInfo*>(MemoryManager::Allocate(sizeof(*twi), MemoryManager::ALLOC_WRITE));
 	twi->args.lpThreadAttributes = lpThreadAttributes;
 	twi->args.dwStackSize = dwStackSize;
 	twi->args.lpStartAddress = lpStartAddress;

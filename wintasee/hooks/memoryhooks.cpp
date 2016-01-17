@@ -109,8 +109,7 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
          * -- Warepire
          */
         rv = static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*rv),
-                                                              MemoryManager::ALLOC_WRITE |
-                                                                  MemoryManager::ALLOC_INTERNAL));
+                                                              MemoryManager::ALLOC_WRITE));
         if (rv == nullptr)
         {
             SetLastError(ERROR_OUTOFMEMORY);
@@ -505,8 +504,7 @@ HOOKFUNC HANDLE WINAPI MyHeapCreate(DWORD flOptions, SIZE_T dwInitialSize, SIZE_
     debugprintf(__FUNCTION__ "(0x%X 0x%X 0x%X) called.\n", flOptions, dwInitialSize, dwMaximumSize);
     HeapObject* heap =
         static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*heap),
-                                                         MemoryManager::ALLOC_WRITE |
-                                                             MemoryManager::ALLOC_INTERNAL));
+                                                         MemoryManager::ALLOC_WRITE));
     if (heap == nullptr)
     {
         SetLastError(ERROR_OUTOFMEMORY);
@@ -969,97 +967,97 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
     return MyGlobalUnlock(hMem);
 }
 
-HOOKFUNC LPVOID WINAPI MyVirtualAlloc(LPVOID lpAddress,
-                                      SIZE_T dwSize,
-                                      DWORD flAllocationType,
-                                      DWORD flProtect)
-{
-    debugprintf(__FUNCTION__ "(0x%p %x%lX 0x%X 0x%X) called.\n", lpAddress, dwSize, flAllocationType, flProtect);
-    return VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
-}
-
-HOOKFUNC LPVOID WINAPI MyVirtualAllocEx(HANDLE hProcess,
-                                        LPVOID lpAddress,
-                                        SIZE_T dwSize,
-                                        DWORD flAllocationType,
-                                        DWORD flProtect)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%p %x%lX 0x%X 0x%X) called.\n", hProcess, lpAddress, dwSize, flAllocationType, flProtect);
-    if (hProcess == GetCurrentProcess())
-    {
-        return MyVirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
-    }
-    MessageBoxA(nullptr,//gamehwnd,
-                __FUNCTION__ " is not implemented.\n"
-                "The application will most likely experience problems with SaveStates now.",
-                "Warning!",
-                MB_ICONWARNING | MB_OK);
-    return VirtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualFree(LPVOID lpAddress, SIZE_T dwSize, DWORD flFreeType)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X) called.\n", lpAddress, dwSize, flFreeType);
-    return VirtualFree(lpAddress, dwSize, flFreeType);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualFreeEx(HANDLE hProcess,
-                                     LPVOID lpAddress,
-                                     SIZE_T dwSize,
-                                     DWORD flFreeType)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X) called.\n", hProcess, lpAddress, dwSize, flFreeType);
-    if (hProcess == GetCurrentProcess())
-    {
-        return MyVirtualFree(lpAddress, dwSize, flFreeType);
-    }
-    MessageBoxA(nullptr,//gamehwnd,
-                __FUNCTION__ " is not implemented.\n"
-                "The application will most likely experience problems with SaveStates now.",
-                "Warning!",
-                MB_ICONWARNING | MB_OK);
-    return VirtualFreeEx(hProcess, lpAddress, dwSize, flFreeType);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualLock(LPVOID lpAddress, SIZE_T dwSize)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
-    return VirtualLock(lpAddress, dwSize);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualProtect(LPVOID lpAddress,
-                                      SIZE_T dwSize,
-                                      DWORD flNewProtect,
-                                      PDWORD lpflOldProtect)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X 0x%p) called.\n", lpAddress, dwSize, flNewProtect, lpflOldProtect);
-    return VirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualProtectEx(HANDLE hProcess,
-                                        LPVOID lpAddress,
-                                        SIZE_T dwSize,
-                                        DWORD flNewProtect,
-                                        PDWORD lpflOldProtect)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X 0x%p) called.\n", hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
-    if (hProcess == GetCurrentProcess())
-    {
-        return MyVirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
-    }
-    MessageBoxA(nullptr,//gamehwnd,
-                __FUNCTION__ " is not implemented.\n"
-                "The application will most likely experience problems with SaveStates now.",
-                "Warning!",
-                MB_ICONWARNING | MB_OK);
-    return VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
-}
-
-HOOKFUNC BOOL WINAPI MyVirtualUnlock(LPVOID lpAddress, SIZE_T dwSize)
-{
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
-    return VirtualUnlock(lpAddress, dwSize);
-}
+//HOOKFUNC LPVOID WINAPI MyVirtualAlloc(LPVOID lpAddress,
+//                                      SIZE_T dwSize,
+//                                      DWORD flAllocationType,
+//                                      DWORD flProtect)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p %x%lX 0x%X 0x%X) called.\n", lpAddress, dwSize, flAllocationType, flProtect);
+//    return VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
+//}
+//
+//HOOKFUNC LPVOID WINAPI MyVirtualAllocEx(HANDLE hProcess,
+//                                        LPVOID lpAddress,
+//                                        SIZE_T dwSize,
+//                                        DWORD flAllocationType,
+//                                        DWORD flProtect)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%p %x%lX 0x%X 0x%X) called.\n", hProcess, lpAddress, dwSize, flAllocationType, flProtect);
+//    if (hProcess == GetCurrentProcess())
+//    {
+//        return MyVirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
+//    }
+//    MessageBoxA(nullptr,//gamehwnd,
+//                __FUNCTION__ " is not implemented.\n"
+//                "The application will most likely experience problems with SaveStates now.",
+//                "Warning!",
+//                MB_ICONWARNING | MB_OK);
+//    return VirtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualFree(LPVOID lpAddress, SIZE_T dwSize, DWORD flFreeType)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X) called.\n", lpAddress, dwSize, flFreeType);
+//    return VirtualFree(lpAddress, dwSize, flFreeType);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualFreeEx(HANDLE hProcess,
+//                                     LPVOID lpAddress,
+//                                     SIZE_T dwSize,
+//                                     DWORD flFreeType)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X) called.\n", hProcess, lpAddress, dwSize, flFreeType);
+//    if (hProcess == GetCurrentProcess())
+//    {
+//        return MyVirtualFree(lpAddress, dwSize, flFreeType);
+//    }
+//    MessageBoxA(nullptr,//gamehwnd,
+//                __FUNCTION__ " is not implemented.\n"
+//                "The application will most likely experience problems with SaveStates now.",
+//                "Warning!",
+//                MB_ICONWARNING | MB_OK);
+//    return VirtualFreeEx(hProcess, lpAddress, dwSize, flFreeType);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualLock(LPVOID lpAddress, SIZE_T dwSize)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
+//    return VirtualLock(lpAddress, dwSize);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualProtect(LPVOID lpAddress,
+//                                      SIZE_T dwSize,
+//                                      DWORD flNewProtect,
+//                                      PDWORD lpflOldProtect)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X 0x%p) called.\n", lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//    return VirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualProtectEx(HANDLE hProcess,
+//                                        LPVOID lpAddress,
+//                                        SIZE_T dwSize,
+//                                        DWORD flNewProtect,
+//                                        PDWORD lpflOldProtect)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X 0x%p) called.\n", hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//    if (hProcess == GetCurrentProcess())
+//    {
+//        return MyVirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//    }
+//    MessageBoxA(nullptr,//gamehwnd,
+//                __FUNCTION__ " is not implemented.\n"
+//                "The application will most likely experience problems with SaveStates now.",
+//                "Warning!",
+//                MB_ICONWARNING | MB_OK);
+//    return VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//}
+//
+//HOOKFUNC BOOL WINAPI MyVirtualUnlock(LPVOID lpAddress, SIZE_T dwSize)
+//{
+//    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
+//    return VirtualUnlock(lpAddress, dwSize);
+//}
 
 void ApplyMemoryIntercepts()
 {
@@ -1110,14 +1108,14 @@ void ApplyMemoryIntercepts()
         MAKE_INTERCEPT(1, KERNEL32, LocalShrink),
         MAKE_INTERCEPT(1, KERNEL32, LocalSize),
         MAKE_INTERCEPT(1, KERNEL32, LocalUnlock),
-        MAKE_INTERCEPT(1, KERNEL32, VirtualAlloc),
+        /*MAKE_INTERCEPT(1, KERNEL32, VirtualAlloc),
         MAKE_INTERCEPT(1, KERNEL32, VirtualAllocEx),
         MAKE_INTERCEPT(1, KERNEL32, VirtualFree),
         MAKE_INTERCEPT(1, KERNEL32, VirtualFreeEx),
         MAKE_INTERCEPT(1, KERNEL32, VirtualLock),
         MAKE_INTERCEPT(1, KERNEL32, VirtualProtect),
         MAKE_INTERCEPT(1, KERNEL32, VirtualProtectEx),
-        MAKE_INTERCEPT(1, KERNEL32, VirtualUnlock)
+        MAKE_INTERCEPT(1, KERNEL32, VirtualUnlock)*/
     };
     ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }

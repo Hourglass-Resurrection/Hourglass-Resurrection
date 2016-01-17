@@ -59,7 +59,6 @@ namespace MemoryManager
         ALLOC_EXECUTE   = 0x00000004,
         ALLOC_ZEROINIT  = 0x00000008,
         REALLOC_NO_MOVE = 0x00000010,
-        ALLOC_INTERNAL  = 0x80000000,
     };
 
     void Init();
@@ -117,7 +116,7 @@ public:
     pointer allocate(size_type n, const_pointer hint = 0)
     {
         debugprintf(__FUNCTION__ " called.\n");
-        static const UINT flags = MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL;
+        static const UINT flags = MemoryManager::ALLOC_WRITE;
         return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), flags));
     }
     void deallocate(pointer p, size_type n)

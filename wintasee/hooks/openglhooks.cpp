@@ -759,7 +759,7 @@ public:
         {
             MemoryManager::Deallocate(buffer);
         }
-		buffer = static_cast<char*>(MemoryManager::Allocate(numBytes, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+		buffer = static_cast<char*>(MemoryManager::Allocate(numBytes, MemoryManager::ALLOC_WRITE));
 //#endif
 		return (void*)buffer;
 	}

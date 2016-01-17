@@ -116,38 +116,38 @@ TRAMPFUNC SIZE_T WINAPI TrampLocalShrink(HLOCAL hMem, UINT cbNewSize) TRAMPOLINE
 TRAMPFUNC SIZE_T WINAPI TrampLocalSize(HLOCAL hMem) TRAMPOLINE_DEF
 #define LocalUnlock TrampLocalUnlock
 TRAMPFUNC BOOL WINAPI TrampLocalUnlock(HLOCAL hMem) TRAMPOLINE_DEF
-#define VirtualAlloc TrampVirtualAlloc
-TRAMPFUNC LPVOID WINAPI TrampVirtualAlloc(LPVOID lpAddress,
-                                          SIZE_T dwSize,
-                                          DWORD flAllocationType,
-                                          DWORD flProtect) TRAMPOLINE_DEF
-#define VirtualAllocEx TrampVirtualAllocEx
-TRAMPFUNC LPVOID WINAPI TrampVirtualAllocEx(HANDLE hProcess,
-                                            LPVOID lpAddress,
-                                            SIZE_T dwSize,
-                                            DWORD flAllocationType,
-                                            DWORD flProtect) TRAMPOLINE_DEF
-#define VirtualFree TrampVirtualFree
-TRAMPFUNC BOOL WINAPI TrampVirtualFree(LPVOID lpAddress,
-                                       SIZE_T dwSize,
-                                       DWORD flFreeType) TRAMPOLINE_DEF
-#define VirtualFreeEx TrampVirtualFreeEx
-TRAMPFUNC BOOL WINAPI TrampVirtualFreeEx(HANDLE hProcess,
-                                         LPVOID lpAddress,
-                                         SIZE_T dwSize,
-                                         DWORD flFreeType) TRAMPOLINE_DEF
-#define VirtualLock TrampVirtualLock
-TRAMPFUNC BOOL WINAPI TrampVirtualLock(LPVOID lpAddress, SIZE_T dwSize) TRAMPOLINE_DEF
-#define VirtualProtect TrampVirtualProtect
-TRAMPFUNC BOOL WINAPI TrampVirtualProtect(LPVOID lpAddress,
-                                          SIZE_T dwSize,
-                                          DWORD flNewProtect,
-                                          PDWORD lpflOldProtect) TRAMPOLINE_DEF
-#define VirtualProtectEx TrampVirtualProtectEx
-TRAMPFUNC BOOL WINAPI TrampVirtualProtectEx(HANDLE hProcess,
-                                            LPVOID lpAddress,
-                                            SIZE_T dwSize,
-                                            DWORD flNewProtect,
-                                            PDWORD lpflOldProtect) TRAMPOLINE_DEF
-#define VirtualUnlock TrampVirtualUnlock
-TRAMPFUNC BOOL WINAPI TrampVirtualUnlock(LPVOID lpAddress, SIZE_T dwSize) TRAMPOLINE_DEF
+//#define VirtualAlloc TrampVirtualAlloc
+//TRAMPFUNC LPVOID WINAPI TrampVirtualAlloc(LPVOID lpAddress,
+//                                          SIZE_T dwSize,
+//                                          DWORD flAllocationType,
+//                                          DWORD flProtect) TRAMPOLINE_DEF
+//#define VirtualAllocEx TrampVirtualAllocEx
+//TRAMPFUNC LPVOID WINAPI TrampVirtualAllocEx(HANDLE hProcess,
+//                                            LPVOID lpAddress,
+//                                            SIZE_T dwSize,
+//                                            DWORD flAllocationType,
+//                                            DWORD flProtect) TRAMPOLINE_DEF
+//#define VirtualFree TrampVirtualFree
+//TRAMPFUNC BOOL WINAPI TrampVirtualFree(LPVOID lpAddress,
+//                                       SIZE_T dwSize,
+//                                       DWORD flFreeType) TRAMPOLINE_DEF
+//#define VirtualFreeEx TrampVirtualFreeEx
+//TRAMPFUNC BOOL WINAPI TrampVirtualFreeEx(HANDLE hProcess,
+//                                         LPVOID lpAddress,
+//                                         SIZE_T dwSize,
+//                                         DWORD flFreeType) TRAMPOLINE_DEF
+//#define VirtualLock TrampVirtualLock
+//TRAMPFUNC BOOL WINAPI TrampVirtualLock(LPVOID lpAddress, SIZE_T dwSize) TRAMPOLINE_DEF
+//#define VirtualProtect TrampVirtualProtect
+//TRAMPFUNC BOOL WINAPI TrampVirtualProtect(LPVOID lpAddress,
+//                                          SIZE_T dwSize,
+//                                          DWORD flNewProtect,
+//                                          PDWORD lpflOldProtect) TRAMPOLINE_DEF
+//#define VirtualProtectEx TrampVirtualProtectEx
+//TRAMPFUNC BOOL WINAPI TrampVirtualProtectEx(HANDLE hProcess,
+//                                            LPVOID lpAddress,
+//                                            SIZE_T dwSize,
+//                                            DWORD flNewProtect,
+//                                            PDWORD lpflOldProtect) TRAMPOLINE_DEF
+//#define VirtualUnlock TrampVirtualUnlock
+//TRAMPFUNC BOOL WINAPI TrampVirtualUnlock(LPVOID lpAddress, SIZE_T dwSize) TRAMPOLINE_DEF

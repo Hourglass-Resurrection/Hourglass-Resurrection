@@ -128,12 +128,12 @@ public:
 	{
         EmulatedDirectSoundBuffer* copy =
             static_cast<EmulatedDirectSoundBuffer*>
-                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
         copy = ::new EmulatedDirectSoundBuffer();
 		copy->bufferSize = original->bufferSize;
 		copy->allocated = original->allocated;
 		copy->buffer =
-            static_cast<unsigned char*>(MemoryManager::Allocate(copy->allocated, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+            static_cast<unsigned char*>(MemoryManager::Allocate(copy->allocated, MemoryManager::ALLOC_WRITE));
 		memcpy(copy->buffer, original->buffer, original->allocated);
 		copy->frequency = original->frequency;
 		copy->pan = original->pan;
@@ -147,7 +147,7 @@ public:
 		if(original->waveformat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += original->waveformat->cbSize;
 		copy->waveformat =
-            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(copy->waveformat, original->waveformat, wfxsize);
 
 		return copy;
@@ -320,7 +320,7 @@ public:
 		EnterCriticalSection(&m_bufferCS);
 		bufferSize = min(max(bufferSize, DSBSIZE_MIN), DSBSIZE_MAX);
 		allocated = bufferSize;
-		buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+		buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE));
 		memset(buffer, (waveformat->wBitsPerSample <= 8) ? 0x80 : 0, allocated);
 		LeaveCriticalSection(&m_bufferCS);
 
@@ -338,7 +338,7 @@ public:
 		int wfxsize = sizeof(WAVEFORMATEX);
 		if(pFormat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += pFormat->cbSize;
-		waveformat = static_cast<WAVEFORMATEX*>(MemoryManager::Reallocate(waveformat, wfxsize, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+		waveformat = static_cast<WAVEFORMATEX*>(MemoryManager::Reallocate(waveformat, wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(waveformat, pFormat, wfxsize);
 		if(pFormat->wFormatTag == WAVE_FORMAT_PCM)
 			waveformat->cbSize = 0;
@@ -354,7 +354,7 @@ public:
 		EnterCriticalSection(&m_lockBufferCS);
 
 		if(!lockBuf)
-			lockBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(lockBuf, bufferSize, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+			lockBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(lockBuf, bufferSize, MemoryManager::ALLOC_WRITE));
 		memcpy(lockBuf, buffer, bufferSize);
 
 		if(dwFlags & DSBLOCK_FROMWRITECURSOR)
@@ -545,7 +545,7 @@ public:
 		numNotifies = 0;
 		notifies =
             static_cast<DSBPOSITIONNOTIFY*>
-                (MemoryManager::Allocate(dwPositionNotifies * sizeof(DSBPOSITIONNOTIFY), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                (MemoryManager::Allocate(dwPositionNotifies * sizeof(DSBPOSITIONNOTIFY), MemoryManager::ALLOC_WRITE));
 		if(!notifies)
 			return DSERR_OUTOFMEMORY;
 		
@@ -657,7 +657,7 @@ public:
 			if(contiguousMixOutBufAllocated < contiguousMixOutBufSize+16)
 			{
 				contiguousMixOutBufAllocated = contiguousMixOutBufSize+16;
-				contiguousMixOutBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(contiguousMixOutBuf, contiguousMixOutBufAllocated, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+				contiguousMixOutBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(contiguousMixOutBuf, contiguousMixOutBufAllocated, MemoryManager::ALLOC_WRITE));
 			}
 			if(contiguousMixOutBufSize)
 				memset(contiguousMixOutBuf, (format.wBitsPerSample <= 8) ? 0x80 : 0, contiguousMixOutBufSize);
@@ -827,8 +827,8 @@ public:
 						{
 							EnterCriticalSection(&m_bufferCS);
 							allocated = unwrappedPlayCursor + waveformat->nBlockAlign;
-							buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
-							if(!buffer) { buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL)); }
+							buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE));
+							if(!buffer) { buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE)); }
 							if(!buffer) { debuglog(LCF_ERROR, "FAILED TO ALLOCATE LOOP BUFFER\n"); }
 							ReplicateBufferIntoExtraAllocated();
 							LeaveCriticalSection(&m_bufferCS);
@@ -1477,7 +1477,7 @@ public:
                 if (!s_pEmulatedDirectSoundSinkFactory)
                     s_pEmulatedDirectSoundSinkFactory
                         = static_cast<EmulatedDirectSoundSinkFactory*>
-                            (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSinkFactory), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                            (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSinkFactory), MemoryManager::ALLOC_WRITE));
                     s_pEmulatedDirectSoundSinkFactory = ::new EmulatedDirectSoundSinkFactory();
 				if(s_pEmulatedDirectSoundSinkFactory)
 				{
@@ -1575,7 +1575,7 @@ public:
 			}
             *ppDSBuffer =
                 static_cast<LPDIRECTSOUNDBUFFER>
-                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
             *ppDSBuffer = ::new EmulatedDirectSoundBuffer();
 			(*ppDSBuffer)->Initialize(this, pcDSBufferDesc);
 			return DS_OK;
@@ -1621,7 +1621,7 @@ public:
 				// pretend to have a primary buffer
                 *ppDSBuffer =
                     static_cast<LPDIRECTSOUNDBUFFER>
-                        (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                        (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
                 *ppDSBuffer = ::new EmulatedDirectSoundBuffer(true);
 				(*ppDSBuffer)->Initialize(this, pcDSBufferDesc);
 				hr = DS_OK;
@@ -2150,7 +2150,7 @@ public:
 			wfxsize += lpWaveFormat->cbSize;
 		waveFormatAllocated = wfxsize;
 		sinkWaveFormat =
-            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(sinkWaveFormat, lpWaveFormat, wfxsize);
 	}
 	~EmulatedDirectSoundSink()
@@ -2234,7 +2234,7 @@ public:
 		{
             *ppDSBuffer =
                 static_cast<LPDIRECTSOUNDBUFFER>
-                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
             *ppDSBuffer = ::new EmulatedDirectSoundBuffer();
 		}
 		else
@@ -2244,7 +2244,7 @@ public:
 			// pretend to have a primary buffer
             *ppDSBuffer =
                 static_cast<LPDIRECTSOUNDBUFFER>
-                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
             *ppDSBuffer = ::new EmulatedDirectSoundBuffer(true);
 		}
 		(*ppDSBuffer)->Initialize(/*pEmulatedDirectSound*/NULL, pcDSBufferDesc);
@@ -2470,7 +2470,7 @@ public:
 			return E_POINTER;
         *ppDSC =
             static_cast<IDirectSoundSink*>
-                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSink), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSink), MemoryManager::ALLOC_WRITE));
         *ppDSC = ::new EmulatedDirectSoundSink(lpWaveFormat);
 		(*ppDSC)->AddRef();
 		return S_OK;
@@ -2706,7 +2706,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
 				usingVirtualDirectSound = true;
                 *ppDS =
                     static_cast<MyDirectSound<IDirectSound>*>
-                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound>), MemoryManager::ALLOC_WRITE));
                 *ppDS = ::new MyDirectSound<IDirectSound>(NULL);
 				rv = DS_OK;
 			}
@@ -2757,7 +2757,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
 				usingVirtualDirectSound = true;
                 *ppDS =
                     static_cast<MyDirectSound<IDirectSound8>*>
-                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE));
                 *ppDS = ::new MyDirectSound<IDirectSound8>(NULL);
 				rv = DS_OK;
 			}
@@ -2977,13 +2977,13 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv)
 	bool applicable = ((tasflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND) || usingVirtualDirectSound);
 	if(applicable && riid == IID_IDirectSound)
 	{
-        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL);
+        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
         *ppv = ::new MyDirectSound<IDirectSound>(NULL);
 		return true;
 	}
 	else if(applicable && riid == IID_IDirectSound8)
 	{
-        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL);
+        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
 		*ppv = ::new MyDirectSound<IDirectSound8>(NULL);
 		return true;
 	}

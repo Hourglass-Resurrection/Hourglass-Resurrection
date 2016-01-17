@@ -48,10 +48,14 @@ template<class T>
 class LazyType
 {
 public:
-    LazyType() {}
+    LazyType()
+    {
+    }
     LazyType(LazyType&) = delete;
     LazyType<T>& operator= (LazyType&) = delete;
-    ~LazyType() {}
+    ~LazyType()
+    {
+    }
 
     T& operator() () const
     {

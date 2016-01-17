@@ -121,7 +121,7 @@ static void FrameBoundaryHDCtoAVI(HDC hdc,int xSrc,int ySrc,int xRes,int yRes)
 	static unsigned int bitsAllocated = 0;
 	if(bitsAllocated < bmi.bmiHeader.biSizeImage)
 	{
-        bits = static_cast<char*>(MemoryManager::Reallocate(bits, bmi.bmiHeader.biSizeImage, MemoryManager::ALLOC_WRITE | MemoryManager::ALLOC_INTERNAL));
+        bits = static_cast<char*>(MemoryManager::Reallocate(bits, bmi.bmiHeader.biSizeImage, MemoryManager::ALLOC_WRITE));
 		bitsAllocated = bmi.bmiHeader.biSizeImage;
 	}
 
