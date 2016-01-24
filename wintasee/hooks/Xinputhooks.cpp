@@ -28,23 +28,29 @@ HOOKFUNC DWORD WINAPI MyXInputGetState(
     /*
      * Increment packet number if the input has changed
      * from the last time the function was called.
+     *
+     * I only have one gamepad so I'm unable to test whether
+     * the packet number is the same for all gamepads or
+     * if it's increased separately for each, so
+     * assuming it is the same. Shouldn't cause any issues.
+     * -- YaLTeR
      */
-    static XINPUT_GAMEPAD s_last_state = curinput.gamepad[dwUserIndex];
+    static XINPUT_GAMEPAD s_last_state[4];
     static DWORD s_packet_number = 0;
 
     XINPUT_GAMEPAD new_state = gs_xinput_enabled ? curinput.gamepad[dwUserIndex] : XINPUT_GAMEPAD();
     pState->Gamepad = new_state;
 
-    if (s_last_state.wButtons != new_state.wButtons ||
-        s_last_state.bLeftTrigger != new_state.bLeftTrigger ||
-        s_last_state.bRightTrigger != new_state.bRightTrigger ||
-        s_last_state.sThumbLX != new_state.sThumbLX ||
-        s_last_state.sThumbLY != new_state.sThumbLY ||
-        s_last_state.sThumbRX != new_state.sThumbRX ||
-        s_last_state.sThumbRY != new_state.sThumbRY)
+    if (s_last_state[dwUserIndex].wButtons != new_state.wButtons ||
+        s_last_state[dwUserIndex].bLeftTrigger != new_state.bLeftTrigger ||
+        s_last_state[dwUserIndex].bRightTrigger != new_state.bRightTrigger ||
+        s_last_state[dwUserIndex].sThumbLX != new_state.sThumbLX ||
+        s_last_state[dwUserIndex].sThumbLY != new_state.sThumbLY ||
+        s_last_state[dwUserIndex].sThumbRX != new_state.sThumbRX ||
+        s_last_state[dwUserIndex].sThumbRY != new_state.sThumbRY)
     {
         pState->dwPacketNumber = ++s_packet_number;
-        s_last_state = new_state;
+        s_last_state[dwUserIndex] = new_state;
     }
     else
     {
@@ -320,7 +326,7 @@ struct KeystrokeState
         }
         if (m_right_trigger != new_state.m_right_trigger)
         {
-            keystroke->VirtualKey = VK_PAD_LTRIGGER;
+            keystroke->VirtualKey = VK_PAD_RTRIGGER;
             keystroke->Flags = new_state.m_right_trigger ? XINPUT_KEYSTROKE_KEYDOWN : XINPUT_KEYSTROKE_KEYUP;
             m_right_trigger = new_state.m_right_trigger;
             return true;
