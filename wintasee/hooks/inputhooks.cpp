@@ -555,6 +555,7 @@ public:
 			memcpy(data, &curinput.mouse.di, sizeof(DIMOUSESTATE));
 			return DI_OK;
 		}
+		return E_PENDING;
 	}
 
 	STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
