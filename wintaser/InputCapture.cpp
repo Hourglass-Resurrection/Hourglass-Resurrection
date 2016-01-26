@@ -1015,7 +1015,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				{
 					int buf[1]; // Necessary, function crashes if you send a pointer to a simple varialbe.
 
-					SingleInput si;
+					SingleInput si; // FIXME: Why is this unused?
 
 					// Check if the selection happened in HotKeys
 					if(SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
