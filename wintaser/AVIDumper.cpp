@@ -1196,9 +1196,9 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 			// BITMAPINFOHEADER
 			{ 
 				sizeof(BITMAPINFO), 
-				width, height, 1, 
-				bpp, BI_RGB, 
-				width * height * bpp / 8, 
+				width, height, static_cast<WORD>(1),
+				static_cast<WORD>(bpp), BI_RGB, 
+				static_cast<DWORD>(static_cast<unsigned>(width) * height * bpp / 8), 
 			}
 		};  
 

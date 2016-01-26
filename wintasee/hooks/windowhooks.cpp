@@ -135,7 +135,7 @@ HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
 			nWidth,//int       cx;
 			Y,//int       y;
 			X,//int       x;
-			dwStyle,//LONG      style;
+			static_cast<LONG>(dwStyle),//LONG      style;
 			lpWindowName,//LPCTSTR   lpszName;
 			lpClassName,//LPCTSTR   lpszClass;
 			dwExStyle,//DWORD     dwExStyle;

@@ -1814,7 +1814,7 @@ inline void SetFastForward(bool set)
 	//	return;
 	//sprintf(localCommandSlot, "FAST: %d", set?1:0);
 	//SendCommand();
-	if(localTASflags.fastForward != set)
+	if(localTASflags.fastForward != static_cast<int>(set))
 	{
 		localTASflags.fastForward = set;
 		tasFlagsDirty = true;
@@ -2363,11 +2363,11 @@ void CheckDialogChanges(int frameCount)
 {
 	if(!displayed_checkdialog_inited ||
 		started != displayed_started ||
-		localTASflags.playback != displayed_playback ||
+		localTASflags.playback != static_cast<int>(displayed_playback) ||
 		finished != displayed_finished)
 	{
 		displayed_started = started;
-		displayed_playback = localTASflags.playback;
+		displayed_playback = (localTASflags.playback != 0);
 		displayed_finished = finished;
 		const char* str;
 		if(started)
@@ -2429,9 +2429,9 @@ void CheckDialogChanges(int frameCount)
 		SendMessage(GetDlgItem(hWnd, IDC_EDIT_FPS), EM_SETREADONLY, !paused && started, 0);
 		CheckDlgButton(hWnd, IDC_PAUSED, paused);
 	}
-	if(!displayed_checkdialog_inited || displayed_fastforward != localTASflags.fastForward)
+	if(!displayed_checkdialog_inited || static_cast<int>(displayed_fastforward) != localTASflags.fastForward)
 	{
-		displayed_fastforward = localTASflags.fastForward;
+		displayed_fastforward = (localTASflags.fastForward != 0);
 		CheckDlgButton(hWnd, IDC_FASTFORWARD, localTASflags.fastForward);
 	}
 	if(!displayed_checkdialog_inited || displayed_usedThreadMode != usedThreadMode && usedThreadMode >= 0)
@@ -6050,8 +6050,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						// Correct positioning so that we don't spawn (halfly) off-screen if Hourglass' window is in a corner or something.
 						if(dialogPosY < desktopRect.top) dialogPosY = desktopRect.top;
 						if(dialogPosX < desktopRect.left) dialogPosX = desktopRect.left;
-						if((dialogPosY + dialogSizeY) > desktopRect.bottom) dialogPosY = desktopRect.bottom - dialogSizeY;
-						if((dialogPosX + dialogSizeX) > desktopRect.right) dialogPosX = desktopRect.right - dialogSizeX;
+						if(dialogPosY + static_cast<int>(dialogSizeY) > desktopRect.bottom) dialogPosY = desktopRect.bottom - dialogSizeY;
+						if(dialogPosX + static_cast<int>(dialogSizeX) > desktopRect.right) dialogPosX = desktopRect.right - dialogSizeX;
 
 						SetWindowPos(HotkeyHWnd, HWND_TOP, dialogPosX, dialogPosY, dialogSizeX, dialogSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
 					}
@@ -6385,7 +6385,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						Save_Config();
 						//CheckDlgButton(hDlg, IDC_AVIVIDEO, aviMode & 1);
 						//CheckDlgButton(hDlg, IDC_AVIAUDIO, aviMode & 2);
-						bool wasPlayback = localTASflags.playback;
+						bool wasPlayback = (localTASflags.playback != 0);
 						TerminateDebuggerThread(12000);
 						if(unsavedMovieData)
 						{

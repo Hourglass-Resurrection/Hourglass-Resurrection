@@ -626,7 +626,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = {SINGLE_INPUT_DI_KEYBOARD, k, ""};
+		SingleInput siPressed = { SINGLE_INPUT_DI_KEYBOARD, static_cast<SHORT>(k), "" };
 
 		/* Input mapping */
 		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
@@ -658,7 +658,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// We build the SingleInput with modifiers this time, and check if it's mapped to something.
-		SingleInput siPressedMod = {SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, ""};
+		SingleInput siPressedMod = { SINGLE_INPUT_DI_KEYBOARD, static_cast<SHORT>((modifier << 8) | k), "" };
 
 		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressedMod);
 		if (iterE != eventMapping.end()){ // There is something.
@@ -683,7 +683,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = {SINGLE_INPUT_DI_MOUSE, i, ""};
+		SingleInput siPressed = { SINGLE_INPUT_DI_MOUSE, static_cast<SHORT>(i), "" };
 
 		//TODO: Duplicate code !!!
 
