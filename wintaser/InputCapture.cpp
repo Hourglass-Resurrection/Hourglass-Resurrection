@@ -443,7 +443,7 @@ void InputCapture::GetKeyboardState(unsigned char* keys){
 		rval = lpDIDKeyboard->GetDeviceState(256, keys);
 		if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED))
 			// We couldn't get the state of the keyboard. Let's just say nothing was pressed.
-			memset(keys, 0, sizeof(keys));
+			memset(keys, 0, 256);
 	}
 }
 
