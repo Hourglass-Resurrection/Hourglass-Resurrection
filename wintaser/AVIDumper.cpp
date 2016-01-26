@@ -767,7 +767,8 @@ struct AviFrameQueue
 		int audioBufferAllocated;
 		int inAudioSize, audioFrameSamples;
 		double inAudioSeconds; // hack
-		int framecount; int slotNum; // for debugging
+		int framecount;
+		int slotNum; // for debugging
 		Slot() : hasProcessedVideo(false), hasProcessedAudio(false),
 			aviPixels(NULL), aviPixelsAllocated(0),
 //			inPixels(NULL), inPixelsAllocated(0),
@@ -775,6 +776,7 @@ struct AviFrameQueue
 			audioFrameSamples(0), inAudioSize(0), inAudioSeconds(0)
 		{
 			framecount = -1;
+			slotNum = 0;
 		}
 		~Slot()
 		{

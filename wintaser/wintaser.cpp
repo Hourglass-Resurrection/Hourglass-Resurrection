@@ -3866,7 +3866,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						}
 						else if(MessagePrefixMatch("WATCH")) 
 						{
-							AddressWatcher auto_watch;
+							AddressWatcher auto_watch = {};
 							char comment[256];
 							sscanf(pstr,"%08X,%c,%c,%255s",&(auto_watch.Address),&(auto_watch.Size),&(auto_watch.Type),comment);
 							auto_watch.WrongEndian=false;
@@ -3875,7 +3875,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						}
 						else if(MessagePrefixMatch("UNWATCH")) 
 						{
-							AddressWatcher auto_unwatch;
+							AddressWatcher auto_unwatch = {};
 							sscanf(pstr,"%08X, %c, %c",&(auto_unwatch.Address),&(auto_unwatch.Size),&(auto_unwatch.Type));
 							auto_unwatch.WrongEndian=false;
 							RemoveWatch(auto_unwatch);							

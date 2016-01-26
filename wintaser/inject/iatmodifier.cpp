@@ -11,7 +11,7 @@
 using namespace std;
 
 IATModifier::IATModifier(const Process& process)
-	: process_(process), importDescrTblAddr_(NULL), importDescrTblSize_(0)
+	: process_(process), importDescrTblAddr_(NULL), ntHeadersAddr_(0), importDescrTblSize_(0)
 {
 }
 

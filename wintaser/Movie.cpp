@@ -24,6 +24,11 @@ Movie::Movie()
 	author[0] = '\0';
 	commandline[0] = '\0';
 	headerBuilt = false;
+	fps = 0;
+	it = 0;
+	memset(fmd5, 0, 4 * sizeof(unsigned int));
+	fsize = 0;
+	memset(desyncDetectionTimerValues, 0, 16 * sizeof(int));
 }
 
 // TODO: save incrementally?, and work on the format
