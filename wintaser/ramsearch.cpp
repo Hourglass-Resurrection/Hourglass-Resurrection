@@ -388,7 +388,7 @@ bool RSVal::print(char* output, char sizeTypeID, char typeID)
 					sprintf(output, " ('%c')", (unsigned char)((int)*this&0xff));
 				break;
 			case 'w': sprintf(output, "%u", (unsigned short)((int)*this&0xffff)); break;
-			case 'd': sprintf(output, "%u", (unsigned long)(int)*this); break;
+			case 'd': sprintf(output, "%lu", (unsigned long)(int)*this); break;
 			case 'l': sprintf(output, "%I64u", (unsigned long long)(long long)*this); break;
 		}
 		break;

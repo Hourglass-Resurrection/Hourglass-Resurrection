@@ -5,15 +5,23 @@
 #include "ipc.h"
 using namespace Config;
 
-#define MENU_L(smenu, pos, flags, id, suffixe, str, disableReason)	do{									\
-/*GetPrivateProfileStringA(language_name[Language], (str), (def), Str_Tmp, 1024, Language_Path);*/	\
-if((disableReason) && ((flags) & (MF_DISABLED|MF_GRAYED))) \
-	sprintf(Str_Tmp, "%s (%s)", str, disableReason); \
-else \
-	strcpy(Str_Tmp, str); \
-strcat(Str_Tmp, (suffixe)); /*AddHotkeySuffix(Str_Tmp, id, suffixe, true);*/							\
-InsertMenu((smenu), (pos), (flags), (id), Str_Tmp); } while(0)
+void MENU_L(HMENU smenu, UINT pos, UINT flags, UINT_PTR id, LPCSTR suffixe, LPCSTR str, LPCSTR disableReason)
+{
+	char Str_Tmp[1024];
+	/*GetPrivateProfileStringA(language_name[Language], str, def, Str_Tmp, 1024, Language_Path);*/
+	if (disableReason && (flags & (MF_DISABLED | MF_GRAYED)))
+		sprintf(Str_Tmp, "%s (%s)", str, disableReason);
+	else
+		strcpy(Str_Tmp, str);
+	strcat(Str_Tmp, (suffixe));
+	/*AddHotkeySuffix(Str_Tmp, id, suffixe, true);*/
+	InsertMenu(smenu, pos, flags, id, Str_Tmp);
+}
 
+__forceinline void MENU_L(HMENU smenu, UINT pos, UINT flags, HMENU menu, LPCSTR suffixe, LPCSTR str, LPCSTR disableReason)
+{
+	MENU_L(smenu, pos, flags, reinterpret_cast<UINT_PTR>(menu), suffixe, str, disableReason);
+}
 
 void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 {
@@ -82,14 +90,14 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	Flags = MF_BYPOSITION | MF_POPUP | MF_STRING;
 
 	i = 0;
-	MENU_L(MainMenu, i++, Flags, (UINT)Files, "", "&File", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Graphics, "", "&Graphics", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Sound, "", "&Sound", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Exec, "", "&Runtime", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Input, "", "&Input", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)TAS_Tools, "", "&Tools", 0);
-	MENU_L(MainMenu, i++, Flags, (UINT)Avi, "", (localTASflags.aviMode&&started&&(aviFrameCount||aviSoundFrameCount)) ? ((aviFrameCount&&aviSoundFrameCount)?"&AVI!!":"&AVI!") : "&AVI", 0);
-//	MENU_L(MainMenu, i++, Flags, (UINT)Help, "", "&Help", 0);
+	MENU_L(MainMenu, i++, Flags, Files, "", "&File", 0);
+	MENU_L(MainMenu, i++, Flags, Graphics, "", "&Graphics", 0);
+	MENU_L(MainMenu, i++, Flags, Sound, "", "&Sound", 0);
+	MENU_L(MainMenu, i++, Flags, Exec, "", "&Runtime", 0);
+	MENU_L(MainMenu, i++, Flags, Input, "", "&Input", 0);
+	MENU_L(MainMenu, i++, Flags, TAS_Tools, "", "&Tools", 0);
+	MENU_L(MainMenu, i++, Flags, Avi, "", (localTASflags.aviMode&&started&&(aviFrameCount||aviSoundFrameCount)) ? ((aviFrameCount&&aviSoundFrameCount)?"&AVI!!":"&AVI!") : "&AVI", 0);
+//	MENU_L(MainMenu, i++, Flags, Help, "", "&Help", 0);
 
 
 	// File Menu
@@ -126,7 +134,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	//InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
 	//if (strcmp(Recent_Rom[0], ""))
 	//{
-	//	MENU_L(Files, i++, MF_BYPOSITION | MF_POPUP | MF_STRING, (UINT)FilesHistory, "", "&Recent EXEs", 0);
+	//	MENU_L(Files, i++, MF_BYPOSITION | MF_POPUP | MF_STRING, FilesHistory, "", "&Recent EXEs", 0);
 	//	InsertMenu(Files, i++, MF_SEPARATOR, NULL, NULL);
 	//}
 
@@ -202,7 +210,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	//MENU_L(Graphics, i++, Flags | (!localTASflags.forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
 	//InsertMenu(Graphics, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Graphics, i++, Flags | (!localTASflags.forceSoftware ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_FORCESOFTWARE, "", "&Allow Hardware Acceleration", "can't change while running");
-	MENU_L(Graphics, i++, Flags | MF_POPUP | ((localTASflags.forceSoftware||started) ? MF_GRAYED : 0), (UINT)GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
+	MENU_L(Graphics, i++, Flags | MF_POPUP | ((localTASflags.forceSoftware||started) ? MF_GRAYED : 0), GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
 
 	// GraphicsMemory Menu
 	i = 0;
@@ -214,20 +222,20 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// Execution Menu
 	i = 0;
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)Locale, "", "App &Locale", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, Locale, "", "App &Locale", 0);
 	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)Affinity, "", "&Affinity", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, Affinity, "", "&Affinity", 0);
 	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecMultithreading, "", "&Multithreading Mode", 0);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecTimers, "", "Multimedia &Timer Mode", 0);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecMessageSync, "", "Message &Sync Mode", 0);	
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecWaitSync, "", "&Wait Sync Mode", 0);	
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)ExecDlls, "", "&DLL Loading", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, ExecMultithreading, "", "&Multithreading Mode", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, ExecTimers, "", "Multimedia &Timer Mode", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, ExecMessageSync, "", "Message &Sync Mode", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, ExecWaitSync, "", "&Wait Sync Mode", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, ExecDlls, "", "&DLL Loading", 0);
 	MENU_L(Exec, i++, Flags | ((truePause)?MF_CHECKED:MF_UNCHECKED), ID_EXEC_USETRUEPAUSE, "", "Disable Pause Helper", 0);
 	MENU_L(Exec, i++, Flags | ((onlyHookChildProcesses)?MF_CHECKED:MF_UNCHECKED) | (started?MF_GRAYED:0), ID_EXEC_ONLYHOOKCHILDPROC, "", "Wait until sub-process creation" /*" (might help IWBTG)"*/, "can't change while running");
 	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)Performance, "", "&Performance", 0);
-	MENU_L(Exec, i++, Flags | MF_POPUP, (UINT)DebugLogging, "", "&Debug Logging", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, Performance, "", "&Performance", 0);
+	MENU_L(Exec, i++, Flags | MF_POPUP, DebugLogging, "", "&Debug Logging", 0);
 //	InsertMenu(Exec, i++, MF_SEPARATOR, NULL, NULL);
 //	MENU_L(Exec, i++, Flags | (!started?MF_GRAYED:0), ID_EXEC_SUSPEND, "", "Suspend Secondary Threads", "must be running");
 //	MENU_L(Exec, i++, Flags | (!started?MF_GRAYED:0), ID_EXEC_RESUME, "", "Resume Secondary Threads", "must be running");
@@ -239,10 +247,10 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	i = 0;
 	MENU_L(Time, i++, Flags | (paused?MF_CHECKED:MF_UNCHECKED), ID_TIME_TOGGLE_PAUSE, "", "Pause", 0);
 	InsertMenu(Time, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Time, i++, Flags | MF_POPUP, (UINT)TimeRate, "", "&Slow Motion", 0);
+	MENU_L(Time, i++, Flags | MF_POPUP, TimeRate, "", "&Slow Motion", 0);
 	InsertMenu(Time, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Time, i++, Flags | (fastforward?MF_CHECKED:MF_UNCHECKED), ID_TIME_TOGGLE_FASTFORWARD, "", "Fast-Forward", 0);
-	MENU_L(Time, i++, Flags | MF_POPUP, (UINT)TimeFastForward, "", "&Fast-Forward Options", 0);
+	MENU_L(Time, i++, Flags | MF_POPUP, TimeFastForward, "", "&Fast-Forward Options", 0);
 	if(Time == TAS_Tools) InsertMenu(Time, i++, MF_SEPARATOR, NULL, NULL);
 
 
@@ -250,9 +258,9 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	i = 0;
 	//MENU_L(Input, i++, Flags, ID_INPUT_HOTKEYS, "", "Configure &Hotkeys...", 0);	
 	MENU_L(Input, i++, Flags, ID_INPUT_INPUTS, "", "Configure &Inputs...", 0);	
-	MENU_L(Input, i++, Flags | MF_POPUP, (UINT)InputHotkeyFocus, "", "Enable Hotkeys When", 0);
+	MENU_L(Input, i++, Flags | MF_POPUP, InputHotkeyFocus, "", "Enable Hotkeys When", 0);
 	InsertMenu(Input, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(Input, i++, Flags | MF_POPUP, (UINT)InputInputFocus, "", "Enable Game Input When", 0);
+	MENU_L(Input, i++, Flags | MF_POPUP, InputInputFocus, "", "Enable Game Input When", 0);
 	InsertMenu(Input, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Input, i++, Flags | (advancePastNonVideoFrames?MF_CHECKED:MF_UNCHECKED), ID_INPUT_SKIPLAGFRAMES, "", "Frame Advance Skips \"&Lag\" Frames", 0);
 
@@ -356,9 +364,9 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 		MENU_L(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==1)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DEBUGGER, "", "Send to Debugger", 0);
 	MENU_L(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==2)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_LOGFILE, "", "Write to Log File", 0);
 	InsertMenu(DebugLogging, i++, MF_SEPARATOR, NULL, NULL);
-	MENU_L(DebugLogging, i++, Flags | MF_POPUP, (UINT)DebugLoggingInclude, "", "&Print Categories", 0);
-	MENU_L(DebugLogging, i++, Flags | MF_POPUP, (UINT)DebugLoggingTrace, "", "&Trace Categories", 0);
-	MENU_L(DebugLogging, i++, Flags | MF_POPUP, (UINT)DebugLoggingExclude, "", "&Exclude Categories", 0);
+	MENU_L(DebugLogging, i++, Flags | MF_POPUP, DebugLoggingInclude, "", "&Print Categories", 0);
+	MENU_L(DebugLogging, i++, Flags | MF_POPUP, DebugLoggingTrace, "", "&Trace Categories", 0);
+	MENU_L(DebugLogging, i++, Flags | MF_POPUP, DebugLoggingExclude, "", "&Exclude Categories", 0);
 
 	i = 0;
 	MENU_L(DebugLoggingInclude, i++, Flags | ((includeLogFlags&LCF_ERROR)?MF_CHECKED:MF_UNCHECKED), ID_INCLUDE_LCF_ERROR, "", "error", 0);
@@ -475,7 +483,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	i = 0;
 
 	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_EMULATESOUND) ? MF_CHECKED : MF_UNCHECKED) | (started?MF_GRAYED:0), ID_SOUND_SOFTWAREMIX, "", "&Use Software Mixing", "can't change while running");
-	MENU_L(Sound, i++, Flags | MF_POPUP | (started||!(localTASflags.emuMode&EMUMODE_EMULATESOUND) ? MF_GRAYED : 0), (UINT)SoundFormat, "", "&Format", started ? "can't change while running" : "software mixing must be enabled");
+	MENU_L(Sound, i++, Flags | MF_POPUP | (started||!(localTASflags.emuMode&EMUMODE_EMULATESOUND) ? MF_GRAYED : 0), SoundFormat, "", "&Format", started ? "can't change while running" : "software mixing must be enabled");
 	InsertMenu(Sound, i++, MF_SEPARATOR, NULL, NULL);
 	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_NOPLAYBUFFERS) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_NOPLAYBUFFERS, "", (localTASflags.emuMode&EMUMODE_EMULATESOUND) ? ((localTASflags.aviMode&2) ? "&Mute Sound" : "&Mute Sound (Skip Mixing)") : "&Mute Sound (Skip Playing)", 0);
 	MENU_L(Sound, i++, Flags | ((localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND) ? MF_CHECKED : MF_UNCHECKED), ID_SOUND_VIRTUALDIRECTSOUND, "", /*(emuMode&EMUMODE_EMULATESOUND) ? "&Virtual DirectSound" :*/ "&Disable DirectSound Creation", 0);

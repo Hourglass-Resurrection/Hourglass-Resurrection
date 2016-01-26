@@ -54,7 +54,7 @@ Movie::Movie()
 			strcat(newFilename, "new.hgr\0");
 
 			char str[1024];
-			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s%.", filename, newFilename);
+			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
 			CustomMessageBox(str, "Warning!", MB_OK | MB_ICONWARNING);
 
 			file = fopen(newFilename, "wb");

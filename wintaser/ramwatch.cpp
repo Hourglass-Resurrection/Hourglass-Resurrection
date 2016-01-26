@@ -423,8 +423,9 @@ void OpenRWRecentFile(int memwRFileNumber)
 		do {
 			fgets(Str_Tmp_RW,1024,WatchFile);
 		} while(Str_Tmp_RW[0] == '\n');
-		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
-		Temp.WrongEndian = 0;
+		int dummy_wrong_endian;
+		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&dummy_wrong_endian);
+		Temp.WrongEndian = false;
 		char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
 		if(Comment == (char*)NULL + 1)
 			continue;
@@ -604,8 +605,9 @@ bool Load_Watches(bool clear, const char* filename)
 		do {
 			fgets(Str_Tmp_RW,1024,WatchFile);
 		} while(Str_Tmp_RW[0] == '\n');
-		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
-		Temp.WrongEndian = 0;
+		int dummy_wrong_endian;
+		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&dummy_wrong_endian);
+		Temp.WrongEndian = false;
 		char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
 		if(Comment == (char*)NULL + 1)
 			continue;

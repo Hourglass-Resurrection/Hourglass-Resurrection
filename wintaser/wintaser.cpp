@@ -582,7 +582,7 @@ void UpdateFrameCountDisplay(int frameCount, int frequency);
 void UpdateRerecordCountDisplay()
 {
 	char str [256];
-	sprintf(str, "%d", movie.rerecordCount);
+	sprintf(str, "%u", movie.rerecordCount);
 	char str2 [256];
 	GetWindowText(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), str2, 256);
 	if(strcmp(str,str2))
@@ -1057,8 +1057,8 @@ int LoadMovie(char* filename)
 			sprintf(str,
 			"This movie was recorded using a different main version of Hourglass Resurrection.\n"
 			"\n"
-			"Movie's version: %d\n"
-			"Program version: %d\n"
+			"Movie's version: %u\n"
+			"Program version: %u\n"
 			"\n"
 			"This may lead to the movie desyncing.\n"
 			"If it would desync you might want to use the movies main version of Hourglass Resurrection.\n"
@@ -1084,7 +1084,7 @@ int LoadMovie(char* filename)
 						 "Current exe's md5: %X%X%X%X, size: %d\n\n"
 						 "Playing the movie with current exe may lead to the movie desyncing.\n"
 						 "Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
-						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], movie.fsize, 
+						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], static_cast<int>(movie.fsize), 
 						 temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
 			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(result == IDNO)
@@ -1095,7 +1095,12 @@ int LoadMovie(char* filename)
 		if(movie.fps != localTASflags.framerate)
 		{
 			char str[1024];
-			sprintf(str, "This movie was recorded using a different fps.\n\nMovie's fps: %d\nCurrent fps: %d\n\nPlaying the movie with current fps may lead to the movie desyncing.\nDo you want to use the movies fps instead?\n(Click \"Yes\" to use the movies fps, \"No\" to use current fps)", movie.fps, localTASflags.framerate);
+			sprintf(str, "This movie was recorded using a different fps.\n\n"
+						 "Movie's fps: %d\nCurrent fps: %d\n\n"
+						 "Playing the movie with current fps may lead to the movie desyncing.\n"
+						 "Do you want to use the movies fps instead?\n"
+						 "(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
+						 static_cast<int>(movie.fps), localTASflags.framerate);
 			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
@@ -1109,7 +1114,13 @@ int LoadMovie(char* filename)
 		if(movie.it != localTASflags.initialTime)
 		{
 			char str[1024];
-			sprintf(str, "This movie was recorded using a different initial time.\n\nMovie's initial time: %d\nCurrent initial time: %d\n\nPlaying the movie with current initial time may lead to the movie desyncing.\nDo you want to use the movies initial time instead?\n(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)", movie.it, localTASflags.initialTime);
+			sprintf(str, "This movie was recorded using a different initial time.\n\n"
+						 "Movie's initial time: %d\n"
+						 "Current initial time: %d\n\n"
+						 "Playing the movie with current initial time may lead to the movie desyncing.\n"
+						 "Do you want to use the movies initial time instead?\n"
+						 "(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)",
+						 static_cast<int>(movie.it), localTASflags.initialTime);
 			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
@@ -1709,7 +1720,7 @@ void LoadGameStatePhase2(int slot)
 				char str [1024];
 				sprintf(str, "Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
 					"You should load a different savestate before continuing, or switch to read+write and reload it."
-					, state.movie.currentFrame, movie.frames.size());
+					, state.movie.currentFrame, static_cast<int>(movie.frames.size()));
 				CustomMessageBox(str, "Movie End Warning", MB_OK | MB_ICONWARNING);
 			}
 		}
@@ -2251,7 +2262,7 @@ void UpdateGeneralInfoDisplay()
 //			if(strcmp(str,str2))
 //				SetWindowText(GetDlgItem(hWnd, IDC_TIMEINFO_LABEL), str);
 //#endif
-			sprintf(str, "%u", localGeneralInfoFromDll.ticks);
+			sprintf(str, "%d", localGeneralInfoFromDll.ticks);
 			GetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
 			if(strcmp(str,str2))
 				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
@@ -3857,7 +3868,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						{
 							AddressWatcher auto_watch;
 							char comment[256];
-							sscanf(pstr,"%08X,%c,%c,%s",&(auto_watch.Address),&(auto_watch.Size),&(auto_watch.Type),comment);
+							sscanf(pstr,"%08X,%c,%c,%255s",&(auto_watch.Address),&(auto_watch.Size),&(auto_watch.Type),comment);
 							auto_watch.WrongEndian=false;
 							if(IsHardwareAddressValid(auto_watch.Address))
 								InsertWatch(auto_watch,comment);							

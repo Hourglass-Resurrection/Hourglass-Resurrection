@@ -1564,7 +1564,7 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 	g_hklOverride = loadLayoutRv;
 	//if(!loadLayoutRv) // because LoadKeyboardLayout sometimes lies about succeeding and returns the default layout, let's always go into the fallback branch to ensure consistency
 	{
-		sscanf(keyboardLayoutName, "%08X", &g_hklOverride);
+		sscanf(keyboardLayoutName, "%08X", reinterpret_cast<int*>(&g_hklOverride));
 		if(!((DWORD)g_hklOverride & 0xFFFF0000))
 			(DWORD&)g_hklOverride |= ((DWORD)g_hklOverride << 16);
 	}
