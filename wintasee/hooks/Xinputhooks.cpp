@@ -6,21 +6,19 @@
 
 #include <cassert>
 
-//#include "../global.h"
 #include "../wintasee.h"
-//#include <Xinput.h>
 #include <../../external/Xinput.h>
 
 static bool gs_xinput_enabled = true;
 
 HOOKFUNC DWORD WINAPI MyXInputGetState(
-    DWORD         dwUserIndex,  // [in] Index of the gamer associated with the device
-    XINPUT_STATE* pState        // [out] Receives the current state
+    DWORD         dwUserIndex, // [in] Index of the user's controller.
+    XINPUT_STATE* pState       // [out] Receives the current state of the controller.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
 
-    if (dwUserIndex < 0 || dwUserIndex > 3)
+    if (dwUserIndex > 3)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -60,14 +58,31 @@ HOOKFUNC DWORD WINAPI MyXInputGetState(
     return ERROR_SUCCESS;
 }
 
+HOOKFUNC DWORD WINAPI MyXInputGetStateEx(
+    DWORD         dwUserIndex, // [in] Index of the user's controller.
+    XINPUT_STATE* pState       // [out] Receives the current state of the controller.
+)
+{
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
+
+    /*
+     * This is an undocumented function of XInput 1.3 and above
+     * that is said to also return the state of the guide button
+     * at the 0x400 bit position. We don't handle this button (yet?)
+     * so just call normal XInputGetState here.
+     * -- YaLTeR
+     */
+    return MyXInputGetState(dwUserIndex, pState);
+}
+
 HOOKFUNC DWORD WINAPI MyXInputSetState(
-    DWORD             dwUserIndex,  // [in] Index of the gamer associated with the device
-    XINPUT_VIBRATION* pVibration    // [in, out] The vibration information to send to the controller
+    DWORD             dwUserIndex, // [in] Index of the user's controller.
+    XINPUT_VIBRATION* pVibration   // [in, out] The vibration information to send to the controller.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
-    if (dwUserIndex < 0 || dwUserIndex > 3)
+    if (dwUserIndex > 3)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -76,14 +91,14 @@ HOOKFUNC DWORD WINAPI MyXInputSetState(
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
-    DWORD                dwUserIndex,   // [in] Index of the gamer associated with the device
-    DWORD                dwFlags,       // [in] Input flags that identify the device type
-    XINPUT_CAPABILITIES* pCapabilities  // [out] Receives the capabilities
+    DWORD                dwUserIndex,  // [in] Index of the gamer associated with the device.
+    DWORD                dwFlags,      // [in] Input flags that identify the device type.
+    XINPUT_CAPABILITIES* pCapabilities // [out] Receives the capabilities.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
 
-    if (dwUserIndex < 0 || dwUserIndex > 3)
+    if (dwUserIndex > 3)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -105,12 +120,12 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
      *
      * We set all bits to indicate maximal possible precision.
      */
-    supported_gamepad.bLeftTrigger = 0xFF;
-    supported_gamepad.bRightTrigger = 0xFF;
-    supported_gamepad.sThumbLX = -1;
-    supported_gamepad.sThumbLY = -1;
-    supported_gamepad.sThumbRX = -1;
-    supported_gamepad.sThumbRY = -1;
+    supported_gamepad.bLeftTrigger = ~0;
+    supported_gamepad.bRightTrigger = ~0;
+    supported_gamepad.sThumbLX = ~0;
+    supported_gamepad.sThumbLY = ~0;
+    supported_gamepad.sThumbRX = ~0;
+    supported_gamepad.sThumbRY = ~0;
     pCapabilities->Gamepad = supported_gamepad;
 
     XINPUT_VIBRATION no_vibration;
@@ -122,14 +137,14 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
-    DWORD dwUserIndex,          // [in] Index of the gamer associated with the device
-    GUID* pDSoundRenderGuid,    // [out] DSound device ID for render
-    GUID* pDSoundCaptureGuid    // [out] DSound device ID for capture
+    DWORD dwUserIndex,       // [in] Index of the gamer associated with the device.
+    GUID* pDSoundRenderGuid, // [out] DSound device ID for render.
+    GUID* pDSoundCaptureGuid // [out] DSound device ID for capture.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
-    if (dwUserIndex < 0 || dwUserIndex > 3)
+    if (dwUserIndex > 3)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -395,14 +410,14 @@ struct KeystrokeState
 };
 
 HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(
-    DWORD dwUserIndex,  // [in] Index of the gamer associated with the device
-    DWORD dwReserved,   // [in] Reserved
-    XINPUT_KEYSTROKE* pKeystroke    // [out] Receives the keystroke
+    DWORD             dwUserIndex, // [in] Index of the gamer associated with the device.
+    DWORD             dwReserved,  // [in] Reserved.
+    XINPUT_KEYSTROKE* pKeystroke   // [out] Receives the keystroke.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
 
-    if ((dwUserIndex < 0 || dwUserIndex > 3) && dwUserIndex != XUSER_INDEX_ANY)
+    if (dwUserIndex > 3 && dwUserIndex != XUSER_INDEX_ANY)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -415,7 +430,7 @@ HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(
          * Check every gamepad for changes.
          */
         bool something_changed = false;
-        for (int i = 0; i < 4; ++i)
+        for (INT i = 0; i < 4; ++i)
         {
             XINPUT_GAMEPAD new_state = gs_xinput_enabled ? curinput.gamepad[i] : XINPUT_GAMEPAD();
             if (s_last_state[i].CheckOneDifference(new_state, pKeystroke))
@@ -450,7 +465,7 @@ HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(
 }
 
 HOOKFUNC void WINAPI MyXInputEnable(
-    BOOL enable // [in] Indicates whether xinput is enabled or disabled.
+    BOOL enable // [in] Indicates whether XInput is enabled or disabled.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(enable = %d) called.\n", enable);
@@ -459,14 +474,14 @@ HOOKFUNC void WINAPI MyXInputEnable(
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(
-    DWORD dwUserIndex,  // [in] Index of the gamer associated with the device
-    BYTE devType,       // [in] Which device on this user index
-    XINPUT_BATTERY_INFORMATION* pBatteryInformation  // [out] Contains the level and types of batteries
+    DWORD                       dwUserIndex,        // [in] Index of the gamer associated with the device.
+    BYTE                        devType,            // [in] Which device on this user index.
+    XINPUT_BATTERY_INFORMATION* pBatteryInformation // [out] Contains the level and types of batteries.
 )
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
-    if (dwUserIndex < 0 || dwUserIndex > 3)
+    if (dwUserIndex > 3)
     {
         return ERROR_BAD_ARGUMENTS;
     }
@@ -476,6 +491,47 @@ HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(
      * BatteryLevel is undefined.
      */
     pBatteryInformation->BatteryType = BATTERY_TYPE_WIRED;
+
+    return ERROR_SUCCESS;
+}
+
+HOOKFUNC DWORD MyXInputGetAudioDeviceIds(
+    DWORD  dwUserIndex,      // [in] Index of the gamer associated with the device.
+    LPWSTR pRenderDeviceId,  // [out, optional] Windows Core Audio device ID string for render (speakers).
+    UINT*  pRenderCount,     // [in, out, optional] Size, in wide-chars, of the render device ID string buffer.
+    LPWSTR pCaptureDeviceId, // [out, optional] Windows Core Audio device ID string for capture (microphone).
+    UINT*  pCaptureCount     // [in, out, optional] Size, in wide-chars, of capture device ID string buffer.
+)
+{
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+
+    if (dwUserIndex > 3)
+    {
+        return ERROR_BAD_ARGUMENTS;
+    }
+
+    /*
+     * No audio devices connected.
+     */
+    if (pRenderCount)
+    {
+        if (*pRenderCount > 0 && pRenderDeviceId)
+        {
+            pRenderDeviceId[0] = L'\0';
+        }
+
+        *pRenderCount = 0;
+    }
+
+    if (pCaptureCount)
+    {
+        if (*pCaptureCount > 0 && pCaptureDeviceId)
+        {
+            pCaptureDeviceId[0] = L'\0';
+        }
+
+        *pCaptureCount = 0;
+    }
 
     return ERROR_SUCCESS;
 }
@@ -496,6 +552,16 @@ void ApplyXinputIntercepts()
         MAKE_INTERCEPT(1, XInput1_3, XInputGetKeystroke),
         MAKE_INTERCEPT(1, XInput1_3, XInputEnable),
         MAKE_INTERCEPT(1, XInput1_3, XInputGetBatteryInformation),
+        MAKE_INTERCEPT_ORD(1, XInput1_3, XInputGetStateEx, 100),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetState),
+        MAKE_INTERCEPT(1, XInput1_4, XInputSetState),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetCapabilities),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetDSoundAudioDeviceGuids),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetKeystroke),
+        MAKE_INTERCEPT(1, XInput1_4, XInputEnable),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetBatteryInformation),
+        MAKE_INTERCEPT(1, XInput1_4, XInputGetAudioDeviceIds),
+        MAKE_INTERCEPT_ORD(1, XInput1_4, XInputGetStateEx, 100),
     };
     ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
