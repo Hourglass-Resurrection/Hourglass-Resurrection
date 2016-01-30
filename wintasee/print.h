@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <shared\logcat.h>
+
 int debugprintf(const char* fmt, ...);
 int cmdprintf(const char* fmt, ...);
 
