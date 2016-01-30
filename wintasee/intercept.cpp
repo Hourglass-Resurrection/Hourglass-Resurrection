@@ -142,12 +142,13 @@ BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer
 #include <vector>
 struct InterceptAPIArgs
 {
-	std::string funcName;
-	FARPROC dwReplaced;
-	FARPROC dwTrampoline;
-	bool trampolineOnly;
-	const char* dllName;
-//	const char** dllNameArray; // if nonzero, we assume this is a dynamictramp hook and interpret the other arguments differently
+    LPCSTR funcName;
+    FARPROC dwReplaced;
+    FARPROC dwTrampoline;
+    bool trampolineOnly;
+    const char* dllName;
+//  const char** dllNameArray; // if nonzero, we assume this is a dynamictramp hook and interpret the other arguments differently
+    bool ordinal;
 };
 struct lessicmp
 {
@@ -167,14 +168,28 @@ std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> pendingInterceptA
 //}
 
 BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
-				  FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, bool forceLoad, bool allowTrack, BOOL rvOnSkip)
+				  FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, bool forceLoad, bool allowTrack, BOOL rvOnSkip, bool ordinal)
 {
-	debuglog(LCF_MODULE|LCF_HOOK, "InterceptAPI(%s.%s) %s\n", c_szDllName, c_szApiName, "started...");
+	if (ordinal)
+	{
+		debuglog(LCF_MODULE | LCF_HOOK, "InterceptAPI(%s.(LPCSTR)%p) %s\n", c_szDllName, c_szApiName, "started...");
+	}
+	else
+	{
+		debuglog(LCF_MODULE | LCF_HOOK, "InterceptAPI(%s.%s) %s\n", c_szDllName, c_szApiName, "started...");
+	}
 
 	HMODULE hModule = GetModuleHandle(c_szDllName);
 	if(!hModule && forceLoad)
 	{
-		debugprintf("WARNING: Loading module %s to hook %s\n", c_szDllName, c_szApiName);
+		if (ordinal)
+		{
+			debugprintf("WARNING: Loading module %s to hook (LPCSTR)%p\n", c_szDllName, c_szApiName);
+		}
+		else
+		{
+			debugprintf("WARNING: Loading module %s to hook %s\n", c_szDllName, c_szApiName);
+		}
 		// dangerous according to the documentation,
 		// but the alternative is usually to fail spectacularly anyway
 		// and it seems to work for me...
@@ -182,12 +197,21 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 	}
 	FARPROC dwAddressToIntercept = GetProcAddress(hModule, (char*)c_szApiName); 
 	BOOL rv = InterceptGlobalFunction(dwAddressToIntercept, dwReplaced, dwTrampoline, trampolineOnly, rvOnSkip);
-	if(rv || allowTrack)
-		debugprintf("InterceptAPI(%s.%s) %s \t(0x%X, 0x%X)\n", c_szDllName, c_szApiName, rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!", dwAddressToIntercept, dwTrampoline);
+	if (rv || allowTrack)
+	{
+		if (ordinal)
+		{
+			debugprintf("InterceptAPI(%s.(LPCSTR)%p) %s \t(0x%X, 0x%X)\n", c_szDllName, c_szApiName, rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!", dwAddressToIntercept, dwTrampoline);
+		}
+		else
+		{
+			debugprintf("InterceptAPI(%s.%s) %s \t(0x%X, 0x%X)\n", c_szDllName, c_szApiName, rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!", dwAddressToIntercept, dwTrampoline);
+		}
+	}
 
 	if(/*!rv && */allowTrack)
 	{
-		InterceptAPIArgs args = {c_szApiName, dwReplaced, dwTrampoline, trampolineOnly, c_szDllName};
+		InterceptAPIArgs args = {c_szApiName, dwReplaced, dwTrampoline, trampolineOnly, c_szDllName, ordinal};
 		pendingInterceptAPICalls[c_szDllName].push_back(args);
 	}
 
@@ -201,7 +225,7 @@ static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPI
 		InterceptAPIArgs& args = vec[i];
 		BOOL success;
 //		if(!args.dllNameArray)
-			success = InterceptAPI(c_szDllName, args.funcName.c_str(), args.dwReplaced, args.dwTrampoline, args.trampolineOnly, false, /*true*/false, TRUE);
+			success = InterceptAPI(c_szDllName, args.funcName, args.dwReplaced, args.dwTrampoline, args.trampolineOnly, false, /*true*/false, TRUE, args.ordinal);
 //		else
 //			success = InterceptAPIDynamicTramp(c_szDllName, args.funcName.c_str(), (FARPROC*&)*(FARPROC**)args.dwReplaced, (FARPROC*&)*(FARPROC**)args.dwTrampoline, args.trampolineOnly, args.dllNameArray);
 		//if(success)
@@ -335,7 +359,7 @@ void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count)
 		//}
 		//else // MAKE_INTERCEPT or MAKE_INTERCEPT2 or MAKE_INTERCEPT3
 		{
-			InterceptAPI(intercept.dllName, intercept.functionName, intercept.replacementFunction, intercept.trampolineFunction, intercept.enabled <= 0, intercept.enabled != 0 && intercept.enabled != 1, true);
+			InterceptAPI(intercept.dllName, intercept.functionName, intercept.replacementFunction, intercept.trampolineFunction, intercept.enabled <= 0, intercept.enabled != 0 && intercept.enabled != 1, true, TRUE, intercept.ordinal);
 		}
 	}
 }
