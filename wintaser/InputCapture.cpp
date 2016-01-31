@@ -436,14 +436,14 @@ void InputCapture::InputToDescription(SingleInput &si) // TODO: Make this better
 }
 
 void InputCapture::GetKeyboardState(unsigned char* keys){
-	HRESULT rval = lpDIDKeyboard->GetDeviceState(256, keys);
+	HRESULT rval = lpDIDKeyboard->GetDeviceState(DI_KEY_NUMBER, keys);
 
 	if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED)){
 		lpDIDKeyboard->Acquire();
 		rval = lpDIDKeyboard->GetDeviceState(256, keys);
 		if((rval == DIERR_INPUTLOST) || (rval == DIERR_NOTACQUIRED))
 			// We couldn't get the state of the keyboard. Let's just say nothing was pressed.
-			memset(keys, 0, 256);
+			memset(keys, 0, DI_KEY_NUMBER);
 	}
 }
 
@@ -588,7 +588,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	currentI->clear();
 
 	// Get the current keyboard state.
-	unsigned char keys[256];
+	unsigned char keys[DI_KEY_NUMBER];
 	GetKeyboardState(keys);
 
 	DIMOUSESTATE mouseState;
