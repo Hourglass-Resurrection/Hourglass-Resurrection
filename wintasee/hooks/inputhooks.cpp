@@ -1228,7 +1228,7 @@ void ProcessFrameInput()
 	// this is so MyGetAsyncKeyState can properly mimic GetAsyncKeyState's
 	// return value pattern of 0x0000 -> 0x8001 -> 0x8000 when a key is pressed,
 	// and also so directinput buffered keyboard input can work.
-	for(int i = 1; i < 256; i++)
+	for(DWORD i = 1; i < 256; i++)
 	{
 		if(curinput.keys[i] != previnput.keys[i])
 		{
@@ -1249,7 +1249,7 @@ void ProcessFrameInput()
 			s_lii.dwTime = timeStamp;
 
 			__declspec(noinline) SHORT WINAPI MyGetKeyState(int vKey);
-			DIDEVICEOBJECTDATA keyEvent = { static_cast<DWORD>(i), static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++};
+			DIDEVICEOBJECTDATA keyEvent = { i, static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++};
 			BufferedInput::AddEventToAllDevices(keyEvent, s_bufferedKeySlots);
 		}
 	}
