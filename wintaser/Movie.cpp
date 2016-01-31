@@ -254,7 +254,10 @@ Movie::Movie()
 		if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
 		{
 			fclose(file);
-			delete [] author; // Prevent memory leak
+			if (author)
+			{
+				delete[] author; // Prevent memory leak
+			}
 			char str[1024];
 			sprintf(str, "The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
 			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
@@ -513,8 +516,14 @@ Movie::Movie()
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
 	}*/
 	
-	delete[] commandline;
-	delete[] author;
+	if (commandline)
+	{
+		delete[] commandline;
+	}
+	if (author)
+	{
+		delete[] author;
+	}
 
 	return true;
 }
