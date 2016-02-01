@@ -1760,4 +1760,3 @@ __declspec(dllexport) int fnwintased(void)
 {
 	return 42;
 }
-

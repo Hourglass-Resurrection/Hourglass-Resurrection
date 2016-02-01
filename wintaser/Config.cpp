@@ -279,5 +279,4 @@ namespace Config{
 		}
 		else return 0;
 	}
-
 }
