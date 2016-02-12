@@ -15,8 +15,6 @@
 #include <stdio.h>
 
 #include <algorithm>
-#include <vector>
-#include <map>
 
 #include <intercept.h>
 #include <localeutils.h>
@@ -134,10 +132,7 @@ void ApplyRegistryIntercepts();
 void ApplyXinputIntercepts();
 
 
-extern LazyType<std::map<HWND,
-                         WNDPROC,
-                         std::less<HWND>,
-                         ManagedAllocator<std::pair<HWND, WNDPROC>>>> hwndToOrigHandler;
+extern LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 
 
 
@@ -596,10 +591,7 @@ HKL g_hklOverride = 0;
 static DWORD g_videoFramesPrepared = 0;
 //static DWORD g_soundMixedTicks = 0;
 
-static LazyType<std::map<HWND,
-                         BOOL,
-                         std::less<HWND>,
-                         ManagedAllocator<std::pair<HWND, BOOL>>>> hwndSizeLocked;
+static LazyType<SafeMap<HWND, BOOL>> hwndSizeLocked;
 
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 {

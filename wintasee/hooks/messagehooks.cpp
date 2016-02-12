@@ -1,19 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-#include <vector>
-
 #include <tls.h>
 #include <MemoryManager\MemoryManager.h>
 #include <msgqueue.h>
 #include <Utils.h>
 #include <wintasee.h>
 
-extern LazyType<std::map<HWND,
-                WNDPROC,
-                std::less<HWND>,
-                ManagedAllocator<std::pair<HWND, WNDPROC>>>> hwndToOrigHandler;
+extern LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 
 
 static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPARAM lParam);
@@ -894,7 +888,7 @@ struct PostedMessage
 	WPARAM wParam;
 	LPARAM lParam;
 };
-LazyType<std::vector<PostedMessage, ManagedAllocator<PostedMessage>>> postedMessages;
+LazyType<SafeVector<PostedMessage>> postedMessages;
 static CRITICAL_SECTION s_postedMessagesCS;
 bool hasPostedMessages = false;
 

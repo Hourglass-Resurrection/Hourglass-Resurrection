@@ -1,10 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-#include <set>
-#include <vector>
-
 #include <MemoryManager\MemoryManager.h>
 #include <msgqueue.h>
 #include <Utils.h>
@@ -39,9 +35,7 @@ struct SetTimerDataCompare // Struct with functor that helps us sort the element
     }
 };
 // Ordered set, we're sorting on TimerID as that is the most important detail in the struct.
-static LazyType<std::set<SetTimerData,
-                SetTimerDataCompare,
-                ManagedAllocator<SetTimerData>>> s_pendingSetTimers;
+static LazyType<SafeSet<SetTimerData, SetTimerDataCompare>> s_pendingSetTimers;
 static CRITICAL_SECTION s_pendingSetTimerCS;
 
 // Creates a guaranteed unique ID that is as low as possible 
@@ -74,7 +68,7 @@ void ProcessTimers()
 		DWORD time = detTimer.GetTicks();
 	//	DWORD earliestTriggerTime = (DWORD)(time + 0x7FFFFFFF);
 
-		std::vector<SetTimerData, ManagedAllocator<SetTimerData>> triggeredTimers;
+		SafeVector<SetTimerData> triggeredTimers;
 	//	bool triedAgain = false;
 	//tryAgain:
 		EnterCriticalSection(&s_pendingSetTimerCS);

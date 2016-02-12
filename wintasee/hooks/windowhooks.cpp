@@ -1,8 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-
 #include <localeutils.h>
 #include <MemoryManager\MemoryManager.h>
 #include <msgqueue.h>
@@ -12,10 +10,7 @@
 
 static int createWindowDepth = 0;
 
-LazyType<std::map<HWND,
-         WNDPROC,
-         std::less<HWND>,
-         ManagedAllocator<std::pair<HWND, WNDPROC>>>> hwndToOrigHandler;
+LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 //std::map<HWND, BOOL> hwndDeniedDeactivate;
 //std::map<HWND, BOOL> hwndRespondingToPaintMessage;
 

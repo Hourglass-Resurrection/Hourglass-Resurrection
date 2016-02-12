@@ -2,19 +2,14 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <algorithm>
-#include <map>
-#include <set>
 
 #include <global.h>
 #include <MemoryManager\MemoryManager.h>
 #include <shared\ipc.h>
 #include <Utils.h>
 
-typedef LazyType<std::set<HANDLE, std::less<HANDLE>, ManagedAllocator<HANDLE>>> HandleSet;
-static LazyType<std::map<DWORD,
-                HandleSet,
-                std::less<DWORD>,
-                ManagedAllocator<std::pair<DWORD, HandleSet>>>> s_threadIdHandles;
+typedef LazyType<SafeSet<HANDLE>> HandleSet;
+static LazyType<SafeMap<DWORD, HandleSet>> s_threadIdHandles;
 static CRITICAL_SECTION s_handleCS;
 
 //static std::map<DWORD,HANDLE> s_threadHandleToFakeThreadHandle;

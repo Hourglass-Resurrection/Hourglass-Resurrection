@@ -1,8 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-
 #include <external\ddraw.h>
 #include <MemoryManager\MemoryManager.h>
 #include <phasedetection.h>
@@ -48,10 +46,7 @@ struct ManualHDCInfo
 {
 	HBITMAP oldBitmap;
 };
-LazyType<std::map<HDC,
-         ManualHDCInfo,
-         std::less<HDC>,
-         ManagedAllocator<std::pair<HDC, ManualHDCInfo>>>> manuallyCreatedSurfaceDCs;
+LazyType<SafeMap<HDC, ManualHDCInfo>> manuallyCreatedSurfaceDCs;
 
 
 void RescaleRect(RECT& rect, RECT from, RECT to);
@@ -126,10 +121,7 @@ struct IDirectDrawOwnerInfo
 	void* ddrawInterface;
 	int ddrawVersionNumber;
 };
-static LazyType<std::map<void*,
-                IDirectDrawOwnerInfo,
-                std::less<void*>,
-                ManagedAllocator<std::pair<void*, IDirectDrawOwnerInfo>>>> s_ddrawSurfaceToOwner;
+static LazyType<SafeMap<void*, IDirectDrawOwnerInfo>> s_ddrawSurfaceToOwner;
 
 
 // instead of inheriting from IDirectDrawSurface and returning one as a wrapper of the original,
@@ -1131,24 +1123,10 @@ struct MyDirectDrawSurface
 		return pSysMemSurface;
 	}
 
-	static LazyType<std::map<IDirectDrawSurfaceN*,
-                    IDirectDrawSurfaceN*,
-                    std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>>
-                        attachedSurfaces;
-	static LazyType<std::map<IDirectDrawSurfaceN*,
-                    void*,
-                    std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, void*>>>> videoMemoryPixelBackup;
-	static LazyType<std::map<IDirectDrawSurfaceN*,
-                    BOOL,
-                    std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, BOOL>>>> videoMemoryBackupDirty;
-	static LazyType<std::map<IDirectDrawSurfaceN*,
-                    IDirectDrawSurfaceN*,
-                    std::less<IDirectDrawSurfaceN*>,
-                    ManagedAllocator<std::pair<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>>>>
-                        sysMemCopySurfaces; // for avi speedup
+	static LazyType<SafeMap<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>> attachedSurfaces;
+	static LazyType<SafeMap<IDirectDrawSurfaceN*, void*>> videoMemoryPixelBackup;
+	static LazyType<SafeMap<IDirectDrawSurfaceN*, BOOL>> videoMemoryBackupDirty;
+	static LazyType<SafeMap<IDirectDrawSurfaceN*, IDirectDrawSurfaceN*>> sysMemCopySurfaces; // for avi speedup
 };
 
 
@@ -1180,18 +1158,18 @@ struct MyDirectDrawSurface
                /*template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::GetClipper)(x* pThis, LPDIRECTDRAWCLIPPER FAR* ppClip) = 0;*/ \
                /*template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::IsLost)(x* pThis) = 0;*/ \
                template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::GetFlipStatus)(x* pThis, DWORD flags) = 0; \
-			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetPalette)(x* pThis, LPDIRECTDRAWPALETTE pPalette) = 0; \
-			   template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetColorKey)(x* pThis, DWORD dwFlags, LPDDCOLORKEY pKey) = 0; \
-               template<> LazyType<std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>>> MyDirectDrawSurface<x>::attachedSurfaces; \
-               template<> LazyType<std::map<x*,x*,std::less<x*>, ManagedAllocator<std::pair<x*,x*>>>> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
-               template<> LazyType<std::map<x*,void*,std::less<x*>, ManagedAllocator<std::pair<x*,void*>>>> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
-               template<> LazyType<std::map<x*,BOOL,std::less<x*>, ManagedAllocator<std::pair<x*,BOOL>>>> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
+               template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetPalette)(x* pThis, LPDIRECTDRAWPALETTE pPalette) = 0; \
+               template<> HRESULT(STDMETHODCALLTYPE* MyDirectDrawSurface<x>::SetColorKey)(x* pThis, DWORD dwFlags, LPDDCOLORKEY pKey) = 0; \
+               template<> LazyType<SafeMap<x*,x*>> MyDirectDrawSurface<x>::attachedSurfaces; \
+               template<> LazyType<SafeMap<x*,x*>> MyDirectDrawSurface<x>::sysMemCopySurfaces; \
+               template<> LazyType<SafeMap<x*,void*>> MyDirectDrawSurface<x>::videoMemoryPixelBackup; \
+               template<> LazyType<SafeMap<x*,BOOL>> MyDirectDrawSurface<x>::videoMemoryBackupDirty;
 
-	DEF(IDirectDrawSurface)
-	DEF(IDirectDrawSurface2)
-	DEF(IDirectDrawSurface3)
-	DEF(IDirectDrawSurface4)
-	DEF(IDirectDrawSurface7)
+    DEF(IDirectDrawSurface)
+    DEF(IDirectDrawSurface2)
+    DEF(IDirectDrawSurface3)
+    DEF(IDirectDrawSurface4)
+    DEF(IDirectDrawSurface7)
 #undef DEF
 
 #undef HRESULT

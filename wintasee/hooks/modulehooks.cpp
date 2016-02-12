@@ -1,8 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-
 #include <MemoryManager\MemoryManager.h>
 #include <shared\winutil.h>
 #include <tls.h>
@@ -818,7 +816,7 @@ struct _tiddata {
 
 typedef struct _tiddata * _ptiddata;
 BOOL FlsRecursing = FALSE;
-LazyType<std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>>> fseeds;
+LazyType<SafeMap<DWORD, DWORD*>> fseeds;
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
 	if ((!FlsRecursing) && (lpFlsData != NULL)) {
@@ -834,7 +832,7 @@ HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	return rv;
 }
 BOOL TlsRecursing = FALSE;
-LazyType<std::map<DWORD, DWORD*, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD*>>>> tseeds;
+LazyType<SafeMap<DWORD, DWORD*>> tseeds;
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
 	BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
 	if ((!TlsRecursing) && (lpTlsValue != NULL)) {

@@ -1,7 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <vector>
 #include <algorithm>
 
 #include <MemoryManager\MemoryManager.h>
@@ -97,7 +96,7 @@ struct MyDIDEVICEOBJECTINSTANCE {
 #define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
 
 
-typedef LazyType<std::vector<struct BufferedInput*, ManagedAllocator<BufferedInput*>>> BufferedInputList;
+typedef LazyType<SafeVector<struct BufferedInput*>> BufferedInputList;
 static BufferedInputList s_bufferedKeySlots;
 
 HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread);

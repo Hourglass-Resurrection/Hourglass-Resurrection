@@ -10,7 +10,6 @@
 // lines are rendered incorrectly (need to convert to quads so they can use width and z-buffer).
 
 #include <cmath>
-#include <vector>
 
 #include <external\d3d8.h>
 #include <global.h>
@@ -122,8 +121,7 @@ struct OpenGLImmediateVertex
 	OGLCOLOR c;
 	FLOAT u,v;
 };
-static LazyType<std::vector<OpenGLImmediateVertex,
-                   ManagedAllocator<OpenGLImmediateVertex>>> oglImmediateVertices;
+static LazyType<SafeVector<OpenGLImmediateVertex>> oglImmediateVertices;
 
 
 
@@ -131,10 +129,10 @@ static const int GL_MODELVIEW = 0x1700;
 static const int GL_PROJECTION = 0x1701;
 static const int GL_TEXTURE = 0x1702;
 
-static LazyType<std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>>> oglMatrixStackMV; // GL_MODELVIEW
-static LazyType<std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>>> oglMatrixStackP; // GL_PROJECTION
-static LazyType<std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>>> oglMatrixStackT; // GL_TEXTURE
-static LazyType<std::vector<D3DMATRIX, ManagedAllocator<D3DMATRIX>>>* oglMatrixStack = &oglMatrixStackMV;
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackMV; // GL_MODELVIEW
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackP; // GL_PROJECTION
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackT; // GL_TEXTURE
+static LazyType<SafeVector<D3DMATRIX>>* oglMatrixStack = &oglMatrixStackMV;
 static D3DMATRIX oglMatrixMV; // GL_MODELVIEW
 static D3DMATRIX oglMatrixP; // GL_PROJECTION
 static D3DMATRIX oglMatrixT; // GL_TEXTURE
@@ -324,7 +322,7 @@ struct OpenGLClientState // see glEnableClientState docs
 	}
 };
 static OpenGLClientState oglClientState;
-static LazyType<std::vector<OpenGLClientState, ManagedAllocator<OpenGLClientState>>> oglClientStateStack;
+static LazyType<SafeVector<OpenGLClientState>> oglClientStateStack;
 
 
 struct OpenGLServerState // see glEnableState docs
@@ -361,7 +359,7 @@ struct OpenGLServerState // see glEnableState docs
 	} other;
 };
 static OpenGLServerState oglServerState;
-static LazyType<std::vector<OpenGLServerState, ManagedAllocator<OpenGLServerState>>> oglServerStateStack;
+static LazyType<SafeVector<OpenGLServerState>> oglServerStateStack;
 
 
 
@@ -736,7 +734,7 @@ struct OpenGLDisplayListEntry
 	};
 
 	FuncID id;
-	std::vector<GLArg, ManagedAllocator<GLArg>> args;
+	SafeVector<GLArg> args;
 protected:
 	char* buffer;
 public:
@@ -785,7 +783,7 @@ public:
 struct OpenGLDisplayList
 {
 	bool valid;
-	std::vector<OpenGLDisplayListEntry, ManagedAllocator<OpenGLDisplayListEntry>> entries;
+	SafeVector<OpenGLDisplayListEntry> entries;
 
 	void Call()
 	{
@@ -803,7 +801,7 @@ struct OpenGLDisplayList
 		valid = false;
 	}
 };
-static LazyType<std::vector<OpenGLDisplayList, ManagedAllocator<OpenGLDisplayList>>> oglDisplayLists;
+static LazyType<SafeVector<OpenGLDisplayList>> oglDisplayLists;
 
 
 struct OpenGLTexture
@@ -841,7 +839,7 @@ struct OpenGLTexture
 		Clear();
 	}
 };
-static LazyType<std::vector<OpenGLTexture, ManagedAllocator<OpenGLTexture>>> oglTextures;
+static LazyType<SafeVector<OpenGLTexture>> oglTextures;
 int oglTexture1DTarget = 0;
 int oglTexture2DTarget = 0;
 float oglTextureOffsets [2] = {}; // because opengl and directx use different texel origins

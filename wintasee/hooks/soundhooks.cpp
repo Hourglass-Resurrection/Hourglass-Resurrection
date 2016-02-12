@@ -2,8 +2,6 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <algorithm>
-#include <map>
-#include <vector>
 
 #include <math.h>
 
@@ -69,7 +67,7 @@ class EmulatedDirectSoundBuffer : public IDirectSoundBuffer8, public IDirectSoun
 public:
 	typedef EmulatedDirectSoundBuffer MyType;
 	//typedef std::map<MyType*, DWORD> MyBufferMap;
-	typedef LazyType<std::vector<MyType*, ManagedAllocator<MyType*>>> MyBufferList;
+	typedef LazyType<SafeVector<MyType*>> MyBufferList;
 
 	EmulatedDirectSoundBuffer(bool isFakePrimary=false) : m_isFakePrimary(isFakePrimary)
 	{
@@ -1046,10 +1044,7 @@ class MyDirectSoundBuffer : public IDirectSoundBufferN
 {
 public:
 	typedef MyDirectSoundBuffer<IDirectSoundBufferN> MyType;
-	typedef LazyType<std::map<MyType*,
-                     DWORD,
-                     std::less<MyType*>,
-                     ManagedAllocator<std::pair<MyType*, DWORD>>>> MyBufferMap;
+	typedef LazyType<SafeMap<MyType*, DWORD>> MyBufferMap;
 
 	MyDirectSoundBuffer(IDirectSoundBufferN* dsb) : m_dsb(dsb)
 	{
@@ -2197,7 +2192,7 @@ public:
 		return count;
 	}
 
-	std::vector<IDirectSoundSource*, ManagedAllocator<IDirectSoundSource*>> sources;
+	SafeVector<IDirectSoundSource*> sources;
 
 	// IDirectSoundSink? methods
 	STDMETHOD(AddSource) (IDirectSoundSource* pDSS)
@@ -2390,15 +2385,9 @@ public:
 	BOOL active;
 
 	DWORD nextBusID;
-	std::map<DWORD,
-             IDirectSoundBuffer*,
-             std::less<DWORD>,
-             ManagedAllocator<std::pair<DWORD, IDirectSoundBuffer*>>> busToBuf;
-	std::map<IDirectSoundBuffer*,
-             DWORD,
-             std::less<IDirectSoundBuffer*>,
-             ManagedAllocator<std::pair<IDirectSoundBuffer*, DWORD>>> bufToBus;
-	std::map<DWORD, DWORD, std::less<DWORD>, ManagedAllocator<std::pair<DWORD, DWORD>>> busToSlots;
+	SafeMap<DWORD, IDirectSoundBuffer*> busToBuf;
+	SafeMap<IDirectSoundBuffer*, DWORD> bufToBus;
+	SafeMap<DWORD, DWORD> busToSlots;
 	DWORD busCount;
 
 	IReferenceClock* pRefClock;

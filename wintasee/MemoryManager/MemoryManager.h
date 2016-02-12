@@ -8,6 +8,12 @@
 
 #include <Windows.h>
 
+#include <map>
+#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
+
 #include <print.h>
 
 /*
@@ -31,18 +37,13 @@
  * "char* ptr = malloc(sizeof(char));" is going to provide a very nice chock, instead of allocating
  * a small number of bytes, it will allocate at least 64 kilobytes.
  *
- * The memory manager is also responsible for the heap allocations done by the DLL itself, the way
- * it is solved is that the Allocation function takes an optional boolean to allocate internally.
- * Allocating internally means that we will use an address outside of the regular scope, but still
- * within the 32bit application limit. This is handled by being "large address aware" which gives
- * us this access to the "unreachable" >2 GB address space.
- * It is really important to keep the allocations apart, since some games that are not capable of
- * handling addresses of >2 GB may still use as much of the 2 GB as possible. We must for that
- * reason be really careful about our own allocations in that space and do all we can to stay in
- * our own allotted region.
+ * The memory manager is also responsible for the heap allocations done by the DLL itself. This is
+ * done by replacing the regular methods of allocations with custom ones.
+ * For the std-containers there are new types provided that replaces the standard ones, but keeping
+ * all the same functionality.
  *
- * All of the above means that new and malloc are entirely forbidden(!) in the DLL. To handle STL
- * containers use the ManagedAllocator.
+ * All of the above means that new, malloc and bare std-containers are entirely forbidden(!)
+ * in the DLL.
  *
  * Reference material (including reference material linked by the webpage):
  * https://msdn.microsoft.com/en-us/library/windows/desktop/aa366912%28v=vs.85%29.aspx
@@ -166,3 +167,16 @@ bool operator!=(const ManagedAllocator<T1>&, const ManagedAllocator<T2>&)
 {
     return false;
 }
+
+/*
+ * Safe containers, using the regular std containers bare is not allowed.
+ */
+
+template<class key, class value, class compare = std::less<key>>
+using SafeMap = std::map<key, value, compare, ManagedAllocator<std::pair<const key, value>>>;
+
+template<class key, class compare = std::less<key>>
+using SafeSet = std::set<key, compare, ManagedAllocator<key>>;
+
+template<class value>
+using SafeVector = std::vector<value, ManagedAllocator<value>>;

@@ -3,10 +3,6 @@
 
 #include <windows.h>
 
-#include <string>
-#include <map>
-#include <vector>
-
 #include <global.h>
 #include <intercept.h>
 #include <shared\asm.h>
@@ -152,12 +148,12 @@ struct InterceptAPIArgs
 };
 struct lessicmp
 {
-   bool operator() (const std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>& a, const std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>& b) const
+   bool operator() (LPCSTR a, LPCSTR b) const
    {
-      return(stricmp(a.c_str(), b.c_str()) < 0);
+      return(stricmp(a, b) < 0);
    }
 };
-LazyType<std::map<std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>, lessicmp, ManagedAllocator<std::pair<std::basic_string<char, std::char_traits<char>, ManagedAllocator<char>>, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>>>>> pendingInterceptAPICalls;
+LazyType<SafeMap<LPCSTR, SafeVector<InterceptAPIArgs>, lessicmp>> pendingInterceptAPICalls;
 //std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> delayHookedInterceptAPICalls;
 //std::vector<InterceptAPIArgs> multiDllInterceptAPICalls;
 
@@ -218,7 +214,7 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 	return rv;
 }
 
-static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPIArgs, ManagedAllocator<InterceptAPIArgs>>& vec)
+static void HookDelayLoadedDll(const char* c_szDllName, SafeVector<InterceptAPIArgs>& vec)
 {
 	for(int i = (int)vec.size()-1; i >= 0; i--)
 	{

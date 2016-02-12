@@ -1,8 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <map>
-
 #include <MemoryManager/MemoryManager.h>
 //#include <setjmp.h>
 #include <tls.h>
@@ -79,14 +77,8 @@ struct ThreadWrapperInfo
 	}
 };
 
-LazyType<std::map<DWORD,
-         ThreadWrapperInfo*,
-         std::less<DWORD>,
-         ManagedAllocator<std::pair<DWORD,ThreadWrapperInfo>>>> threadWrappers;
-LazyType<std::map<HANDLE,
-         DWORD,
-         std::less<HANDLE>,
-         ManagedAllocator<std::pair<HANDLE,DWORD>>>> threadWrappersOriginalHandleToId;
+LazyType<SafeMap<DWORD, ThreadWrapperInfo*>> threadWrappers;
+LazyType<SafeMap<HANDLE, DWORD>> threadWrappersOriginalHandleToId;
 
 DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 {

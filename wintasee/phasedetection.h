@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <map>
-
 #include <MemoryManager\MemoryManager.h>
 
 class PhaseDetector
@@ -23,5 +21,5 @@ public:
 private:
 	Time currentTime;
 	Time lastFrameTime;
-	std::map<Key, Time, std::less<Key>, ManagedAllocator<std::pair<Key, Time>>> keyTimes;
+	SafeMap<Key, Time> keyTimes;
 };

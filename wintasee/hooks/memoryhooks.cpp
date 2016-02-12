@@ -5,8 +5,6 @@
  */
 
 #include <atomic>
-#include <map>
-#include <vector>
 
 #include <global.h>
 #include <MemoryManager\MemoryManager.h>
@@ -26,32 +24,29 @@
  * Since [X]_FIXED allocations cannot be discarded, or carry a lock count, they are indicated by
  * the value UINT_MAX. This is because they must be separated from unknown (invalid) pointers.
  */
-LazyType<std::map<LPVOID,
-                  UINT,
-                  std::less<LPVOID>,
-                  ManagedAllocator<std::pair<LPVOID, UINT>>>> g_alloc_flags;
+LazyType<SafeMap<LPVOID, UINT>> g_alloc_flags;
 
 /*
  * Emulate the Windows Heap objects using the minimum information necessary.
  */
 struct HeapObject
 {
-    std::vector<LPVOID, ManagedAllocator<LPVOID>> heap_segments;
-    DWORD heap_flags;
-    std::atomic_flag heap_lock;
-    SIZE_T heap_current_size;
-    SIZE_T heap_maximum_size;
+    SafeVector<LPVOID> m_heap_segments;
+    DWORD m_heap_flags;
+    std::atomic_flag m_heap_lock;
+    SIZE_T m_heap_current_size;
+    SIZE_T m_heap_maximum_size;
 
     HeapObject(DWORD flags, SIZE_T current_size, SIZE_T max_size) :
-        heap_flags(flags),
-        heap_current_size(current_size),
-        heap_maximum_size(max_size)
+        m_heap_flags(flags),
+        m_heap_current_size(current_size),
+        m_heap_maximum_size(max_size)
     {
-        heap_lock.clear();
+        m_heap_lock.clear();
     }
 };
 HeapObject* g_default_heap = nullptr;
-LazyType<std::vector<HeapObject*, ManagedAllocator<HeapObject*>>> g_heaps;
+LazyType<SafeVector<HeapObject*>> g_heaps;
 
 HOOKFUNC LPVOID WINAPI MyGlobalLock(HGLOBAL hMem);
 HOOKFUNC BOOL WINAPI MyGlobalUnlock(HGLOBAL hMem);
@@ -126,7 +121,7 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
             }
             else
             {
-                rv->heap_segments.push_back(first_segment);
+                rv->m_heap_segments.push_back(first_segment);
                 g_default_heap = rv;
                 /*
                  * Keep the default heap in the front of the vector.
@@ -445,19 +440,19 @@ HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
         if (h == hHeap)
         {
             if (dwBytes == 0 &&
-                ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+                ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                  (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
             {
                 RaiseException(STATUS_ACCESS_VIOLATION, 0, 0, nullptr);
             }
-            if (dwBytes + h->heap_current_size > h->heap_maximum_size &&
-                h->heap_maximum_size != 0 &&
-                ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+            if (dwBytes + h->m_heap_current_size > h->m_heap_maximum_size &&
+                h->m_heap_maximum_size != 0 &&
+                ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                  (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
             {
                 RaiseException(STATUS_NO_MEMORY, 0, 0, nullptr);
             }
-            if ((h->heap_flags & HEAP_CREATE_ENABLE_EXECUTE) == HEAP_CREATE_ENABLE_EXECUTE)
+            if ((h->m_heap_flags & HEAP_CREATE_ENABLE_EXECUTE) == HEAP_CREATE_ENABLE_EXECUTE)
             {
                 alloc_flags |= MemoryManager::ALLOC_EXECUTE;
             }
@@ -465,7 +460,7 @@ HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
             {
                 alloc_flags |= MemoryManager::ALLOC_ZEROINIT;
             }
-            if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+            if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                 (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
             {
                 MyHeapLock(hHeap);
@@ -473,16 +468,16 @@ HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
             rv = MemoryManager::Allocate(dwBytes, alloc_flags);
             if (rv != nullptr)
             {
-                h->heap_current_size += MemoryManager::GetSizeOfAllocation(rv);
-                h->heap_segments.push_back(rv);
+                h->m_heap_current_size += MemoryManager::GetSizeOfAllocation(rv);
+                h->m_heap_segments.push_back(rv);
             }
-            if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+            if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                 (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
             {
                 MyHeapUnlock(hHeap);
             }
             if (rv == nullptr &&
-                ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+                ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                  (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
             {
                 RaiseException(STATUS_NO_MEMORY, 0, 0, nullptr);
@@ -546,10 +541,10 @@ HOOKFUNC BOOL WINAPI MyHeapDestroy(HANDLE hHeap)
             HeapObject* h = *it;
             if (h == hHeap)
             {
-                while (h->heap_segments.empty() == false)
+                while (h->m_heap_segments.empty() == false)
                 {
-                    MemoryManager::Deallocate(h->heap_segments.back());
-                    h->heap_segments.pop_back();
+                    MemoryManager::Deallocate(h->m_heap_segments.back());
+                    h->m_heap_segments.pop_back();
                 }
                 g_heaps().erase(it);
                 MemoryManager::Deallocate(hHeap);
@@ -580,19 +575,19 @@ HOOKFUNC BOOL WINAPI MyHeapFree(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem)
         {
             if (h == hHeap)
             {
-                for (auto s = h->heap_segments.begin(); s != h->heap_segments.end(); ++s)
+                for (auto s = h->m_heap_segments.begin(); s != h->m_heap_segments.end(); ++s)
                 {
                     if (*s == lpMem)
                     {
-                        if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+                        if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                             (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
                         {
                             MyHeapLock(hHeap);
                         }
-                        h->heap_current_size -= MemoryManager::GetSizeOfAllocation(*s);
+                        h->m_heap_current_size -= MemoryManager::GetSizeOfAllocation(*s);
                         MemoryManager::Deallocate(*s);
-                        h->heap_segments.erase(s);
-                        if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+                        h->m_heap_segments.erase(s);
+                        if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                             (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
                         {
                             MyHeapUnlock(hHeap);
@@ -616,7 +611,7 @@ HOOKFUNC BOOL WINAPI MyHeapLock(HANDLE hHeap)
     {
         if (h == hHeap)
         {
-            while (h->heap_lock.test_and_set() == true);
+            while (h->m_heap_lock.test_and_set() == true);
             return TRUE;
         }
     }
@@ -670,26 +665,26 @@ HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, 
     {
         if (h == hHeap)
         {
-            for (auto s = h->heap_segments.begin(); s != h->heap_segments.end(); ++s)
+            for (auto s = h->m_heap_segments.begin(); s != h->m_heap_segments.end(); ++s)
             {
                 if (*s == lpMem)
                 {
                     if (dwBytes == 0 &&
-                        ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+                        ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                          (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
                     {
                         RaiseException(STATUS_ACCESS_VIOLATION, 0, 0, nullptr);
                     }
-                    if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+                    if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                         (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
                     {
                         MyHeapLock(hHeap);
                         heap_locked = TRUE;
                     }
                     old_size = MemoryManager::GetSizeOfAllocation(*s);
-                    if ((dwBytes - old_size) + h->heap_current_size > h->heap_maximum_size &&
-                        h->heap_maximum_size != 0 &&
-                        ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+                    if ((dwBytes - old_size) + h->m_heap_current_size > h->m_heap_maximum_size &&
+                        h->m_heap_maximum_size != 0 &&
+                        ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                          (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
                     {
                         if (heap_locked == TRUE)
@@ -698,7 +693,7 @@ HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, 
                         }
                         RaiseException(STATUS_NO_MEMORY, 0, 0, nullptr);
                     }
-                    if ((h->heap_flags & HEAP_CREATE_ENABLE_EXECUTE) == HEAP_CREATE_ENABLE_EXECUTE)
+                    if ((h->m_heap_flags & HEAP_CREATE_ENABLE_EXECUTE) == HEAP_CREATE_ENABLE_EXECUTE)
                     {
                         alloc_flags |= MemoryManager::ALLOC_EXECUTE;
                     }
@@ -714,11 +709,11 @@ HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, 
                     if (rv != nullptr)
                     {
                         SIZE_T new_size = MemoryManager::GetSizeOfAllocation(rv);
-                        h->heap_current_size += (new_size - old_size);
+                        h->m_heap_current_size += (new_size - old_size);
                         if (rv != lpMem)
                         {
-                            h->heap_segments.erase(s);
-                            h->heap_segments.push_back(rv);
+                            h->m_heap_segments.erase(s);
+                            h->m_heap_segments.push_back(rv);
                         }
 
                     }
@@ -727,7 +722,7 @@ HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, 
                         MyHeapUnlock(hHeap);
                     }
                     if (rv == nullptr &&
-                        ((h->heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
+                        ((h->m_heap_flags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS ||
                          (dwFlags & HEAP_GENERATE_EXCEPTIONS) == HEAP_GENERATE_EXCEPTIONS))
                     {
                         RaiseException(STATUS_NO_MEMORY, 0, 0, nullptr);
@@ -760,13 +755,13 @@ HOOKFUNC SIZE_T WINAPI MyHeapSize(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
     {
         if (h == hHeap)
         {
-            if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+            if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                 (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
             {
                 MyHeapLock(hHeap);
                 heap_locked = TRUE;
             }
-            for (auto& s : h->heap_segments)
+            for (auto& s : h->m_heap_segments)
             {
                 if (s == lpMem)
                 {
@@ -794,7 +789,7 @@ HOOKFUNC BOOL WINAPI MyHeapUnlock(HANDLE hHeap)
     {
         if (h == hHeap)
         {
-            h->heap_lock.clear();
+            h->m_heap_lock.clear();
             return TRUE;
         }
     }
@@ -813,13 +808,13 @@ HOOKFUNC BOOL WINAPI MyHeapValidate(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
         {
             if (h == hHeap)
             {
-                if ((h->heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
+                if ((h->m_heap_flags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE ||
                     (dwFlags & HEAP_NO_SERIALIZE) != HEAP_NO_SERIALIZE)
                 {
                     MyHeapLock(hHeap);
                     heap_locked = TRUE;
                 }
-                for (auto& s : h->heap_segments)
+                for (auto& s : h->m_heap_segments)
                 {
                     if (lpMem == nullptr || s == lpMem)
                     {
