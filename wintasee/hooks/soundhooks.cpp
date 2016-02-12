@@ -2,8 +2,7 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <algorithm>
-
-#include <math.h>
+#include <cmath>
 
 #include <external\dmusici.h>
 #include <external\dsound.h>
@@ -145,7 +144,7 @@ public:
 		if(original->waveformat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += original->waveformat->cbSize;
 		copy->waveformat =
-            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
+            static_cast<LPWAVEFORMATEX>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(copy->waveformat, original->waveformat, wfxsize);
 
 		return copy;
@@ -336,7 +335,7 @@ public:
 		int wfxsize = sizeof(WAVEFORMATEX);
 		if(pFormat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += pFormat->cbSize;
-		waveformat = static_cast<WAVEFORMATEX*>(MemoryManager::Reallocate(waveformat, wfxsize, MemoryManager::ALLOC_WRITE));
+		waveformat = static_cast<LPWAVEFORMATEX>(MemoryManager::Reallocate(waveformat, wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(waveformat, pFormat, wfxsize);
 		if(pFormat->wFormatTag == WAVE_FORMAT_PCM)
 			waveformat->cbSize = 0;
@@ -542,7 +541,7 @@ public:
 		MemoryManager::Deallocate(notifies);
 		numNotifies = 0;
 		notifies =
-            static_cast<DSBPOSITIONNOTIFY*>
+            static_cast<LPDSBPOSITIONNOTIFY>
                 (MemoryManager::Allocate(dwPositionNotifies * sizeof(DSBPOSITIONNOTIFY), MemoryManager::ALLOC_WRITE));
 		if(!notifies)
 			return DSERR_OUTOFMEMORY;
@@ -2145,7 +2144,7 @@ public:
 			wfxsize += lpWaveFormat->cbSize;
 		waveFormatAllocated = wfxsize;
 		sinkWaveFormat =
-            static_cast<WAVEFORMATEX*>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
+            static_cast<LPWAVEFORMATEX>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(sinkWaveFormat, lpWaveFormat, wfxsize);
 	}
 	~EmulatedDirectSoundSink()
@@ -2385,8 +2384,8 @@ public:
 	BOOL active;
 
 	DWORD nextBusID;
-	SafeMap<DWORD, IDirectSoundBuffer*> busToBuf;
-	SafeMap<IDirectSoundBuffer*, DWORD> bufToBus;
+	SafeMap<DWORD, LPDIRECTSOUNDBUFFER> busToBuf;
+	SafeMap<LPDIRECTSOUNDBUFFER, DWORD> bufToBus;
 	SafeMap<DWORD, DWORD> busToSlots;
 	DWORD busCount;
 
@@ -2696,7 +2695,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
                 *ppDS =
                     static_cast<MyDirectSound<IDirectSound>*>
                         (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound>), MemoryManager::ALLOC_WRITE));
-                *ppDS = ::new MyDirectSound<IDirectSound>(NULL);
+                *ppDS = ::new MyDirectSound<IDirectSound>(nullptr);
 				rv = DS_OK;
 			}
 		}
@@ -2747,7 +2746,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
                 *ppDS =
                     static_cast<MyDirectSound<IDirectSound8>*>
                         (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE));
-                *ppDS = ::new MyDirectSound<IDirectSound8>(NULL);
+                *ppDS = ::new MyDirectSound<IDirectSound8>(nullptr);
 				rv = DS_OK;
 			}
 		}
@@ -2967,13 +2966,13 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv)
 	if(applicable && riid == IID_IDirectSound)
 	{
         *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
-        *ppv = ::new MyDirectSound<IDirectSound>(NULL);
+        *ppv = ::new MyDirectSound<IDirectSound>(nullptr);
 		return true;
 	}
 	else if(applicable && riid == IID_IDirectSound8)
 	{
         *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
-		*ppv = ::new MyDirectSound<IDirectSound8>(NULL);
+		*ppv = ::new MyDirectSound<IDirectSound8>(nullptr);
 		return true;
 	}
 	return false;

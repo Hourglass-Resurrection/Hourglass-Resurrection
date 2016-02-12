@@ -29,7 +29,7 @@ static HWND s_savedD3D9HWND = NULL;
 static HWND s_savedD3D9DefaultHWND = NULL;
 static RECT s_savedD3D9ClientRect = {};
 
-LazyType<SafeMap<IDirect3DSwapChain9*, IDirect3DDevice9*>> d3d9SwapChainToDeviceMap;
+LazyType<SafeMap<LPDIRECT3DSWAPCHAIN9, LPDIRECT3DDEVICE9>> d3d9SwapChainToDeviceMap;
 
 static bool d3d9BackBufActive = true;
 static bool d3d9BackBufDirty = true;
@@ -45,14 +45,14 @@ struct IDirect3DSurface9_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static LazyType<SafeMap<IDirect3DSurface9*, IDirect3DSurface9_CustomData>> surface9data;
+static LazyType<SafeMap<LPDIRECT3DSURFACE9, IDirect3DSurface9_CustomData>> surface9data;
 
 struct IDirect3DTexture9_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static LazyType<SafeMap<IDirect3DTexture9*, IDirect3DTexture9_CustomData>> texture9data;
+static LazyType<SafeMap<LPDIRECT3DTEXTURE9, IDirect3DTexture9_CustomData>> texture9data;
 
 
 static void ProcessPresentationParams9(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D9* d3d, IDirect3DDevice9* d3dDevice)

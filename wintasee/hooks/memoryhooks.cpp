@@ -19,7 +19,7 @@
 /*
  * This map will contain all memory allocations made by the GlobalAlloc and LocalAlloc families,
  * and their respective lock counts and/or flags.
- * According to MSDN docs the value returned by the [X]Flags calls contain no flasgs or
+ * According to MSDN docs the value returned by the [X]Flags calls contain no flags or
  * [x]_DISCARDED. According to the WinBase.h header, the flags may also contain [X]_DISCARDABLE.
  * Since [X]_FIXED allocations cannot be discarded, or carry a lock count, they are indicated by
  * the value UINT_MAX. This is because they must be separated from unknown (invalid) pointers.

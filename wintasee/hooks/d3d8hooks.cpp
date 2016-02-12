@@ -31,7 +31,7 @@ static HWND s_savedD3D8HWND = NULL;
 static HWND s_savedD3D8DefaultHWND = NULL;
 static RECT s_savedD3D8ClientRect = {};
 
-LazyType<SafeMap<IDirect3DSwapChain8*, IDirect3DDevice8*>> d3d8SwapChainToDeviceMap;
+LazyType<SafeMap<LPDIRECT3DSWAPCHAIN8, LPDIRECT3DDEVICE8>> d3d8SwapChainToDeviceMap;
 
 static bool d3d8BackBufActive = true;
 static bool d3d8BackBufDirty = true;
@@ -47,14 +47,14 @@ struct IDirect3DSurface8_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static LazyType<SafeMap<IDirect3DSurface8*, IDirect3DSurface8_CustomData>> surface8data;
+static LazyType<SafeMap<LPDIRECT3DSURFACE8, IDirect3DSurface8_CustomData>> surface8data;
 
 struct IDirect3DTexture8_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static LazyType<SafeMap<IDirect3DTexture8*, IDirect3DTexture8_CustomData>> texture8data;
+static LazyType<SafeMap<LPDIRECT3DTEXTURE8, IDirect3DTexture8_CustomData>> texture8data;
 
 
 static void ProcessPresentationParams8(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D8* d3d, IDirect3DDevice8* d3dDevice)

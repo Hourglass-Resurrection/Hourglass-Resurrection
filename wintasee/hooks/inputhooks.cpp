@@ -132,7 +132,7 @@ struct BufferedInput
 		if(oldSize != newSize)
 		{
 			dinputdebugprintf(__FUNCTION__ " allocating %u -> %u.\n", oldSize, newSize);
-			data = static_cast<DIDEVICEOBJECTDATA*>(MemoryManager::Reallocate(data, newSize * sizeof(*data), MemoryManager::ALLOC_WRITE));
+			data = static_cast<LPDIDEVICEOBJECTDATA>(MemoryManager::Reallocate(data, newSize * sizeof(*data), MemoryManager::ALLOC_WRITE));
 
 			if(used > newSize)
 			{

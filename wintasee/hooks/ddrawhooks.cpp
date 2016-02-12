@@ -121,7 +121,7 @@ struct IDirectDrawOwnerInfo
 	void* ddrawInterface;
 	int ddrawVersionNumber;
 };
-static LazyType<SafeMap<void*, IDirectDrawOwnerInfo>> s_ddrawSurfaceToOwner;
+static LazyType<SafeMap<LPVOID, IDirectDrawOwnerInfo>> s_ddrawSurfaceToOwner;
 
 
 // instead of inheriting from IDirectDrawSurface and returning one as a wrapper of the original,
