@@ -7,11 +7,18 @@
 #include <Windows.h>
 
 #include <atomic>
-#include <list>
 
 #include "MemoryManager.h"
 #include <print.h>
 #include <Utils.h>
+
+namespace
+{
+    UINT MakeBytesAligned(UINT bytes, UINT alignment)
+    {
+        return bytes + ((alignment - (bytes % alignment)) % alignment);
+    }
+}
 
 namespace MemoryManagerInternal
 {
@@ -29,13 +36,80 @@ namespace MemoryManagerInternal
      */
     struct AddressLinkedList
     {
-        AddressLinkedList* prev;
-        AddressLinkedList* next;
-        AddressLinkedList** head;
-        LPVOID address;
-        UINT bytes;
-        UINT flags;
+        AddressLinkedList* m_prev;
+        AddressLinkedList* m_next;
+        AddressLinkedList** m_head;
+        LPVOID m_address;
+        UINT m_bytes;
+        UINT m_flags;
     };
+
+    /*
+     * Helper functions
+     */
+
+    /*
+     * The list-parameter can be any element in the list.
+     */
+    void LinkedListInsertSorted(AddressLinkedList* list, AddressLinkedList* item)
+    {
+        DLL_ASSERT(list != nullptr && item != nullptr && list->m_address != item->m_address);
+
+        AddressLinkedList* it = list;
+        while (true)
+        {
+            if (item->m_address < it->m_address)
+            {
+                if (it->m_prev != nullptr && it->m_prev->m_address < item->m_address)
+                {
+                    it = it->m_prev;
+                }
+                else
+                {
+                    item->m_prev = it->m_prev;
+                    item->m_next = it;
+                    it->m_prev = item;
+
+                    if (item->m_prev == nullptr)
+                    {
+                        *(item->m_head) = item;
+                    }
+                    break;
+                }
+            }
+            else
+            {
+                if (it->m_next != nullptr && it->m_next->m_address > item->m_address)
+                {
+                    it = it->m_next;
+                }
+                else
+                {
+                    item->m_prev = it;
+                    item->m_next = it->m_next;
+                    it->m_next = item;
+                    break;
+                }
+            }
+        }
+    }
+
+    void LinkedListUnlink(AddressLinkedList* item)
+    {
+        DLL_ASSERT(item != nullptr);
+        if (item->m_prev == nullptr)
+        {
+            *(item->m_head) = item->m_next;
+        }
+        else
+        {
+            item->m_prev->m_next = item->m_next;
+        }
+        if (item->m_next != nullptr)
+        {
+            item->m_next->m_prev = item->m_prev;
+        }
+    }
 
     struct MemoryBlockDescription :
         public AddressLinkedList
@@ -45,8 +119,8 @@ namespace MemoryManagerInternal
     struct MemoryObjectDescription :
         public AddressLinkedList
     {
-        HANDLE object;
-        MemoryBlockDescription* blocks;
+        HANDLE m_object;
+        MemoryBlockDescription* m_blocks;
     };
 
     bool memory_manager_inited = false;
@@ -54,11 +128,15 @@ namespace MemoryManagerInternal
     LPVOID minimum_allowed_address = nullptr;
     LPVOID maximum_allowed_address = nullptr;
     DWORD allocation_granularity = 0;
-    UINT size_of_mbd = sizeof(MemoryBlockDescription) + (8 - (sizeof(MemoryBlockDescription) % 8));
+    UINT size_of_mbd = MakeBytesAligned(sizeof(MemoryBlockDescription), 8);
     std::atomic_flag allocation_lock;
 
     MemoryObjectDescription* memory_objects = nullptr;
 
+    /*
+     * TODO: Once debuglog is rewritten, make this a debuglog maskable call
+     * -- Warepire
+     */
     void DumpAllocationTable();
 
     /*
@@ -72,77 +150,8 @@ namespace MemoryManagerInternal
 
     void DeallocateUnprotected(LPVOID address);
 
-    /*
-     * Helper functions
-     */
-
-    /*
-     * The list-parameter can be any element in the list.
-     */
-    void LinkedListInsertSorted(AddressLinkedList* list, AddressLinkedList* item)
-    {
-        DLL_ASSERT(list != nullptr && item != nullptr && list->address != item->address);
-
-        AddressLinkedList* it = list;
-        while (true)
-        {
-            if (item->address < it->address)
-            {
-                if (it->prev != nullptr && it->prev->address < item->address)
-                {
-                    it = it->prev;
-                }
-                else
-                {
-                    item->prev = it->prev;
-                    item->next = it;
-                    it->prev = item;
-
-                    if (item->prev == nullptr)
-                    {
-                        *(item->head) = item;
-                    }
-                    break;
-                }
-            }
-            else
-            {
-                if (it->next != nullptr && it->next->address > item->address)
-                {
-                    it = it->next;
-                }
-                else
-                {
-                    item->prev = it;
-                    item->next = it->next;
-                    it->next = item;
-                    break;
-                }
-            }
-        }
-    }
-
-    void LinkedListUnlink(AddressLinkedList* item)
-    {
-        DLL_ASSERT(item != nullptr);
-        if (item->prev == nullptr)
-        {
-            *(item->head) = item->next;
-        }
-        else
-        {
-            item->prev->next = item->next;
-        }
-        if (item->next != nullptr)
-        {
-            item->next->prev = item->prev;
-        }
-    }
-
     LPVOID FindAllocationBaseAddress(UINT bytes, UINT flags)
     {
-
-
         MEMORY_BASIC_INFORMATION best_gap;
         memset(&best_gap, 0, sizeof(best_gap));
         MEMORY_BASIC_INFORMATION this_gap;
@@ -187,38 +196,36 @@ namespace MemoryManagerInternal
         /*
          * Make sure only relevant flags are set.
          */
-        object_flags &= MemoryManager::ALLOC_EXECUTE | MemoryManager::ALLOC_READONLY |
+        object_flags &= MemoryManager::ALLOC_EXECUTE |
+                        MemoryManager::ALLOC_READONLY |
                         MemoryManager::ALLOC_WRITE;
 
         MemoryBlockDescription* rv = nullptr;
 
-        if ((address != nullptr &&
-                address >= minimum_allowed_address || address < maximum_allowed_address) ||
+        if ((address != nullptr && address >= minimum_allowed_address || address < maximum_allowed_address) ||
             address == nullptr)
         {
             for (MemoryObjectDescription* mod = memory_objects;
                  mod != nullptr;
-                 mod = static_cast<MemoryObjectDescription*>(mod->next))
+                 mod = static_cast<MemoryObjectDescription*>(mod->m_next))
             {
-                LPVOID mod_end_address = static_cast<LPBYTE>(mod->address) + mod->bytes;
-                if (((address != nullptr && address >= mod->address && address < mod_end_address) ||
-                        address == nullptr) &&
-                    ((object_flags != 0 && object_flags == mod->flags) || object_flags == 0))
+                LPVOID mod_end_address = static_cast<LPBYTE>(mod->m_address) + mod->m_bytes;
+                if (((address != nullptr && address >= mod->m_address && address < mod_end_address) || address == nullptr) &&
+                    ((object_flags != 0 && object_flags == mod->m_flags) || object_flags == 0))
                 {
-                    for (MemoryBlockDescription* mbd = mod->blocks;
+                    for (MemoryBlockDescription* mbd = mod->m_blocks;
                          mbd != nullptr;
-                         mbd = static_cast<MemoryBlockDescription*>(mbd->next))
+                         mbd = static_cast<MemoryBlockDescription*>(mbd->m_next))
                     {
-                        if (((address != nullptr && address == mbd->address) ||
-                                address == nullptr) &&
-                            ((bytes != 0 && bytes <= mbd->bytes) || bytes == 0) &&
-                            ((block_flags != 0 && block_flags == mbd->flags) || block_flags == 0))
+                        if (((address != nullptr && address == mbd->m_address) || address == nullptr) &&
+                            ((bytes != 0 && bytes <= mbd->m_bytes) || bytes == 0) &&
+                            ((block_flags != 0 && block_flags == mbd->m_flags) || block_flags == 0))
                         {
-                            if (rv == nullptr || rv->bytes > mbd->bytes)
+                            if (rv == nullptr || rv->m_bytes > mbd->m_bytes)
                             {
                                 rv = mbd;
                             }
-                            if (bytes == rv->bytes)
+                            if (bytes == rv->m_bytes)
                             {
                                 goto memory_block_search_done;
                             }
@@ -233,8 +240,8 @@ namespace MemoryManagerInternal
 
     LPVOID AllocateInExistingBlock(UINT bytes, UINT flags)
     {
-        debugprintf(__FUNCTION__ "(0x%X 0x%X) called.\n", bytes, flags);
-        bytes += (8 - (bytes % 8));
+        ENTER(bytes, flags);
+        bytes = MakeBytesAligned(bytes, 8);
 
         MemoryBlockDescription* best_block = FindBlock(nullptr, bytes, flags, MEMORY_BLOCK_FREE);
 
@@ -243,29 +250,29 @@ namespace MemoryManagerInternal
             return nullptr;
         }
 
-        best_block->flags = MEMORY_BLOCK_USED;
-        if (best_block->bytes > bytes + size_of_mbd)
+        best_block->m_flags = MEMORY_BLOCK_USED;
+        if (best_block->m_bytes > bytes + size_of_mbd)
         {
-            LPBYTE free_space = static_cast<LPBYTE>(best_block->address) + bytes;
+            LPBYTE free_space = static_cast<LPBYTE>(best_block->m_address) + bytes;
 
             MemoryBlockDescription* mbd = reinterpret_cast<MemoryBlockDescription*>(free_space);
-            mbd->address = free_space + size_of_mbd;
-            mbd->bytes = best_block->bytes - (bytes + size_of_mbd);
-            mbd->flags = MEMORY_BLOCK_FREE;
-            mbd->head = best_block->head;
+            mbd->m_address = free_space + size_of_mbd;
+            mbd->m_bytes = best_block->m_bytes - (bytes + size_of_mbd);
+            mbd->m_flags = MEMORY_BLOCK_FREE;
+            mbd->m_head = best_block->m_head;
 
-            best_block->bytes = bytes;
+            best_block->m_bytes = bytes;
 
             LinkedListInsertSorted(best_block, mbd);
         }
 
         if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
         {
-            memset(best_block->address, 0, best_block->bytes);
+            memset(best_block->m_address, 0, best_block->m_bytes);
         }
 
-        debugprintf(__FUNCTION__ " returned: 0x%p\n", best_block->address);
-        return best_block->address;
+        LEAVE(best_block->m_address);
+        return best_block->m_address;
     }
 
     LPVOID AllocateWithNewBlock(UINT bytes, UINT flags)
@@ -274,12 +281,11 @@ namespace MemoryManagerInternal
          * Calculate the size of the mapped file and make sure the allocation is a multible of
          * 8 bytes.
          */
-        debugprintf(__FUNCTION__ "(0x%X 0x%X) called.\n", bytes, flags);
+        ENTER(bytes, flags);
         SIZE_T file_size = allocation_granularity;
-        UINT bytes_for_mod_and_mbd = sizeof(MemoryObjectDescription) +
-                                     sizeof(MemoryBlockDescription);
-        bytes_for_mod_and_mbd += (8 - (bytes_for_mod_and_mbd % 8));
-        bytes += (8 - (bytes % 8));
+        UINT bytes_for_mod_and_mbd = sizeof(MemoryObjectDescription) + sizeof(MemoryBlockDescription);
+        bytes_for_mod_and_mbd = MakeBytesAligned(bytes_for_mod_and_mbd, 8);
+        bytes = MakeBytesAligned(bytes, 8);
         while (bytes + bytes_for_mod_and_mbd > file_size)
         {
             file_size += allocation_granularity;
@@ -340,12 +346,13 @@ namespace MemoryManagerInternal
         }
 
         MemoryObjectDescription* mod = static_cast<MemoryObjectDescription*>(addr);
-        mod->address = addr;
-        mod->object = map_file;
-        mod->bytes = file_size;
-        mod->flags = flags & (MemoryManager::ALLOC_EXECUTE | MemoryManager::ALLOC_READONLY |
-                              MemoryManager::ALLOC_WRITE);
-        mod->head = reinterpret_cast<AddressLinkedList**>(&memory_objects);
+        mod->m_address = addr;
+        mod->m_object = map_file;
+        mod->m_bytes = file_size;
+        mod->m_flags = flags & (MemoryManager::ALLOC_EXECUTE |
+                                MemoryManager::ALLOC_READONLY |
+                                MemoryManager::ALLOC_WRITE);
+        mod->m_head = reinterpret_cast<AddressLinkedList**>(&memory_objects);
 
         if (memory_objects == nullptr)
         {
@@ -356,43 +363,43 @@ namespace MemoryManagerInternal
             LinkedListInsertSorted(memory_objects, mod);
         }
 
-        addr = static_cast<LPBYTE>(mod->address) + sizeof(MemoryObjectDescription);
+        addr = static_cast<LPBYTE>(mod->m_address) + sizeof(MemoryObjectDescription);
 
         MemoryBlockDescription* mbd = static_cast<MemoryBlockDescription*>(addr);
-        mbd->address = static_cast<LPBYTE>(mod->address) + bytes_for_mod_and_mbd;
-        mbd->bytes = bytes;
-        mbd->flags = MEMORY_BLOCK_USED;
-        mbd->head = reinterpret_cast<AddressLinkedList**>(&mod->blocks);
+        mbd->m_address = static_cast<LPBYTE>(mod->m_address) + bytes_for_mod_and_mbd;
+        mbd->m_bytes = bytes;
+        mbd->m_flags = MEMORY_BLOCK_USED;
+        mbd->m_head = reinterpret_cast<AddressLinkedList**>(&mod->m_blocks);
         /*
          * mod->blocks is always an invalid pointer here.
          * There is also no need to insert this one.
          */
-        mod->blocks = mbd;
+        mod->m_blocks = mbd;
 
         if (bytes + bytes_for_mod_and_mbd + size_of_mbd < allocation_granularity)
         {
             /*
              * This block can be used for more than one allocation.
              */
-            addr = static_cast<LPBYTE>(mod->address) + bytes + bytes_for_mod_and_mbd;
+            addr = static_cast<LPBYTE>(mod->m_address) + bytes + bytes_for_mod_and_mbd;
             mbd = reinterpret_cast<MemoryBlockDescription*>(addr);
             UINT free_space = file_size - (bytes + bytes_for_mod_and_mbd + size_of_mbd);
 
-            mbd->address = static_cast<LPBYTE>(addr) + size_of_mbd;
-            mbd->bytes = free_space;
-            mbd->flags = MEMORY_BLOCK_FREE;
-            mbd->head = reinterpret_cast<AddressLinkedList**>(&mod->blocks);
+            mbd->m_address = static_cast<LPBYTE>(addr) + size_of_mbd;
+            mbd->m_bytes = free_space;
+            mbd->m_flags = MEMORY_BLOCK_FREE;
+            mbd->m_head = reinterpret_cast<AddressLinkedList**>(&mod->m_blocks);
 
-            LinkedListInsertSorted(mod->blocks, mbd);
+            LinkedListInsertSorted(mod->m_blocks, mbd);
         }
 
-        debugprintf(__FUNCTION__ " returned: 0x%p\n", mod->blocks->address);
-        return mod->blocks->address;
+        LEAVE(mod->m_blocks->m_address);
+        return mod->m_blocks->m_address;
     }
 
     LPVOID AllocateUnprotected(UINT bytes, UINT flags)
     {
-        debugprintf(__FUNCTION__ "(0x%X 0x%X) called.\n", bytes, flags);
+        ENTER(bytes, flags);
         if (bytes == 0)
         {
             return nullptr;
@@ -414,7 +421,7 @@ namespace MemoryManagerInternal
 
     LPVOID ReallocateUnprotected(LPVOID address, UINT bytes, UINT flags)
     {
-        debugprintf(__FUNCTION__ "(0x%p 0x%X 0x%X) called.\n", address, bytes, flags);
+        ENTER(address, bytes, flags);
 
         if (address == nullptr)
         {
@@ -426,7 +433,7 @@ namespace MemoryManagerInternal
             return nullptr;
         }
 
-        UINT realloc_bytes = (bytes * 2) + (8 - ((bytes * 2) % 8));
+        UINT realloc_bytes = MakeBytesAligned(bytes * 2, 8);
 
         MemoryBlockDescription* block = FindBlock(address, 0, flags, MEMORY_BLOCK_USED);
 
@@ -436,31 +443,31 @@ namespace MemoryManagerInternal
         if (realloc_bytes < allocation_granularity && block != nullptr)
         {
             MemoryBlockDescription* mbd = block;
-            INT adjustment = (realloc_bytes - block->bytes);
+            INT adjustment = (realloc_bytes - block->m_bytes);
 
             /*
              * No difference.
              */
             if (adjustment == 0)
             {
-                return mbd->address;
+                return mbd->m_address;
             }
             /*
              * Reallocating to smaller buffer and it would actually free a useful memory block.
              */
-            if (adjustment + static_cast<INT>(size_of_mbd) < 0)
+            if (static_cast<INT>(adjustment + size_of_mbd) < 0)
             {
-                LPVOID addr = static_cast<LPBYTE>(mbd->address) + realloc_bytes;
+                LPVOID addr = static_cast<LPBYTE>(mbd->m_address) + realloc_bytes;
                 MemoryBlockDescription *new_mbd = reinterpret_cast<MemoryBlockDescription*>(addr);
-                new_mbd->address = static_cast<LPBYTE>(addr) + size_of_mbd;
-                new_mbd->bytes = abs(adjustment);
-                new_mbd->flags = MEMORY_BLOCK_FREE;
+                new_mbd->m_address = static_cast<LPBYTE>(addr) + size_of_mbd;
+                new_mbd->m_bytes = abs(adjustment);
+                new_mbd->m_flags = MEMORY_BLOCK_FREE;
 
-                mbd->bytes = bytes;
+                mbd->m_bytes = bytes;
 
                 LinkedListInsertSorted(mbd, new_mbd);
 
-                return mbd->address;
+                return mbd->m_address;
             }
             /*
              * The memory block that would be free'd is smaller than anything that can fit there.
@@ -468,48 +475,47 @@ namespace MemoryManagerInternal
              */
             if (adjustment < 0)
             {
-                return mbd->address;
+                return mbd->m_address;
             }
 
             /*
              * Expand block.
              */
-            mbd = static_cast<MemoryBlockDescription*>(mbd->next);
+            mbd = static_cast<MemoryBlockDescription*>(mbd->m_next);
             if (mbd != nullptr &&
-                static_cast<INT64>(mbd->bytes) > static_cast<INT64>(adjustment) &&
-                mbd->flags == MEMORY_BLOCK_FREE)
+                static_cast<INT64>(mbd->m_bytes) > static_cast<INT64>(adjustment) &&
+                mbd->m_flags == MEMORY_BLOCK_FREE)
             {
                 LPVOID rv = nullptr;
                 /*
                  * The remaining part of the block is too small for anything, give the full block.
                  */
-                if (mbd->bytes + size_of_mbd <= static_cast<UINT>(adjustment))
+                if (mbd->m_bytes + size_of_mbd <= static_cast<UINT>(adjustment))
                 {
-                    block->bytes += mbd->bytes + size_of_mbd;
+                    block->m_bytes += mbd->m_bytes + size_of_mbd;
                     LinkedListUnlink(mbd);
-                    rv = block->address;
+                    rv = block->m_address;
                 }
                 /*
                  * Adjust MemoryBlockDescription and update it.
                  */
                 else
                 {
-                    LPVOID addr = (static_cast<LPBYTE>(mbd->address) - size_of_mbd) + adjustment;
-                    MemoryBlockDescription* new_mbd =
-                        reinterpret_cast<MemoryBlockDescription*>(addr);
+                    LPVOID addr = (static_cast<LPBYTE>(mbd->m_address) - size_of_mbd) + adjustment;
+                    MemoryBlockDescription* new_mbd = reinterpret_cast<MemoryBlockDescription*>(addr);
                     LinkedListUnlink(mbd);
                     memmove(new_mbd, mbd, sizeof(MemoryBlockDescription));
 
-                    new_mbd->address = static_cast<LPBYTE>(addr) + adjustment;
-                    new_mbd->bytes -= adjustment;
+                    new_mbd->m_address = static_cast<LPBYTE>(addr) + adjustment;
+                    new_mbd->m_bytes -= adjustment;
 
                     LinkedListInsertSorted(block, new_mbd);
-                    rv = block->address;
+                    rv = block->m_address;
                 }
             
                 if (rv != nullptr)
                 {
-                    mbd->bytes = realloc_bytes;
+                    mbd->m_bytes = realloc_bytes;
                     if ((flags & MemoryManager::ALLOC_ZEROINIT) == MemoryManager::ALLOC_ZEROINIT)
                     {
                         memset(static_cast<LPBYTE>(rv) + adjustment, 0, adjustment);
@@ -533,14 +539,14 @@ namespace MemoryManagerInternal
         {
             return nullptr;
         }
-        memcpy(allocation, address, block->bytes);
+        memcpy(allocation, address, block->m_bytes);
         DeallocateUnprotected(address);
         return allocation;
     }
 
     void DeallocateUnprotected(LPVOID address)
     {
-        debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
+        ENTER(address);
         if (address == nullptr)
         {
             return;
@@ -549,22 +555,22 @@ namespace MemoryManagerInternal
         MemoryBlockDescription* block = FindBlock(address, 0, 0, MEMORY_BLOCK_USED);
         if (block == nullptr)
         {
-            debugprintf(__FUNCTION__ " WARNING: Attempted removal of unknown memory!.\n");
+            debugprintf("%s WARNING: Attempted removal of unknown memory!.\n", __FUNCTION__);
             return;
         }
-        block->flags = MEMORY_BLOCK_FREE;
+        block->m_flags = MEMORY_BLOCK_FREE;
 
         /*
          * Attempt block merging.
          */
-        if (block->next != nullptr && block->next->flags == MEMORY_BLOCK_FREE)
+        if (block->m_next != nullptr && block->m_next->m_flags == MEMORY_BLOCK_FREE)
         {
-            block->bytes += block->next->bytes + size_of_mbd;
-            LinkedListUnlink(block->next);
+            block->m_bytes += block->m_next->m_bytes + size_of_mbd;
+            LinkedListUnlink(block->m_next);
         }
-        if (block->prev != nullptr && block->prev->flags == MEMORY_BLOCK_FREE)
+        if (block->m_prev != nullptr && block->m_prev->m_flags == MEMORY_BLOCK_FREE)
         {
-            block->prev->bytes += block->bytes + size_of_mbd;
+            block->m_prev->m_bytes += block->m_bytes + size_of_mbd;
             LinkedListUnlink(block);
         }
 
@@ -572,26 +578,26 @@ namespace MemoryManagerInternal
          * Entire memory block deallocated, use some address math to find the
          * MemoryObjectDescription.
          */
-        if (*(block->head) != nullptr &&
-            reinterpret_cast<MemoryBlockDescription*>(*block->head)->next == nullptr &&
-            reinterpret_cast<MemoryBlockDescription*>(*block->head)->flags == MEMORY_BLOCK_FREE)
+        if (*(block->m_head) != nullptr &&
+            reinterpret_cast<MemoryBlockDescription*>(*block->m_head)->m_next == nullptr &&
+            reinterpret_cast<MemoryBlockDescription*>(*block->m_head)->m_flags == MEMORY_BLOCK_FREE)
         {
-            LPVOID addr = reinterpret_cast<MemoryBlockDescription*>(*block->head)->address;
+            LPVOID addr = reinterpret_cast<MemoryBlockDescription*>(*block->m_head)->m_address;
             addr = reinterpret_cast<LPVOID>(reinterpret_cast<UINT>(addr) & 0xFFFF0000);
 
             MemoryObjectDescription* mod = static_cast<MemoryObjectDescription*>(addr);
             LinkedListUnlink(mod);
 
-            UnmapViewOfFile(mod->address);
-            CloseHandle(mod->object);
+            UnmapViewOfFile(mod->m_address);
+            CloseHandle(mod->m_object);
         }
-        debugprintf(__FUNCTION__ " left.\n");
+        LEAVE();
     }
 };
 
 void MemoryManager::Init()
 {
-    debugprintf(__FUNCTION__ "(void) called.\n");
+    ENTER();
     DLL_ASSERT(MemoryManagerInternal::memory_manager_inited == false);
 
     SYSTEM_INFO si;
@@ -617,7 +623,7 @@ void MemoryManager::Init()
 LPVOID MemoryManager::Allocate(UINT bytes, UINT flags)
 {
     DLL_ASSERT(MemoryManagerInternal::memory_manager_inited);
-    while (MemoryManagerInternal::allocation_lock.test_and_set() == true);
+    while (MemoryManagerInternal::allocation_lock.test_and_set() == true) {}
     LPVOID rv = MemoryManagerInternal::AllocateUnprotected(bytes, flags);
     MemoryManagerInternal::allocation_lock.clear();
     return rv;
@@ -626,7 +632,7 @@ LPVOID MemoryManager::Allocate(UINT bytes, UINT flags)
 LPVOID MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags)
 {
     DLL_ASSERT(MemoryManagerInternal::memory_manager_inited);
-    while (MemoryManagerInternal::allocation_lock.test_and_set() == true);
+    while (MemoryManagerInternal::allocation_lock.test_and_set() == true) {}
     LPVOID rv = MemoryManagerInternal::ReallocateUnprotected(address, bytes, flags);
     MemoryManagerInternal::allocation_lock.clear();
     return rv;
@@ -635,7 +641,7 @@ LPVOID MemoryManager::Reallocate(LPVOID address, UINT bytes, UINT flags)
 void MemoryManager::Deallocate(LPVOID address)
 {
     DLL_ASSERT(MemoryManagerInternal::memory_manager_inited);
-    while (MemoryManagerInternal::allocation_lock.test_and_set() == true);
+    while (MemoryManagerInternal::allocation_lock.test_and_set() == true) {}
     MemoryManagerInternal::DeallocateUnprotected(address);
     MemoryManagerInternal::allocation_lock.clear();
 }
@@ -643,20 +649,20 @@ void MemoryManager::Deallocate(LPVOID address)
 SIZE_T MemoryManager::GetSizeOfAllocation(LPCVOID address)
 {
     DLL_ASSERT(MemoryManagerInternal::memory_manager_inited);
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", address);
+    ENTER(address);
     if (address == nullptr)
     {
         return 0;
     }
 
-    while (MemoryManagerInternal::allocation_lock.test_and_set() == true);
+    while (MemoryManagerInternal::allocation_lock.test_and_set() == true) {}
     SIZE_T rv = 0;
     MemoryManagerInternal::MemoryBlockDescription* mbd =
         MemoryManagerInternal::FindBlock(address, 0, 0, MemoryManagerInternal::MEMORY_BLOCK_USED);
     
     if (mbd != nullptr)
     {
-        rv = mbd->bytes;
+        rv = mbd->m_bytes;
     }
 
     MemoryManagerInternal::allocation_lock.clear();
@@ -669,15 +675,15 @@ void MemoryManagerInternal::DumpAllocationTable()
     MemoryBlockDescription* mbd = nullptr;
     while (mod != nullptr)
     {
-        mbd = mod->blocks;
+        mbd = mod->m_blocks;
         debugprintf("MOD this=0x%p prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X blocks=0x%p\n",
-                    mod, mod->prev, mod->next, *mod->head, mod->address, mod->bytes, mod->flags, mod->blocks);
+                    mod, mod->m_prev, mod->m_next, *mod->m_head, mod->m_address, mod->m_bytes, mod->m_flags, mod->m_blocks);
         while (mbd != nullptr)
         {
             debugprintf("MBD this=0x%p prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X\n",
-                        mbd, mbd->prev, mbd->next, *mbd->head, mbd->address, mbd->bytes, mbd->flags);
-            mbd = static_cast<MemoryBlockDescription*>(mbd->next);
+                        mbd, mbd->m_prev, mbd->m_next, *mbd->m_head, mbd->m_address, mbd->m_bytes, mbd->m_flags);
+            mbd = static_cast<MemoryBlockDescription*>(mbd->m_next);
         }
-        mod = static_cast<MemoryObjectDescription*>(mod->next);
+        mod = static_cast<MemoryObjectDescription*>(mod->m_next);
     }
 }

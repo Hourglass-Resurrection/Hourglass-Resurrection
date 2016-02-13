@@ -105,30 +105,30 @@ public:
 
     pointer address(reference x) const
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER();
         return &x;
     }
     const_pointer address(const_reference x) const
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER();
         return &x;
     }
 
     pointer allocate(size_type n, const_pointer hint = 0)
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER(n);
         static const UINT flags = MemoryManager::ALLOC_WRITE;
         return reinterpret_cast<pointer>(MemoryManager::Allocate(n * sizeof(value_type), flags));
     }
     void deallocate(pointer p, size_type n)
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER(p);
         MemoryManager::Deallocate(p);
     }
 
     size_type max_size() const
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER();
         /*
          * Copy Microsoft's own implementation of max_size.
          */
@@ -138,7 +138,7 @@ public:
     template<class U, class... Args>
     void construct(U* p, Args&&... args)
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER(p);
         /*
          * Placement-new, will not attempt to allocate space.
          */
@@ -147,7 +147,7 @@ public:
     template<class U>
     void destroy(U* p)
     {
-        debugprintf(__FUNCTION__ " called.\n");
+        ENTER(p);
         p->~U();
     }
 };
