@@ -53,6 +53,7 @@ namespace MemoryManagerInternal
      */
     void LinkedListInsertSorted(AddressLinkedList* list, AddressLinkedList* item)
     {
+        ENTER(list, item);
         DLL_ASSERT(list != nullptr && item != nullptr && list->m_address != item->m_address);
 
         AddressLinkedList* it = list;
@@ -79,7 +80,7 @@ namespace MemoryManagerInternal
             }
             else
             {
-                if (it->m_next != nullptr && it->m_next->m_address > item->m_address)
+                if (it->m_next != nullptr && item->m_address > it->m_next->m_address)
                 {
                     it = it->m_next;
                 }
@@ -193,6 +194,7 @@ namespace MemoryManagerInternal
                                       UINT object_flags,
                                       UINT block_flags)
     {
+        ENTER(address, bytes, object_flags, block_flags);
         /*
          * Make sure only relevant flags are set.
          */
@@ -235,6 +237,7 @@ namespace MemoryManagerInternal
             }
         }
     memory_block_search_done:
+        LEAVE(rv);
         return rv;
     }
 
@@ -242,7 +245,6 @@ namespace MemoryManagerInternal
     {
         ENTER(bytes, flags);
         bytes = MakeBytesAligned(bytes, 8);
-
         MemoryBlockDescription* best_block = FindBlock(nullptr, bytes, flags, MEMORY_BLOCK_FREE);
 
         if (best_block == nullptr)
@@ -676,12 +678,12 @@ void MemoryManagerInternal::DumpAllocationTable()
     while (mod != nullptr)
     {
         mbd = mod->m_blocks;
-        debugprintf("MOD this=0x%p prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X blocks=0x%p\n",
-                    mod, mod->m_prev, mod->m_next, *mod->m_head, mod->m_address, mod->m_bytes, mod->m_flags, mod->m_blocks);
+        debugprintf("MOD prev=0x%p this=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X blocks=0x%p\n",
+                    mod->m_prev, mod, mod->m_next, *mod->m_head, mod->m_address, mod->m_bytes, mod->m_flags, mod->m_blocks);
         while (mbd != nullptr)
         {
-            debugprintf("MBD this=0x%p prev=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X\n",
-                        mbd, mbd->m_prev, mbd->m_next, *mbd->m_head, mbd->m_address, mbd->m_bytes, mbd->m_flags);
+            debugprintf("MBD prev=0x%p this=0x%p next=0x%p *head=0x%p addr=0x%p bytes=0x%X flags=0x%X\n",
+                        mbd->m_prev, mbd, mbd->m_next, *mbd->m_head, mbd->m_address, mbd->m_bytes, mbd->m_flags);
             mbd = static_cast<MemoryBlockDescription*>(mbd->m_next);
         }
         mod = static_cast<MemoryObjectDescription*>(mod->m_next);
