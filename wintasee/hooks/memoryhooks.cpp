@@ -60,7 +60,7 @@ HOOKFUNC BOOL WINAPI MyAllocateUserPhysicalPages(HANDLE hProcess,
                                                  PULONG_PTR NumberOfPages,
                                                  PULONG_PTR PageArray)
 {
-    debugprintf(__FUNCTION__ "(0x%p, 0x%p) called: 0x%p\n", NumberOfPages, PageArray, hProcess);
+    ENTER(hProcess, NumberOfPages, PageArray);
     MessageBoxA(nullptr,//gamehwnd,
                 __FUNCTION__ " is not implemented.\n"
                 "The application will most likely experience problems with SaveStates now.",
@@ -76,7 +76,7 @@ HOOKFUNC BOOL WINAPI MyFreeUserPhysicalPages(HANDLE hProcess,
                                              PULONG_PTR NumberOfPages,
                                              PULONG_PTR PageArray)
 {
-    debugprintf(__FUNCTION__ "(0x%p, 0x%p) called: 0x%p\n", NumberOfPages, PageArray, hProcess);
+    ENTER(hProcess, NumberOfPages, PageArray);
     MessageBoxA(nullptr,//gamehwnd,
                 __FUNCTION__ " is not implemented.\n"
                 "The application will most likely experience problems with SaveStates now.",
@@ -95,7 +95,7 @@ HOOKFUNC BOOL WINAPI MyFreeUserPhysicalPages(HANDLE hProcess,
  */
 HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
 {
-    debugprintf(__FUNCTION__ " called.\n");
+    ENTER();
     HeapObject* rv = g_default_heap;
     if (rv == nullptr)
     {
@@ -135,7 +135,7 @@ HOOKFUNC HANDLE WINAPI MyGetProcessHeap()
 
 HOOKFUNC DWORD WINAPI MyGetProcessHeaps(DWORD NumberOfHeaps, PHANDLE ProcessHeaps)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%p) called.\n", NumberOfHeaps, ProcessHeaps);
+    ENTER(NumberOfHeaps, ProcessHeaps);
     DWORD rv = (g_heaps().size() > NumberOfHeaps) ? NumberOfHeaps : g_heaps().size();
     if (g_default_heap == nullptr)
     {
@@ -154,9 +154,9 @@ HOOKFUNC DWORD WINAPI MyGetProcessHeaps(DWORD NumberOfHeaps, PHANDLE ProcessHeap
 
 HOOKFUNC HGLOBAL WINAPI MyGlobalAlloc(UINT uFlags, SIZE_T dwBytes)
 {
+    ENTER(uFlags, dwBytes);
     UINT alloc_flags = 0;
     LPVOID address = nullptr;
-    debugprintf(__FUNCTION__ "(0x%X 0x%X) called.\n", uFlags, dwBytes);
 
     if ((uFlags & GMEM_ZEROINIT) == GMEM_ZEROINIT)
     {
@@ -183,19 +183,19 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalAlloc(UINT uFlags, SIZE_T dwBytes)
 
 HOOKFUNC SIZE_T WINAPI MyGlobalCompact(DWORD dwMinFree)
 {
-    debugprintf(__FUNCTION__ "(0x%X) called.\n", dwMinFree);
+    ENTER(dwMinFree);
     return 0;
 }
 
 HOOKFUNC void WINAPI MyGlobalFix(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     MyGlobalLock(hMem);
 }
 
 HOOKFUNC UINT WINAPI MyGlobalFlags(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     auto it = g_alloc_flags().find(hMem);
     if (it != g_alloc_flags().end())
     {
@@ -211,7 +211,7 @@ HOOKFUNC UINT WINAPI MyGlobalFlags(HGLOBAL hMem)
 
 HOOKFUNC HGLOBAL WINAPI MyGlobalFree(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     if (g_alloc_flags().find(hMem) != g_alloc_flags().end())
     {
         MemoryManager::Deallocate(hMem);
@@ -223,11 +223,11 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalFree(HGLOBAL hMem)
 
 HOOKFUNC HGLOBAL WINAPI MyGlobalHandle(LPCVOID pMem)
 {
+    ENTER(pMem);
     /*
      * We don't bother with HGLOBAL data structures.
      */
     LPVOID address = const_cast<LPVOID>(pMem);
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", pMem);
     if (address == nullptr)
     {
         SetLastError(ERROR_INVALID_PARAMETER);
@@ -243,7 +243,7 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalHandle(LPCVOID pMem)
 
 HOOKFUNC LPVOID WINAPI MyGlobalLock(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     LPVOID rv = hMem;
     auto it = g_alloc_flags().find(hMem);
     if (hMem == nullptr)
@@ -280,7 +280,7 @@ HOOKFUNC LPVOID WINAPI MyGlobalLock(HGLOBAL hMem)
 
 HOOKFUNC HGLOBAL WINAPI MyGlobalReAlloc(HGLOBAL hMem, SIZE_T dwBytes, UINT uFlags)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%X 0x%X) called.\n", hMem, dwBytes, uFlags);
+    ENTER(hMem, dwBytes, uFlags);
     UINT alloc_flags = 0;
     HGLOBAL rv = nullptr;
     auto it = g_alloc_flags().find(hMem);
@@ -369,7 +369,7 @@ HOOKFUNC HGLOBAL WINAPI MyGlobalReAlloc(HGLOBAL hMem, SIZE_T dwBytes, UINT uFlag
 
 HOOKFUNC SIZE_T WINAPI MyGlobalSize(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     SIZE_T rv = 0;
     auto it = g_alloc_flags().find(hMem);
     if (it == g_alloc_flags().end())
@@ -392,13 +392,13 @@ HOOKFUNC SIZE_T WINAPI MyGlobalSize(HGLOBAL hMem)
 
 HOOKFUNC void WINAPI MyGlobalUnfix(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     MyGlobalUnlock(hMem);
 }
 
 HOOKFUNC BOOL WINAPI MyGlobalUnlock(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     BOOL rv = TRUE;
     auto it = g_alloc_flags().find(hMem);
     if (it == g_alloc_flags().end())
@@ -420,19 +420,19 @@ HOOKFUNC BOOL WINAPI MyGlobalUnlock(HGLOBAL hMem)
 
 HOOKFUNC BOOL WINAPI MyGlobalUnWire(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalUnlock(hMem);
 }
 
 HOOKFUNC LPVOID WINAPI MyGlobalWire(HGLOBAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalLock(hMem);
 }
 
 HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%X) called: 0x%p\n", dwFlags, dwBytes, hHeap);
+    ENTER(hHeap, dwFlags, dwBytes);
     LPVOID rv = nullptr;
     UINT alloc_flags = 0;
     for (auto& h : g_heaps())
@@ -490,13 +490,13 @@ HOOKFUNC LPVOID WINAPI MyHeapAlloc(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes)
 
 HOOKFUNC SIZE_T WINAPI MyHeapCompact(HANDLE hHeap, DWORD dwFlags)
 {
-    debugprintf(__FUNCTION__ "(0x%X) called: 0x%p\n", dwFlags, hHeap);
+    ENTER(dwFlags, hHeap);
     return 0;
 }
 
 HOOKFUNC HANDLE WINAPI MyHeapCreate(DWORD flOptions, SIZE_T dwInitialSize, SIZE_T dwMaximumSize)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%X 0x%X) called.\n", flOptions, dwInitialSize, dwMaximumSize);
+    ENTER(flOptions, dwInitialSize, dwMaximumSize);
     HeapObject* heap =
         static_cast<HeapObject*>(MemoryManager::Allocate(sizeof(*heap),
                                                          MemoryManager::ALLOC_WRITE));
@@ -522,7 +522,7 @@ HOOKFUNC HANDLE WINAPI MyHeapCreate(DWORD flOptions, SIZE_T dwInitialSize, SIZE_
 
 HOOKFUNC BOOL WINAPI MyHeapDestroy(HANDLE hHeap)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hHeap);
+    ENTER(hHeap);
     BOOL rv = TRUE;
     auto it = g_heaps().begin();
     if (hHeap == nullptr)
@@ -559,7 +559,7 @@ HOOKFUNC BOOL WINAPI MyHeapDestroy(HANDLE hHeap)
 
 HOOKFUNC BOOL WINAPI MyHeapFree(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%p) called: 0x%p\n", dwFlags, lpMem, hHeap);
+    ENTER(dwFlags, lpMem, hHeap);
     BOOL rv = FALSE;
     if (lpMem == nullptr)
     {
@@ -606,12 +606,12 @@ heap_segment_freed:
 
 HOOKFUNC BOOL WINAPI MyHeapLock(HANDLE hHeap)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hHeap);
+    ENTER(hHeap);
     for (auto& h : g_heaps())
     {
         if (h == hHeap)
         {
-            while (h->m_heap_lock.test_and_set() == true);
+            while (h->m_heap_lock.test_and_set() == true) {}
             return TRUE;
         }
     }
@@ -628,7 +628,7 @@ HOOKFUNC BOOL WINAPI MyHeapQueryInformation(HANDLE HeapHandle,
                                             SIZE_T HeapInformationLength,
                                             PSIZE_T ReturnLength)
 {
-    debugprintf(__FUNCTION__ " called: 0x%p\n", HeapHandle);
+    ENTER(HeapHandle, HeapInformation, HeapInformation, HeapInformationLength, ReturnLength);
     BOOL rv = FALSE;
     switch (HeapInformationClass)
     {
@@ -656,7 +656,7 @@ HOOKFUNC BOOL WINAPI MyHeapQueryInformation(HANDLE HeapHandle,
 
 HOOKFUNC LPVOID WINAPI MyHeapReAlloc(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, SIZE_T dwBytes)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%p 0x%) called: 0x%p\n", dwFlags, lpMem, dwBytes, hHeap);
+    ENTER(hHeap, dwFlags, lpMem, dwBytes);
     LPVOID rv = nullptr;
     BOOL heap_locked = FALSE;
     UINT alloc_flags = 0;
@@ -742,13 +742,13 @@ HOOKFUNC BOOL WINAPI MyHeapSetInformation(HANDLE HeapHandle,
                                           PVOID HeapInformation,
                                           SIZE_T HeapInformationLength)
 {
-    debugprintf(__FUNCTION__ " called: %0x%p\n", HeapHandle);
+    ENTER(HeapHandle);
     return TRUE;
 }
 
 HOOKFUNC SIZE_T WINAPI MyHeapSize(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%p) called: 0x%p\n", dwFlags, lpMem, hHeap);
+    ENTER(hHeap, dwFlags, lpMem);
     BOOL heap_locked = FALSE;
     SIZE_T rv = 0;
     for (auto& h : g_heaps())
@@ -784,7 +784,7 @@ heap_size_done:
 
 HOOKFUNC BOOL WINAPI MyHeapUnlock(HANDLE hHeap)
 {
-    debugprintf(__FUNCTION__ " called: 0x%p\n", hHeap);
+    ENTER(hHeap);
     for (auto& h : g_heaps())
     {
         if (h == hHeap)
@@ -799,7 +799,7 @@ HOOKFUNC BOOL WINAPI MyHeapUnlock(HANDLE hHeap)
 
 HOOKFUNC BOOL WINAPI MyHeapValidate(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%p) called: 0x%p\n", dwFlags, lpMem, hHeap);
+    ENTER(dwFlags, lpMem, hHeap);
     BOOL heap_locked = FALSE;
     BOOL rv = FALSE;
     if (hHeap != nullptr)
@@ -839,7 +839,7 @@ heap_validate_done:
 
 HOOKFUNC BOOL WINAPI MyHeapWalk(HANDLE hHeap, LPPROCESS_HEAP_ENTRY lpEntry)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called: 0x%p\n", lpEntry, hHeap);
+    ENTER(hHeap, lpEntry);
     MessageBoxA(nullptr,//gamehwnd,
                 __FUNCTION__ " is not implemented.\n"
                 "The application will most likely experience problems now.",
@@ -854,31 +854,31 @@ HOOKFUNC BOOL WINAPI MyHeapWalk(HANDLE hHeap, LPPROCESS_HEAP_ENTRY lpEntry)
 
 HOOKFUNC BOOL WINAPI MyIsBadCodePtr(FARPROC lpfn)
 {
-    debugprintf(__FUNCTION__ " called: 0x%p\n", lpfn);
+    ENTER(lpfn);
     return IsBadCodePtr(lpfn);
 }
 
 HOOKFUNC BOOL WINAPI MyIsBadReadPtr(const void *lp, UINT_PTR ucb)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lp, ucb);
+    ENTER(lp, ucb);
     return IsBadReadPtr(lp, ucb);
 }
 
 HOOKFUNC BOOL WINAPI MyIsBadStringPtrA(LPCSTR lpsz, UINT_PTR ucchMax)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpsz, ucchMax);
+    ENTER(lpsz, ucchMax);
     return IsBadStringPtrA(lpsz, ucchMax);
 }
 
 HOOKFUNC BOOL WINAPI MyIsBadStringPtrW(LPCWSTR lpsz, UINT_PTR ucchMax)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpsz, ucchMax);
+    ENTER(lpsz, ucchMax);
     return IsBadStringPtrW(lpsz, ucchMax);
 }
 
 HOOKFUNC BOOL WINAPI MyIsBadWritePtr(LPVOID lp, UINT_PTR ucb)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lp, ucb);
+    ENTER(lp, ucb);
     return IsBadWritePtr(lp, ucb);
 }
 
@@ -889,7 +889,7 @@ HOOKFUNC BOOL WINAPI MyIsBadWritePtr(LPVOID lp, UINT_PTR ucb)
  */
 HOOKFUNC HLOCAL WINAPI MyLocalAlloc(UINT uFlags, SIZE_T uBytes)
 {
-    debugprintf(__FUNCTION__ "(0x%X 0x%X) called.\n", uFlags, uBytes);
+    ENTER(uFlags, uBytes);
     if ((uFlags & LMEM_DISCARDABLE) == LMEM_DISCARDABLE)
     {
         uFlags &= ~LMEM_DISCARDABLE;
@@ -900,13 +900,13 @@ HOOKFUNC HLOCAL WINAPI MyLocalAlloc(UINT uFlags, SIZE_T uBytes)
 
 HOOKFUNC SIZE_T WINAPI MyLocalCompact(UINT uMinFree)
 {
-    debugprintf(__FUNCTION__ "(0x%X) called.\n", uMinFree);
+    ENTER(uMinFree);
     return 0;
 }
 
 HOOKFUNC UINT WINAPI MyLocalFlags(HLOCAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     UINT rv = MyGlobalFlags(hMem);
     if (rv != GMEM_INVALID_HANDLE && (rv & GMEM_DISCARDABLE) == GMEM_DISCARDABLE)
     {
@@ -917,25 +917,25 @@ HOOKFUNC UINT WINAPI MyLocalFlags(HLOCAL hMem)
 
 HOOKFUNC HLOCAL WINAPI MyLocalFree(HLOCAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalFree(hMem);
 }
 
 HOOKFUNC HLOCAL WINAPI MyLocalHandle(LPCVOID pMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", pMem);
+    ENTER(pMem);
     return MyGlobalHandle(pMem);
 }
 
 HOOKFUNC LPVOID WINAPI MyLocalLock(HLOCAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalLock(hMem);
 }
 
 HOOKFUNC HLOCAL WINAPI MyLocalReAlloc(HLOCAL hMem, SIZE_T uBytes, UINT uFlags)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X) called.\n", hMem, uBytes, uFlags);
+    ENTER(hMem, uBytes, uFlags);
     if ((uFlags & LMEM_DISCARDABLE) == LMEM_DISCARDABLE)
     {
         uFlags &= ~LMEM_DISCARDABLE;
@@ -946,19 +946,19 @@ HOOKFUNC HLOCAL WINAPI MyLocalReAlloc(HLOCAL hMem, SIZE_T uBytes, UINT uFlags)
 
 HOOKFUNC SIZE_T WINAPI MyLocalShrink(HLOCAL hMem, UINT cbNewSize)
 {
-    debugprintf(__FUNCTION__ "(0x%p 0x%X) called.\n", hMem, cbNewSize);
+    ENTER(hMem, cbNewSize);
     return 0;
 }
 
 HOOKFUNC SIZE_T WINAPI MyLocalSize(HLOCAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalSize(hMem);
 }
 
 HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 {
-    debugprintf(__FUNCTION__ "(0x%p) called.\n", hMem);
+    ENTER(hMem);
     return MyGlobalUnlock(hMem);
 }
 
@@ -967,7 +967,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //                                      DWORD flAllocationType,
 //                                      DWORD flProtect)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p %x%lX 0x%X 0x%X) called.\n", lpAddress, dwSize, flAllocationType, flProtect);
+//    ENTER(lpAddress, dwSize, flAllocationType, flProtect);
 //    return VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
 //}
 //
@@ -977,7 +977,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //                                        DWORD flAllocationType,
 //                                        DWORD flProtect)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%p %x%lX 0x%X 0x%X) called.\n", hProcess, lpAddress, dwSize, flAllocationType, flProtect);
+//    ENTER(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
 //    if (hProcess == GetCurrentProcess())
 //    {
 //        return MyVirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
@@ -992,7 +992,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //
 //HOOKFUNC BOOL WINAPI MyVirtualFree(LPVOID lpAddress, SIZE_T dwSize, DWORD flFreeType)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X) called.\n", lpAddress, dwSize, flFreeType);
+//    ENTER(lpAddress, dwSize, flFreeType);
 //    return VirtualFree(lpAddress, dwSize, flFreeType);
 //}
 //
@@ -1001,7 +1001,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //                                     SIZE_T dwSize,
 //                                     DWORD flFreeType)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X) called.\n", hProcess, lpAddress, dwSize, flFreeType);
+//    ENTER(hProcess, lpAddress, dwSize, flFreeType);
 //    if (hProcess == GetCurrentProcess())
 //    {
 //        return MyVirtualFree(lpAddress, dwSize, flFreeType);
@@ -1016,7 +1016,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //
 //HOOKFUNC BOOL WINAPI MyVirtualLock(LPVOID lpAddress, SIZE_T dwSize)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
+//    ENTER(lpAddress, dwSize);
 //    return VirtualLock(lpAddress, dwSize);
 //}
 //
@@ -1025,7 +1025,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //                                      DWORD flNewProtect,
 //                                      PDWORD lpflOldProtect)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%lX 0x%X 0x%p) called.\n", lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//    ENTER(lpAddress, dwSize, flNewProtect, lpflOldProtect);
 //    return VirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
 //}
 //
@@ -1035,7 +1035,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //                                        DWORD flNewProtect,
 //                                        PDWORD lpflOldProtect)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%p 0x%lX 0x%X 0x%p) called.\n", hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
+//    ENTER(hProcess, lpAddress, dwSize, flNewProtect, lpflOldProtect);
 //    if (hProcess == GetCurrentProcess())
 //    {
 //        return MyVirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
@@ -1050,7 +1050,7 @@ HOOKFUNC BOOL WINAPI MyLocalUnlock(HLOCAL hMem)
 //
 //HOOKFUNC BOOL WINAPI MyVirtualUnlock(LPVOID lpAddress, SIZE_T dwSize)
 //{
-//    debugprintf(__FUNCTION__ "(0x%p 0x%lX) called.\n", lpAddress, dwSize);
+//    ENTER(lpAddress, dwSize);
 //    return VirtualUnlock(lpAddress, dwSize);
 //}
 
