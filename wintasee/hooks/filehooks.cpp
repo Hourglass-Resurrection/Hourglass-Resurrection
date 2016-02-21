@@ -1,11 +1,8 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(FILEHOOKS_INCL) && !defined(UNITY_BUILD)
-#define FILEHOOKS_INCL
-
-#include "../global.h"
-#include "../../shared/ipc.h"
+#include <global.h>
+#include <shared\ipc.h>
 
 HOOKFUNC HANDLE WINAPI MyCreateFileA(
 	LPCSTR lpFileName,
@@ -67,7 +64,3 @@ void ApplyFileIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

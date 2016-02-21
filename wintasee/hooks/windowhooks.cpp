@@ -1,18 +1,16 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(WINDOWHOOKS_INCL) && !defined(UNITY_BUILD)
-#define WINDOWHOOKS_INCL
-
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../msgqueue.h"
-#include "../locale.h"
-#include <map>
+#include <localeutils.h>
+#include <MemoryManager\MemoryManager.h>
+#include <msgqueue.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 static int createWindowDepth = 0;
 
-std::map<HWND, WNDPROC> hwndToOrigHandler;
+LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 //std::map<HWND, BOOL> hwndDeniedDeactivate;
 //std::map<HWND, BOOL> hwndRespondingToPaintMessage;
 
@@ -87,7 +85,7 @@ HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
 			}
 		}
 		debuglog(LCF_WINDOW, "oldProc[0x%X] = 0x%X\n", hwnd, oldProc);
-		hwndToOrigHandler[hwnd] = oldProc;
+		hwndToOrigHandler()[hwnd] = oldProc;
 		SetWindowLongA(hwnd, GWL_WNDPROC, (LONG)MyWndProcA);
 		cmdprintf("HWND: %d", hwnd);
 
@@ -313,8 +311,8 @@ HOOKFUNC LONG WINAPI MyGetWindowLongA(HWND hWnd, int nIndex)
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
 	if(nIndex == GWL_WNDPROC)
 	{
-		std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
-		if(found != hwndToOrigHandler.end())
+		auto found = hwndToOrigHandler().find(hWnd);
+		if(found != hwndToOrigHandler().end())
 		{
 			debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ " rV = 0x%X.\n", found->second);
 			return (LONG)found->second;
@@ -335,8 +333,8 @@ HOOKFUNC LONG WINAPI MyGetWindowLongW(HWND hWnd, int nIndex)
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
 	if(nIndex == GWL_WNDPROC)
 	{
-		std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
-		if(found != hwndToOrigHandler.end())
+		auto found = hwndToOrigHandler().find(hWnd);
+		if(found != hwndToOrigHandler().end())
 		{
 			return (LONG)found->second;
 			debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ " rV = 0x%X.\n", found->second);
@@ -365,7 +363,7 @@ HOOKFUNC LONG WINAPI MySetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
 		LONG rv = MyGetWindowLongA(hWnd, nIndex);
 		debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "hwndToOrigHandler[0x%X] = 0x%X.\n", hWnd, dwNewLong);
 		debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "rv = 0x%X.\n", rv);
-		hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
+		hwndToOrigHandler()[hWnd] = (WNDPROC)dwNewLong;
 		SetWindowLongA(hWnd, GWL_WNDPROC, (LONG)MyWndProcA);
 		return rv;
 	}
@@ -394,7 +392,7 @@ HOOKFUNC LONG WINAPI MySetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 		LONG rv = MyGetWindowLongW(hWnd, nIndex);
 		debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "hwndToOrigHandler[0x%X] = 0x%X.\n", hWnd, dwNewLong);
 		debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "rv = 0x%X.\n", rv);
-		hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
+		hwndToOrigHandler()[hWnd] = (WNDPROC)dwNewLong;
 		SetWindowLongW(hWnd, GWL_WNDPROC, (LONG)MyWndProcW);
 		return rv;
 	}
@@ -674,7 +672,3 @@ void ApplyWindowIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

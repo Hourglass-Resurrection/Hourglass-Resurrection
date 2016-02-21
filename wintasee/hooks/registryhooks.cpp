@@ -1,14 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(REGISTRYHOOKS_INCL) && !defined(UNITY_BUILD)
-#define REGISTRYHOOKS_INCL
-
-
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../locale.h"
 #include <memory>
+
+#include <localeutils.h>
+#include <tls.h>
+#include <wintasee.h>
 
 typedef struct _KEY_NAME_INFORMATION {
   ULONG NameLength;
@@ -866,8 +863,3 @@ void ApplyRegistryIntercepts()
 		localeIntercepts[i].enabled = (tasflags.appLocale != 0) ? 1 : 0;
 	ApplyInterceptTable(localeIntercepts, ARRAYSIZE(localeIntercepts));
 }
-
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

@@ -8,15 +8,15 @@
 #include <stdio.h>
 
 //#include "Resource.h"
-#include "../external/ddraw.h"
-#include "../shared/winutil.h"
+#include <external\ddraw.h>
+#include <shared\winutil.h>
 
 #include <vfw.h>
 #pragma comment(lib, "vfw32.lib")
 #include <msacm.h>
 #pragma comment(lib, "msacm32.lib")
 
-#include "../shared/ipc.h"
+#include <shared\ipc.h>
 #include "Config.h"
 
 //extern TasFlags localTASflags;

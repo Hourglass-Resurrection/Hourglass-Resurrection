@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(EXTENDEDTRACE_C_INCL) && !defined(UNITY_BUILD)
-#define EXTENDEDTRACE_C_INCL
-
 //////////////////////////////////////////////////////////////////////////////////////
 //
 // Written by Zoltan Csizmadia, zoltan_csizmadia@yahoo.com
@@ -31,10 +28,10 @@
 #include <tchar.h>
 //#include <ImageHlp.h>
 //#include <dbghelp.h>
-#include "../../external/dbghelp.h"
-#include "../../shared/msg.h"
+#include <external\dbghelp.h>
+#include <shared\msg.h>
 #include "extendedtrace.h"
-#include "../Config.h"
+#include <Config.h>
 
 //#pragma comment(lib, "imagehlp.lib")
 //#pragma comment(lib, "dbghelp.lib")
@@ -1024,7 +1021,3 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
 }
 
 #endif //_DEBUG && WIN32
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

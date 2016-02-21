@@ -1,14 +1,10 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(TIMERHOOKS_INCL) && !defined(UNITY_BUILD)
-#define TIMERHOOKS_INCL
-
-#include "../wintasee.h"
-#include "../msgqueue.h"
-#include <vector>
-#include <map>
-#include <set>
+#include <MemoryManager\MemoryManager.h>
+#include <msgqueue.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 void TickMultiMediaTimers(DWORD time=0); // extern? (I mean, move to header)
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
@@ -39,14 +35,14 @@ struct SetTimerDataCompare // Struct with functor that helps us sort the element
     }
 };
 // Ordered set, we're sorting on TimerID as that is the most important detail in the struct.
-static std::set<SetTimerData, SetTimerDataCompare> s_pendingSetTimers;
+static LazyType<SafeSet<SetTimerData, SetTimerDataCompare>> s_pendingSetTimers;
 static CRITICAL_SECTION s_pendingSetTimerCS;
 
 // Creates a guaranteed unique ID that is as low as possible 
 UINT_PTR CreateNewTimerID()
 {
     UINT_PTR rv = 1;
-    for(std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+    for(auto& it = s_pendingSetTimers().begin(); it != s_pendingSetTimers().end(); it++)
     {
         if(rv == it->nIDEvent)
         {
@@ -72,12 +68,11 @@ void ProcessTimers()
 		DWORD time = detTimer.GetTicks();
 	//	DWORD earliestTriggerTime = (DWORD)(time + 0x7FFFFFFF);
 
-		std::vector<SetTimerData> triggeredTimers;
+		SafeVector<SetTimerData> triggeredTimers;
 	//	bool triedAgain = false;
 	//tryAgain:
 		EnterCriticalSection(&s_pendingSetTimerCS);
-		std::set<SetTimerData, SetTimerDataCompare>::iterator iter;
-		for(iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end();)
+		for(auto& iter = s_pendingSetTimers().begin(); iter != s_pendingSetTimers().end();)
 		{
 	////		debugprintf("HOO: %d, %d\n", value.targetTime, time);
 	//		if((int)(earliestTriggerTime - value.targetTime) > 0)
@@ -85,7 +80,7 @@ void ProcessTimers()
 			if((int)(time - iter->targetTime) >= 0)
 			{
 				triggeredTimers.push_back(*iter);
-				s_pendingSetTimers.erase(iter++);
+				s_pendingSetTimers().erase(iter++);
 			}
 			else
 			{
@@ -221,7 +216,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
 	if(nIDEvent != 0)
 	{
 		bool found = false;
-        for (std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+        for (auto& it = s_pendingSetTimers().begin(); it != s_pendingSetTimers().end(); it++)
         {
             // Find the right timer
             if (it->nIDEvent == data.nIDEvent)
@@ -250,7 +245,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
                 data.nIDEvent = CreateNewTimerID();
             }
 
-            s_pendingSetTimers.insert(data);
+            s_pendingSetTimers().insert(data);
         }
 	}
     else // No ID provided, assuming new timer creation ... TODO: Error if hWnd is not NULL?
@@ -263,7 +258,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
         // Necessary? Seems not, nothing changes here so... Remove out-comment if everything broke
         // bool threadAlreadyExisted = false;
 
-        s_pendingSetTimers.insert(data);
+        s_pendingSetTimers().insert(data);
     }
 
 	LeaveCriticalSection(&s_pendingSetTimerCS);
@@ -454,7 +449,7 @@ void TickMultiMediaTimers(DWORD time)
 				info->next->prev = info->prev;
 			if(info == ttiTail)
 				ttiTail = info->prev;
-			delete info;
+			MemoryManager::Deallocate(info);
 			info = next;
 		}
 		else
@@ -515,7 +510,9 @@ HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution, LPTIMECAL
 	debuglog(LCF_TIMERS, __FUNCTION__ "(%d, %d, 0x%X, 0x%X, 0x%X) called.\n", uDelay, uResolution, (DWORD)lpTimeProc, (DWORD)dwUser, fuEvent);
 	if(tasflags.timersMode == 2)
 		return timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
-	TimerThreadInfo* threadInfo = new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
+    TimerThreadInfo* threadInfo =
+        static_cast<TimerThreadInfo*>(MemoryManager::Allocate(sizeof(threadInfo), MemoryManager::ALLOC_WRITE));
+    threadInfo = ::new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
 	threadInfo->prevTime = detTimer.GetTicks();
 	threadInfo->prev = ttiTail;
 	ttiTail->next = threadInfo;
@@ -573,7 +570,7 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
 	BOOL rv = FALSE;
 	EnterCriticalSection(&s_pendingSetTimerCS);
 
-	for (std::set<SetTimerData, SetTimerDataCompare>::iterator iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end(); iter++)
+	for (auto& iter = s_pendingSetTimers().begin(); iter != s_pendingSetTimers().end(); iter++)
     {
 	    if((iter->hWnd == hWnd) && (iter->nIDEvent == nIDEvent))
 	    {
@@ -582,13 +579,13 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
             {
                 // Can't modify a value of a set element directly
                 SetTimerData data = *iter;
-                s_pendingSetTimers.erase(iter);
+                s_pendingSetTimers().erase(iter);
                 data.killRequested = true;
-                s_pendingSetTimers.insert(data);
+                s_pendingSetTimers().insert(data);
             }
 		    else
             {
-			    s_pendingSetTimers.erase(iter);
+			    s_pendingSetTimers().erase(iter);
             }
 	    }
     }
@@ -634,7 +631,3 @@ void ApplyTimerIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

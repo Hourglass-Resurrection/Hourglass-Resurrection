@@ -1,15 +1,15 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef WINTASEE_H_INCL
-#define WINTASEE_H_INCL
+#pragma once
+
 //#define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))
 //#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
 
 #define DIRECTINPUT_VERSION 0x0800
-#include "../shared/input.h"
+#include <shared\input.h>
 #include "global.h"
-#include "../shared/ipc.h"
+#include <shared\ipc.h>
 
 void FrameBoundary(void* captureInfo=0, int captureInfoType=CAPTUREINFO_TYPE_NONE);
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height);
@@ -44,5 +44,3 @@ extern CurrentInput curinput;
 
 
 #include "dettime.h"
-
-#endif

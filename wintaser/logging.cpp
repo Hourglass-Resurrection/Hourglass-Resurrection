@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 //#include "../shared/logcat.h"
-#include "../shared/ipc.h"
+#include <shared\ipc.h>
 #include "Config.h"
 //#define ANONYMIZE_PRINT_NUMS // for simplifying diffs (debugging)
 

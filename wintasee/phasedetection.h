@@ -1,10 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef PHASEDETECTION_H_INCL
-#define PHASEDETECTION_H_INCL
+#pragma once
 
-#include <map>
+#include <MemoryManager\MemoryManager.h>
 
 class PhaseDetector
 {
@@ -22,7 +21,5 @@ public:
 private:
 	Time currentTime;
 	Time lastFrameTime;
-	std::map<Key,Time> keyTimes;
+	SafeMap<Key, Time> keyTimes;
 };
-
-#endif

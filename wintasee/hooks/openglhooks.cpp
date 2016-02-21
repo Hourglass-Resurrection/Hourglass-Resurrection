@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(OGLHOOKS_C_INCL) && !defined(UNITY_BUILD)
-#define OGLHOOKS_C_INCL
-
 // this wraps opengl and replaces everything it does with Direct3D8 calls,
 // because windows opengl drivers are crashtastic on some computers when savestates are used,
 // and because this way lets us reuse existing code for D3D such as AVI capture.
@@ -12,10 +9,12 @@
 // may be too incomplete for other games (some functions are still empty or not display-list capable).
 // lines are rendered incorrectly (need to convert to quads so they can use width and z-buffer).
 
-#include "../../external/d3d8.h"
-#include "../global.h"
-#include <vector>
-#include <math.h>
+#include <cmath>
+
+#include <external\d3d8.h>
+#include <global.h>
+#include <MemoryManager\MemoryManager.h>
+#include <Utils.h>
 
 bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer); // extern (didn't want to include wintasee.h and everything it includes just for this one function)
 
@@ -122,7 +121,7 @@ struct OpenGLImmediateVertex
 	OGLCOLOR c;
 	FLOAT u,v;
 };
-static std::vector<OpenGLImmediateVertex> oglImmediateVertices;
+static LazyType<SafeVector<OpenGLImmediateVertex>> oglImmediateVertices;
 
 
 
@@ -130,10 +129,10 @@ static const int GL_MODELVIEW = 0x1700;
 static const int GL_PROJECTION = 0x1701;
 static const int GL_TEXTURE = 0x1702;
 
-static std::vector<D3DMATRIX> oglMatrixStackMV; // GL_MODELVIEW
-static std::vector<D3DMATRIX> oglMatrixStackP; // GL_PROJECTION
-static std::vector<D3DMATRIX> oglMatrixStackT; // GL_TEXTURE
-static std::vector<D3DMATRIX>* oglMatrixStack = &oglMatrixStackMV;
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackMV; // GL_MODELVIEW
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackP; // GL_PROJECTION
+static LazyType<SafeVector<D3DMATRIX>> oglMatrixStackT; // GL_TEXTURE
+static LazyType<SafeVector<D3DMATRIX>>* oglMatrixStack = &oglMatrixStackMV;
 static D3DMATRIX oglMatrixMV; // GL_MODELVIEW
 static D3DMATRIX oglMatrixP; // GL_PROJECTION
 static D3DMATRIX oglMatrixT; // GL_TEXTURE
@@ -323,7 +322,7 @@ struct OpenGLClientState // see glEnableClientState docs
 	}
 };
 static OpenGLClientState oglClientState;
-static std::vector<OpenGLClientState> oglClientStateStack;
+static LazyType<SafeVector<OpenGLClientState>> oglClientStateStack;
 
 
 struct OpenGLServerState // see glEnableState docs
@@ -360,7 +359,7 @@ struct OpenGLServerState // see glEnableState docs
 	} other;
 };
 static OpenGLServerState oglServerState;
-static std::vector<OpenGLServerState> oglServerStateStack;
+static LazyType<SafeVector<OpenGLServerState>> oglServerStateStack;
 
 
 
@@ -735,7 +734,7 @@ struct OpenGLDisplayListEntry
 	};
 
 	FuncID id;
-	std::vector<GLArg> args;
+	SafeVector<GLArg> args;
 protected:
 	char* buffer;
 public:
@@ -749,15 +748,17 @@ public:
 
 	void* AllocBuffer(int numBytes, int alignment=4)
 	{
-#if _MSC_VER > 1310
-		if(buffer)
-			_aligned_free(buffer);
-		buffer = (char*)_aligned_malloc(numBytes, alignment);
-#else
-		if(buffer)
-			free(buffer);
-		buffer = (char*)malloc(numBytes);
-#endif
+//#if _MSC_VER > 1310
+//		if(buffer)
+//			_aligned_free(buffer);
+//		buffer = (char*)_aligned_malloc(numBytes, alignment);
+//#else
+        if (buffer)
+        {
+            MemoryManager::Deallocate(buffer);
+        }
+		buffer = static_cast<char*>(MemoryManager::Allocate(numBytes, MemoryManager::ALLOC_WRITE));
+//#endif
 		return (void*)buffer;
 	}
 
@@ -769,11 +770,11 @@ public:
 		args.clear();
 		if(buffer)
 		{
-#if _MSC_VER > 1310
-			_aligned_free(buffer);
-#else
-			free(buffer);
-#endif
+//#if _MSC_VER > 1310
+//			_aligned_free(buffer);
+//#else
+            MemoryManager::Deallocate(buffer);
+//#endif
 			buffer = NULL;
 		}
 	}
@@ -782,7 +783,7 @@ public:
 struct OpenGLDisplayList
 {
 	bool valid;
-	std::vector<OpenGLDisplayListEntry> entries;
+	SafeVector<OpenGLDisplayListEntry> entries;
 
 	void Call()
 	{
@@ -800,7 +801,7 @@ struct OpenGLDisplayList
 		valid = false;
 	}
 };
-static std::vector<OpenGLDisplayList> oglDisplayLists;
+static LazyType<SafeVector<OpenGLDisplayList>> oglDisplayLists;
 
 
 struct OpenGLTexture
@@ -838,7 +839,7 @@ struct OpenGLTexture
 		Clear();
 	}
 };
-static std::vector<OpenGLTexture> oglTextures;
+static LazyType<SafeVector<OpenGLTexture>> oglTextures;
 int oglTexture1DTarget = 0;
 int oglTexture2DTarget = 0;
 float oglTextureOffsets [2] = {}; // because opengl and directx use different texel origins
@@ -1085,7 +1086,7 @@ static inline void glSetError(GLenum error)
 #define OGLPDLEN(name,nargs) OGLPDLE0(name); OpenGLDisplayListEntry::GLArg arg; entry.args.reserve(nargs)
 #define OGLPDLEA(t,v) arg.t = v; entry.args.push_back(arg)
 #define OGLPDLEV(sizt,v,n) entry.StoreBuffer(v, (sizt)*(n), sizt)
-#define OGLPDLEE() oglDisplayLists[0].entries.push_back(entry); } do{}while(0)
+#define OGLPDLEE() oglDisplayLists()[0].entries.push_back(entry); } do{}while(0)
 #define OGLPUSHDISPLAYLISTENTRY_0ARG(name) do { OGLPDLE0(name); OGLPDLEE(); } while(0)
 #define OGLPUSHDISPLAYLISTENTRY_1ARG(name, t1,v1) do { OGLPDLEN(name,1); OGLPDLEA(t1,v1); OGLPDLEE(); } while(0)
 #define OGLPUSHDISPLAYLISTENTRY_2ARG(name, t1,v1, t2,v2) do { OGLPDLEN(name,1); OGLPDLEA(t1,v1); OGLPDLEA(t2,v2); OGLPDLEE(); } while(0)
@@ -1116,7 +1117,7 @@ HOOKFUNC void GLAPI MyglBegin(GLenum mode)
 		if(oglBeganMode != GL_UNSTARTED || (unsigned int)mode > GL_POLYGON)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
 		oglBeganMode = mode;
-		oglImmediateVertices.clear();
+		oglImmediateVertices().clear();
 	}
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglBegin, glenum,mode);
 }
@@ -1133,7 +1134,7 @@ HOOKFUNC void GLAPI MyglEnd()
 		if(oglBeganMode == GL_UNSTARTED)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
 
-		if(oglImmediateVertices.size())
+		if(oglImmediateVertices().size())
 		{
 			if(!ShouldSkipDrawing(false, true))
 			{
@@ -1165,19 +1166,19 @@ HOOKFUNC void GLAPI MyglEnd()
 				oglClientState.arrayState.texCoordArrayStride = 0;
 				oglClientState.arrayState.RecalculateSizes();
 				int offset = 0;
-				oglClientState.arrayState.vertexArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices[0]))[offset]);
+				oglClientState.arrayState.vertexArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices()[0]))[offset]);
 				offset += oglClientState.arrayState.vertexArrayStride;
-				oglClientState.arrayState.normalArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices[0]))[offset]);
+				oglClientState.arrayState.normalArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices()[0]))[offset]);
 				offset += oglClientState.arrayState.normalArrayStride;
-				oglClientState.arrayState.colorArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices[0]))[offset]);
+				oglClientState.arrayState.colorArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices()[0]))[offset]);
 				offset += oglClientState.arrayState.colorArrayStride;
-				oglClientState.arrayState.texCoordArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices[0]))[offset]);
+				oglClientState.arrayState.texCoordArrayPointer = (const GLvoid*)(&((char*)(&oglImmediateVertices()[0]))[offset]);
 				offset += oglClientState.arrayState.texCoordArrayStride;
 				oglClientState.arrayState.texCoordArrayStride = offset;
 				oglClientState.arrayState.colorArrayStride = offset;
 				oglClientState.arrayState.normalArrayStride = offset;
 				oglClientState.arrayState.vertexArrayStride = offset;
-				OglDrawToD3D(oglBeganMode,oglImmediateVertices.size(), 0, 0,NULL, true,oglMakingDisplayList!=0);
+				OglDrawToD3D(oglBeganMode,oglImmediateVertices().size(), 0, 0,NULL, true,oglMakingDisplayList!=0);
 
 
 				oglClientState.arrayState = prevArrayState;
@@ -1187,7 +1188,7 @@ HOOKFUNC void GLAPI MyglEnd()
 				//ogld3d8Device->DrawPrimitiveUP((D3DPRIMITIVETYPE)primType, , 0, primCount);
 			}
 
-			oglImmediateVertices.clear();
+			oglImmediateVertices().clear();
 		}
 		oglBeganMode = GL_UNSTARTED;
 	}
@@ -1247,9 +1248,9 @@ HOOKFUNC void GLAPI MyglBindTexture(GLenum target, GLuint texture)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
 		if(target != GL_TEXTURE_1D && target != GL_TEXTURE_2D)
 			OGLRETURNERROR(GL_INVALID_ENUM);
-		if(texture >= oglTextures.size())
+		if(texture >= oglTextures().size())
 			OGLRETURNERROR(GL_INVALID_OPERATION);
-		OpenGLTexture& tex = oglTextures[texture];
+		OpenGLTexture& tex = oglTextures()[texture];
 		if(!tex.named)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
 		if(tex.bound)
@@ -1297,9 +1298,9 @@ HOOKFUNC void GLAPI MyglDeleteTextures(GLsizei n, const GLuint* textures)
 	if(oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERROR(GL_INVALID_OPERATION);
 	for(int i = 0; i < n; i++)
-		oglTextures[textures[i]].Clear();
-	while(oglTextures.size() > 1 && !oglTextures.back().named)
-		oglTextures.pop_back();
+		oglTextures()[textures[i]].Clear();
+	while(oglTextures().size() > 1 && !oglTextures().back().named)
+		oglTextures().pop_back();
 }
 
 HOOKFUNC void GLAPI MyglGenTextures(GLsizei n, GLuint* textures)
@@ -1313,15 +1314,15 @@ HOOKFUNC void GLAPI MyglGenTextures(GLsizei n, GLuint* textures)
 	OpenGLTexture tex;
 	tex.named = true;
 	tex.bound = 0;
-	if(oglTextures.empty())
+	if(oglTextures().empty())
 	{
-		oglTextures.push_back(tex);
-		oglTextures.back().bound = 1;
+		oglTextures().push_back(tex);
+		oglTextures().back().bound = 1;
 	}
 	for(int i = 0; i < n; i++)
 	{
-		textures[i] = oglTextures.size();
-		oglTextures.push_back(tex);
+		textures[i] = oglTextures().size();
+		oglTextures().push_back(tex);
 	}
 }
 
@@ -1424,7 +1425,7 @@ HOOKFUNC void GLAPI MyglBlendFunc (GLenum sfactor, GLenum dfactor)
 
 static void MyglCallList_internal(GLuint list)
 {
-	if(list >= oglDisplayLists.size() || !oglDisplayLists[list].valid)
+	if(list >= oglDisplayLists().size() || !oglDisplayLists()[list].valid)
 		return;
 	static int callDepth = 0;
 	if(callDepth < 64) // enforce a GL_MAX_LIST_NESTING of 64
@@ -1433,7 +1434,7 @@ static void MyglCallList_internal(GLuint list)
 		int wasMakingDisplayList = oglMakingDisplayList;
 		oglMakingDisplayList = 0; // avoid embedding display lists (in case we're in compile and execute mode)
 
-		oglDisplayLists[list].Call();
+		oglDisplayLists()[list].Call();
 
 		oglMakingDisplayList = wasMakingDisplayList;
 		callDepth--;
@@ -1973,14 +1974,14 @@ HOOKFUNC void GLAPI MyglDeleteLists (GLuint list, GLsizei range)
 	if(minim == 0)
 		minim = 1;
 	int maxim = list + range;
-	if(maxim > (int)oglDisplayLists.size())
-		maxim = oglDisplayLists.size();
+	if(maxim > (int)oglDisplayLists().size())
+		maxim = oglDisplayLists().size();
 	for(int i = minim; i < maxim; i++)
-		oglDisplayLists[i].Clear();
-	if(maxim == oglDisplayLists.size())
-		oglDisplayLists.resize(minim);
-	while(oglDisplayLists.size() > 1 && !oglDisplayLists.back().valid)
-		oglDisplayLists.pop_back();
+		oglDisplayLists()[i].Clear();
+	if(maxim == oglDisplayLists().size())
+		oglDisplayLists().resize(minim);
+	while(oglDisplayLists().size() > 1 && !oglDisplayLists().back().valid)
+		oglDisplayLists().pop_back();
 }
 
 HOOKFUNC void GLAPI MyglDepthFunc (GLenum func)
@@ -2125,7 +2126,7 @@ HOOKFUNC void GLAPI MyglEnable (GLenum cap)
 		case GL_TEXTURE_2D:
 			oglServerState.enable.texture2d = true;
 			{ // FIXME temp hack
-				OpenGLTexture& tex = oglTextures[oglTexture2DTarget];
+				OpenGLTexture& tex = oglTextures()[oglTexture2DTarget];
 				ogld3d8Device->SetTexture(0, tex.d3dTexture);
 			}
 			break;
@@ -2959,16 +2960,16 @@ HOOKFUNC void GLAPI MyglNewList (GLuint list, GLenum mode)
 	static const int GL_COMPILE = 0x1300;
 	static const int GL_COMPILE_AND_EXECUTE = 0x1301;
 
-	if(list == 0 || list >= oglDisplayLists.size())
+	if(list == 0 || list >= oglDisplayLists().size())
 		OGLRETURNERROR(GL_INVALID_VALUE);
 	if(mode != GL_COMPILE && mode != GL_COMPILE_AND_EXECUTE)
 		OGLRETURNERROR(GL_INVALID_ENUM);
 	if(oglMakingDisplayList || oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERROR(GL_INVALID_OPERATION);
 
-	if(oglDisplayLists.empty())
-		oglDisplayLists.resize(1);
-	oglDisplayLists[0].entries.clear(); // intentionally don't call Clear on each entry, since it should have been copied already
+	if(oglDisplayLists().empty())
+		oglDisplayLists().resize(1);
+	oglDisplayLists()[0].entries.clear(); // intentionally don't call Clear on each entry, since it should have been copied already
 	oglMakingDisplayList = list;
 	oglAllowExecuteCommands = (mode == GL_COMPILE_AND_EXECUTE) && (ogld3d8Device != NULL);
 }
@@ -2981,8 +2982,8 @@ HOOKFUNC void GLAPI MyglEndList (void)
 	if(oglMakingDisplayList == 0 || oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERROR(GL_INVALID_OPERATION);
 
-	oglDisplayLists[oglMakingDisplayList] = oglDisplayLists[0];
-	oglDisplayLists[oglMakingDisplayList].valid = true;
+	oglDisplayLists()[oglMakingDisplayList] = oglDisplayLists()[0];
+	oglDisplayLists()[oglMakingDisplayList].valid = true;
 	oglMakingDisplayList = 0;
 	oglAllowExecuteCommands = (ogld3d8Device != NULL);
 }
@@ -3272,11 +3273,11 @@ HOOKFUNC void GLAPI MyglPopMatrix (void)
 	{
 		if(oglBeganMode != GL_UNSTARTED)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
-		if(oglMatrixStack->empty())
+		if((*oglMatrixStack)().empty())
 			OGLRETURNERROR(GL_STACK_UNDERFLOW);
-		*oglMatrix = oglMatrixStack->back();
+		*oglMatrix = (*oglMatrixStack)().back();
 		*oglDirty = true;
-		oglMatrixStack->pop_back();
+		(*oglMatrixStack)().pop_back();
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglPopMatrix);
 }
@@ -3307,7 +3308,7 @@ HOOKFUNC void GLAPI MyglPushMatrix (void)
 	{
 		if(oglBeganMode != GL_UNSTARTED)
 			OGLRETURNERROR(GL_INVALID_OPERATION);
-		oglMatrixStack->push_back(*oglMatrix);
+		(*oglMatrixStack)().push_back(*oglMatrix);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglPushMatrix);
 }
@@ -4367,9 +4368,9 @@ static void oglTexImageND(int texture, GLenum target, GLint level, GLint interna
 		OGLRETURNERROR(GL_INVALID_VALUE);
 	if(oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERROR(GL_INVALID_OPERATION);
-	if((size_t)texture >= oglTextures.size())
+	if((size_t)texture >= oglTextures().size())
 		OGLRETURNERROR(GL_INVALID_OPERATION);
-	OpenGLTexture& tex = oglTextures[texture];
+	OpenGLTexture& tex = oglTextures()[texture];
 	if(!tex.named || !tex.bound)
 		OGLRETURNERROR(GL_INVALID_OPERATION);
 	tex.ClearData();
@@ -4749,7 +4750,7 @@ HOOKFUNC void GLAPI MyglVertex2d (GLdouble x, GLdouble y)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2d, gldouble,x, gldouble,y);
 }
@@ -4764,7 +4765,7 @@ HOOKFUNC void GLAPI MyglVertex2dv (const GLdouble *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2dv, sizeof(GLdouble),v,2);
 }
@@ -4779,7 +4780,7 @@ HOOKFUNC void GLAPI MyglVertex2f (GLfloat x, GLfloat y)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2f, glfloat,x, glfloat,y);
 }
@@ -4794,7 +4795,7 @@ HOOKFUNC void GLAPI MyglVertex2fv (const GLfloat *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2fv, sizeof(GLfloat),v,2);
 }
@@ -4809,7 +4810,7 @@ HOOKFUNC void GLAPI MyglVertex2i (GLint x, GLint y)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2i, glint,x, glint,y);
 }
@@ -4824,7 +4825,7 @@ HOOKFUNC void GLAPI MyglVertex2iv (const GLint *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2iv, sizeof(GLint),v,2);
 }
@@ -4839,7 +4840,7 @@ HOOKFUNC void GLAPI MyglVertex2s (GLshort x, GLshort y)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2s, glshort,x, glshort,y);
 }
@@ -4854,7 +4855,7 @@ HOOKFUNC void GLAPI MyglVertex2sv (const GLshort *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)0;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2sv, sizeof(GLshort),v,2);
 }
@@ -4869,7 +4870,7 @@ HOOKFUNC void GLAPI MyglVertex3d (GLdouble x, GLdouble y, GLdouble z)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3d, gldouble,x, gldouble,y, gldouble,z);
 }
@@ -4884,7 +4885,7 @@ HOOKFUNC void GLAPI MyglVertex3dv (const GLdouble *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3dv, sizeof(GLdouble),v,3);
 }
@@ -4899,7 +4900,7 @@ HOOKFUNC void GLAPI MyglVertex3f (GLfloat x, GLfloat y, GLfloat z)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3f, glfloat,x, glfloat,y, glfloat,z);
 }
@@ -4914,7 +4915,7 @@ HOOKFUNC void GLAPI MyglVertex3fv (const GLfloat *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3fv, sizeof(GLfloat),v,3);
 }
@@ -4929,7 +4930,7 @@ HOOKFUNC void GLAPI MyglVertex3i (GLint x, GLint y, GLint z)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3i, glint,x, glint,y, glint,z);
 }
@@ -4944,7 +4945,7 @@ HOOKFUNC void GLAPI MyglVertex3iv (const GLint *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3iv, sizeof(GLint),v,3);
 }
@@ -4959,7 +4960,7 @@ HOOKFUNC void GLAPI MyglVertex3s (GLshort x, GLshort y, GLshort z)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3s, glshort,x, glshort,y, glshort,z);
 }
@@ -4974,7 +4975,7 @@ HOOKFUNC void GLAPI MyglVertex3sv (const GLshort *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)1;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3sv, sizeof(GLshort),v,3);
 }
@@ -4989,7 +4990,7 @@ HOOKFUNC void GLAPI MyglVertex4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)w;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4d, gldouble,x, gldouble,y, gldouble,z, gldouble,w);
 }
@@ -5004,7 +5005,7 @@ HOOKFUNC void GLAPI MyglVertex4dv (const GLdouble *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)v[3];
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4dv, sizeof(GLdouble),v,4);
 }
@@ -5019,7 +5020,7 @@ HOOKFUNC void GLAPI MyglVertex4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)w;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4f, glfloat,x, glfloat,y, glfloat,z, glfloat,w);
 }
@@ -5034,7 +5035,7 @@ HOOKFUNC void GLAPI MyglVertex4fv (const GLfloat *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)v[3];
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4fv, sizeof(GLfloat),v,4);
 }
@@ -5049,7 +5050,7 @@ HOOKFUNC void GLAPI MyglVertex4i (GLint x, GLint y, GLint z, GLint w)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)w;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4i, glint,x, glint,y, glint,z, glint,w);
 }
@@ -5064,7 +5065,7 @@ HOOKFUNC void GLAPI MyglVertex4iv (const GLint *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)v[3];
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4iv, sizeof(GLint),v,4);
 }
@@ -5079,7 +5080,7 @@ HOOKFUNC void GLAPI MyglVertex4s (GLshort x, GLshort y, GLshort z, GLshort w)
 		oglServerState.current.y = (FLOAT)y;
 		oglServerState.current.z = (FLOAT)z;
 		oglServerState.current.w = (FLOAT)w;
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4s, glshort,x, glshort,y, glshort,z, glshort,w);
 }
@@ -5094,7 +5095,7 @@ HOOKFUNC void GLAPI MyglVertex4sv (const GLshort *v)
 		oglServerState.current.y = (FLOAT)v[1];
 		oglServerState.current.z = (FLOAT)v[2];
 		oglServerState.current.w = (FLOAT)v[3];
-		oglImmediateVertices.push_back(oglServerState.current);
+		oglImmediateVertices().push_back(oglServerState.current);
 	}
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4sv, sizeof(GLshort),v,4);
 }
@@ -5250,12 +5251,12 @@ HOOKFUNC GLuint GLAPI MyglGenLists (GLsizei range)
 		OGLRETURNERRORVAL(GL_INVALID_VALUE, 0);
 	if(oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERRORVAL(GL_INVALID_OPERATION, 0);
-	int size = oglDisplayLists.size();
+	int size = oglDisplayLists().size();
 	if(size == 0)
 		size = 1;
 	GLuint index = (GLuint)size;
 	size += range;
-	oglDisplayLists.resize(size);
+	oglDisplayLists().resize(size);
 	return index;
 }
 
@@ -5281,9 +5282,9 @@ HOOKFUNC GLboolean GLAPI MyglIsList (GLuint list)
 	//GLFUNCBOILERPLATE;
 	if(oglBeganMode != GL_UNSTARTED)
 		OGLRETURNERRORVAL(GL_INVALID_OPERATION, false); // not allowed between begin and end
-	if(list >= oglDisplayLists.size())
+	if(list >= oglDisplayLists().size())
 		return false;
-	return oglDisplayLists[list].valid;
+	return oglDisplayLists()[list].valid;
 }
 
 HOOKFUNC GLint GLAPI MyglRenderMode (GLenum mode)
@@ -6023,23 +6024,23 @@ HOOKFUNC void GLAPI MyglPushClientAttrib (GLbitfield mask)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
-	oglClientStateStack.push_back(oglClientState);
-	oglClientStateStack.back().mask = mask;
+	oglClientStateStack().push_back(oglClientState);
+	oglClientStateStack().back().mask = mask;
 }
 HOOKFUNC void GLAPI MyglPopClientAttrib (void)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
-	if(oglClientStateStack.empty())
+	if(oglClientStateStack().empty())
 		OGLRETURNERROR(GL_STACK_UNDERFLOW);
-	GLbitfield mask = oglClientStateStack.back().mask;
+	GLbitfield mask = oglClientStateStack().back().mask;
 	static const int GL_CLIENT_PIXEL_STORE_BIT = 0x1;
 	static const int GL_CLIENT_VERTEX_ARRAY_BIT = 0x2;
 	if(mask & GL_CLIENT_PIXEL_STORE_BIT)
-		oglClientState.pixelState = oglClientStateStack.back().pixelState;
+		oglClientState.pixelState = oglClientStateStack().back().pixelState;
 	if(mask & GL_CLIENT_VERTEX_ARRAY_BIT)
-		oglClientState.arrayState = oglClientStateStack.back().arrayState;
-	oglClientStateStack.pop_back();
+		oglClientState.arrayState = oglClientStateStack().back().arrayState;
+	oglClientStateStack().pop_back();
 }
 HOOKFUNC void GLAPI MyglPrioritizeTextures (GLsizei n, const GLuint *textures, const GLclampf *priorities)
 {
@@ -7078,6 +7079,3 @@ void ApplyOGLIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-
-#endif

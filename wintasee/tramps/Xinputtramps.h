@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <../../external/Xinput.h>
+#include <external\Xinput.h>
 
 #define XInputGetState TrampXInputGetState
 TRAMPFUNC DWORD WINAPI XInputGetState(

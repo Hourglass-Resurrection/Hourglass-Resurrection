@@ -1,6 +1,8 @@
+#pragma once
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "../shared/ipc.h"
+#include <shared\ipc.h>
 
 #define SetPrivateProfileIntA(lpAppName, lpKeyName, nValue, lpFileName) \
 	sprintf(Str_Tmp, "%d", nValue); \

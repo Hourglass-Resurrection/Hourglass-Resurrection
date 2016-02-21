@@ -1,13 +1,10 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(XINPUTHOOKS_INCL) && !defined(UNITY_BUILD)
-#define XINPUTHOOKS_INCL
-
 #include <cassert>
 
-#include "../wintasee.h"
-#include <../../external/Xinput.h>
+#include <wintasee.h>
+#include <external/Xinput.h>
 
 static bool gs_xinput_enabled = true;
 
@@ -565,7 +562,3 @@ void ApplyXinputIntercepts()
     };
     ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

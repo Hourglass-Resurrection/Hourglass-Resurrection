@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(INJECTIATMODIFIER_C_INCL) && !defined(UNITY_BUILD)
-#define INJECTIATMODIFIER_C_INCL
-
 // (this file came from N-InjectLib, which the author released to the public domain)
 // modified to get rid of stuff I don't need and add some fixes for RotateGear
 
@@ -239,7 +236,3 @@ IMAGE_NT_HEADERS IATModifier::readNTHeaders() const
 	process_.readMemory((void*)ntHeadersAddr_, &ntHeaders, sizeof(IMAGE_NT_HEADERS));
 	return ntHeaders;
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

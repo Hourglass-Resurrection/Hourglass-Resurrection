@@ -1,8 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef PRINT_H_INCL
-#define PRINT_H_INCL
+#pragma once
+
+#include <shared\logcat.h>
 
 int debugprintf(const char* fmt, ...);
 int cmdprintf(const char* fmt, ...);
@@ -40,6 +41,7 @@ int cmdprintf(const char* fmt, ...);
 #define FMT_ARGS(...) FMT_ARGS_(FOR_EACH_NARG(__VA_ARGS__), __VA_ARGS__)
 
 #define ENTER(...) debugprintf("%s(" FMT_ARGS(__VA_ARGS__) ") called.\n", __FUNCTION__, __VA_ARGS__)
+#define LEAVE(...) debugprintf("%s returned. " FMT_ARGS(__VA_ARGS__) "\n", __FUNCTION__, __VA_ARGS__)
 
 //#define dinputdebugprintf verbosedebugprintf
 #define ddrawdebugprintf verbosedebugprintf
@@ -68,9 +70,6 @@ int cmdprintf(const char* fmt, ...);
     #define VERBOSE_ENTER(...) ((void)0)
 #endif
 
-
-#include "../shared/logcat.h"
-
 extern LogCategoryFlag& g_includeLogFlags;
 extern LogCategoryFlag& g_excludeLogFlags;
 
@@ -83,7 +82,4 @@ extern LogCategoryFlag& g_excludeLogFlags;
     #define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
 #else
     #define debuglog(cat, ...)         0
-#endif
-
-
 #endif

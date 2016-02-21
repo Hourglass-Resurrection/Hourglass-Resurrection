@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef LOGCATEGORY_H_INCL
-#define LOGCATEGORY_H_INCL
+#pragma once
 
 typedef int LogCategoryFlag; enum
 {
@@ -42,5 +41,3 @@ typedef int LogCategoryFlag; enum
 	LCF_TIMERS   = 1 << 31, // as in async timer objects
 	// warning: adding any more categories would require changing the type of LogCategoryFlag to a 64-bit int (and making associated changes so it prints correctly, etc.)
 };
-
-#endif // LOGCATEGORY_H_INCL

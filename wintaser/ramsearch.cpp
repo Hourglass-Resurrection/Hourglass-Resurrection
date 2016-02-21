@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(RAMSEARCH_C_INCL) && !defined(UNITY_BUILD)
-#define RAMSEARCH_C_INCL
-
 // A few notes about this implementation of a RAM search window:
 // (although, note first that it was created for a different application.
 //  the tradeoffs it makes were focused towards a 16-bit console emulator
@@ -57,7 +54,7 @@
 #include "ramsearch.h"
 #include "ramwatch.h"
 #include "Config.h"
-#include "../shared/winutil.h"
+#include <shared\winutil.h>
 #include <assert.h>
 #include <commctrl.h>
 #include <list>
@@ -2307,7 +2304,3 @@ void DeallocateRamSearch()
 	MemoryList temp2; s_activeMemoryRegionsBackup.swap(temp2);
 	LeaveCriticalSection(&s_activeMemoryRegionsCS);
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

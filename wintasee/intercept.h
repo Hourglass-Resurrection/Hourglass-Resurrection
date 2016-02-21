@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef INTERCEPT_H_INCL
-#define INTERCEPT_H_INCL
+#pragma once
 
 // first some helper macros to use when defining trampoline and hook functions
 
@@ -191,17 +190,129 @@ enum { s_isDebug = true };
 enum { s_isDebug = false };
 #endif
 
-#define HOOKRIID(x,n) case IID_I##x##n##_Data1: if(IID_I##x##n == riid && (uncheckedFastNew || type_needs_hooking<I##x##n*,My##x<I##x##n>*>(reinterpret_cast<I##x##n*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)), *ppvOut = new My##x<I##x##n>(reinterpret_cast<I##x##n*>(*ppvOut)); break
-#define HOOKRIID2(x,my) case IID_I##x##_Data1: if(IID_I##x == riid && (uncheckedFastNew || type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut)), *ppvOut = new my<I##x>(reinterpret_cast<I##x*>(*ppvOut)); break
-#define HOOKRIID2EX(x,my,param) case IID_I##x##_Data1: if(IID_I##x == riid && (uncheckedFastNew || type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut)), *ppvOut = new my<I##x>(reinterpret_cast<I##x*>(*ppvOut),param); break
-#define HOOKRIID3(x,my) case IID_##x##_Data1: if(IID_##x == riid && (uncheckedFastNew || type_needs_hooking<x*,my*>(reinterpret_cast<x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut)), *ppvOut = new my(reinterpret_cast<x*>(*ppvOut)); break
+#define HOOKRIID(x, n) \
+    case IID_I##x##n##_Data1: \
+        if (IID_I##x##n == riid && \
+            (uncheckedFastNew || \
+             type_needs_hooking<I##x##n*,My##x<I##x##n>*>(reinterpret_cast<I##x##n*>(*ppvOut)))) \
+        { \
+            if (uncheckedFastNew && s_isDebug) \
+            { \
+                debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); \
+            } \
+            *ppvOut = MemoryManager::Allocate(sizeof(My##x<I##x##n>), MemoryManager::ALLOC_WRITE); \
+            *ppvOut = ::new My##x<I##x##n>(reinterpret_cast<I##x##n*>(*ppvOut)); \
+        } \
+        break
+#define HOOKRIID2(x, my) \
+    case IID_I##x##_Data1: \
+        if (IID_I##x == riid && \
+            (uncheckedFastNew || \
+             type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) \
+        { \
+            if (uncheckedFastNew && s_isDebug) \
+            { \
+                debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut); \
+            } \
+            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), MemoryManager::ALLOC_WRITE); \
+            *ppvOut = ::new my<I##x>(reinterpret_cast<I##x*>(*ppvOut)); \
+        } \
+        break
+#define HOOKRIID2EX(x, my, param) \
+    case IID_I##x##_Data1: \
+        if (IID_I##x == riid && \
+            (uncheckedFastNew || \
+             type_needs_hooking<I##x*,my<I##x>*>(reinterpret_cast<I##x*>(*ppvOut)))) \
+        { \
+            if (uncheckedFastNew && s_isDebug) \
+            { \
+                debugprintf("HOOKED COM INTERFACE: I" #x " (0x%X)\n", *ppvOut); \
+            } \
+            *ppvOut = MemoryManager::Allocate(sizeof(my<I##x>), MemoryManager::ALLOC_WRITE); \
+            *ppvOut = ::new my<I##x>(reinterpret_cast<I##x*>(*ppvOut), param); \
+        } \
+        break
+#define HOOKRIID3(x, my) \
+    case IID_##x##_Data1: \
+        if (IID_##x == riid && \
+            (uncheckedFastNew || \
+             type_needs_hooking<x*,my*>(reinterpret_cast<x*>(*ppvOut)))) \
+        { \
+            if (uncheckedFastNew && s_isDebug) \
+            { \
+                debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut); \
+            } \
+            *ppvOut = MemoryManager::Allocate(sizeof(my), MemoryManager::ALLOC_WRITE); \
+            *ppvOut = ::new my(reinterpret_cast<x*>(*ppvOut)); \
+        } \
+        break
 //#define HOOKRIID4(x,my) case IID_##x##_Data1: if(IID_##x == riid && (uncheckedFastNew || type_needs_hooking<x*,my*>(reinterpret_cast<x*>(*ppvOut)))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #x " (0x%X)\n", *ppvOut)), *ppvOut = new my(reinterpret_cast<x*>(*ppvOut)); break
-#define VTHOOKRIID(x,n) case IID_I##x##n##_Data1: if(IID_I##x##n == riid) if(My##x<I##x##n>::Hook(reinterpret_cast<I##x##n*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)); break
-#define VTHOOKRIID2(x,n,n2) case IID_I##x##n##_Data1: if(IID_I##x##n == riid) if(My##x<I##x##n2>::Hook(reinterpret_cast<I##x##n2*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)); break
-#define VTHOOKRIID3(i,my) case IID_##i##_Data1: if(IID_##i == riid) if(my::Hook(reinterpret_cast<i*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); break
-#define VTHOOKRIID3MULTI3(i,my) case IID_##i##_Data1: if(IID_##i == riid) { BOOL v = 0; i* pv = reinterpret_cast<i*>(*ppvOut); \
-	if(!v) v = my<0>::Hook(pv); if(!v) v = my<1>::Hook(pv); if(!v) v = my<2>::Hook(pv); \
-	if(!(v<=0)) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); }	break
+#define VTHOOKRIID(x, n) \
+    case IID_I##x##n##_Data1: \
+        if (IID_I##x##n == riid) \
+        { \
+            if (My##x<I##x##n>::Hook(reinterpret_cast<I##x##n*>(*ppvOut))) \
+            { \
+                if (uncheckedFastNew && s_isDebug) \
+                { \
+                    debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); \
+                } \
+            } \
+        } \
+        break
+#define VTHOOKRIID2(x, n, n2) \
+    case IID_I##x##n##_Data1: \
+        if (IID_I##x##n == riid) \
+        { \
+            if (My##x<I##x##n2>::Hook(reinterpret_cast<I##x##n2*>(*ppvOut))) \
+            { \
+                if (uncheckedFastNew && s_isDebug) \
+                { \
+                    debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); \
+                } \
+            } \
+        } \
+        break
+#define VTHOOKRIID3(i, my) \
+    case IID_##i##_Data1: \
+        if (IID_##i == riid) \
+        { \
+            if (my::Hook(reinterpret_cast<i*>(*ppvOut))) \
+            { \
+                if (uncheckedFastNew && s_isDebug) \
+                { \
+                    debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut); \
+                } \
+            } \
+        } \
+        break
+#define VTHOOKRIID3MULTI3(i, my) \
+    case IID_##i##_Data1: \
+        if(IID_##i == riid) \
+        { \
+            BOOL v = 0; \
+            i* pv = reinterpret_cast<i*>(*ppvOut); \
+            if (!v) \
+            { \
+                v = my<0>::Hook(pv); \
+                if (!v) \
+                { \
+                    v = my<1>::Hook(pv); \
+                    if (!v) \
+                    { \
+                        v = my<2>::Hook(pv); \
+                        if (!(v <= 0)) \
+                        { \
+                            if (uncheckedFastNew && s_isDebug) \
+                            { \
+                                debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut); \
+                            } \
+                        } \
+                    } \
+                } \
+            } \
+        } \
+        break
 //#define VTHOOKRIID3MULTI8(i,my) case IID_##i##_Data1: if(IID_##i == riid) { BOOL v = 0; i* pv = reinterpret_cast<i*>(*ppvOut); \
 //	if(!v) v = my<0>::Hook(pv); if(!v) v = my<1>::Hook(pv); \
 //	if(!v) v = my<2>::Hook(pv); if(!v) v = my<3>::Hook(pv); \
@@ -209,14 +320,26 @@ enum { s_isDebug = false };
 //	if(!v) v = my<6>::Hook(pv); if(!v) v = my<7>::Hook(pv); \
 //	if(!(v<=0)) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); }	break
 //#define VTHOOKRIID4(iid,iface,my) case iid##_Data1: if(iid == riid) if(my::Hook(reinterpret_cast<iface*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #iid " (0x%X)\n", *ppvOut)); break
-#define IGNOREHOOKRIID(x,n) case IID_I##x##n##_Data1: if(IID_I##x##n == riid) debugprintf("IGNORED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); break
-#define VTHOOKFUNC(i,x) HookVTable(obj, offsetof_virtual(&i::x), (FARPROC)My##x, (FARPROC&)x, __FUNCTION__": " #x)
-#define VTHOOKFUNC2(i,x,x2) HookVTable(obj, offsetof_virtual(&i::x2), (FARPROC)My##x, (FARPROC&)x, __FUNCTION__": " #x)
+#define IGNOREHOOKRIID(x, n) \
+    case IID_I##x##n##_Data1: \
+        if (IID_I##x##n == riid) \
+        { \
+            debugprintf("IGNORED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut); \
+        } \
+        break
+#define VTHOOKFUNC(i, x) \
+    HookVTable(obj, offsetof_virtual(&i::x), (FARPROC)My##x, (FARPROC&)x, __FUNCTION__": " #x)
+#define VTHOOKFUNC2(i, x, x2) \
+    HookVTable(obj, offsetof_virtual(&i::x2), (FARPROC)My##x, (FARPROC&)x, __FUNCTION__": " #x)
 //#define VTHOOKFUNC3(i,x) HookVTable(obj, offsetof_virtual(&i::x), (FARPROC)My##x, (FARPROC&)Orig##x, __FUNCTION__": " #x)
 //#define VTHOOKFUNC4(i,x,my,orig) HookVTable(obj, offsetof_virtual(&i::x), (FARPROC)my, (FARPROC&)orig, __FUNCTION__": " #x)
 
 // use for COM functions that shouldn't get called
-#define IMPOSSIBLE_IMPL { debugprintf("IMPOSSIBLE: " __FUNCTION__ " called.\n"); return 0; }
+#define IMPOSSIBLE_IMPL \
+    { \
+        debugprintf("IMPOSSIBLE: " __FUNCTION__ " called.\n"); \
+        return 0; \
+    }
 
 
 
@@ -250,7 +373,3 @@ struct InterceptDescriptor
 
 
 void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count);
-
-
-
-#endif

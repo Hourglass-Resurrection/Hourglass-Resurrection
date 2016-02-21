@@ -1,19 +1,15 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(GDIHOOKS_INCL) && !defined(UNITY_BUILD)
-#define GDIHOOKS_INCL
-
-
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../../shared/winutil.h"
+#include <wintasee.h>
+#include <tls.h>
+#include <shared\winutil.h>
 #include <windowsx.h>
 
-#include "../phasedetection.h"
+#include <phasedetection.h>
 //static PhaseDetector s_gdiPhaseDetector;
 
-#include "../locale.h"
+#include <localeutils.h>
 
 
 // TODO: declare these in headers like openglhooks.h?
@@ -125,7 +121,7 @@ static void FrameBoundaryHDCtoAVI(HDC hdc,int xSrc,int ySrc,int xRes,int yRes)
 	static unsigned int bitsAllocated = 0;
 	if(bitsAllocated < bmi.bmiHeader.biSizeImage)
 	{
-		bits = (char*)realloc(bits, bmi.bmiHeader.biSizeImage);
+        bits = static_cast<char*>(MemoryManager::Reallocate(bits, bmi.bmiHeader.biSizeImage, MemoryManager::ALLOC_WRITE));
 		bitsAllocated = bmi.bmiHeader.biSizeImage;
 	}
 
@@ -685,7 +681,3 @@ void ApplyGDIIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

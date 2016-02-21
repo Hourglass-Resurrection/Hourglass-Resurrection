@@ -11,6 +11,9 @@
     <Filter Include="Source Files\hooks_and_tramps">
       <UniqueIdentifier>{8f45bc76-8410-4dcf-9011-dcc4bf233648}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\MemoryManager">
+      <UniqueIdentifier>{cda166fb-f43a-4037-b34e-60fedf68b2e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dettime.cpp">
@@ -91,6 +94,12 @@
     <ClCompile Include="hooks\Xinputhooks.cpp">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryManager\MemoryManager.cpp">
+      <Filter>Source Files\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\memoryhooks.cpp">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
@@ -100,9 +109,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="intercept.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\msg.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="msgqueue.h">
@@ -119,21 +125,6 @@
     </ClInclude>
     <ClInclude Include="wintasee.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\asm.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\ipc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\logcat.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\version.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\winutil.h">
-      <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="tramps\alltramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
@@ -189,8 +180,38 @@
     <ClInclude Include="tramps\Xinputtramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\input.h">
+    <ClInclude Include="MemoryManager\MemoryManager.h">
+      <Filter>Source Files\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\asm.h">
       <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\ipc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\logcat.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\msg.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\version.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\shared\winutil.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="localeutils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tramps\memorytramps.h">
+      <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

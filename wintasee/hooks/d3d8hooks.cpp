@@ -1,13 +1,12 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(D3D8HOOKS_INCL) && !defined(UNITY_BUILD)
-#define D3D8HOOKS_INCL
+#include <external\d3d8.h>
+#include <MemoryManager\MemoryManager.h>
+#include <tls.h>
+#include <utils.h>
+#include <wintasee.h>
 
-#include "../../external/d3d8.h"
-#include "../wintasee.h"
-#include "../tls.h"
-#include <map>
 
 //#define SAVESTATE_DX8_TEXTURES
 
@@ -32,7 +31,7 @@ static HWND s_savedD3D8HWND = NULL;
 static HWND s_savedD3D8DefaultHWND = NULL;
 static RECT s_savedD3D8ClientRect = {};
 
-std::map<IDirect3DSwapChain8*,IDirect3DDevice8*> d3d8SwapChainToDeviceMap;
+LazyType<SafeMap<LPDIRECT3DSWAPCHAIN8, LPDIRECT3DDEVICE8>> d3d8SwapChainToDeviceMap;
 
 static bool d3d8BackBufActive = true;
 static bool d3d8BackBufDirty = true;
@@ -48,14 +47,14 @@ struct IDirect3DSurface8_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static std::map<IDirect3DSurface8*, IDirect3DSurface8_CustomData> surface8data;
+static LazyType<SafeMap<LPDIRECT3DSURFACE8, IDirect3DSurface8_CustomData>> surface8data;
 
 struct IDirect3DTexture8_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static std::map<IDirect3DTexture8*, IDirect3DTexture8_CustomData> texture8data;
+static LazyType<SafeMap<LPDIRECT3DTEXTURE8, IDirect3DTexture8_CustomData>> texture8data;
 
 
 static void ProcessPresentationParams8(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D8* d3d, IDirect3DDevice8* d3dDevice)
@@ -269,7 +268,7 @@ struct MyDirect3DDevice8
 		{
 			HookCOMInterface(IID_IDirect3DSwapChain8, (LPVOID*)pSwapChain);
 			if(pSwapChain)
-				d3d8SwapChainToDeviceMap[*pSwapChain] = pThis;
+				d3d8SwapChainToDeviceMap()[*pSwapChain] = pThis;
 		}
 		return rv;
 	}
@@ -453,7 +452,7 @@ struct MyDirect3DDevice8
 				if(SUCCEEDED(pTexture->GetSurfaceLevel(i, &pSurface)))
 				{
 					HookCOMInterface(IID_IDirect3DSurface8, reinterpret_cast<LPVOID*>(&pSurface));
-					IDirect3DSurface8_CustomData& surf8 = surface8data[pSurface];
+					IDirect3DSurface8_CustomData& surf8 = surface8data()[pSurface];
 					surf8.ownedByTexture = true;
 					pSurface->Release();
 				}
@@ -470,7 +469,7 @@ struct MyDirect3DDevice8
 		if(SUCCEEDED(rv))
 		{
 			HookCOMInterface(IID_IDirect3DSurface8, reinterpret_cast<LPVOID*>(ppSurface));
-			IDirect3DSurface8_CustomData& surf8 = surface8data[*ppSurface];
+			IDirect3DSurface8_CustomData& surf8 = surface8data()[*ppSurface];
 			surf8.ownedByTexture = false;
 		}
 		return rv;
@@ -551,7 +550,7 @@ struct MyDirect3DSwapChain8
 
 		IDirect3DDevice8* pDevice;
 		//if(SUCCEEDED(pThis->GetDevice(&pDevice)))
-		if(0 != (pDevice = d3d8SwapChainToDeviceMap[pThis]) && !redrawingScreen)
+		if(0 != (pDevice = d3d8SwapChainToDeviceMap()[pThis]) && !redrawingScreen)
 		{
 			s_saved_d3d8SwapChain = pThis;
 			s_saved_d3d8Device = pDevice;
@@ -789,7 +788,7 @@ struct MyDirect3DTexture8
 
 static void BackupVideoMemory8(IDirect3DSurface8* pThis)
 {
-	IDirect3DSurface8_CustomData& surf8 = surface8data[pThis];
+	IDirect3DSurface8_CustomData& surf8 = surface8data()[pThis];
 	//if(!surf8.videoMemoryBackupDirty)
 	//	return;
 	D3DSURFACE_DESC desc = {};
@@ -800,7 +799,7 @@ static void BackupVideoMemory8(IDirect3DSurface8* pThis)
 		{
 			int size = lockedRect.Pitch * desc.Height;
 			void*& pixels = surf8.videoMemoryPixelBackup;
-			pixels = realloc(pixels, size);
+			pixels = MemoryManager::Reallocate(pixels, size, MemoryManager::ALLOC_WRITE);
 			memcpy(pixels, lockedRect.pBits, size);
 			pThis->UnlockRect();
 		}
@@ -810,7 +809,7 @@ static void BackupVideoMemory8(IDirect3DSurface8* pThis)
 
 static void RestoreVideoMemory8(IDirect3DSurface8* pThis)
 {
-	IDirect3DSurface8_CustomData& surf8 = surface8data[pThis];
+	IDirect3DSurface8_CustomData& surf8 = surface8data()[pThis];
 	if(surf8.videoMemoryBackupDirty)
 		return;
 	void*& pixels = surf8.videoMemoryPixelBackup;
@@ -837,7 +836,7 @@ void BackupVideoMemoryOfAllD3D8Surfaces()
 	IDirect3DSurface8* pBackBuffer;
 	if(d3d8BackBufDirty && s_saved_d3d8Device && SUCCEEDED(s_saved_d3d8Device->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pBackBuffer)))
 	{
-		IDirect3DSurface8_CustomData& surf8 = surface8data[pBackBuffer];
+		IDirect3DSurface8_CustomData& surf8 = surface8data()[pBackBuffer];
 		surf8.videoMemoryBackupDirty = true;
 		surf8.isBackBuffer = true;
 		BackupVideoMemory8(pBackBuffer);
@@ -1044,7 +1043,3 @@ void ApplyD3D8Intercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

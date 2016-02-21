@@ -1,12 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(WAITHOOKS_INCL) && !defined(UNITY_BUILD)
-#define WAITHOOKS_INCL
-
-#include "../wintasee.h"
-#include "../tls.h"
-#include <map>
+#include <MemoryManager\MemoryManager.h>
+#include <tls.h>
+#include <wintasee.h>
 
 void ThreadHandleToExitHandle(HANDLE& pHandle);
 
@@ -334,7 +331,7 @@ HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHan
 		// (actually this isn't that hacky, except it should be done to all WaitFor* cases instead of only this case)
 		if(tasflags.threadMode == 1 && (int)nCount > 0)
 		{
-			HANDLE* handles = (HANDLE*)_alloca(nCount*sizeof(HANDLE));
+			LPHANDLE handles = static_cast<LPHANDLE>(MemoryManager::Allocate(nCount * sizeof(HANDLE), MemoryManager::ALLOC_WRITE));
 			for(DWORD i = 0; i < nCount; i++)
 			{
 				HANDLE pHandle = lpHandles[i];
@@ -464,7 +461,7 @@ HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pH
 
 		TransferWait(dwMilliseconds);
 
-		HANDLE* handles = (HANDLE*)_alloca(nCount*sizeof(HANDLE));
+		LPHANDLE handles = static_cast<LPHANDLE>(MemoryManager::Allocate(nCount * sizeof(HANDLE), MemoryManager::ALLOC_WRITE));
 		if(tasflags.threadMode == 1 && (int)nCount > 0)
 		{
 			// try to convert thread handles to thread exit event handles
@@ -681,7 +678,3 @@ void ApplyWaitIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

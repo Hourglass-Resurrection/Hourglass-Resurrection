@@ -1,12 +1,11 @@
-#ifndef INPUT_CAPTURE_H
-#define INPUT_CAPTURE_H
+#pragma once
 
 #define DIRECTINPUT_VERSION 0x0500  // for joystick support
 #define DI_KEY_PRESSED_FLAG 0x80 // To test if a DI key was pressed.
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
-#include "../shared/input.h" // Contains the CurrentInput struct
+#include <shared\input.h> // Contains the CurrentInput struct
 #include <map>
 using namespace std;
 
@@ -185,5 +184,3 @@ public:
 	// This SHOULD work according to the C++ FAQ Lite section 33.2
 	static LRESULT CALLBACK ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-#endif

@@ -1,10 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(INPUTHOOKS_INCL) && !defined(UNITY_BUILD)
-#define INPUTHOOKS_INCL
+#include <algorithm>
 
-#include "../wintasee.h"
+#include <MemoryManager\MemoryManager.h>
+#include <Utils.h>
+#include <wintasee.h>
 //#include "../tls.h"
 
 #if defined(_DEBUG) || 0//0
@@ -94,9 +95,8 @@ struct MyDIDEVICEOBJECTINSTANCE {
 #define BUTTON1 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x31, 0x00 }// "Button 1\0"
 #define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
 
-#include <vector>
-#include <algorithm>
-typedef std::vector<struct BufferedInput*> BufferedInputList;
+
+typedef LazyType<SafeVector<struct BufferedInput*>> BufferedInputList;
 static BufferedInputList s_bufferedKeySlots;
 
 HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread);
@@ -114,14 +114,14 @@ struct BufferedInput
 	BufferedInput(BufferedInputList& buflist) : data(NULL), size(0), used(0), startOffset(0), overflowed(FALSE), event(NULL), bufferList(buflist)
 	{
 		dinputdebugprintf(__FUNCTION__ "(0x%X) adding self to list.\n", this);
-		bufferList.push_back(this);
+		bufferList().push_back(this);
 	}
 	~BufferedInput()
 	{
 		Resize(0);
 
 		dinputdebugprintf(__FUNCTION__ "(0x%X) removing self from list.\n", this);
-		bufferList.erase(std::remove(bufferList.begin(), bufferList.end(), this), bufferList.end());
+		bufferList().erase(std::remove(bufferList().begin(), bufferList().end(), this), bufferList().end());
 	}
 	void Resize(DWORD newSize)
 	{
@@ -132,7 +132,7 @@ struct BufferedInput
 		if(oldSize != newSize)
 		{
 			dinputdebugprintf(__FUNCTION__ " allocating %u -> %u.\n", oldSize, newSize);
-			data = (DIDEVICEOBJECTDATA*)realloc(data, newSize * sizeof(DIDEVICEOBJECTDATA));
+			data = static_cast<LPDIDEVICEOBJECTDATA>(MemoryManager::Reallocate(data, newSize * sizeof(*data), MemoryManager::ALLOC_WRITE));
 
 			if(used > newSize)
 			{
@@ -244,8 +244,8 @@ struct BufferedInput
 	static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
 		DINPUT_ENTER();
-		for(int i = (int)bufferList.size()-1; i >= 0; i--)
-			bufferList[i]->AddEvent(inputEvent);
+		for(int i = (int)bufferList().size()-1; i >= 0; i--)
+			bufferList()[i]->AddEvent(inputEvent);
 	}
 	void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
 	{
@@ -265,8 +265,8 @@ struct BufferedInput
 	static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	{
 		DINPUT_ENTER();
-		for(int i = (int)bufferList.size()-1; i >= 0; i--)
-			bufferList[i]->AddMouseEvent(inputEvent);
+		for(int i = (int)bufferList().size()-1; i >= 0; i--)
+			bufferList()[i]->AddMouseEvent(inputEvent);
 	}
 };
 
@@ -322,7 +322,7 @@ public:
 		ULONG count = m_device->Release();
 		dinputdebugprintf(__FUNCTION__ " called (returned %d).\n", count);
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -987,7 +987,7 @@ public:
 		DINPUT_ENTER();
 		ULONG count = m_di->Release();
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 
 		return count;
 	}
@@ -1585,7 +1585,3 @@ void ApplyInputIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

@@ -1,16 +1,15 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(SOUNDHOOKS_INCL) && !defined(UNITY_BUILD)
-#define SOUNDHOOKS_INCL
-
-#include "../../external/dsound.h"
-#include "../../external/dmusici.h"
-#include "../wintasee.h"
-#include "../tls.h"
 #include <algorithm>
-#include <vector>
-#include <map>
+#include <cmath>
+
+#include <external\dmusici.h>
+#include <external\dsound.h>
+#include <MemoryManager\MemoryManager.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 // TODO: add MIDI support (for music in Eternal Daughter)
 // probably involves hooking midiOutShortMsg and such
@@ -58,10 +57,6 @@ void MixFromToInternal(DWORD pos1, DWORD pos2, DWORD outPos1, DWORD outPos2, boo
 	unsigned char* buffer, unsigned char* contiguousMixOutBuf, CachedVolumeAndPan& volumes);
 
 
-#include <map>
-#include <math.h>
-
-
 // new method: completely emulate DirectSound secondary buffers (do all the mixing manually).
 // this should fix a whole bunch of problems with asynchronous sound output,
 // and make it possible to capture it to AVI/WAV output.
@@ -71,7 +66,7 @@ class EmulatedDirectSoundBuffer : public IDirectSoundBuffer8, public IDirectSoun
 public:
 	typedef EmulatedDirectSoundBuffer MyType;
 	//typedef std::map<MyType*, DWORD> MyBufferMap;
-	typedef std::vector<MyType*> MyBufferList;
+	typedef LazyType<SafeVector<MyType*>> MyBufferList;
 
 	EmulatedDirectSoundBuffer(bool isFakePrimary=false) : m_isFakePrimary(isFakePrimary)
 	{
@@ -79,9 +74,9 @@ public:
 		EnterCriticalSection(&s_soundBufferListCS);
 		//if(soundBuffers.find(this) == soundBuffers.end())
 		//	soundBuffers.insert(std::make_pair(this, GetCurrentThreadId()));
-		soundBuffers.push_back(this);
+		soundBuffers().push_back(this);
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d emulated sound buffers\n", soundBuffers.size());
+		debuglog(LCF_DSOUND, "%d emulated sound buffers\n", soundBuffers().size());
 
 		buffer = NULL;
 		bufferSize = 0;
@@ -113,25 +108,29 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		EnterCriticalSection(&s_soundBufferListCS);
 		//soundBuffers.erase(this);
-		MyBufferList::iterator found = std::find(soundBuffers.begin(), soundBuffers.end(), this);
-		if(found != soundBuffers.end())
-			soundBuffers.erase(found);
+		auto found = std::find(soundBuffers().begin(), soundBuffers().end(), this);
+		if(found != soundBuffers().end())
+			soundBuffers().erase(found);
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
-		free(buffer);
-		free(lockBuf);
-		free(waveformat);
-		free(notifies);
+		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers().size());
+		MemoryManager::Deallocate(buffer);
+		MemoryManager::Deallocate(lockBuf);
+		MemoryManager::Deallocate(waveformat);
+		MemoryManager::Deallocate(notifies);
 		DeleteCriticalSection(&m_bufferCS);
 		DeleteCriticalSection(&m_lockBufferCS);
 	}
 
 	static EmulatedDirectSoundBuffer* Duplicate(const EmulatedDirectSoundBuffer* original)
 	{
-		EmulatedDirectSoundBuffer* copy = new EmulatedDirectSoundBuffer();
+        EmulatedDirectSoundBuffer* copy =
+            static_cast<EmulatedDirectSoundBuffer*>
+                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
+        copy = ::new EmulatedDirectSoundBuffer();
 		copy->bufferSize = original->bufferSize;
 		copy->allocated = original->allocated;
-		copy->buffer = (unsigned char*)malloc(copy->allocated);
+		copy->buffer =
+            static_cast<unsigned char*>(MemoryManager::Allocate(copy->allocated, MemoryManager::ALLOC_WRITE));
 		memcpy(copy->buffer, original->buffer, original->allocated);
 		copy->frequency = original->frequency;
 		copy->pan = original->pan;
@@ -144,7 +143,8 @@ public:
 		int wfxsize = sizeof(WAVEFORMATEX);
 		if(original->waveformat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += original->waveformat->cbSize;
-		copy->waveformat = (WAVEFORMATEX*)malloc(wfxsize);
+		copy->waveformat =
+            static_cast<LPWAVEFORMATEX>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(copy->waveformat, original->waveformat, wfxsize);
 
 		return copy;
@@ -186,7 +186,7 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -317,7 +317,7 @@ public:
 		EnterCriticalSection(&m_bufferCS);
 		bufferSize = min(max(bufferSize, DSBSIZE_MIN), DSBSIZE_MAX);
 		allocated = bufferSize;
-		buffer = (unsigned char*)realloc(buffer, allocated);
+		buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE));
 		memset(buffer, (waveformat->wBitsPerSample <= 8) ? 0x80 : 0, allocated);
 		LeaveCriticalSection(&m_bufferCS);
 
@@ -335,7 +335,7 @@ public:
 		int wfxsize = sizeof(WAVEFORMATEX);
 		if(pFormat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += pFormat->cbSize;
-		waveformat = (WAVEFORMATEX*)realloc(waveformat, wfxsize);
+		waveformat = static_cast<LPWAVEFORMATEX>(MemoryManager::Reallocate(waveformat, wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(waveformat, pFormat, wfxsize);
 		if(pFormat->wFormatTag == WAVE_FORMAT_PCM)
 			waveformat->cbSize = 0;
@@ -351,7 +351,7 @@ public:
 		EnterCriticalSection(&m_lockBufferCS);
 
 		if(!lockBuf)
-			lockBuf = (unsigned char*)realloc(lockBuf, bufferSize);
+			lockBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(lockBuf, bufferSize, MemoryManager::ALLOC_WRITE));
 		memcpy(lockBuf, buffer, bufferSize);
 
 		if(dwFlags & DSBLOCK_FROMWRITECURSOR)
@@ -491,7 +491,7 @@ public:
 		if(numRemainingUnlocksBeforeLeavingLockBufResident)
 		{
 			numRemainingUnlocksBeforeLeavingLockBufResident--;
-			free(lockBuf);
+			MemoryManager::Deallocate(lockBuf);
 			lockBuf = NULL;
 		}
 		ReplicateBufferIntoExtraAllocated();
@@ -538,9 +538,11 @@ public:
 		if(dwPositionNotifies > DSBNOTIFICATIONS_MAX || pcPositionNotifies == NULL)
 			return DSERR_INVALIDPARAM;
 
-		free(notifies);
+		MemoryManager::Deallocate(notifies);
 		numNotifies = 0;
-		notifies = (DSBPOSITIONNOTIFY*)malloc(dwPositionNotifies * sizeof(DSBPOSITIONNOTIFY));
+		notifies =
+            static_cast<LPDSBPOSITIONNOTIFY>
+                (MemoryManager::Allocate(dwPositionNotifies * sizeof(DSBPOSITIONNOTIFY), MemoryManager::ALLOC_WRITE));
 		if(!notifies)
 			return DSERR_OUTOFMEMORY;
 		
@@ -652,7 +654,7 @@ public:
 			if(contiguousMixOutBufAllocated < contiguousMixOutBufSize+16)
 			{
 				contiguousMixOutBufAllocated = contiguousMixOutBufSize+16;
-				contiguousMixOutBuf = (unsigned char*)realloc(contiguousMixOutBuf, contiguousMixOutBufAllocated);
+				contiguousMixOutBuf = static_cast<unsigned char*>(MemoryManager::Reallocate(contiguousMixOutBuf, contiguousMixOutBufAllocated, MemoryManager::ALLOC_WRITE));
 			}
 			if(contiguousMixOutBufSize)
 				memset(contiguousMixOutBuf, (format.wBitsPerSample <= 8) ? 0x80 : 0, contiguousMixOutBufSize);
@@ -663,7 +665,7 @@ public:
 		}
 
 		EnterCriticalSection(&s_soundBufferListCS);
-		for(MyBufferList::iterator iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 			(*iter)->AdvanceTimeAndMix(ticks, doMix);
 		LeaveCriticalSection(&s_soundBufferListCS);
 
@@ -822,8 +824,8 @@ public:
 						{
 							EnterCriticalSection(&m_bufferCS);
 							allocated = unwrappedPlayCursor + waveformat->nBlockAlign;
-							buffer = (unsigned char*)realloc(buffer, allocated);
-							if(!buffer) { buffer = (unsigned char*)realloc(buffer, allocated); }
+							buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE));
+							if(!buffer) { buffer = static_cast<unsigned char*>(MemoryManager::Reallocate(buffer, allocated, MemoryManager::ALLOC_WRITE)); }
 							if(!buffer) { debuglog(LCF_ERROR, "FAILED TO ALLOCATE LOOP BUFFER\n"); }
 							ReplicateBufferIntoExtraAllocated();
 							LeaveCriticalSection(&m_bufferCS);
@@ -1041,17 +1043,17 @@ class MyDirectSoundBuffer : public IDirectSoundBufferN
 {
 public:
 	typedef MyDirectSoundBuffer<IDirectSoundBufferN> MyType;
-	typedef std::map<MyType*, DWORD> MyBufferMap;
+	typedef LazyType<SafeMap<MyType*, DWORD>> MyBufferMap;
 
 	MyDirectSoundBuffer(IDirectSoundBufferN* dsb) : m_dsb(dsb)
 	{
 		while(lockdown) Sleep(1); 
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		EnterCriticalSection(&s_soundBufferListCS);
-		if(soundBuffers.find(this) == soundBuffers.end())
-			soundBuffers.insert(std::make_pair(this, GetCurrentThreadId()));
+		if(soundBuffers().find(this) == soundBuffers().end())
+			soundBuffers().insert(std::make_pair(this, GetCurrentThreadId()));
 		LeaveCriticalSection(&s_soundBufferListCS);
-		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
+		debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers().size());
 		tempAudioPtr1 = 0;
 		tempAudioSize1 = 0;
 		tempAudioPtr2 = 0;
@@ -1111,7 +1113,7 @@ public:
 		tls.callerisuntrusted--;
 		//disableSelfTicking = dst;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -1349,8 +1351,7 @@ public:
 
 	static void BackDoorLockAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorAcquireLock(); // other threads must NOT be suspended when this is called!
@@ -1358,8 +1359,7 @@ public:
 	}
 	static void BackDoorStopAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorSuspend();
@@ -1374,8 +1374,7 @@ public:
 	}
 	static void FrontDoorStopAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->Stop();
@@ -1383,8 +1382,7 @@ public:
 	}
 	static void BackDoorRestoreAll()
 	{
-		MyBufferMap::iterator iter;
-		for(iter = soundBuffers.begin(); iter != soundBuffers.end(); iter++)
+		for(auto iter = soundBuffers().begin(); iter != soundBuffers().end(); iter++)
 		{
 			MyType* dsb = iter->first;
 			dsb->BackDoorResume(); // other threads must NOT be suspended when this is called!
@@ -1470,8 +1468,11 @@ public:
 		{
 			if(riid == IID_IDirectSoundSinkFactory)
 			{
-				if(!s_pEmulatedDirectSoundSinkFactory)
-					s_pEmulatedDirectSoundSinkFactory = new EmulatedDirectSoundSinkFactory();
+                if (!s_pEmulatedDirectSoundSinkFactory)
+                    s_pEmulatedDirectSoundSinkFactory
+                        = static_cast<EmulatedDirectSoundSinkFactory*>
+                            (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSinkFactory), MemoryManager::ALLOC_WRITE));
+                    s_pEmulatedDirectSoundSinkFactory = ::new EmulatedDirectSoundSinkFactory();
 				if(s_pEmulatedDirectSoundSinkFactory)
 				{
 					*ppvObj = (IDirectSoundSinkFactory*)s_pEmulatedDirectSoundSinkFactory;
@@ -1541,7 +1542,7 @@ public:
 			count = --m_fallbackRefcount;
 		}
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		s_releasingDirectSound = false;
 
 		return count;
@@ -1566,7 +1567,10 @@ public:
 					CreateMyMixingOutputSoundBuffer(/*pcDSBufferDesc*/);
 				LeaveCriticalSection(&s_myMixingOutputBufferCS);
 			}
-			*ppDSBuffer = (LPDIRECTSOUNDBUFFER)(new EmulatedDirectSoundBuffer());
+            *ppDSBuffer =
+                static_cast<LPDIRECTSOUNDBUFFER>
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
+            *ppDSBuffer = ::new EmulatedDirectSoundBuffer();
 			(*ppDSBuffer)->Initialize(this, pcDSBufferDesc);
 			return DS_OK;
 		}
@@ -1609,7 +1613,10 @@ public:
 			else if(!m_ds)
 			{
 				// pretend to have a primary buffer
-				*ppDSBuffer = (LPDIRECTSOUNDBUFFER)(new EmulatedDirectSoundBuffer(true));
+                *ppDSBuffer =
+                    static_cast<LPDIRECTSOUNDBUFFER>
+                        (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
+                *ppDSBuffer = ::new EmulatedDirectSoundBuffer(true);
 				(*ppDSBuffer)->Initialize(this, pcDSBufferDesc);
 				hr = DS_OK;
 			}
@@ -2136,7 +2143,8 @@ public:
 		if(lpWaveFormat->wFormatTag != WAVE_FORMAT_PCM)
 			wfxsize += lpWaveFormat->cbSize;
 		waveFormatAllocated = wfxsize;
-		sinkWaveFormat = (WAVEFORMATEX*)malloc(wfxsize);
+		sinkWaveFormat =
+            static_cast<LPWAVEFORMATEX>(MemoryManager::Allocate(wfxsize, MemoryManager::ALLOC_WRITE));
 		memcpy(sinkWaveFormat, lpWaveFormat, wfxsize);
 	}
 	~EmulatedDirectSoundSink()
@@ -2179,11 +2187,11 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
-	std::vector<IDirectSoundSource*> sources;
+	SafeVector<IDirectSoundSource*> sources;
 
 	// IDirectSoundSink? methods
 	STDMETHOD(AddSource) (IDirectSoundSource* pDSS)
@@ -2218,14 +2226,20 @@ public:
 
 		if(!(pcDSBufferDesc->dwFlags & DSBCAPS_PRIMARYBUFFER))
 		{
-			*ppDSBuffer = (LPDIRECTSOUNDBUFFER)(new EmulatedDirectSoundBuffer());
+            *ppDSBuffer =
+                static_cast<LPDIRECTSOUNDBUFFER>
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
+            *ppDSBuffer = ::new EmulatedDirectSoundBuffer();
 		}
 		else
 		{
 			if(pcDSBufferDesc->dwFlags & DSBCAPS_PRIMARYBUFFER)
 				debuglog(LCF_DSOUND, "creating s_primaryBuffer flags=0x%X\n", pcDSBufferDesc->dwFlags);
 			// pretend to have a primary buffer
-			*ppDSBuffer = (LPDIRECTSOUNDBUFFER)(new EmulatedDirectSoundBuffer(true));
+            *ppDSBuffer =
+                static_cast<LPDIRECTSOUNDBUFFER>
+                    (MemoryManager::Allocate(sizeof(EmulatedDirectSoundBuffer), MemoryManager::ALLOC_WRITE));
+            *ppDSBuffer = ::new EmulatedDirectSoundBuffer(true);
 		}
 		(*ppDSBuffer)->Initialize(/*pEmulatedDirectSound*/NULL, pcDSBufferDesc);
 
@@ -2370,9 +2384,9 @@ public:
 	BOOL active;
 
 	DWORD nextBusID;
-	std::map<DWORD,IDirectSoundBuffer*> busToBuf;
-	std::map<IDirectSoundBuffer*,DWORD> bufToBus;
-	std::map<DWORD,DWORD> busToSlots;
+	SafeMap<DWORD, LPDIRECTSOUNDBUFFER> busToBuf;
+	SafeMap<LPDIRECTSOUNDBUFFER, DWORD> bufToBus;
+	SafeMap<DWORD, DWORD> busToSlots;
 	DWORD busCount;
 
 	IReferenceClock* pRefClock;
@@ -2432,7 +2446,7 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		ULONG count = --refcount;
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 		return count;
 	}
 
@@ -2442,7 +2456,10 @@ public:
 		debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
 		if(!ppDSC)
 			return E_POINTER;
-		*ppDSC = (IDirectSoundSink*)(new EmulatedDirectSoundSink(lpWaveFormat));
+        *ppDSC =
+            static_cast<IDirectSoundSink*>
+                (MemoryManager::Allocate(sizeof(EmulatedDirectSoundSink), MemoryManager::ALLOC_WRITE));
+        *ppDSC = ::new EmulatedDirectSoundSink(lpWaveFormat);
 		(*ppDSC)->AddRef();
 		return S_OK;
 	}
@@ -2675,7 +2692,10 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
 			if(ppDS)
 			{
 				usingVirtualDirectSound = true;
-				*ppDS = new MyDirectSound<IDirectSound>(NULL);
+                *ppDS =
+                    static_cast<MyDirectSound<IDirectSound>*>
+                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound>), MemoryManager::ALLOC_WRITE));
+                *ppDS = ::new MyDirectSound<IDirectSound>(nullptr);
 				rv = DS_OK;
 			}
 		}
@@ -2723,7 +2743,10 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
 			if(ppDS)
 			{
 				usingVirtualDirectSound = true;
-				*ppDS = new MyDirectSound<IDirectSound8>(NULL);
+                *ppDS =
+                    static_cast<MyDirectSound<IDirectSound8>*>
+                        (MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE));
+                *ppDS = ::new MyDirectSound<IDirectSound8>(nullptr);
 				rv = DS_OK;
 			}
 		}
@@ -2942,12 +2965,14 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv)
 	bool applicable = ((tasflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND) || usingVirtualDirectSound);
 	if(applicable && riid == IID_IDirectSound)
 	{
-		*ppv = (IDirectSound*)(new MyDirectSound<IDirectSound>(NULL));
+        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
+        *ppv = ::new MyDirectSound<IDirectSound>(nullptr);
 		return true;
 	}
 	else if(applicable && riid == IID_IDirectSound8)
 	{
-		*ppv = (IDirectSound8*)(new MyDirectSound<IDirectSound8>(NULL));
+        *ppv = MemoryManager::Allocate(sizeof(MyDirectSound<IDirectSound8>), MemoryManager::ALLOC_WRITE);
+		*ppv = ::new MyDirectSound<IDirectSound8>(nullptr);
 		return true;
 	}
 	return false;
@@ -3010,7 +3035,3 @@ void ApplySoundIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

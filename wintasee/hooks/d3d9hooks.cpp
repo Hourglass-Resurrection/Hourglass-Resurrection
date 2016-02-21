@@ -1,13 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(D3D9HOOKS_INCL) //&& !defined(UNITY_BUILD)
-#define D3D9HOOKS_INCL
-
-#include "../../external/d3d9.h"
-#include "../wintasee.h"
-#include "../tls.h"
-#include <map>
+#include <external\d3d9.h>
+#include <MemoryManager\MemoryManager.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 //#define SAVESTATE_DX9_TEXTURES
 
@@ -31,7 +29,7 @@ static HWND s_savedD3D9HWND = NULL;
 static HWND s_savedD3D9DefaultHWND = NULL;
 static RECT s_savedD3D9ClientRect = {};
 
-std::map<IDirect3DSwapChain9*,IDirect3DDevice9*> d3d9SwapChainToDeviceMap;
+LazyType<SafeMap<LPDIRECT3DSWAPCHAIN9, LPDIRECT3DDEVICE9>> d3d9SwapChainToDeviceMap;
 
 static bool d3d9BackBufActive = true;
 static bool d3d9BackBufDirty = true;
@@ -47,14 +45,14 @@ struct IDirect3DSurface9_CustomData
 	bool ownedByTexture;
 	bool isBackBuffer;
 };
-static std::map<IDirect3DSurface9*, IDirect3DSurface9_CustomData> surface9data;
+static LazyType<SafeMap<LPDIRECT3DSURFACE9, IDirect3DSurface9_CustomData>> surface9data;
 
 struct IDirect3DTexture9_CustomData
 {
 	bool valid;
 	bool dirty;
 };
-static std::map<IDirect3DTexture9*, IDirect3DTexture9_CustomData> texture9data;
+static LazyType<SafeMap<LPDIRECT3DTEXTURE9, IDirect3DTexture9_CustomData>> texture9data;
 
 
 static void ProcessPresentationParams9(D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3D9* d3d, IDirect3DDevice9* d3dDevice)
@@ -434,7 +432,7 @@ struct MyDirect3DDevice9
 				if(SUCCEEDED(pTexture->GetSurfaceLevel(i, &pSurface)))
 				{
 					HookCOMInterface(IID_IDirect3DSurface9, reinterpret_cast<LPVOID*>(&pSurface));
-					IDirect3DSurface9_CustomData& surf9 = surface9data[pSurface];
+					IDirect3DSurface9_CustomData& surf9 = surface9data()[pSurface];
 					surf9.ownedByTexture = true;
 					pSurface->Release();
 				}
@@ -451,7 +449,7 @@ struct MyDirect3DDevice9
 		if(SUCCEEDED(rv))
 		{
 			HookCOMInterface(IID_IDirect3DSurface9, reinterpret_cast<LPVOID*>(ppSurface));
-			IDirect3DSurface9_CustomData& surf9 = surface9data[*ppSurface];
+			IDirect3DSurface9_CustomData& surf9 = surface9data()[*ppSurface];
 			surf9.ownedByTexture = false;
 		}
 		return rv;
@@ -771,7 +769,7 @@ struct MyDirect3DTexture9
 
 static void BackupVideoMemory9(IDirect3DSurface9* pThis)
 {
-	IDirect3DSurface9_CustomData& surf9 = surface9data[pThis];
+	IDirect3DSurface9_CustomData& surf9 = surface9data()[pThis];
 	//if(!surf9.videoMemoryBackupDirty)
 	//	return;
 	D3DSURFACE_DESC desc = {};
@@ -782,7 +780,7 @@ static void BackupVideoMemory9(IDirect3DSurface9* pThis)
 		{
 			int size = lockedRect.Pitch * desc.Height;
 			void*& pixels = surf9.videoMemoryPixelBackup;
-			pixels = realloc(pixels, size);
+			pixels = MemoryManager::Reallocate(pixels, size, MemoryManager::ALLOC_WRITE);
 			memcpy(pixels, lockedRect.pBits, size);
 			pThis->UnlockRect();
 		}
@@ -792,7 +790,7 @@ static void BackupVideoMemory9(IDirect3DSurface9* pThis)
 
 static void RestoreVideoMemory9(IDirect3DSurface9* pThis)
 {
-	IDirect3DSurface9_CustomData& surf9 = surface9data[pThis];
+	IDirect3DSurface9_CustomData& surf9 = surface9data()[pThis];
 	if(surf9.videoMemoryBackupDirty)
 		return;
 	void*& pixels = surf9.videoMemoryPixelBackup;
@@ -824,7 +822,7 @@ void BackupVideoMemoryOfAllD3D9Surfaces()
 		{
 			if(SUCCEEDED(s_saved_d3d9Device->GetBackBuffer(i,0,D3DBACKBUFFER_TYPE_MONO,&pBackBuffer)))
 			{
-				IDirect3DSurface9_CustomData& surf9 = surface9data[pBackBuffer];
+				IDirect3DSurface9_CustomData& surf9 = surface9data()[pBackBuffer];
 				surf9.videoMemoryBackupDirty = true;
 				surf9.isBackBuffer = true;
 				BackupVideoMemory9(pBackBuffer);
@@ -1037,7 +1035,3 @@ void ApplyD3D9Intercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

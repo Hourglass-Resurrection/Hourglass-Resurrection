@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef DXVIDEOTRAMPS_H_INCL
-#define DXVIDEOTRAMPS_H_INCL
+#pragma once
 
 #define DirectDrawCreate TrampDirectDrawCreate
 TRAMPFUNC HRESULT WINAPI DirectDrawCreate(GUID FAR *lpGUID, struct IDirectDraw* FAR *lplpDD, IUnknown FAR *pUnkOuter) TRAMPOLINE_DEF
@@ -24,5 +23,3 @@ TRAMPFUNC HRESULT WINAPI Direct3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LP
 TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
 #define Direct3DCreateDevice7 TrampDirect3DCreateDevice7
 TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
-
-#endif

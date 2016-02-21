@@ -23,7 +23,7 @@
 #include <strsafe.h>
 //#include "stdafx.h"
 //#include "svnrev.h" // defines SRCVERSION number
-#include "../shared/version.h"
+#include <shared\version.h>
 #include "Resource.h"
 #include "trace/ExtendedTrace.h"
 #include "InjectDLL.h"
@@ -58,11 +58,11 @@ using namespace Config;
 
 #include "AVIDumper.h"
 
-#include "../external/ddraw.h"
-#include "../shared/logcat.h"
-#include "../shared/ipc.h"
-#include "../shared/asm.h"
-#include "../shared/winutil.h"
+#include <external\ddraw.h>
+#include <shared/logcat.h>
+#include <shared/ipc.h>
+#include <shared/asm.h>
+#include <shared/winutil.h>
 #include "ramwatch.h"
 
 #include "CPUinfo.h"
@@ -6881,18 +6881,3 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
  
     return rv;
 }
-
-
-
-
-#ifdef UNITY_BUILD
-#undef UNITY_BUILD
-#include "ramwatch.cpp"
-#include "ramsearch.cpp"
-//#include "inputsetup.cpp"
-#include "trace/extendedtrace.cpp"
-#include "inject/process.cpp"
-#include "inject/iatmodifier.cpp"
-#define UNITY_BUILD
-#endif
-

@@ -14,51 +14,18 @@
 
 #include <stdio.h>
 
-
-#include <vector>
 #include <algorithm>
 
-//#include "svnrev.h" // defines SRCVERSION number
-#include "../shared/version.h"
-
-#ifdef UNITY_BUILD
-#undef UNITY_BUILD
-#if defined(TRAMPS_H_INCL)
-#error alltramps.h got included too early
-#endif
-#define DIRECTINPUT_VERSION 0x0800
-#include "../external/dinput.h"
-#include "../external/dsound.h"
-#include "../external/ddraw.h"
-#include "../external/dmusici.h"
-#include "../external/d3d8.h"
-#include "../external/ddraw.h"
-#include "print.cpp"
-#include "phasedetection.cpp"
-#include "intercept.cpp"
-#include "dettime.cpp"
-#include "hooks/windowhooks.cpp"
-#include "hooks/waithooks.cpp"
-#include "hooks/timerhooks.cpp"
-#include "hooks/timehooks.cpp"
-#include "hooks/threadhooks.cpp"
-#include "hooks/synchooks.cpp"
-#include "hooks/soundhooks.cpp"
-#include "hooks/sdlhooks.cpp"
-#include "hooks/registryhooks.cpp"
-#include "hooks/openglhooks.cpp"
-#include "hooks/modulehooks.cpp"
-#include "hooks/messagehooks.cpp"
-#include "hooks/inputhooks.cpp"
-#include "hooks/gdihooks.cpp"
-#include "hooks/filehooks.cpp"
-#include "hooks/ddrawhooks.cpp"
-//#include "hooks/d3dhooks.cpp"
-//#include "hooks/d3d9hooks.cpp"
-#include "hooks/d3d8hooks.cpp"
-#define UNITY_BUILD
-#endif
-
+#include <intercept.h>
+#include <localeutils.h>
+#include <MemoryManager\MemoryManager.h>
+#include <msgqueue.h>
+#include <print.h>
+#include <shared\msg.h>
+#include <shared\version.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 //#define whitelistMaskFilter(x) ((tasflags.messageSyncMode != 3) ? (x) : 0)
 
@@ -70,18 +37,6 @@
 //#include "wintasee.h"
 
 //#pragma check_stack (off) // not sure if it's needed... doesn't seem to help, but I'll leave it here anyway
-
-#include "wintasee.h"
-#include "print.h"
-
-#include "../shared/msg.h"
-
-#include "intercept.h"
-#include "tls.h"
-#include "msgqueue.h"
-#include "locale.h"
-
-#include <map>
 
 
 // FIXME: should get things working with EMULATE_MESSAGE_QUEUES enabled, currently it breaks Iji arrow key input
@@ -172,11 +127,12 @@ void ApplyWindowIntercepts();
 void ApplyInputIntercepts();
 void ApplyWaitIntercepts();
 void ApplyFileIntercepts();
+void ApplyMemoryIntercepts();
 void ApplyRegistryIntercepts();
 void ApplyXinputIntercepts();
 
 
-extern std::map<HWND, WNDPROC> hwndToOrigHandler;
+extern LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 
 
 
@@ -629,18 +585,13 @@ bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer)
 
 
 HWND extHWnd = 0;
-
 char keyboardLayoutName [KL_NAMELENGTH*2];
 HKL g_hklOverride = 0;
 
 static DWORD g_videoFramesPrepared = 0;
 //static DWORD g_soundMixedTicks = 0;
 
-
-#include <map>
-static std::map<HWND, BOOL> hwndSizeLocked;
-
-
+static LazyType<SafeMap<HWND, BOOL>> hwndSizeLocked;
 
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 {
@@ -651,12 +602,12 @@ void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 	SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 	//SetWindowPos(hwnd, 0, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
 	SetWindowPos(hwnd, 0, 0, 0, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
-	hwndSizeLocked[hwnd] = TRUE;
+	hwndSizeLocked()[hwnd] = TRUE;
 }
 
 bool IsWindowFakeFullscreen(HWND hwnd)
 {
-	return hwndSizeLocked.find(hwnd) != hwndSizeLocked.end();
+	return hwndSizeLocked().find(hwnd) != hwndSizeLocked().end();
 }
 
 
@@ -809,9 +760,8 @@ void HandlePausedEvents()
 	MSG msg;
 
 	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -1098,8 +1048,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		if((prevWindowActivateFlags&2) != (tasflags.windowActivateFlags&2))
 		{
 		// handle toggling "always on top" status when allow deactivate checkbox changes
-			std::map<HWND, WNDPROC>::iterator iter;
-			for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
+			for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end(); iter++)
 			{
 				HWND hwnd = iter->first;
 				if(IsWindow(hwnd))
@@ -1123,9 +1072,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 
 	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto& iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -1134,7 +1082,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
 		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
 		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
-		 || (!sentToAny && iter == hwndToOrigHandler.end()))
+		 || (!sentToAny && iter == hwndToOrigHandler().end()))
 		 )
 		{
 			sentToAny = true;
@@ -1347,7 +1295,7 @@ struct MyClassFactory : IClassFactory
 		//ENTER();
 		ULONG count = m_cf->Release();
 		if(0 == count)
-			delete this;
+			MemoryManager::Deallocate(this);
 
 		return count;
 	}
@@ -1665,6 +1613,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		MessageDllMainInit();
 		SoundDllMainInit();
 		ModuleDllMainInit();
+        MemoryManager::Init();
 
 		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
 		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
@@ -1712,6 +1661,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		//}
 
 		//ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        ApplyMemoryIntercepts();
 		ApplyTimeIntercepts();
 		ApplyTimerIntercepts();
 		ApplyModuleIntercepts();

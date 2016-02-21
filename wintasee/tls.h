@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef TLS_H_INCL
-#define TLS_H_INCL
+#pragma once
 
 #include <windows.h>
 
@@ -112,5 +111,3 @@ private:
 // so if you're going to use it more than once in a function,
 // it's best to cache the result like this:
 // 	ThreadLocalStuff& curtls = tls;
-
-#endif

@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(INJECTPROCESS_C_INCL) && !defined(UNITY_BUILD)
-#define INJECTPROCESS_C_INCL
-
 // (this file came from N-InjectLib, which the author released to the public domain)
 // modified to get rid of stuff I don't need
 
@@ -142,7 +139,3 @@ void Process::clearDebuggerFlag(HANDLE hThread)
 		WriteProcessMemory(hProcess_, (LPVOID)(pebAddr_+2), &debugged, sizeof(bool), &written);
 	}
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

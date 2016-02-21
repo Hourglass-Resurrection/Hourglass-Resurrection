@@ -1,12 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(THREADHOOKS_INCL) && !defined(UNITY_BUILD)
-#define THREADHOOKS_INCL
-
-#include "../wintasee.h"
-#include "../tls.h"
+#include <MemoryManager/MemoryManager.h>
 //#include <setjmp.h>
+#include <tls.h>
+#include <Utils.h>
+#include <wintasee.h>
 
 void CloseHandles(DWORD threadId); // extern
 extern char commandSlot[256*8];
@@ -62,9 +61,9 @@ struct ThreadWrapperInfo
 	bool idling;
 	bool comatose;
 	volatile DWORD exitcode;
-	CONTEXT beforecallcontext;
+	//CONTEXT beforecallcontext;
 	//jmp_buf beforecallbuf;
-	bool beforecallvalid;
+	//bool beforecallvalid;
 	ThreadWrapperInfo()
 	{
 		idling = false;
@@ -74,13 +73,12 @@ struct ThreadWrapperInfo
 		privateHandle = 0;
 		exitEvent = 0;
 		threadId = 0;
-		beforecallvalid = false;
+		//beforecallvalid = false;
 	}
 };
 
-#include <map>
-std::map<DWORD,ThreadWrapperInfo*> threadWrappers;
-std::map<HANDLE,DWORD> threadWrappersOriginalHandleToId;
+LazyType<SafeMap<DWORD, ThreadWrapperInfo*>> threadWrappers;
+LazyType<SafeMap<HANDLE, DWORD>> threadWrappersOriginalHandleToId;
 
 DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 {
@@ -91,29 +89,29 @@ DWORD WINAPI MyThreadWrapperThread(LPVOID lpParam)
 	}
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
 	DWORD threadId = GetCurrentThreadId();
-	ThreadWrapperInfo& info = *(ThreadWrapperInfo*)lpParam;
+	ThreadWrapperInfo* info = static_cast<ThreadWrapperInfo*>(lpParam);
 	while(true)
 	{
-		info.exitcode = STILL_ACTIVE;
-		info.beforecallcontext.ContextFlags = CONTEXT_FULL;
-		GetThreadContext(GetCurrentThread(), &info.beforecallcontext);
+		info->exitcode = STILL_ACTIVE;
+		//info.beforecallcontext.ContextFlags = CONTEXT_FULL;
+		//GetThreadContext(GetCurrentThread(), &info.beforecallcontext);
 		//setjmp(info.beforecallbuf);
 //		if(info.args.dwCreationFlags & CREATE_SUSPENDED)
 //			SuspendThread(GetCurrentThread());
 //		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-		info.beforecallvalid = true;
-		if(info.exitcode == STILL_ACTIVE)
-			info.exitcode = info.args.lpStartAddress(info.args.lpParameter);
-		info.beforecallvalid = false;
+		//info->beforecallvalid = true;
+		if(info->exitcode == STILL_ACTIVE)
+			info->exitcode = info->args.lpStartAddress(info->args.lpParameter);
+		//info->beforecallvalid = false;
 //		return info.exitcode;
-		info.idling = true;
-		debuglog(LCF_THREAD, "Thread pretended to exit:           handle=0x%X, id=0x%X\n", info.handle, GetCurrentThreadId());
+		info->idling = true;
+		debuglog(LCF_THREAD, "Thread pretended to exit:           handle=0x%X, id=0x%X\n", info->handle, GetCurrentThreadId());
 		CloseHandles(threadId);
 		//CloseHandle(info.handle);
-		SetEvent(info.exitEvent);
-		while(info.idling)
+		SetEvent(info->exitEvent);
+		while(info->idling)
 			Sleep(1);
-		debuglog(LCF_THREAD, "MyCreateThread reused thread:       handle=0x%X, id=0x%X\n", info.handle, GetCurrentThreadId());
+		debuglog(LCF_THREAD, "MyCreateThread reused thread:       handle=0x%X, id=0x%X\n", info->handle, GetCurrentThreadId());
 	}
 }
 
@@ -223,12 +221,12 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 	// try to reuse a thread, to avoid leaking lots of thread handles:
 	if(dwStackSize == 0) dwStackSize = tasflags.threadStackSize; // In the case of 0 (default) assign it the default stack size.
-	std::map<DWORD,ThreadWrapperInfo*>::iterator iter;
-	for(iter = threadWrappers.begin(); iter != threadWrappers.end(); iter++)
+	auto iter = threadWrappers().begin();
+	for(; iter != threadWrappers().end(); iter++)
 	{
 		ThreadWrapperInfo* twi = iter->second;
 		//debugprintf("!!! 0x%X\n",twi);
-		if(twi && twi->idling && !twi->comatose &&
+		if(twi->idling && !twi->comatose &&
 			twi->args.dwStackSize == dwStackSize &&
 			twi->args.lpThreadAttributes == lpThreadAttributes)
 		{
@@ -258,9 +256,9 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 			// generate a new public handle (because the game might have closed the old one with CloseHandle)
 			HANDLE oldHandle = twi->handle;
-			threadWrappersOriginalHandleToId[twi->handle] = NULL;
+			threadWrappersOriginalHandleToId()[twi->handle] = NULL;
 			DuplicateHandle(GetCurrentProcess(), twi->privateHandle, GetCurrentProcess(), &twi->handle, 0,FALSE,DUPLICATE_SAME_ACCESS);
-			threadWrappersOriginalHandleToId[twi->handle] = twi->threadId;
+			threadWrappersOriginalHandleToId()[twi->handle] = twi->threadId;
 
 			ResetEvent(twi->exitEvent);
 
@@ -289,7 +287,8 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 		lpThreadId = &threadId;
 
 	// actually make a new thread:
-	ThreadWrapperInfo* twi = new ThreadWrapperInfo();
+	ThreadWrapperInfo* twi =
+         static_cast<ThreadWrapperInfo*>(MemoryManager::Allocate(sizeof(*twi), MemoryManager::ALLOC_WRITE));
 	twi->args.lpThreadAttributes = lpThreadAttributes;
 	twi->args.dwStackSize = dwStackSize;
 	twi->args.lpStartAddress = lpStartAddress;
@@ -314,8 +313,8 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 	twi->handle = handle;
 	DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(), &twi->privateHandle, 0,FALSE,DUPLICATE_SAME_ACCESS);
 	threadId = *lpThreadId;
-	threadWrappers[threadId] = twi;
-	threadWrappersOriginalHandleToId[handle] = threadId;
+	threadWrappers()[threadId] = twi;
+	threadWrappersOriginalHandleToId()[handle] = threadId;
 	twi->threadId = threadId;
 
 	twi->exitEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
@@ -340,9 +339,10 @@ HOOKFUNC VOID WINAPI MyExitThread(DWORD dwExitCode)
 {
 	DWORD threadId = GetCurrentThreadId();
 	debuglog(LCF_THREAD, __FUNCTION__ "(%d) called on 0x%X.\n", dwExitCode, threadId);
-	ThreadWrapperInfo* twi = threadWrappers[threadId];
-	if(twi)
-	{
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
+    {
+	    ThreadWrapperInfo* twi = it->second;
 		if(twi->idling)
 			return;
 
@@ -378,10 +378,11 @@ HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 	debuglog(LCF_THREAD, __FUNCTION__ "(%d) called.\n", dwExitCode);
 
 	//DWORD threadId = GetThreadId(hThread); // function doesn't exist on windows 2000...
-	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
-	ThreadWrapperInfo* twi = threadWrappers[threadId];
-	if(twi)
-	{
+	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId()[hThread];
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
+    {
+        ThreadWrapperInfo* twi = it->second;
 		if(twi->idling || twi->comatose)
 			return TRUE;
 		CloseHandles(threadId);
@@ -398,19 +399,23 @@ HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
 {
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
-	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
-	ThreadWrapperInfo* twi = threadWrappers[threadId];
-	if(twi && (twi->comatose || twi->idling))
-	{
-		if(lpExitCode)
-		{
-			*lpExitCode = twi->exitcode;
-			debuglog(LCF_THREAD, __FUNCTION__ " returned 0x%X!\n", *lpExitCode);
-			return TRUE;
-		}
-		debuglog(LCF_THREAD|LCF_ERROR, __FUNCTION__ " failed!\n");
-		return FALSE;
-	}
+	DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId()[hThread];
+    auto it = threadWrappers().find(threadId);
+    if (it != threadWrappers().end())
+    {
+        ThreadWrapperInfo* twi = it->second;
+        if (twi->comatose || twi->idling)
+        {
+            if (lpExitCode)
+            {
+                *lpExitCode = twi->exitcode;
+                debuglog(LCF_THREAD, __FUNCTION__ " returned 0x%X!\n", *lpExitCode);
+                return TRUE;
+            }
+            debuglog(LCF_THREAD | LCF_ERROR, __FUNCTION__ " failed!\n");
+            return FALSE;
+        }
+    }
 	BOOL rv = GetExitCodeThread(hThread, lpExitCode);
 	if(rv)
 		debuglog(LCF_THREAD, __FUNCTION__ " returned 0x%X.\n", *lpExitCode);
@@ -432,11 +437,11 @@ HOOKFUNC NTSTATUS NTAPI MyNtSetInformationThread(HANDLE ThreadHandle, DWORD Thre
 
 void ThreadHandleToExitHandle(HANDLE& hHandle)
 {
-	std::map<HANDLE,DWORD>::iterator found = threadWrappersOriginalHandleToId.find(hHandle);
-	if(found != threadWrappersOriginalHandleToId.end())
+	auto found = threadWrappersOriginalHandleToId().find(hHandle);
+	if(found != threadWrappersOriginalHandleToId().end())
 	{
-		std::map<DWORD,ThreadWrapperInfo*>::iterator found2 = threadWrappers.find(found->second);
-		if(found2 != threadWrappers.end())
+		auto found2 = threadWrappers().find(found->second);
+		if(found2 != threadWrappers().end())
 		{
 			ThreadWrapperInfo* twi = found2->second;
 			hHandle = twi->exitEvent;
@@ -456,7 +461,3 @@ void ApplyThreadIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

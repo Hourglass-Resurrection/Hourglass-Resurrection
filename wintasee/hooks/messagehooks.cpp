@@ -1,16 +1,13 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(MESSAGEHOOKS_INCL) && !defined(UNITY_BUILD)
-#define MESSAGEHOOKS_INCL
+#include <tls.h>
+#include <MemoryManager\MemoryManager.h>
+#include <msgqueue.h>
+#include <Utils.h>
+#include <wintasee.h>
 
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../msgqueue.h"
-#include <map>
-#include <vector>
-
-extern std::map<HWND, WNDPROC> hwndToOrigHandler;
+extern LazyType<SafeMap<HWND, WNDPROC>> hwndToOrigHandler;
 
 
 static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPARAM lParam);
@@ -675,7 +672,7 @@ LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	WNDPROC origProc;
 	if(!(maf & (MAF_INTERCEPT|MAF_BYPASSGAME)))
 	{
-		origProc = hwndToOrigHandler[hWnd];
+		origProc = hwndToOrigHandler()[hWnd];
 
 		if(!origProc) // if there's no game WndProc to call
 		{
@@ -891,22 +888,22 @@ struct PostedMessage
 	WPARAM wParam;
 	LPARAM lParam;
 };
-std::vector<PostedMessage> postedMessages;
+LazyType<SafeVector<PostedMessage>> postedMessages;
 static CRITICAL_SECTION s_postedMessagesCS;
 bool hasPostedMessages = false;
 
 void HandlePostedMessages()
 {
-	if(!postedMessages.empty())
+	if(!postedMessages().empty())
 	{
 		EnterCriticalSection(&s_postedMessagesCS);
-		int size = postedMessages.size();
+		int size = postedMessages().size();
 		for(int i = 0; i < size; i++)
 		{
-			PostedMessage pm = postedMessages[i];
+			PostedMessage pm = postedMessages()[i];
 			PostMessageA(pm.hWnd, pm.Msg, pm.wParam, pm.lParam);
 		}
-		postedMessages.clear();
+		postedMessages().clear();
 		hasPostedMessages = false;
 		LeaveCriticalSection(&s_postedMessagesCS);
 	}
@@ -979,7 +976,7 @@ HOOKFUNC BOOL WINAPI MySendNotifyMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LP
 	{
 		PostedMessage pm = {hWnd, whitelistUserMessage(Msg), wParam, lParam};
 		EnterCriticalSection(&s_postedMessagesCS);
-		postedMessages.push_back(pm);
+		postedMessages().push_back(pm);
 		LeaveCriticalSection(&s_postedMessagesCS);
 		return 1;
 	}
@@ -1025,7 +1022,7 @@ HOOKFUNC BOOL WINAPI MySendNotifyMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LP
 	{
 		PostedMessage pm = {hWnd, whitelistUserMessage(Msg), wParam, lParam};
 		EnterCriticalSection(&s_postedMessagesCS);
-		postedMessages.push_back(pm);
+		postedMessages().push_back(pm);
 		LeaveCriticalSection(&s_postedMessagesCS);
 		return 1;
 	}
@@ -1368,7 +1365,7 @@ HOOKFUNC BOOL WINAPI MyPostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 	{
 		PostedMessage pm = {hWnd, whitelistUserMessage(Msg), wParam, lParam};
 		EnterCriticalSection(&s_postedMessagesCS);
-		postedMessages.push_back(pm);
+		postedMessages().push_back(pm);
 		hasPostedMessages = true;
 		LeaveCriticalSection(&s_postedMessagesCS);
 		return TRUE;
@@ -1427,7 +1424,7 @@ HOOKFUNC BOOL WINAPI MyPostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 	{
 		PostedMessage pm = {hWnd, whitelistUserMessage(Msg), wParam, lParam};
 		EnterCriticalSection(&s_postedMessagesCS);
-		postedMessages.push_back(pm);
+		postedMessages().push_back(pm);
 		hasPostedMessages = true;
 		LeaveCriticalSection(&s_postedMessagesCS);
 		return TRUE;
@@ -2099,8 +2096,7 @@ HOOKFUNC DWORD WINAPI MyGetMessagePos(VOID)
 // if send is true, sends instead of posts to probably-top-level windows.
 void FakeBroadcastMessage(bool send, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	std::map<HWND, WNDPROC>::iterator iter;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+	for(auto iter = hwndToOrigHandler().begin(); iter != hwndToOrigHandler().end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
@@ -2171,7 +2167,3 @@ void ApplyMessageIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

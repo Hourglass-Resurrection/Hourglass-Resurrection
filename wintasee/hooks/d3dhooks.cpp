@@ -1,13 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(D3DHOOKS_INCL) //&& !defined(UNITY_BUILD)
-#define D3DHOOKS_INCL
-
-#include "../../external/d3d.h"
-#include "../wintasee.h"
-#include "../tls.h"
-#include <map>
+#include <external\d3d.h>
+#include <wintasee.h>
+#include <tls.h>
 
 DEFINE_LOCAL_GUID(IID_IDirect3D, 0x3BBA0080,0x2421,0x11CF,0xA3,0x1A,0x00,0xAA,0x00,0xB9,0x33,0x56); //version  < 0x0500
 DEFINE_LOCAL_GUID(IID_IDirect3D2,0x6aae1ec1,0x662a,0x11d0,0x88,0x9d,0x00,0xaa,0x00,0xbb,0xb7,0x6a); //version >= 0x0500
@@ -515,7 +511,3 @@ void ApplyD3DIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

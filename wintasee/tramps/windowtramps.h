@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef WINDOWTRAMPS_H_INCL
-#define WINDOWTRAMPS_H_INCL
+#pragma once
 
 #define CreateWindowExA TrampCreateWindowExA
 TRAMPFUNC HWND WINAPI CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
@@ -73,5 +72,3 @@ TRAMPFUNC HWND WINAPI GetActiveWindow() TRAMPOLINE_DEF
 TRAMPFUNC HWND WINAPI GetForegroundWindow() TRAMPOLINE_DEF
 #define GetFocus TrampGetFocus
 TRAMPFUNC HWND WINAPI GetFocus() TRAMPOLINE_DEF
-
-#endif
