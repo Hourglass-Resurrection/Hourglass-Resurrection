@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef PRINT_H_INCL
-#define PRINT_H_INCL
+#pragma once
 
 int debugprintf(const char* fmt, ...);
 int cmdprintf(const char* fmt, ...);
@@ -83,7 +82,4 @@ extern LogCategoryFlag& g_excludeLogFlags;
     #define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
 #else
     #define debuglog(cat, ...)         0
-#endif
-
-
 #endif

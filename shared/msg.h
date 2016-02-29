@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef MSG_H_INCL
-#define MSG_H_INCL
+#pragma once
 
 // FIXME: should get things working with EMULATE_MESSAGE_QUEUES enabled, currently it breaks Iji arrow key input
 //#define EMULATE_MESSAGE_QUEUES
@@ -34,5 +33,3 @@
 #define whitelistUserMessage(message) (((message) >= WM_USER /*&& (message) < 0xC000*/) ? (toggleWhitelistMessage(message)) : (message)) 
 
 #endif
-
-#endif // MSG_H_INCL

@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef FILETRAMPS_H_INCL
-#define FILETRAMPS_H_INCL
+#pragma once
 
 #define CreateFileA TrampCreateFileA
 TRAMPFUNC HANDLE WINAPI CreateFileA(
@@ -26,5 +25,3 @@ TRAMPFUNC HANDLE WINAPI CreateFileW(
 ) TRAMPOLINE_DEF
 #define OpenFile TrampOpenFile
 TRAMPFUNC HFILE WINAPI OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle) TRAMPOLINE_DEF
-
-#endif

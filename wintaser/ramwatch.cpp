@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(RAMWATCH_C_INCL) && !defined(UNITY_BUILD)
-#define RAMWATCH_C_INCL
-
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
 // Windows Header Files:
@@ -1172,7 +1169,3 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 	return false;
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

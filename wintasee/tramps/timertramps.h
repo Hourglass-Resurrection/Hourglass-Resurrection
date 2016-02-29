@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef TIMERTRAMPS_H_INCL
-#define TIMERTRAMPS_H_INCL
+#pragma once
 
 #define timeSetEvent TramptimeSetEvent
 TRAMPFUNC MMRESULT WINAPI timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent) TRAMPOLINE_DEF
@@ -20,5 +19,3 @@ TRAMPFUNC BOOL WINAPI SetWaitableTimer(HANDLE hTimer,const LARGE_INTEGER *lpDueT
 TRAMPFUNC BOOL WINAPI CancelWaitableTimer(HANDLE hTimer) TRAMPOLINE_DEF
 #define QueueUserAPC TrampQueueUserAPC
 TRAMPFUNC DWORD WINAPI QueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData) TRAMPOLINE_DEF
-
-#endif

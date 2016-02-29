@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef ASM_H_INCL
-#define ASM_H_INCL
+#pragma once
 
 // based on a snippet by Nicolas Capens (which he released to the public domain)
 // changed to calculate the length of a single instruction instead of the number of instructions in a function
@@ -162,6 +161,3 @@ int instructionLength(const unsigned char *func)
 
 	return (int)(func - funcstart);
 }
-
-
-#endif // IPC_H_INCL

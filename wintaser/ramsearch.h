@@ -1,9 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef RAM_SEARCH_H
-#define RAM_SEARCH_H
-
+#pragma once
 
 ////64k in Ram_68k[], 8k in Ram_Z80[]   
 //#define _68K_RAM_SIZE 64*1024
@@ -89,7 +87,3 @@ void DeallocateRamSearch();
 #else
 	#define ALIGN16 // __attribute__((aligned(16)))
 #endif
-
-
-#endif
-

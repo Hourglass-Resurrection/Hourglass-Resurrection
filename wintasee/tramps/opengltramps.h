@@ -1,9 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef OGLTRAMPS_H_INCL
-#define OGLTRAMPS_H_INCL
-
+#pragma once
 
 typedef unsigned int	GLenum;
 typedef unsigned char	GLboolean;
@@ -762,6 +760,3 @@ TRAMPFUNC BOOL WINAPI wglUseFontBitmapsA(HDC, DWORD, DWORD, DWORD) TRAMPOLINE_DE
 TRAMPFUNC BOOL WINAPI wglUseFontBitmapsW(HDC, DWORD, DWORD, DWORD) TRAMPOLINE_DEF
 TRAMPFUNC BOOL WINAPI wglUseFontOutlinesA(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT) TRAMPOLINE_DEF
 TRAMPFUNC BOOL WINAPI wglUseFontOutlinesW(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT) TRAMPOLINE_DEF
-
-
-#endif

@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef WAITTRAMPS_H_INCL
-#define WAITTRAMPS_H_INCL
+#pragma once
 
 #define NtWaitForSingleObject TrampNtWaitForSingleObject
 TRAMPFUNC NTSTATUS NTAPI NtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout) TRAMPOLINE_DEF
@@ -44,6 +43,3 @@ TRAMPFUNC VOID WINAPI SleepEx(DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_
 #undef Sleep
 VOID WINAPI UntrampedSleep(DWORD x) TRAMPOLINE_DEF_CUSTOM(Sleep(x))
 #define Sleep(x) TrampSleepEx(x,0)
-
-
-#endif
