@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef TIMETRAMPS_H_INCL
-#define TIMETRAMPS_H_INCL
+#pragma once
 
 #define timeGetTime TramptimeGetTime
 TRAMPFUNC DWORD WINAPI timeGetTime(void) TRAMPOLINE_DEF
@@ -35,6 +34,3 @@ TRAMPFUNC NTSTATUS NTAPI NtQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceC
 //TRAMPFUNC MMRESULT WINAPI timeBeginPeriod(DWORD res) TRAMPOLINE_DEF
 //#define timeGetDevCaps TramptimeGetDevCaps
 //TRAMPFUNC MMRESULT WINAPI timeGetDevCaps(LPTIMECAPS ptc, UINT cbtc) TRAMPOLINE_DEF
-
-
-#endif

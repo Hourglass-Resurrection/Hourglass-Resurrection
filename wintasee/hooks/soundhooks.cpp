@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(SOUNDHOOKS_INCL) && !defined(UNITY_BUILD)
-#define SOUNDHOOKS_INCL
-
 #include "../../external/dsound.h"
 #include "../../external/dmusici.h"
 #include "../wintasee.h"
@@ -3010,7 +3007,3 @@ void ApplySoundIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

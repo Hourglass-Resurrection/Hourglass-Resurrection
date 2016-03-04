@@ -10,7 +10,7 @@ Please format your pull request titles according to:
 When contributing, please adhere to the coding standard.  
 We know a lot of the code does not follow this standard, that's what happens when you fork a dead project, and then you're terrible at enforcing a standard for a while. This is _not_ an excuse to ignore the coding standard. If you have the time instead, please update existing code to follow the standard.
 
-You may use any version of Visual Studio for the development locally, but the master repo must be buildable with Visual Studio 2010 for the time being.
+You may use any version of Visual Studio for the development locally, but the master repo must be buildable with Visual Studio 2015 for the time being.
 
 Keep in mind that this project is aimed to work only with 32-bit programs and is dependant on 32-bit memory addressing to work. Therefore a lot of the coding standard is ignoring many problems that would arise compiling the code as a 64-bit program.
 

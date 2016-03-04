@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(DETTIME_C_INCL) && !defined(UNITY_BUILD)
-#define DETTIME_C_INCL
-
 #include "wintasee.h"
 #include "tls.h"
 #include "dettime.h"
@@ -339,5 +336,3 @@ int getCurrentFramestampLogical();
 		// then we wouldn't have recalibration issues.
 		// but we haven't to worry about what happens if the game tries to do that too.
 	}
-
-#endif

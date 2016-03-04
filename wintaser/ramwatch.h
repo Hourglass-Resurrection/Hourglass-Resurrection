@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef RAMWATCH_H
-#define RAMWATCH_H
+#pragma once
 
 #include "ramsearch.h"
 
@@ -38,5 +37,3 @@ void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
 bool InsertWatch(const AddressWatcher& Watch, HWND parent=NULL); // asks user for comment
 void Update_RAM_Watch();
 bool Load_Watches(bool clear, const char* filename);
-
-#endif

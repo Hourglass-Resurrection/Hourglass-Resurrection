@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(TIMERHOOKS_INCL) && !defined(UNITY_BUILD)
-#define TIMERHOOKS_INCL
-
 #include "../wintasee.h"
 #include "../msgqueue.h"
 #include <vector>
@@ -634,7 +631,3 @@ void ApplyTimerIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

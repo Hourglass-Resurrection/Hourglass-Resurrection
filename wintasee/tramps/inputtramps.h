@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef INPUTTRAMPS_H_INCL
-#define INPUTTRAMPS_H_INCL
+#pragma once
 
 #define DirectInputCreateA TrampDirectInputCreateA
 TRAMPFUNC HRESULT WINAPI DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter) TRAMPOLINE_DEF
@@ -41,5 +40,3 @@ TRAMPFUNC UINT WINAPI joyGetNumDevs() TRAMPOLINE_DEF
 TRAMPFUNC MMRESULT WINAPI joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc) TRAMPOLINE_DEF
 #define joyGetDevCapsW TrampjoyGetDevCapsW
 TRAMPFUNC MMRESULT WINAPI joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc) TRAMPOLINE_DEF
-
-#endif

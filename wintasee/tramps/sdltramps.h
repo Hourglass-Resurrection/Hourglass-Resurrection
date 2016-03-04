@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef SDLTRAMPS_H_INCL
-#define SDLTRAMPS_H_INCL
+#pragma once
 
 struct SDL_Palette {
   int entryCount;
@@ -58,5 +57,3 @@ TRAMPFUNC SDL_Surface* SDLCALL SDL_SetVideoMode(int width, int height, int bpp, 
 TRAMPFUNC int SDLCALL SDL_LockSurface (SDL_Surface *surface) TRAMPOLINE_DEF
 #define SDL_UnlockSurface TrampSDL_UnlockSurface
 TRAMPFUNC void SDLCALL SDL_UnlockSurface (SDL_Surface *surface) TRAMPOLINE_DEF_VOID
-
-#endif

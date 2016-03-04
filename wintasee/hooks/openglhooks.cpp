@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(OGLHOOKS_C_INCL) && !defined(UNITY_BUILD)
-#define OGLHOOKS_C_INCL
-
 // this wraps opengl and replaces everything it does with Direct3D8 calls,
 // because windows opengl drivers are crashtastic on some computers when savestates are used,
 // and because this way lets us reuse existing code for D3D such as AVI capture.
@@ -7078,6 +7075,3 @@ void ApplyOGLIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-
-#endif

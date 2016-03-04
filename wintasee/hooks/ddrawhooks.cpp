@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(DDRAWHOOKS_INCL) && !defined(UNITY_BUILD)
-#define DDRAWHOOKS_INCL
-
 #include "../../external/ddraw.h"
 #include "../wintasee.h"
 #include "../tls.h"
@@ -1943,7 +1940,3 @@ void ApplyDDrawIntercepts()
 	};
 	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif
