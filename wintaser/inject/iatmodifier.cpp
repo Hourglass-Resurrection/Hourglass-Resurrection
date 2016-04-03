@@ -216,8 +216,9 @@ void* IATModifier::allocateMemAboveBase(void* baseAddress, size_t size)
 					process_.allocMem(size, bruteForce, MEM_RESERVE | MEM_COMMIT);
 					return bruteForce;
 				}
-				catch (MemoryAllocationException)
+				catch (const MemoryAllocationException&)
 				{
+					// nothing to do
 				}
 				bruteForce += 0x10000;
 			}
