@@ -225,14 +225,11 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 #endif
 	
 	// Graphics Menu
-
 	Flags = MF_BYPOSITION | MF_STRING;
 	
 	i = 0;
-#if 0
 	HelperFuncInsertMenuByID(Graphics, i++, Flags | (!localTASflags.forceWindowed ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_ALLOWFULLSCREEN, "", "Allow &Fullscreen / Display Mode Changes", "can't change while running");
 	InsertMenu(Graphics, i++, MF_SEPARATOR, NULL, NULL);
-#endif
 	HelperFuncInsertMenuByID(Graphics, i++, Flags | (!localTASflags.forceSoftware ? MF_CHECKED : MF_UNCHECKED) | (started ? MF_GRAYED : 0), ID_GRAPHICS_FORCESOFTWARE, "", "&Allow Hardware Acceleration", "can't change while running");
 	HelperFuncInsertMenu(Graphics, i++, Flags | MF_POPUP | ((localTASflags.forceSoftware||started) ? MF_GRAYED : 0), GraphicsMemory, "", "Surface &Memory", started ? "can't change while running" : "hardware acceleration must be enabled");
 
