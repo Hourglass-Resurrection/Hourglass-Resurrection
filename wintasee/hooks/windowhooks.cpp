@@ -561,7 +561,7 @@ int GetDefaultMessageBoxResult(UINT uType)
 			return IDNO;
 		}
 	}
-	if((uType & MB_DEFBUTTON2) == MB_DEFBUTTON3)
+	if((uType & MB_DEFBUTTON3) == MB_DEFBUTTON3)
 	{
 		switch(uType & 0xF)
 		{

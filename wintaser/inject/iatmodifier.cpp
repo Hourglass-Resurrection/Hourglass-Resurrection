@@ -180,7 +180,7 @@ void IATModifier::writeIAT(const vector<string>& dlls, bool runFirst)
 		uintptr_t comDescriptorAddr = ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress + iba;
 		IMAGE_COR20_HEADER cor20Header;
 		process_.readMemory((LPVOID)comDescriptorAddr, &cor20Header, sizeof(IMAGE_COR20_HEADER));
-		if (cor20Header.Flags | COMIMAGE_FLAGS_ILONLY)
+		if (cor20Header.Flags & COMIMAGE_FLAGS_ILONLY)
 		{
 			// pure IL executables trigger more restrictive PE header checks
 			// so just remove the corresponding flag
