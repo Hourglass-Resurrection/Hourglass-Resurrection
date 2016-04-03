@@ -1200,7 +1200,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 				sizeof(BITMAPINFO), 
 				width, height, static_cast<WORD>(1),
 				static_cast<WORD>(bpp), BI_RGB, 
-				static_cast<DWORD>(static_cast<unsigned>(width) * height * bpp / 8), 
+				static_cast<DWORD>(width) * static_cast<DWORD>(height) * static_cast<DWORD>(bpp) / static_cast<DWORD>(8),
 			}
 		};  
 
