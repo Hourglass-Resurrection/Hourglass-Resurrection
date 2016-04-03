@@ -897,7 +897,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	if(!s_frameThreadId && captureInfoType != CAPTUREINFO_TYPE_PREV)
 	{
 		char name[64];
-		sprintf(name, "%d_" "FrameThread" "_at_%d", threadCounter++, detTimer.GetTicks());
+		sprintf(name, "%u_" "FrameThread" "_at_%u", threadCounter++, detTimer.GetTicks());
 		SetThreadName(-1, name);
 
 		s_frameThreadId = GetCurrentThreadId();

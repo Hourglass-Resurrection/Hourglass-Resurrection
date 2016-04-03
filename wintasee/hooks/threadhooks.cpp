@@ -166,7 +166,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 				cmdprintf("GIVEMEANAME: %d", 0);
 				threadTypeName = (const char*)commandSlot;
 			}
-			sprintf(name, "%d_FAKE_%s_at_%d", threadCounter++, threadTypeName, detTimer.GetTicks());
+			sprintf(name, "%u_FAKE_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
 			SetThreadName(*lpThreadId, name);
 			return rv;
 		}
@@ -188,7 +188,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 			//threadTypeName = "unknown";
 			threadTypeName = (const char*)commandSlot;
 		}
-		sprintf(name, "%d_%s_at_%d", threadCounter++, threadTypeName, detTimer.GetTicks());
+		sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
 		SetThreadName(*lpThreadId, name);
 		debuglog(LCF_THREAD, __FUNCTION__": created real thread and named it \"%s\".\n", name);
 		return rv;
@@ -270,7 +270,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 					cmdprintf("GIVEMEANAME: %d", 0);
 					threadTypeName = (const char*)commandSlot;
 				}
-				sprintf(name, "%d_%s_at_%d", threadCounter++, threadTypeName, detTimer.GetTicks());
+				sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
 				SetThreadName(twi->threadId, name);
 				debuglog(LCF_THREAD, __FUNCTION__ " reused wrapper thread and renamed it \"%s\": handle=0x%X->0x%X (ph=0x%X), id=0x%X\n", name, oldHandle, twi->handle, twi->privateHandle, twi->threadId);
 			}
@@ -326,7 +326,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 			cmdprintf("GIVEMEANAME: %d", 0);
 			threadTypeName = (const char*)commandSlot;
 		}
-		sprintf(name, "%d_%s_at_%d", threadCounter++, threadTypeName, detTimer.GetTicks());
+		sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
 		SetThreadName(twi->threadId, name);
 		debuglog(LCF_THREAD, __FUNCTION__": created real (wrapper) thread and named it \"%s\": handle=0x%X (ph=0x%X), id=0x%X.\n", name, twi->handle, twi->privateHandle, twi->threadId);
 	}

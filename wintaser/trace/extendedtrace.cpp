@@ -842,7 +842,7 @@ BOOL GetSourceInfoFromAddress( UINT address, LPTSTR lpszSourceInfo, HANDLE hProc
 	{
 	   // Got it. Let's use "sourcefile(linenumber)" format
 		PCSTR2LPTSTR( lineInfo.FileName, lpszFileName );
-		_stprintf( lpszSourceInfo, _T("%s(%d)"), lpszFileName, lineInfo.LineNumber );
+		_stprintf( lpszSourceInfo, _T("%s(%u)"), lpszFileName, lineInfo.LineNumber );
 		//_stprintf( lpszSourceInfo, _T("wintasee!0x%08X, " "%s(%d)"), address, lpszFileName, lineInfo.LineNumber );
 		ret = TRUE;
 	}
