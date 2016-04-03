@@ -5423,7 +5423,7 @@ void SplitToValidPath(const char* initialPath, const char* defaultDir, char* fil
 	filename[0] = '\0';
 	directory[0] = '\0';
 
-	if(strlen(initialPath) > MAX_PATH)
+	if(initialPath && strlen(initialPath) > MAX_PATH)
 		return;
 
 	if(initialPath)

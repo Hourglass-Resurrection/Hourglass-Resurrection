@@ -625,7 +625,8 @@ public:
 			// This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
 			// if the game passes a NULL pointer or a struct without the size member inited we cannot continue.
 			if(pdidoi == NULL) return E_POINTER;
-			if(memcmp(pdidoi, 0, 4) == 0) return DIERR_INVALIDPARAM;
+			DWORD zero = 0;
+			if(memcmp(pdidoi, &zero, 4) == 0) return DIERR_INVALIDPARAM;
 			switch(dwHow)
 			{
 				// Due to games being able to pass wrong values (either through bad code or bad coders) we cannot merge
