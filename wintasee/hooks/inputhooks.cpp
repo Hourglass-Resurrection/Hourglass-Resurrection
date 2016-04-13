@@ -1250,7 +1250,7 @@ void ProcessFrameInput()
 			s_lii.dwTime = timeStamp;
 
 			__declspec(noinline) SHORT WINAPI MyGetKeyState(int vKey);
-			DIDEVICEOBJECTDATA keyEvent = { i, static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++};
+			DIDEVICEOBJECTDATA keyEvent = {i, static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++};
 			BufferedInput::AddEventToAllDevices(keyEvent, s_bufferedKeySlots);
 		}
 	}

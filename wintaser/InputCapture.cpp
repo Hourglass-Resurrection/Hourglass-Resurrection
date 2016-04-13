@@ -619,7 +619,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// There are two mappings: inputs and events.
 
 	/** Keyboard **/
-	for (int k=1; k<DI_KEY_NUMBER; k++){
+	for (unsigned char k=1; k<DI_KEY_NUMBER; k++){
 
 		// If k is not pressed, we skip to the next key.
 		if (!DI_KEY_PRESSED(keys[k]))
@@ -635,7 +635,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			// As wintasee is dealing with a VK-indexed array, we are doing the conversion here.
 			SingleInput siMapped = iterI->second;
 			if (siMapped.device == SINGLE_INPUT_DI_KEYBOARD)
-				currentI->keys[convertDIKToVK((unsigned char)siMapped.key)] = 1;
+				currentI->keys[convertDIKToVK(static_cast<unsigned char>(siMapped.key))] = 1;
 			if (siMapped.device == SINGLE_INPUT_DI_MOUSE)
 				currentI->mouse.di.rgbButtons[siMapped.key] |= 0x80;
 			if (siMapped.device == SINGLE_INPUT_XINPUT_JOYSTICK){
