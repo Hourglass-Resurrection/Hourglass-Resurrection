@@ -5,7 +5,7 @@
 #include "ipc.h"
 using namespace Config;
 
-void HelperFuncInsertMenuByID(HMENU smenu, UINT pos, UINT flags, UINT_PTR id, LPCSTR suffixe, LPCSTR str, LPCSTR disableReason)
+void HelperFuncInsertMenuByID(HMENU smenu, UINT pos, UINT flags, UINT_PTR id, LPCSTR suffix, LPCSTR str, LPCSTR disableReason)
 {
 	char Str_Tmp[1024];
 #if 0
@@ -15,16 +15,16 @@ void HelperFuncInsertMenuByID(HMENU smenu, UINT pos, UINT flags, UINT_PTR id, LP
 		sprintf(Str_Tmp, "%s (%s)", str, disableReason);
 	else
 		strcpy(Str_Tmp, str);
-	strcat(Str_Tmp, suffixe);
+	strcat(Str_Tmp, suffix);
 #if 0
-	AddHotkeySuffix(Str_Tmp, id, suffixe, true);
+	AddHotkeySuffix(Str_Tmp, id, suffix, true);
 #endif
 	InsertMenu(smenu, pos, flags, id, Str_Tmp);
 }
 
-__forceinline void HelperFuncInsertMenu(HMENU smenu, UINT pos, UINT flags, HMENU menu, LPCSTR suffixe, LPCSTR str, LPCSTR disableReason)
+__forceinline void HelperFuncInsertMenu(HMENU smenu, UINT pos, UINT flags, HMENU menu, LPCSTR suffix, LPCSTR str, LPCSTR disableReason)
 {
-	HelperFuncInsertMenuByID(smenu, pos, flags, reinterpret_cast<UINT_PTR>(menu), suffixe, str, disableReason);
+	HelperFuncInsertMenuByID(smenu, pos, flags, reinterpret_cast<UINT_PTR>(menu), suffix, str, disableReason);
 }
 
 void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
