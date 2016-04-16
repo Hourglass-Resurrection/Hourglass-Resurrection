@@ -363,7 +363,7 @@ InputCapture::InputCapture(char* filename) // Construct by loading from file.
 	memset(oldKeys, 0, DI_KEY_NUMBER);
 }
 
-bool InputCapture::IsModifier(unsigned char key){
+bool InputCapture::IsModifier(SHORT key){
 	for (int i = 0; i < 8; i++){
 		ModifierKey mkey = modifierKeys[i]; // Damn, no foreach structure in c++...
 		if (mkey.DIK == key)
@@ -619,14 +619,14 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	// There are two mappings: inputs and events.
 
 	/** Keyboard **/
-	for (unsigned char k=1; k<DI_KEY_NUMBER; k++){
+	for (SHORT k=1; k<DI_KEY_NUMBER; k++){
 
 		// If k is not pressed, we skip to the next key.
-		if (!DI_KEY_PRESSED(keys[k]))
+		if (!DI_KEY_PRESSED(keys[DIK_ESCAPE]))
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = { SINGLE_INPUT_DI_KEYBOARD, static_cast<SHORT>(k), "" };
+		SingleInput siPressed = { SINGLE_INPUT_DI_KEYBOARD, k, "" };
 
 		/* Input mapping */
 		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
@@ -658,7 +658,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// We build the SingleInput with modifiers this time, and check if it's mapped to something.
-		SingleInput siPressedMod = { SINGLE_INPUT_DI_KEYBOARD, static_cast<SHORT>((modifier << 8) | k), "" };
+		SingleInput siPressedMod = { SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, "" };
 
 		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressedMod);
 		if (iterE != eventMapping.end()){ // There is something.
