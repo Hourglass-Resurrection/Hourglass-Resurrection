@@ -26,9 +26,9 @@ Movie::Movie()
 	headerBuilt = false;
 	fps = 0;
 	it = 0;
-	memset(fmd5, 0, 4 * sizeof(unsigned int));
+	memset(fmd5, 0, sizeof(fmd5));
 	fsize = 0;
-	memset(desyncDetectionTimerValues, 0, 16 * sizeof(int));
+	memset(desyncDetectionTimerValues, 0, sizeof(desyncDetectionTimerValues));
 }
 
 // TODO: save incrementally?, and work on the format

@@ -20,7 +20,7 @@ struct Movie
 	unsigned int it;
 	unsigned int fmd5[4]; // MD5 Checksum of the exefile
 	unsigned int fsize;
-	int desyncDetectionTimerValues [16];
+	int desyncDetectionTimerValues[16];
 	unsigned int version;
 	char commandline[8192-1-(MAX_PATH+1)]; // Windows can handle command lines of 8192 with the null termination char. This includes the program path though so we need to make sure our command line remains valid.
 	bool headerBuilt; // When true, the header is properly populated.
