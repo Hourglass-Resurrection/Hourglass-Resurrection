@@ -84,7 +84,7 @@ private:
 	unsigned char oldKeys[DI_KEY_NUMBER]; // List of previous key states, needed for events triggering.
 
 	// Return if the key is a modifier.
-	bool IsModifier(unsigned char key);
+	bool IsModifier(SHORT key);
 
 	// From a keyboard state, builds the char that contains the flags from all pressed modifier keys.
 	char BuildModifier(unsigned char* keys);
