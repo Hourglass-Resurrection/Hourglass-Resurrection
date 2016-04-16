@@ -584,5 +584,4 @@ private:
 	//BOOL fullyInitialized;
 };
 
-
 extern DeterministicTimer detTimer;

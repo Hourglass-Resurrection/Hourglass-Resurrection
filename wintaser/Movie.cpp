@@ -24,6 +24,11 @@ Movie::Movie()
 	author[0] = '\0';
 	commandline[0] = '\0';
 	headerBuilt = false;
+	fps = 0;
+	it = 0;
+	memset(fmd5, 0, sizeof(fmd5));
+	fsize = 0;
+	memset(desyncDetectionTimerValues, 0, sizeof(desyncDetectionTimerValues));
 }
 
 // TODO: save incrementally?, and work on the format
@@ -54,7 +59,7 @@ Movie::Movie()
 			strcat(newFilename, "new.hgr\0");
 
 			char str[1024];
-			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s%.", filename, newFilename);
+			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
 			CustomMessageBox(str, "Warning!", MB_OK | MB_ICONWARNING);
 
 			file = fopen(newFilename, "wb");
@@ -199,8 +204,7 @@ Movie::Movie()
 
 	unsigned int authorLen;
 	fread(&authorLen, 4, 1, file);
-	char* author;
-	author = NULL;
+	char* author = NULL;
 	if(authorLen) // If this is non-zero, there is an author name in the movie.
 	{
 		if(authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
@@ -244,16 +248,15 @@ Movie::Movie()
 
 	unsigned int commandlineLen;
 	fread(&commandlineLen, 4, 1, file);
-	char* commandline;
-	commandline = NULL;//= movie.commandline;
+	char* commandline = NULL;//= movie.commandline;
 	if(commandlineLen) // There's a command line in the movie file.
 	{
 		if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
 		{
 			fclose(file);
-			if(author) // Prevent memory leak
+			if (author)
 			{
-				delete [] author;
+				delete[] author; // Prevent memory leak
 			}
 			char str[1024];
 			sprintf(str, "The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
@@ -323,6 +326,7 @@ Movie::Movie()
 			movie.frames.push_back(mf);
 			current_pos += size;
 		}
+		free(all_inputs);
 	}
 	else // empty movie file... do we really need this anymore? I mean, it would fail earlier if there was a problem.
 	{
@@ -511,6 +515,15 @@ Movie::Movie()
 
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
 	}*/
+	
+	if (commandline)
+	{
+		delete[] commandline;
+	}
+	if (author)
+	{
+		delete[] author;
+	}
 
 	return true;
 }

@@ -1454,7 +1454,7 @@ HOOKFUNC void GLAPI MyglCallLists (GLsizei n, GLenum type, const GLvoid *lists)
 	{
 		if(n < 0)
 			OGLRETURNERROR(GL_INVALID_VALUE);
-		if(type != GL_BYTE && type != GL_UNSIGNED_BYTE && type != GL_SHORT && type != GL_UNSIGNED_SHORT && type != GL_INT && type != GL_UNSIGNED_INT,	GL_FLOAT && type != GL_2_BYTES && type != GL_3_BYTES && type != GL_4_BYTES)
+		if(type != GL_BYTE && type != GL_UNSIGNED_BYTE && type != GL_SHORT && type != GL_UNSIGNED_SHORT && type != GL_INT && type != GL_UNSIGNED_INT && type != GL_FLOAT && type != GL_2_BYTES && type != GL_3_BYTES && type != GL_4_BYTES)
 			OGLRETURNERROR(GL_INVALID_ENUM);
 
 		for(int i = 0; i < n; i++)

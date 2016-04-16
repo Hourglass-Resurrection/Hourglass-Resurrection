@@ -20,7 +20,7 @@ bool InjectDLLIntoIDT(DWORD dwInjectProcessID, HANDLE hInjectProcess, HANDLE hIn
 		iatModifier.writeIAT(dllPath, runFirst);
 		process.clearDebuggerFlag(hInjectThread); // fix for Exit Fate bootup
 	}
-	catch(std::runtime_error e)
+	catch(const std::runtime_error &e)
 	{
 		debugprintf("Failed to inject DLL \"%s\" into process id 0x%X IAT: %s\n", dllPath, dwInjectProcessID, e.what());
 		return false;

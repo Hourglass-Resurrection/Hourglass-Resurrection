@@ -401,7 +401,7 @@ void OpenRWRecentFile(int memwRFileNumber)
 		return;
 	}
 	const char DELIM = '\t';
-	AddressWatcher Temp;
+	AddressWatcher Temp = {};
 	char mode;
 	fgets(Str_Tmp_RW,1024,WatchFile);
 	sscanf(Str_Tmp_RW,"%c%*s",&mode);
@@ -415,7 +415,7 @@ void OpenRWRecentFile(int memwRFileNumber)
 	int WatchAdd;
 	fgets(Str_Tmp_RW,1024,WatchFile);
 	sscanf(Str_Tmp_RW,"%d%*s",&WatchAdd);
-	WatchAdd+=WatchCount;
+	WatchAdd += WatchCount;
 	for (int i = WatchCount; i < WatchAdd; i++)
 	{
 		while(i < 0)
@@ -423,8 +423,9 @@ void OpenRWRecentFile(int memwRFileNumber)
 		do {
 			fgets(Str_Tmp_RW,1024,WatchFile);
 		} while(Str_Tmp_RW[0] == '\n');
-		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
-		Temp.WrongEndian = 0;
+		int dummy_wrong_endian;
+		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&dummy_wrong_endian);
+		Temp.WrongEndian = false;
 		char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
 		if(Comment == (char*)NULL + 1)
 			continue;
@@ -582,7 +583,7 @@ bool Load_Watches(bool clear, const char* filename)
 	}
 	strcpy(currentWatch,filename);
 	RWAddRecentFile(currentWatch);
-	AddressWatcher Temp;
+	AddressWatcher Temp = {};
 	char mode;
 	fgets(Str_Tmp_RW,1024,WatchFile);
 	sscanf(Str_Tmp_RW,"%c%*s",&mode);
@@ -596,7 +597,7 @@ bool Load_Watches(bool clear, const char* filename)
 	int WatchAdd;
 	fgets(Str_Tmp_RW,1024,WatchFile);
 	sscanf(Str_Tmp_RW,"%d%*s",&WatchAdd);
-	WatchAdd+=WatchCount;
+	WatchAdd += WatchCount;
 	for (int i = WatchCount; i < WatchAdd; i++)
 	{
 		while(i < 0)
@@ -604,8 +605,9 @@ bool Load_Watches(bool clear, const char* filename)
 		do {
 			fgets(Str_Tmp_RW,1024,WatchFile);
 		} while(Str_Tmp_RW[0] == '\n');
-		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
-		Temp.WrongEndian = 0;
+		int dummy_wrong_endian;
+		sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&dummy_wrong_endian);
+		Temp.WrongEndian = false;
 		char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
 		if(Comment == (char*)NULL + 1)
 			continue;
@@ -813,7 +815,7 @@ LRESULT CALLBACK EditWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				{
 					if(s && t)
 					{
-						AddressWatcher Temp;
+						AddressWatcher Temp = {};
 						Temp.Size = s;
 						Temp.Type = t;
 						Temp.WrongEndian = false; //replace this when I get little endian working properly

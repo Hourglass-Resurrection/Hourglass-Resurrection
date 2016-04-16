@@ -248,7 +248,7 @@ HOOKFUNC BOOL WINAPI MyStretchBlt(
 	debuglog(LCF_GDI|(isFrameBoundary?LCF_FRAME:LCF_FREQUENT), __FUNCTION__ " called.\n");
 
 
-	BOOL rv;
+	BOOL rv = TRUE;
 	if(!ShouldSkipDrawing(false, WindowFromDC(hdcDest) != 0))
 	{
 		if(s_gdiPendingRefresh && !redrawingScreen)
@@ -308,7 +308,7 @@ HOOKFUNC BOOL WINAPI MyBitBlt(
 
 
 
-	BOOL rv;
+	BOOL rv = TRUE;
 	if(!ShouldSkipDrawing(false, WindowFromDC(hdcDest) != 0))
 	{
 		if(s_gdiPendingRefresh && !redrawingScreen)

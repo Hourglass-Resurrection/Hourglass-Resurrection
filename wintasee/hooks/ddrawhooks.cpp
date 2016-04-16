@@ -502,7 +502,7 @@ struct MyDirectDrawSurface
 						{
 							DDSURFACEDESCN ddsdBB = { sizeof(DDSURFACEDESCN) };
 							GetSurfaceDesc((DIRECTDRAWSURFACEN*)s_theBackBuffer, &ddsdBB);
-							RECT bbRect = {0, 0, ddsdBB.dwWidth, ddsdBB.dwHeight };
+							RECT bbRect = {0, 0, static_cast<LONG>(ddsdBB.dwWidth), static_cast<LONG>(ddsdBB.dwHeight) };
 							static RECT rect;
 							rect = bbRect;
 							POINT pt = {0,0};
@@ -536,18 +536,18 @@ struct MyDirectDrawSurface
 					{
 						if(SUCCEEDED(GetSurfaceDesc(pSource, &ddsdesc)))
 						{
-							RECT destRect = {xDest, yDest, xDest + ddsdesc.dwWidth, yDest + ddsdesc.dwHeight };
+							RECT destRect = { static_cast<LONG>(xDest), static_cast<LONG>(yDest), static_cast<LONG>(xDest + ddsdesc.dwWidth), static_cast<LONG>(yDest + ddsdesc.dwHeight) };
 							return MyBlt(pThis, &destRect, pSource, srcRect, 0, NULL);
 						}
 					}
 					if(SUCCEEDED(GetSurfaceDesc(pThis, &ddsdesc)))
 					{
-						RECT destRect = {xDest, yDest, ddsdesc.dwWidth, ddsdesc.dwHeight };
+						RECT destRect = { static_cast<LONG>(xDest), static_cast<LONG>(yDest), static_cast<LONG>(ddsdesc.dwWidth), static_cast<LONG>(ddsdesc.dwHeight) };
 						return MyBlt(pThis, &destRect, pSource, srcRect, 0, NULL);
 					}
 					return MyBlt(pThis, NULL, pSource, NULL, 0, NULL);
 				}
-				RECT destRect = {xDest, yDest, xDest + srcRect->right - srcRect->left, yDest + srcRect->bottom - srcRect->top };
+				RECT destRect = { static_cast<LONG>(xDest), static_cast<LONG>(yDest), static_cast<LONG>(xDest + srcRect->right - srcRect->left), static_cast<LONG>(yDest + srcRect->bottom - srcRect->top) };
 				return MyBlt(pThis, &destRect, pSource, srcRect, 0, NULL);
 			}
 		}

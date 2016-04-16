@@ -311,6 +311,7 @@ int getCurrentFramestampLogical();
 		totalSleepFrames = 0;
 		//queuedAsyncAddDelay = 0;
 		replaceReserveUsed = 0;
+		nonPostponedAddedDelay = 0;
 //		disableSelfTicking = 0;
 		lastFrameIsFromDraw = 1;
 	}

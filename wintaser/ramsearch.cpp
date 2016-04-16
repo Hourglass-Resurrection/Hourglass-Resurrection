@@ -388,7 +388,7 @@ bool RSVal::print(char* output, char sizeTypeID, char typeID)
 					sprintf(output, " ('%c')", (unsigned char)((int)*this&0xff));
 				break;
 			case 'w': sprintf(output, "%u", (unsigned short)((int)*this&0xffff)); break;
-			case 'd': sprintf(output, "%u", (unsigned long)(int)*this); break;
+			case 'd': sprintf(output, "%lu", (unsigned long)(int)*this); break;
 			case 'l': sprintf(output, "%I64u", (unsigned long long)(long long)*this); break;
 		}
 		break;
@@ -1067,10 +1067,10 @@ bool Set_RS_Val()
 			appliedSize = 'w', appliedSign = 'u';
 		if(rs_c == 'a')
 			appliedSize = 'd', appliedSign = 'u';
-		if((appliedSize == 'b' && appliedSize == 's' && ((int)rs_param < -128 || (int)rs_param > 127)) ||
-		   (appliedSize == 'b' && appliedSize != 's' && ((int)rs_param < 0 || (int)rs_param > 255)) ||
-		   (appliedSize == 'w' && appliedSize == 's' && ((int)rs_param < -32768 || (int)rs_param > 32767)) ||
-		   (appliedSize == 'w' && appliedSize != 's' && ((int)rs_param < 0 || (int)rs_param > 65535)))
+		if((appliedSize == 'b' && appliedSign == 's' && ((int)rs_param < -128 || (int)rs_param > 127)) ||
+		   (appliedSize == 'b' && appliedSign != 's' && ((int)rs_param < 0 || (int)rs_param > 255)) ||
+		   (appliedSize == 'w' && appliedSign == 's' && ((int)rs_param < -32768 || (int)rs_param > 32767)) ||
+		   (appliedSize == 'w' && appliedSign != 's' && ((int)rs_param < 0 || (int)rs_param > 65535)))
 		   return false;
 	}
 

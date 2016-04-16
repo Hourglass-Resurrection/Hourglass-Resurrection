@@ -11,7 +11,7 @@
 using namespace std;
 
 IATModifier::IATModifier(const Process& process)
-	: process_(process), importDescrTblAddr_(NULL), importDescrTblSize_(0)
+	: process_(process), importDescrTblAddr_(NULL), ntHeadersAddr_(0), importDescrTblSize_(0)
 {
 }
 
@@ -180,7 +180,7 @@ void IATModifier::writeIAT(const vector<string>& dlls, bool runFirst)
 		uintptr_t comDescriptorAddr = ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress + iba;
 		IMAGE_COR20_HEADER cor20Header;
 		process_.readMemory((LPVOID)comDescriptorAddr, &cor20Header, sizeof(IMAGE_COR20_HEADER));
-		if (cor20Header.Flags | COMIMAGE_FLAGS_ILONLY)
+		if (cor20Header.Flags & COMIMAGE_FLAGS_ILONLY)
 		{
 			// pure IL executables trigger more restrictive PE header checks
 			// so just remove the corresponding flag
@@ -216,8 +216,9 @@ void* IATModifier::allocateMemAboveBase(void* baseAddress, size_t size)
 					process_.allocMem(size, bruteForce, MEM_RESERVE | MEM_COMMIT);
 					return bruteForce;
 				}
-				catch (MemoryAllocationException)
+				catch (const MemoryAllocationException&)
 				{
+					// nothing to do
 				}
 				bruteForce += 0x10000;
 			}

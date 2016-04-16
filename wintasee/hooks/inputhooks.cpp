@@ -555,6 +555,7 @@ public:
 			memcpy(data, &curinput.mouse.di, sizeof(DIMOUSESTATE));
 			return DI_OK;
 		}
+		return E_PENDING;
 	}
 
 	STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
@@ -624,7 +625,8 @@ public:
 			// This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
 			// if the game passes a NULL pointer or a struct without the size member inited we cannot continue.
 			if(pdidoi == NULL) return E_POINTER;
-			if(memcmp(pdidoi, 0, 4) == 0) return DIERR_INVALIDPARAM;
+			DWORD zero = 0;
+			if(memcmp(pdidoi, &zero, 4) == 0) return DIERR_INVALIDPARAM;
 			switch(dwHow)
 			{
 				// Due to games being able to pass wrong values (either through bad code or bad coders) we cannot merge
@@ -1221,13 +1223,13 @@ HOOKFUNC BOOL WINAPI MyGetLastInputInfo(PLASTINPUTINFO plii)
 
 void ProcessFrameInput()
 {
-	static int inputEventSequenceID = 0;
+	static DWORD inputEventSequenceID = 0;
 
 	// do some processing per key that changed states.
 	// this is so MyGetAsyncKeyState can properly mimic GetAsyncKeyState's
 	// return value pattern of 0x0000 -> 0x8001 -> 0x8000 when a key is pressed,
 	// and also so directinput buffered keyboard input can work.
-	for(int i = 1; i < 256; i++)
+	for(DWORD i = 1; i < 256; i++)
 	{
 		if(curinput.keys[i] != previnput.keys[i])
 		{
@@ -1248,7 +1250,7 @@ void ProcessFrameInput()
 			s_lii.dwTime = timeStamp;
 
 			__declspec(noinline) SHORT WINAPI MyGetKeyState(int vKey);
-			DIDEVICEOBJECTDATA keyEvent = {i, MyGetKeyState(i) & 0xFF, timeStamp, inputEventSequenceID++};
+			DIDEVICEOBJECTDATA keyEvent = {i, static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++};
 			BufferedInput::AddEventToAllDevices(keyEvent, s_bufferedKeySlots);
 		}
 	}
@@ -1257,43 +1259,43 @@ void ProcessFrameInput()
 	if (curinput.mouse.di.lX != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X, curinput.mouse.di.lX, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X, static_cast<DWORD>(curinput.mouse.di.lX), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	if (curinput.mouse.di.lY != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y, curinput.mouse.di.lY, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y, static_cast<DWORD>(curinput.mouse.di.lY), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	if (curinput.mouse.di.lZ != 0){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, curinput.mouse.di.lZ, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z, static_cast<DWORD>(curinput.mouse.di.lZ), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	if (curinput.mouse.di.rgbButtons[0] != previnput.mouse.di.rgbButtons[0]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, curinput.mouse.di.rgbButtons[0]?0x80:0x00, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0, static_cast<DWORD>(curinput.mouse.di.rgbButtons[0]?0x80:0x00), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	if (curinput.mouse.di.rgbButtons[1] != previnput.mouse.di.rgbButtons[1]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, curinput.mouse.di.rgbButtons[1]?0x80:0x00, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1, static_cast<DWORD>(curinput.mouse.di.rgbButtons[1]?0x80:0x00), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	if (curinput.mouse.di.rgbButtons[2] != previnput.mouse.di.rgbButtons[2]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, curinput.mouse.di.rgbButtons[2]?0x80:0x00, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2, static_cast<DWORD>(curinput.mouse.di.rgbButtons[2]?0x80:0x00), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}
 	/*if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
 		DWORD timeStamp = detTimer.GetTicks();
 		s_lii.dwTime = timeStamp;
-		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON3, 0x80, timeStamp, inputEventSequenceID++};
+		DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON3, static_cast<DWORD>(0x80), timeStamp, inputEventSequenceID++};
 		BufferedInput::AddMouseEventToAllDevices(mouseEvent, s_bufferedKeySlots);
 	}*/
 

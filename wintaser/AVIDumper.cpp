@@ -767,7 +767,8 @@ struct AviFrameQueue
 		int audioBufferAllocated;
 		int inAudioSize, audioFrameSamples;
 		double inAudioSeconds; // hack
-		int framecount; int slotNum; // for debugging
+		int framecount;
+		int slotNum; // for debugging
 		Slot() : hasProcessedVideo(false), hasProcessedAudio(false),
 			aviPixels(NULL), aviPixelsAllocated(0),
 //			inPixels(NULL), inPixelsAllocated(0),
@@ -775,6 +776,7 @@ struct AviFrameQueue
 			audioFrameSamples(0), inAudioSize(0), inAudioSeconds(0)
 		{
 			framecount = -1;
+			slotNum = 0;
 		}
 		~Slot()
 		{
@@ -1196,9 +1198,9 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 			// BITMAPINFOHEADER
 			{ 
 				sizeof(BITMAPINFO), 
-				width, height, 1, 
-				bpp, BI_RGB, 
-				width * height * bpp / 8, 
+				width, height, static_cast<WORD>(1),
+				static_cast<WORD>(bpp), BI_RGB, 
+				static_cast<DWORD>(width) * static_cast<DWORD>(height) * static_cast<DWORD>(bpp) / static_cast<DWORD>(8),
 			}
 		};  
 
