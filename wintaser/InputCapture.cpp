@@ -622,7 +622,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 	for (SHORT k=1; k<DI_KEY_NUMBER; k++){
 
 		// If k is not pressed, we skip to the next key.
-		if (!DI_KEY_PRESSED(keys[DIK_ESCAPE]))
+		if (!DI_KEY_PRESSED(keys[k]))
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
