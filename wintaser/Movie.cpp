@@ -263,7 +263,7 @@ Movie::Movie()
 			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
-		commandline = new char[commandlineLen];
+		commandline = new char[commandlineLen+1];
 		fread(commandline, commandlineLen, 1, file);
 		commandline[commandlineLen] = '\0'; // Ensure proper null-termination.
 	}
