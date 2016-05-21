@@ -897,6 +897,7 @@ wchar_t * __cdecl wcscpy(wchar_t * dst, const wchar_t * src)
 #define FL_READDIGIT  8       /* we've read at least one correct digit */
 
 // __ascii_isdigit returns a non-zero value if c is a decimal digit (0 – 9).
+#undef __ascii_isdigit
 int __ascii_isdigit(int c)
 {
   return (c >= '0' && c <= '9');
@@ -904,12 +905,14 @@ int __ascii_isdigit(int c)
 
 // __ascii_isalpha returns a nonzero value if c is within
 // the ranges A – Z or a – z.
+#undef __ascii_isalpha
 int __ascii_isalpha(int c)
 {
   return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
 }
 
 // __ascii_toupper converts lowercase character to uppercase.
+#undef __ascii_toupper
 int __ascii_toupper(int c)
 {
   if (c >= 'a' && c <= 'z') return (c - ('a' - 'A'));
