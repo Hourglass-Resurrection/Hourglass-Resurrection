@@ -35,34 +35,37 @@ void * __cdecl memmove(void * dst, const void * src, size_t count) {
 // Turn off compiler intrinsics so that we can define these functions
 #pragma function(memcmp, memcpy, memset)
 
-int __cdecl memcmp(const void * buf1, const void * buf2, size_t count) {
-  if (!count)
-    return(0);
-  while (--count && *(char *)buf1 == *(char *)buf2) {
-    buf1 = (char *)buf1 + 1;
-    buf2 = (char *)buf2 + 1;
-  }
-  return( *((unsigned char *)buf1) - *((unsigned char *)buf2) );
-}
+extern "C" {
 
-void * __cdecl memcpy(void * dst, const void * src, size_t count) {
-  void * ret = dst;
-  // copy from lower addresses to higher addresses
-  while (count--) {
-    *(char *)dst = *(char *)src;
-    dst = (char *)dst + 1;
-    src = (char *)src + 1;
-  }
-  return(ret);
-}
+    int __cdecl memcmp(const void * buf1, const void * buf2, size_t count) {
+        if (!count)
+            return(0);
+        while (--count && *(char *)buf1 == *(char *)buf2) {
+            buf1 = (char *)buf1 + 1;
+            buf2 = (char *)buf2 + 1;
+        }
+        return(*((unsigned char *)buf1) - *((unsigned char *)buf2));
+    }
 
-void * __cdecl memset(void *dst, int val, size_t count) {
-  void *start = dst;
-  while (count--) {
-    *(char *)dst = (char)val;
-    dst = (char *)dst + 1;
-  }
-  return(start);
+    void * __cdecl memcpy(void * dst, const void * src, size_t count) {
+        void * ret = dst;
+        // copy from lower addresses to higher addresses
+        while (count--) {
+            *(char *)dst = *(char *)src;
+            dst = (char *)dst + 1;
+            src = (char *)src + 1;
+        }
+        return(ret);
+    }
+
+    void * __cdecl memset(void *dst, int val, size_t count) {
+        void *start = dst;
+        while (count--) {
+            *(char *)dst = (char)val;
+            dst = (char *)dst + 1;
+        }
+        return(start);
+    }
 }
 
 errno_t __cdecl memmove_s(void* dst,
