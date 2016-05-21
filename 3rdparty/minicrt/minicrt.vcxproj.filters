@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Objects">
-      <UniqueIdentifier>{70b3bcbe-eb1e-4dd8-974a-b5d0d665f998}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="alloc.cc">
@@ -131,74 +128,6 @@
     <ClInclude Include="memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="alloca16.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="chandler4.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="chkstk.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="dllsupp.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="eh3valid.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="exsup.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="exsup3.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="exsup4.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="ftol2.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="lldiv.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="lldvrm.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="llmul.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="llrem.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="llshl.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="llshr.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="sehprolg.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="sehprolg4.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="sehprolg4gs.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="ulldiv.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="ulldvrm.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="ullrem.obj">
-      <Filter>Objects</Filter>
-    </Object>
-    <Object Include="ullshr.obj">
-      <Filter>Objects</Filter>
-    </Object>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

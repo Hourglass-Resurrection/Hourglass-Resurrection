@@ -126,30 +126,6 @@
     <ClInclude Include="memory.h" />
   </ItemGroup>
   <ItemGroup>
-    <Object Include="alloca16.obj" />
-    <Object Include="chandler4.obj" />
-    <Object Include="chkstk.obj" />
-    <Object Include="dllsupp.obj" />
-    <Object Include="eh3valid.obj" />
-    <Object Include="exsup.obj" />
-    <Object Include="exsup3.obj" />
-    <Object Include="exsup4.obj" />
-    <Object Include="ftol2.obj" />
-    <Object Include="lldiv.obj" />
-    <Object Include="lldvrm.obj" />
-    <Object Include="llmul.obj" />
-    <Object Include="llrem.obj" />
-    <Object Include="llshl.obj" />
-    <Object Include="llshr.obj" />
-    <Object Include="sehprolg.obj" />
-    <Object Include="sehprolg4.obj" />
-    <Object Include="sehprolg4gs.obj" />
-    <Object Include="ulldiv.obj" />
-    <Object Include="ulldvrm.obj" />
-    <Object Include="ullrem.obj" />
-    <Object Include="ullshr.obj" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
