@@ -1,5 +1,4 @@
 #include "libctiny.h"
-#include <windows.h>
 
 extern "C" {
 
@@ -9,9 +8,9 @@ extern "C" {
 #define kDefaultSecurityCookie 0xBB40E64E
 #endif  /* _WIN64 */
 
-DWORD_PTR __security_cookie = kDefaultSecurityCookie;
+unsigned long __security_cookie = kDefaultSecurityCookie;
 
-void __fastcall __security_check_cookie(DWORD_PTR) {
+void __fastcall __security_check_cookie(unsigned long) {
     return;
 
     /* Immediately return if the local cookie is OK. */
