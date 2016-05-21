@@ -1,6 +1,5 @@
 
 #include "libctiny.h"
-#include <windows.h>
 #include <errno.h>
 #include "memory.h"
 
