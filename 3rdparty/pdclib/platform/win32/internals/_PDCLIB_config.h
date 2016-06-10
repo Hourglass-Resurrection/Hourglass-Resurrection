@@ -516,4 +516,9 @@ typedef char * _PDCLIB_va_list;
 #define restrict __restrict
 #endif
 
+/* Work around MSVC using a different name for _Static_assert */
+#ifdef _MSC_VER
+#define _Static_assert static_assert
+#endif
+
 #endif
