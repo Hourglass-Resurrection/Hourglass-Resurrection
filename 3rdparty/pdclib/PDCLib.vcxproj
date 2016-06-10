@@ -1,0 +1,420 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}</ProjectGuid>
+    <RootNamespace>PDCLib</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="functions\ctype\isalnum.c" />
+    <ClCompile Include="functions\ctype\isalpha.c" />
+    <ClCompile Include="functions\ctype\isblank.c" />
+    <ClCompile Include="functions\ctype\iscntrl.c" />
+    <ClCompile Include="functions\ctype\isdigit.c" />
+    <ClCompile Include="functions\ctype\isgraph.c" />
+    <ClCompile Include="functions\ctype\islower.c" />
+    <ClCompile Include="functions\ctype\isprint.c" />
+    <ClCompile Include="functions\ctype\ispunct.c" />
+    <ClCompile Include="functions\ctype\isspace.c" />
+    <ClCompile Include="functions\ctype\isupper.c" />
+    <ClCompile Include="functions\ctype\isxdigit.c" />
+    <ClCompile Include="functions\ctype\tolower.c" />
+    <ClCompile Include="functions\ctype\toupper.c" />
+    <ClCompile Include="functions\errno\errno.c" />
+    <ClCompile Include="functions\inttypes\imaxabs.c" />
+    <ClCompile Include="functions\inttypes\imaxdiv.c" />
+    <ClCompile Include="functions\inttypes\strtoimax.c" />
+    <ClCompile Include="functions\inttypes\strtoumax.c" />
+    <ClCompile Include="functions\locale\freelocale.c" />
+    <ClCompile Include="functions\locale\localeconv.c" />
+    <ClCompile Include="functions\locale\setlocale.c" />
+    <ClCompile Include="functions\locale\uselocale.c" />
+    <ClCompile Include="functions\locale\_PDCLIB_mb_cur_max.c" />
+    <ClCompile Include="functions\locale\_PDCLIB_unicodedata.c" />
+    <ClCompile Include="functions\signal\raise.c" />
+    <ClCompile Include="functions\signal\signal.c" />
+    <ClCompile Include="functions\stdio\clearerr.c" />
+    <ClCompile Include="functions\stdio\fclose.c" />
+    <ClCompile Include="functions\stdio\feof.c" />
+    <ClCompile Include="functions\stdio\ferror.c" />
+    <ClCompile Include="functions\stdio\fflush.c" />
+    <ClCompile Include="functions\stdio\fgetc.c" />
+    <ClCompile Include="functions\stdio\fgetpos.c" />
+    <ClCompile Include="functions\stdio\fgets.c" />
+    <ClCompile Include="functions\stdio\flockfile.c" />
+    <ClCompile Include="functions\stdio\fopen.c" />
+    <ClCompile Include="functions\stdio\fprintf.c" />
+    <ClCompile Include="functions\stdio\fputc.c" />
+    <ClCompile Include="functions\stdio\fputs.c" />
+    <ClCompile Include="functions\stdio\fread.c" />
+    <ClCompile Include="functions\stdio\freopen.c" />
+    <ClCompile Include="functions\stdio\fscanf.c" />
+    <ClCompile Include="functions\stdio\fseek.c" />
+    <ClCompile Include="functions\stdio\fsetpos.c" />
+    <ClCompile Include="functions\stdio\ftell.c" />
+    <ClCompile Include="functions\stdio\ftrylockfile.c" />
+    <ClCompile Include="functions\stdio\funlockfile.c" />
+    <ClCompile Include="functions\stdio\fwrite.c" />
+    <ClCompile Include="functions\stdio\getc.c" />
+    <ClCompile Include="functions\stdio\getchar.c" />
+    <ClCompile Include="functions\stdio\gets.c" />
+    <ClCompile Include="functions\stdio\perror.c" />
+    <ClCompile Include="functions\stdio\printf.c" />
+    <ClCompile Include="functions\stdio\putc.c" />
+    <ClCompile Include="functions\stdio\putchar.c" />
+    <ClCompile Include="functions\stdio\puts.c" />
+    <ClCompile Include="functions\stdio\rename.c" />
+    <ClCompile Include="functions\stdio\rewind.c" />
+    <ClCompile Include="functions\stdio\scanf.c" />
+    <ClCompile Include="functions\stdio\setbuf.c" />
+    <ClCompile Include="functions\stdio\setvbuf.c" />
+    <ClCompile Include="functions\stdio\snprintf.c" />
+    <ClCompile Include="functions\stdio\sprintf.c" />
+    <ClCompile Include="functions\stdio\sscanf.c" />
+    <ClCompile Include="functions\stdio\tmpnam.c" />
+    <ClCompile Include="functions\stdio\ungetc.c" />
+    <ClCompile Include="functions\stdio\vfprintf.c" />
+    <ClCompile Include="functions\stdio\vfscanf.c" />
+    <ClCompile Include="functions\stdio\vprintf.c" />
+    <ClCompile Include="functions\stdio\vscanf.c" />
+    <ClCompile Include="functions\stdio\vsnprintf.c" />
+    <ClCompile Include="functions\stdio\vsprintf.c" />
+    <ClCompile Include="functions\stdio\vsscanf.c" />
+    <ClCompile Include="functions\stdio\_cbprintf.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_filemode.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_fillbuffer.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_flushbuffer.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_ftell64.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_fvopen.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_prepread.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_prepwrite.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_print.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_scan.c" />
+    <ClCompile Include="functions\stdio\_PDCLIB_seek.c" />
+    <ClCompile Include="functions\stdio\_vcbprintf.c" />
+    <ClCompile Include="functions\stdlib\abort.c" />
+    <ClCompile Include="functions\stdlib\abs.c" />
+    <ClCompile Include="functions\stdlib\atexit.c" />
+    <ClCompile Include="functions\stdlib\atoi.c" />
+    <ClCompile Include="functions\stdlib\atol.c" />
+    <ClCompile Include="functions\stdlib\atoll.c" />
+    <ClCompile Include="functions\stdlib\at_quick_exit.c" />
+    <ClCompile Include="functions\stdlib\bsearch.c" />
+    <ClCompile Include="functions\stdlib\div.c" />
+    <ClCompile Include="functions\stdlib\exit.c" />
+    <ClCompile Include="functions\stdlib\labs.c" />
+    <ClCompile Include="functions\stdlib\ldiv.c" />
+    <ClCompile Include="functions\stdlib\llabs.c" />
+    <ClCompile Include="functions\stdlib\lldiv.c" />
+    <ClCompile Include="functions\stdlib\qsort.c" />
+    <ClCompile Include="functions\stdlib\quick_exit.c" />
+    <ClCompile Include="functions\stdlib\rand.c" />
+    <ClCompile Include="functions\stdlib\srand.c" />
+    <ClCompile Include="functions\stdlib\strtol.c" />
+    <ClCompile Include="functions\stdlib\strtoll.c" />
+    <ClCompile Include="functions\stdlib\strtoul.c" />
+    <ClCompile Include="functions\stdlib\strtoull.c" />
+    <ClCompile Include="functions\stdlib\_Exit.c" />
+    <ClCompile Include="functions\string\memchr.c" />
+    <ClCompile Include="functions\string\memcmp.c" />
+    <ClCompile Include="functions\string\memcpy.c" />
+    <ClCompile Include="functions\string\memmove.c" />
+    <ClCompile Include="functions\string\memset.c" />
+    <ClCompile Include="functions\string\strcat.c" />
+    <ClCompile Include="functions\string\strchr.c" />
+    <ClCompile Include="functions\string\strcmp.c" />
+    <ClCompile Include="functions\string\strcoll.c" />
+    <ClCompile Include="functions\string\strcpy.c" />
+    <ClCompile Include="functions\string\strcspn.c" />
+    <ClCompile Include="functions\string\strdup.c" />
+    <ClCompile Include="functions\string\strerror.c" />
+    <ClCompile Include="functions\string\strlcat.c" />
+    <ClCompile Include="functions\string\strlcpy.c" />
+    <ClCompile Include="functions\string\strlen.c" />
+    <ClCompile Include="functions\string\strncat.c" />
+    <ClCompile Include="functions\string\strncmp.c" />
+    <ClCompile Include="functions\string\strncpy.c" />
+    <ClCompile Include="functions\string\strndup.c" />
+    <ClCompile Include="functions\string\strnlen.c" />
+    <ClCompile Include="functions\string\strpbrk.c" />
+    <ClCompile Include="functions\string\strrchr.c" />
+    <ClCompile Include="functions\string\strspn.c" />
+    <ClCompile Include="functions\string\strstr.c" />
+    <ClCompile Include="functions\string\strtok.c" />
+    <ClCompile Include="functions\string\strxfrm.c" />
+    <ClCompile Include="functions\time\clock.c" />
+    <ClCompile Include="functions\time\time.c" />
+    <ClCompile Include="functions\time\timespec_get.c" />
+    <ClCompile Include="functions\uchar\c16rtomb.c" />
+    <ClCompile Include="functions\uchar\c32rtomb.c" />
+    <ClCompile Include="functions\uchar\mbrtoc16.c" />
+    <ClCompile Include="functions\uchar\mbrtoc32.c" />
+    <ClCompile Include="functions\uchar\_PDCLIB_c16slen.c" />
+    <ClCompile Include="functions\uchar\_PDCLIB_c32slen.c" />
+    <ClCompile Include="functions\uchar\_PDCLIB_c32srtombs.c" />
+    <ClCompile Include="functions\uchar\_PDCLIB_mbsrtoc32s.c" />
+    <ClCompile Include="functions\wchar\mbrtowc.c" />
+    <ClCompile Include="functions\wchar\mbsinit.c" />
+    <ClCompile Include="functions\wchar\wcrtomb.c" />
+    <ClCompile Include="functions\wchar\wcscat.c" />
+    <ClCompile Include="functions\wchar\wcschr.c" />
+    <ClCompile Include="functions\wchar\wcscmp.c" />
+    <ClCompile Include="functions\wchar\wcscoll.c" />
+    <ClCompile Include="functions\wchar\wcscpy.c" />
+    <ClCompile Include="functions\wchar\wcscspn.c" />
+    <ClCompile Include="functions\wchar\wcslen.c" />
+    <ClCompile Include="functions\wchar\wcsncat.c" />
+    <ClCompile Include="functions\wchar\wcsncmp.c" />
+    <ClCompile Include="functions\wchar\wcsncpy.c" />
+    <ClCompile Include="functions\wchar\wcspbrk.c" />
+    <ClCompile Include="functions\wchar\wcsrchr.c" />
+    <ClCompile Include="functions\wchar\wcsspn.c" />
+    <ClCompile Include="functions\wchar\wcsstr.c" />
+    <ClCompile Include="functions\wchar\wcstok.c" />
+    <ClCompile Include="functions\wchar\wcsxfrm.c" />
+    <ClCompile Include="functions\wchar\wmemchr.c" />
+    <ClCompile Include="functions\wchar\wmemcmp.c" />
+    <ClCompile Include="functions\wchar\wmemcpy.c" />
+    <ClCompile Include="functions\wchar\wmemmove.c" />
+    <ClCompile Include="functions\wctype\iswalnum.c" />
+    <ClCompile Include="functions\wctype\iswalpha.c" />
+    <ClCompile Include="functions\wctype\iswblank.c" />
+    <ClCompile Include="functions\wctype\iswcntrl.c" />
+    <ClCompile Include="functions\wctype\iswctype.c" />
+    <ClCompile Include="functions\wctype\iswdigit.c" />
+    <ClCompile Include="functions\wctype\iswgraph.c" />
+    <ClCompile Include="functions\wctype\iswlower.c" />
+    <ClCompile Include="functions\wctype\iswprint.c" />
+    <ClCompile Include="functions\wctype\iswpunct.c" />
+    <ClCompile Include="functions\wctype\iswspace.c" />
+    <ClCompile Include="functions\wctype\iswupper.c" />
+    <ClCompile Include="functions\wctype\iswxdigit.c" />
+    <ClCompile Include="functions\wctype\towctrans.c" />
+    <ClCompile Include="functions\wctype\towlower.c" />
+    <ClCompile Include="functions\wctype\towupper.c" />
+    <ClCompile Include="functions\wctype\wctrans.c" />
+    <ClCompile Include="functions\wctype\wctype.c" />
+    <ClCompile Include="functions\_dlmalloc\dlmalloc.c" />
+    <ClCompile Include="functions\_PDCLIB\assert.c" />
+    <ClCompile Include="functions\_PDCLIB\stdarg.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_ascii.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_atomax.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_closeall.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_digits.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_initclocale.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_latin1.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_seed.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_strtox_main.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_strtox_prelim.c" />
+    <ClCompile Include="functions\_PDCLIB\_PDCLIB_utf8.c" />
+    <ClCompile Include="platform\win32\crt0.c" />
+    <ClCompile Include="platform\win32\functions\stdio\remove.c" />
+    <ClCompile Include="platform\win32\functions\stdio\tmpfile.c" />
+    <ClCompile Include="platform\win32\functions\stdlib\getenv.c" />
+    <ClCompile Include="platform\win32\functions\stdlib\system.c" />
+    <ClCompile Include="platform\win32\functions\threads\call_once.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_destroy.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_init.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_lock.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_timedlock.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_trylock.c" />
+    <ClCompile Include="platform\win32\functions\threads\mtx_unlock.c" />
+    <ClCompile Include="platform\win32\functions\threads\tss_create.c" />
+    <ClCompile Include="platform\win32\functions\threads\tss_delete.c" />
+    <ClCompile Include="platform\win32\functions\threads\tss_get.c" />
+    <ClCompile Include="platform\win32\functions\threads\tss_set.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_allocpages.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_Exit.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_fileops.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_freepages.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_open.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_rename.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_runTlsCallbacks.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_stdinit.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_PDCLIB_w32errno.c" />
+    <ClCompile Include="platform\win32\functions\_PDCLIB\_tls_used.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="functions\_dlmalloc\dlmalloc.h" />
+    <ClInclude Include="includes\assert.h" />
+    <ClInclude Include="includes\ctype.h" />
+    <ClInclude Include="includes\errno.h" />
+    <ClInclude Include="includes\float.h" />
+    <ClInclude Include="includes\inttypes.h" />
+    <ClInclude Include="includes\iso646.h" />
+    <ClInclude Include="includes\limits.h" />
+    <ClInclude Include="includes\locale.h" />
+    <ClInclude Include="includes\stdalign.h" />
+    <ClInclude Include="includes\stdarg.h" />
+    <ClInclude Include="includes\stdbool.h" />
+    <ClInclude Include="includes\stddef.h" />
+    <ClInclude Include="includes\stdint.h" />
+    <ClInclude Include="includes\stdio.h" />
+    <ClInclude Include="includes\stdlib.h" />
+    <ClInclude Include="includes\stdnoreturn.h" />
+    <ClInclude Include="includes\string.h" />
+    <ClInclude Include="includes\threads.h" />
+    <ClInclude Include="includes\time.h" />
+    <ClInclude Include="includes\uchar.h" />
+    <ClInclude Include="includes\wchar.h" />
+    <ClInclude Include="includes\wctype.h" />
+    <ClInclude Include="internals\_PDCLIB_aux.h" />
+    <ClInclude Include="internals\_PDCLIB_clocale.h" />
+    <ClInclude Include="internals\_PDCLIB_encoding.h" />
+    <ClInclude Include="internals\_PDCLIB_float.h" />
+    <ClInclude Include="internals\_PDCLIB_glue.h" />
+    <ClInclude Include="internals\_PDCLIB_int.h" />
+    <ClInclude Include="internals\_PDCLIB_io.h" />
+    <ClInclude Include="internals\_PDCLIB_locale.h" />
+    <ClInclude Include="platform\win32\includes\signal.h" />
+    <ClInclude Include="platform\win32\internals\_PDCLIB_config.h" />
+    <ClInclude Include="platform\win32\internals\_PDCLIB_threadconfig.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
