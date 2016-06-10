@@ -511,4 +511,9 @@ typedef char * _PDCLIB_va_list;
 /* Needs to be one higher than the highest errno value above.                 */
 #define _PDCLIB_ERRNO_MAX 141
 
+/* Work around MSVC using a different restrict keyword */
+#ifdef _MSC_VER
+#define restrict __restrict
+#endif
+
 #endif
