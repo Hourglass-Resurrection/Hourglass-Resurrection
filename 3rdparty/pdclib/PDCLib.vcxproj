@@ -74,12 +74,12 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <PreprocessorDefinitions>__STDC_VERSION__=201112;__STDC__=1;_PDCLIB_BUILD;_WIN32</PreprocessorDefinitions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Lib>
@@ -91,12 +91,12 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <PreprocessorDefinitions>__STDC_VERSION__=201112;__STDC__=1;_PDCLIB_BUILD;_WIN32</PreprocessorDefinitions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Lib>
@@ -110,12 +110,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <PreprocessorDefinitions>__STDC_VERSION__=201112;__STDC__=1;_PDCLIB_BUILD;_WIN32</PreprocessorDefinitions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
@@ -133,12 +133,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\platform\win32\includes;$(ProjectDir)\platform\win32\internals;$(ProjectDir)\includes;$(ProjectDir)\internals</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_PDCLIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <PreprocessorDefinitions>__STDC_VERSION__=201112;__STDC__=1;_PDCLIB_BUILD;_WIN32</PreprocessorDefinitions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
