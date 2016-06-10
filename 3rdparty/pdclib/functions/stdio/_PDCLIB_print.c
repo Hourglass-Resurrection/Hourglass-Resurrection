@@ -138,7 +138,11 @@ static bool int2base( uintmax_t value, struct _PDCLIB_status_t * status )
     // Perhaps after a certain size we should malloc? Or do we refuse to protect
     // them from their own stupidity?
     size_t bufLen = (status->width > maxIntLen ? status->width : maxIntLen) + 2;
+#ifdef _MSC_VER
+    char *outbuf = _alloca(bufLen);
+#else
     char outbuf[bufLen];
+#endif
     char * outend = outbuf + bufLen;
     int written = 0;
 

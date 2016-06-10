@@ -20,7 +20,11 @@ size_t c32rtomb_l(
     locale_t     restrict   l
 )
 {
+#ifdef _MSC_VER
+    char *buf = _alloca(s ? 0 : MB_CUR_MAX);
+#else
     char buf[s ? 0 : MB_CUR_MAX];
+#endif
     s =      s ? s : buf;
 
     const char32_t *restrict psrc = &c32;

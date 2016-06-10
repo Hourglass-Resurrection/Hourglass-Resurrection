@@ -21,7 +21,11 @@ size_t c16rtomb_l(
 )
 {
     const char16_t *restrict psrc = &c16;
+#ifdef _MSC_VER
+    char *buf = _alloca(s ? 0 : MB_CUR_MAX);
+#else
     char buf[s ? 0 : MB_CUR_MAX];
+#endif
     s =      s ? s : buf;
 
     if(!l->_Codec->__c16stombs) {
