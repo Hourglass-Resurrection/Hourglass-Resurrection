@@ -104,7 +104,7 @@ struct lconv * localeconv( void ) _PDCLIB_nothrow;
 
 
 /* POSIX locale type */
-typedef _PDCLIB_locale_t locale_t;
+#define locale_t _PDCLIB_locale_t
 
 /* Global locale */
 extern struct _PDCLIB_locale _PDCLIB_global_locale;
