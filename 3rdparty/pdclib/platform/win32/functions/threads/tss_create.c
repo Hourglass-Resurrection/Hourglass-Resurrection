@@ -54,6 +54,8 @@ static void NTAPI runTlsDestructors( void * image, DWORD reason, PVOID pv )
 
 #ifdef __GNUC__
 __attribute__((__section__(".CRT$XLC")))
+#elif defined _MSC_VER
+#pragma code_seg(".CRT$XLC")
 #else
 __declspec(allocate(".CRT$XLC")) 
 #endif

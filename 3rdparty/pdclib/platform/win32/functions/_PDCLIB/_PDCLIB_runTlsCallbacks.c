@@ -5,6 +5,8 @@
 extern PIMAGE_TLS_CALLBACK __crt_xl_start__;
 #ifdef __GNUC__
 __attribute__((section(".CRT$XLZZZ")))
+#elif defined _MSC_VER
+#pragma code_seg(".CRT$XLZZZ")
 #else
 __declspec(allocate(".CRT$XLZZZ")) 
 #endif

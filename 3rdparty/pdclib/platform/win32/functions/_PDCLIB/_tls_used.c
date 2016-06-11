@@ -26,6 +26,8 @@ static PIMAGE_TLS_CALLBACK tlsCallbacks[] = {
 
 #ifdef __GNUC__
 __attribute__((__section__(".rdata$T")))
+#elif defined _MSC_VER
+#pragma data_seg(".rdata$T")
 #else
 __declspec(allocate(".rdata$T"))
 #endif
