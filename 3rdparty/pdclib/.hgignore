@@ -1,0 +1,14 @@
+syntax: glob
+*.o
+*.exe
+*.d
+*.a
+*.dll
+*.so
+*.dylib
+*.dso
+*_t
+*_r
+*~
+*.sublime-workspace
+html/*/*.html
