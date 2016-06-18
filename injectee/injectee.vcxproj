@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>wintasee</ProjectName>
+    <ProjectName>injectee</ProjectName>
     <ProjectGuid>{948D0C09-EE11-4241-9286-D88C5B84DA36}</ProjectGuid>
-    <RootNamespace>wintasee</RootNamespace>
+    <RootNamespace>injectee</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>

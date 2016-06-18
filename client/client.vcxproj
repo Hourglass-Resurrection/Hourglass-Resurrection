@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>wintaser</ProjectName>
+    <ProjectName>client</ProjectName>
     <ProjectGuid>{DFDB93E5-7F86-432A-9986-B079B8463FDB}</ProjectGuid>
-    <RootNamespace>wintaser</RootNamespace>
+    <RootNamespace>client</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -82,7 +82,7 @@
       <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hourglass-resurrection-d.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)wintaser.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -189,7 +189,7 @@
     <ResourceCompile Include="wintaser.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\wintasee\wintasee2015.vcxproj">
+    <ProjectReference Include="..\injectee\injectee.vcxproj">
       <Project>{948d0c09-ee11-4241-9286-d88c5b84da36}</Project>
       <Private>true</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
