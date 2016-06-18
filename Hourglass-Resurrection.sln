@@ -1,42 +1,26 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintasee", "wintasee\wintasee2015.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintaser", "wintaser\wintaser2015.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDCLib", "3rdparty\pdclib\PDCLib.vcxproj", "{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
-		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Debug|Win32.ActiveCfg = Debug|Win32
 		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Debug|Win32.Build.0 = Debug|Win32
-		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Debug|x64.ActiveCfg = Debug|Win32
 		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Release|Win32.ActiveCfg = Release|Win32
 		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Release|Win32.Build.0 = Release|Win32
-		{948D0C09-EE11-4241-9286-D88C5B84DA36}.Release|x64.ActiveCfg = Release|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.Build.0 = Debug|Win32
-		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|x64.ActiveCfg = Debug|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.ActiveCfg = Release|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.Build.0 = Release|Win32
-		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|x64.ActiveCfg = Release|Win32
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Debug|Win32.Build.0 = Debug|Win32
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Debug|x64.ActiveCfg = Debug|x64
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Debug|x64.Build.0 = Debug|x64
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Release|Win32.ActiveCfg = Release|Win32
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Release|Win32.Build.0 = Release|Win32
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Release|x64.ActiveCfg = Release|x64
-		{98A3A437-BAA8-47DB-A43B-5B6ED13CDBCB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
