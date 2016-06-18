@@ -8,11 +8,8 @@
 *.opensdf
 *.suo
 *.hgr
-*.txt
 *.cfg
 *.vcxproj.user
-wintasee/Debug/
-wintasee/Release/
-wintaser/Debug/
-wintaser/Release/
+*.VC.opendb
+*.VC.db
 ipch/
