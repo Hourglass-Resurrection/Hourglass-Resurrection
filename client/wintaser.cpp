@@ -948,9 +948,9 @@ void CheckSrcDllVersion(int version)
 	{
 		const char* str;
 		if((DWORD)version > (DWORD)VERSION)
-			str = "Wrong version detected: This hourglass.exe is too old compared to wintasee.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+			str = "Wrong version detected: This hourglass.exe is too old compared to injectee.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		else
-			str = "Wrong version detected: wintasee.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+			str = "Wrong version detected: injectee.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		debugprintf("%s\n", str);
 		CustomMessageBox(str, "Version Problem", MB_OK | MB_ICONWARNING);
 	}
@@ -3649,7 +3649,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 	char* dllpath = injectedDllPath;
 	strcpy(dllpath, thisprocessPath);
-	strcat(dllpath, "\\wintasee.dll");
+	strcat(dllpath, "\\injectee.dll");
 
 	if(!onlyHookChildProcesses)
 	{
