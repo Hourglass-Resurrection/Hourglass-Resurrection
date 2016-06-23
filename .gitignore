@@ -1,8 +1,4 @@
-*.exe
-*.pdb
-*.dll
-*.exp
-*.lib
+build/
 *.aps
 *.sdf
 *.opensdf
