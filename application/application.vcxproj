@@ -11,20 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>wintasee</ProjectName>
-    <ProjectGuid>{948D0C09-EE11-4241-9286-D88C5B84DA36}</ProjectGuid>
-    <RootNamespace>wintasee</RootNamespace>
+    <ProjectName>application</ProjectName>
+    <ProjectGuid>{DFDB93E5-7F86-432A-9986-B079B8463FDB}</ProjectGuid>
+    <RootNamespace>application</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
@@ -45,11 +45,9 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(IntDir)</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
     <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</PreBuildEventUseInBuild>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(IntDir)</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -57,6 +55,8 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hourglass-resurrection</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hourglass-resurrection-d</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -66,11 +66,10 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\shared;..\shared\SubWCRev;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WINTASDLL_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500;WINVER=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <AdditionalIncludeDirectories>..\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <PrecompiledHeader>
@@ -80,24 +79,19 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hourglass-resurrection-d.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>
-      </ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
-      <Message>
-      </Message>
       <Command>
       </Command>
     </PreBuildEvent>
@@ -106,17 +100,15 @@
       </Message>
     </CustomBuildStep>
     <ClCompile>
-      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
-      <OmitFramePointers>false</OmitFramePointers>
+      <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>..\shared;..\shared\SubWCRev;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WINTASDLL_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500;WINVER=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -125,93 +117,86 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hourglass-resurrection.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>
-      </ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dettime.cpp" />
-    <ClCompile Include="hooks\Xinputhooks.cpp" />
-    <ClCompile Include="intercept.cpp" />
-    <ClCompile Include="phasedetection.cpp" />
-    <ClCompile Include="print.cpp" />
-    <ClCompile Include="soundmixing.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Full</Optimization>
-      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IntrinsicFunctions>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="wintasee.cpp" />
-    <ClCompile Include="hooks\d3d8hooks.cpp" />
-    <ClCompile Include="hooks\d3d9hooks.cpp" />
-    <ClCompile Include="hooks\d3dhooks.cpp" />
-    <ClCompile Include="hooks\ddrawhooks.cpp" />
-    <ClCompile Include="hooks\filehooks.cpp" />
-    <ClCompile Include="hooks\gdihooks.cpp" />
-    <ClCompile Include="hooks\inputhooks.cpp" />
-    <ClCompile Include="hooks\messagehooks.cpp" />
-    <ClCompile Include="hooks\modulehooks.cpp" />
-    <ClCompile Include="hooks\openglhooks.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IntrinsicFunctions>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="hooks\registryhooks.cpp" />
-    <ClCompile Include="hooks\sdlhooks.cpp" />
-    <ClCompile Include="hooks\soundhooks.cpp" />
-    <ClCompile Include="hooks\synchooks.cpp" />
-    <ClCompile Include="hooks\threadhooks.cpp" />
-    <ClCompile Include="hooks\timehooks.cpp" />
-    <ClCompile Include="hooks\timerhooks.cpp" />
-    <ClCompile Include="hooks\waithooks.cpp" />
-    <ClCompile Include="hooks\windowhooks.cpp" />
+    <ClCompile Include="AVIDumper.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="CPUinfo.cpp" />
+    <ClCompile Include="CustomDLGs.cpp" />
+    <ClCompile Include="DirLocks.cpp" />
+    <ClCompile Include="ExeFileOperations.cpp" />
+    <ClCompile Include="GUI\DlgBase.cpp" />
+    <ClCompile Include="GUI\Menu.cpp" />
+    <ClCompile Include="InjectDLL.cpp" />
+    <ClCompile Include="InputCapture.cpp" />
+    <ClCompile Include="logging.cpp" />
+    <ClCompile Include="md5.cpp" />
+    <ClCompile Include="MD5Checksum.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="Movie.cpp" />
+    <ClCompile Include="ramsearch.cpp" />
+    <ClCompile Include="ramwatch.cpp" />
+    <ClCompile Include="wintaser.cpp" />
+    <ClCompile Include="trace\extendedtrace.cpp" />
+    <ClCompile Include="inject\iatmodifier.cpp" />
+    <ClCompile Include="inject\process.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\input.h" />
-    <ClInclude Include="dettime.h" />
-    <ClInclude Include="global.h" />
-    <ClInclude Include="intercept.h" />
-    <ClInclude Include="..\shared\msg.h" />
-    <ClInclude Include="msgqueue.h" />
-    <ClInclude Include="phasedetection.h" />
-    <ClInclude Include="print.h" />
-    <ClInclude Include="tls.h" />
-    <ClInclude Include="tramps\Xinputtramps.h" />
-    <ClInclude Include="wintasee.h" />
+    <ClInclude Include="AVIDumper.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="CPUinfo.h" />
+    <ClInclude Include="CustomDLGs.h" />
+    <ClInclude Include="DirLocks.h" />
+    <ClInclude Include="ExeFileOperations.h" />
+    <ClInclude Include="GUI\DlgBase.h" />
+    <ClInclude Include="GUI\Menu.h" />
+    <ClInclude Include="InjectDLL.h" />
+    <ClInclude Include="InputCapture.h" />
+    <ClInclude Include="logging.h" />
+    <ClInclude Include="md5.h" />
+    <ClInclude Include="MD5Checksum.h" />
+    <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="Movie.h" />
+    <ClInclude Include="ramsearch.h" />
+    <ClInclude Include="ramwatch.h" />
+    <ClInclude Include="trace\extendedtrace.h" />
+    <ClInclude Include="inject\iatmodifier.h" />
+    <ClInclude Include="inject\process.h" />
     <ClInclude Include="..\shared\asm.h" />
     <ClInclude Include="..\shared\ipc.h" />
     <ClInclude Include="..\shared\logcat.h" />
+    <ClInclude Include="..\shared\msg.h" />
     <ClInclude Include="..\shared\version.h" />
     <ClInclude Include="..\shared\winutil.h" />
-    <ClInclude Include="tramps\alltramps.h" />
-    <ClInclude Include="tramps\dxvideotramps.h" />
-    <ClInclude Include="tramps\filetramps.h" />
-    <ClInclude Include="tramps\gditramps.h" />
-    <ClInclude Include="tramps\inputtramps.h" />
-    <ClInclude Include="tramps\messagetramps.h" />
-    <ClInclude Include="tramps\moduletramps.h" />
-    <ClInclude Include="tramps\opengltramps.h" />
-    <ClInclude Include="tramps\registrytramps.h" />
-    <ClInclude Include="tramps\sdltramps.h" />
-    <ClInclude Include="tramps\soundtramps.h" />
-    <ClInclude Include="tramps\synctramps.h" />
-    <ClInclude Include="tramps\threadtramps.h" />
-    <ClInclude Include="tramps\timertramps.h" />
-    <ClInclude Include="tramps\timetramps.h" />
-    <ClInclude Include="tramps\waittramps.h" />
-    <ClInclude Include="tramps\windowtramps.h" />
+    <ClInclude Include="Resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wintaser.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="wintaser.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\hooks\hooks.vcxproj">
+      <Project>{948d0c09-ee11-4241-9286-d88c5b84da36}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

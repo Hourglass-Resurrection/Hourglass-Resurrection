@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintasee", "wintasee\wintasee2015.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hooks", "hooks\hooks.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintaser", "wintaser\wintaser2015.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "application", "application\application.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
