@@ -19,6 +19,9 @@ LRESULT CALLBACK MyWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 LRESULT CALLBACK MyWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii=true, MessageActionFlags maf=MAF_PASSTHROUGH|MAF_RETURN_OS); // extern? (I mean, move to header)
 
+HOOK_FUNCTION(HWND, WINAPI, CreateWindowExA, DWORD dwExStyle, LPCSTR lpClassName,
+	LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
+	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
 	LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
 	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
@@ -144,6 +147,9 @@ HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
 	}
 	return hwnd;
 }
+HOOK_FUNCTION(HWND, WINAPI, CreateWindowExW, DWORD dwExStyle, LPCWSTR lpClassName,
+	LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
+	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
 	LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
 	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
@@ -263,6 +269,7 @@ HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
 	return hwnd;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, CloseWindow, HWND hWnd)
 HOOKFUNC BOOL WINAPI MyCloseWindow(HWND hWnd)
 {
 	debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X) called.\n", hWnd);
@@ -270,6 +277,7 @@ HOOKFUNC BOOL WINAPI MyCloseWindow(HWND hWnd)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, DestroyWindow, HWND hWnd)
 HOOKFUNC BOOL WINAPI MyDestroyWindow(HWND hWnd)
 {
 	debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X) called.\n", hWnd);
@@ -288,16 +296,19 @@ HOOKFUNC BOOL WINAPI MyDestroyWindow(HWND hWnd)
 	return rv;
 }
 
+HOOK_FUNCTION(HWND, WINAPI, GetActiveWindow)
 HOOKFUNC HWND WINAPI MyGetActiveWindow()
 {
 	debuglog(LCF_WINDOW/*|LCF_DESYNC*/|LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
 	return gamehwnd;
 }
+HOOK_FUNCTION(HWND, WINAPI, GetForegroundWindow)
 HOOKFUNC HWND WINAPI MyGetForegroundWindow()
 {
 	debuglog(LCF_WINDOW/*|LCF_DESYNC*/|LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
 	return gamehwnd;
 }
+HOOK_FUNCTION(HWND, WINAPI, GetFocus)
 HOOKFUNC HWND WINAPI MyGetFocus()
 {
 	debuglog(LCF_WINDOW/*|LCF_DESYNC*/|LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
@@ -305,6 +316,7 @@ HOOKFUNC HWND WINAPI MyGetFocus()
 }
 
 
+HOOK_FUNCTION(LONG, WINAPI, GetWindowLongA, HWND hWnd, int nIndex)
 HOOKFUNC LONG WINAPI MyGetWindowLongA(HWND hWnd, int nIndex)
 {
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
@@ -327,6 +339,7 @@ HOOKFUNC LONG WINAPI MyGetWindowLongA(HWND hWnd, int nIndex)
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ " Rv = 0x%X.\n", rv);
 	return rv;
 }
+HOOK_FUNCTION(LONG, WINAPI, GetWindowLongW, HWND hWnd, int nIndex)
 HOOKFUNC LONG WINAPI MyGetWindowLongW(HWND hWnd, int nIndex)
 {
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
@@ -351,6 +364,7 @@ HOOKFUNC LONG WINAPI MyGetWindowLongW(HWND hWnd, int nIndex)
 }
 
 
+HOOK_FUNCTION(LONG, WINAPI, SetWindowLongA, HWND hWnd, int nIndex, LONG dwNewLong)
 HOOKFUNC LONG WINAPI MySetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
 {
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X) called on 0x%X.\n", nIndex, dwNewLong, hWnd);
@@ -380,6 +394,7 @@ HOOKFUNC LONG WINAPI MySetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "RV = 0x%X.\n", rv);
 	return rv;
 }
+HOOK_FUNCTION(LONG, WINAPI, SetWindowLongW, HWND hWnd, int nIndex, LONG dwNewLong)
 HOOKFUNC LONG WINAPI MySetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 {
 	debuglog(LCF_WINDOW|LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X) called on 0x%X.\n", nIndex, dwNewLong, hWnd);
@@ -411,6 +426,7 @@ HOOKFUNC LONG WINAPI MySetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, MoveWindow, HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 HOOKFUNC BOOL WINAPI MyMoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 {
 	debuglog(LCF_WINDOW|LCF_TODO, __FUNCTION__ "(0x%X, %d, %d, %d, %d, %d) called.\n", hWnd, X, Y, nWidth, nHeight, bRepaint);
@@ -429,6 +445,7 @@ HOOKFUNC BOOL WINAPI MyMoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeig
 	BOOL rv = MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, SetWindowPos, HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 HOOKFUNC BOOL WINAPI MySetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
 	if(tasflags.forceWindowed)
@@ -459,6 +476,7 @@ HOOKFUNC BOOL WINAPI MySetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int 
 
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, ShowWindow, HWND hWnd, int nCmdShow)
 HOOKFUNC BOOL WINAPI MyShowWindow(HWND hWnd, int nCmdShow)
 {
 	if(tasflags.forceWindowed && nCmdShow == SW_MAXIMIZE)
@@ -467,6 +485,7 @@ HOOKFUNC BOOL WINAPI MyShowWindow(HWND hWnd, int nCmdShow)
 	return 1;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, GetClientRect, HWND hWnd, LPRECT lpRect)
 HOOKFUNC BOOL WINAPI MyGetClientRect(HWND hWnd, LPRECT lpRect)
 {
 	// IsWindowFakeFullscreen checks disabled because they let window position info leak to Eternal Daughter and possibly others (maybe need to use ::IsChild inside IsWindowFakeFullscreen)
@@ -484,6 +503,7 @@ HOOKFUNC BOOL WINAPI MyGetClientRect(HWND hWnd, LPRECT lpRect)
 	}
 	return GetClientRect(hWnd, lpRect);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetWindowRect, HWND hWnd, LPRECT lpRect)
 HOOKFUNC BOOL WINAPI MyGetWindowRect(HWND hWnd, LPRECT lpRect)
 {
 	// see coments in MyGetClientRect
@@ -500,6 +520,7 @@ HOOKFUNC BOOL WINAPI MyGetWindowRect(HWND hWnd, LPRECT lpRect)
 	return GetWindowRect(hWnd, lpRect);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, ClientToScreen, HWND hWnd, LPPOINT lpPoint)
 HOOKFUNC BOOL WINAPI MyClientToScreen(HWND hWnd, LPPOINT lpPoint)
 {
 	// see coments in MyGetClientRect
@@ -509,6 +530,7 @@ HOOKFUNC BOOL WINAPI MyClientToScreen(HWND hWnd, LPPOINT lpPoint)
 	}
 	return ClientToScreen(hWnd, lpPoint);
 }
+HOOK_FUNCTION(BOOL, WINAPI, ScreenToClient, HWND hWnd, LPPOINT lpPoint)
 HOOKFUNC BOOL WINAPI MyScreenToClient(HWND hWnd, LPPOINT lpPoint)
 {
 	// see coments in MyGetClientRect
@@ -521,6 +543,7 @@ HOOKFUNC BOOL WINAPI MyScreenToClient(HWND hWnd, LPPOINT lpPoint)
 
 HOOKFUNC BOOL WINAPI MySetWindowTextW(HWND hWnd, LPCWSTR lpString);
 
+HOOK_FUNCTION(BOOL, WINAPI, SetWindowTextA, HWND hWnd, LPCSTR lpString)
 HOOKFUNC BOOL WINAPI MySetWindowTextA(HWND hWnd, LPCSTR lpString)
 {
 	debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X, \"%s\") called.\n", hWnd, lpString);
@@ -535,6 +558,7 @@ HOOKFUNC BOOL WINAPI MySetWindowTextA(HWND hWnd, LPCSTR lpString)
 	DispatchMessageInternal(hWnd, WM_SETTEXT, 0, (LPARAM)lpString, true, MAF_BYPASSGAME|MAF_RETURN_OS);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, SetWindowTextW, HWND hWnd, LPCWSTR lpString)
 HOOKFUNC BOOL WINAPI MySetWindowTextW(HWND hWnd, LPCWSTR lpString)
 {
 	debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X, \"%S\") called.\n", hWnd, lpString);
@@ -591,43 +615,51 @@ int GetDefaultMessageBoxResult(UINT uType)
 }
 
 // TODO: better support for messageboxes and dialog boxes (like, draw them, allow a choice, and record a frame of input for them)
+HOOK_FUNCTION(int, WINAPI, MessageBoxA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
 HOOKFUNC int WINAPI MyMessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
 {
 	debugprintf(__FUNCTION__ "(\"%s\", \"%s\")\n", lpCaption, lpText);
 	cmdprintf("SHORTTRACE: 3,50");
 	return GetDefaultMessageBoxResult(uType);
 }
+HOOK_FUNCTION(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
 HOOKFUNC int WINAPI MyMessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
 {
 	debugprintf(__FUNCTION__ "(\"%S\", \"%S\")\n", lpCaption, lpText);
 	cmdprintf("SHORTTRACE: 3,50");
 	return GetDefaultMessageBoxResult(uType);
 }
+HOOK_FUNCTION(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId)
 HOOKFUNC int WINAPI MyMessageBoxExA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId)
 {
 	debugprintf(__FUNCTION__ "(\"%s\", \"%s\")\n", lpCaption, lpText);
 	return GetDefaultMessageBoxResult(uType);
 }
+HOOK_FUNCTION(int, WINAPI, MessageBoxExW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId)
 HOOKFUNC int WINAPI MyMessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId)
 {
 	debugprintf(__FUNCTION__ "(\"%S\", \"%S\")\n", lpCaption, lpText);
 	return GetDefaultMessageBoxResult(uType);
 }
+HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxParamA, HINSTANCE hInstance,LPCSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 HOOKFUNC INT_PTR WINAPI MyDialogBoxParamA(HINSTANCE hInstance,LPCSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
     ENTER();
 	return IDOK;
 }
+HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxParamW, HINSTANCE hInstance,LPCWSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 HOOKFUNC INT_PTR WINAPI MyDialogBoxParamW(HINSTANCE hInstance,LPCWSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
 	ENTER();
 	return IDOK;
 }
+HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxIndirectParamA, HINSTANCE hInstance,LPCDLGTEMPLATEA hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamA(HINSTANCE hInstance,LPCDLGTEMPLATEA hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
 	ENTER();
 	return IDOK;
 }
+HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxIndirectParamW, HINSTANCE hInstance,LPCDLGTEMPLATEW hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamW(HINSTANCE hInstance,LPCDLGTEMPLATEW hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam)
 {
 	ENTER();

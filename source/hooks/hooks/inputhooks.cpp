@@ -1109,6 +1109,7 @@ template<> const GUID MyDirectInput<IDirectInput8W>::IID_IDirectInputDeviceN = I
 
 int g_midFrameAsyncKeyRequests = 0;
 
+HOOK_FUNCTION(SHORT, WINAPI, GetAsyncKeyState, int vKey)
 HOOKFUNC SHORT WINAPI MyGetAsyncKeyState(int vKey)
 {
 //	return GetAsyncKeyState(vKey);
@@ -1160,6 +1161,7 @@ HOOKFUNC SHORT WINAPI MyGetAsyncKeyState(int vKey)
 
 static bool disableGetKeyStateLogging = false;
 
+HOOK_FUNCTION(SHORT, WINAPI, GetKeyState, int vKey)
 HOOKFUNC SHORT WINAPI MyGetKeyState(int vKey)
 {
 	// WARNING: PeekMessage SOMETIMES internally calls this function (both directly and indirectly),
@@ -1190,6 +1192,7 @@ HOOKFUNC SHORT WINAPI MyGetKeyState(int vKey)
 
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetKeyboardState, PBYTE lpKeyState)
 HOOKFUNC BOOL WINAPI MyGetKeyboardState(PBYTE lpKeyState)
 {
 	// WARNING: PeekMessage SOMETIMES internally calls this function,
@@ -1209,6 +1212,7 @@ HOOKFUNC BOOL WINAPI MyGetKeyboardState(PBYTE lpKeyState)
 
 static LASTINPUTINFO s_lii = {sizeof(LASTINPUTINFO)};
 
+HOOK_FUNCTION(BOOL, WINAPI, GetLastInputInfo, PLASTINPUTINFO plii)
 HOOKFUNC BOOL WINAPI MyGetLastInputInfo(PLASTINPUTINFO plii)
 {
 	debuglog(LCF_KEYBOARD|LCF_TIMEFUNC|LCF_TIMEGET|LCF_UNTESTED|LCF_FREQUENT, __FUNCTION__ " called.\n");
@@ -1313,6 +1317,7 @@ void ProcessFrameInput()
 
 }
 
+HOOK_FUNCTION(MMRESULT, WINAPI, joyReleaseCapture, UINT uJoyID)
 HOOKFUNC MMRESULT WINAPI MyjoyReleaseCapture(UINT uJoyID)
 {
 	debuglog(LCF_JOYPAD|LCF_UNTESTED, __FUNCTION__ " called (uJoyID=%d).\n", uJoyID);
@@ -1322,6 +1327,7 @@ return MMSYSERR_NODRIVER; // NYI
 	//cmdprintf("WAITED: %u", 1);
 	return rv;
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, joySetCapture, HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 HOOKFUNC MMRESULT WINAPI MyjoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
 	debuglog(LCF_JOYPAD|LCF_UNTESTED, __FUNCTION__ " called (hwnd=0x%X, uJoyID=%d, uPeriod=%d, fChanged=%d).\n", hwnd, uJoyID, uPeriod, fChanged);
@@ -1330,6 +1336,7 @@ return MMSYSERR_NODRIVER; // NYI
 	return rv;
 }
 
+HOOK_FUNCTION(MMRESULT, WINAPI, joyGetPosEx, UINT uJoyID, LPJOYINFOEX pji)
 HOOKFUNC MMRESULT WINAPI MyjoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
 	debuglog(LCF_JOYPAD/*|LCF_UNTESTED*/, __FUNCTION__ " called (uJoyID=%d).\n", uJoyID);
@@ -1347,6 +1354,7 @@ debuglog(LCF_JOYPAD|LCF_UNTESTED, "in " __FUNCTION__ ", tls.curThreadCreateName 
 	return rv;
 //	return MMSYSERR_NODRIVER ;
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, joyGetPos, UINT uJoyID, LPJOYINFO pji)
 HOOKFUNC MMRESULT WINAPI MyjoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
 	debuglog(LCF_JOYPAD/*|LCF_UNTESTED*/, __FUNCTION__ " called (uJoyID=%d).\n", uJoyID);
@@ -1362,21 +1370,24 @@ return MMSYSERR_NODRIVER; // NYI
 	return rv;
 }
 
-TRAMPFUNC UINT WINAPI MyjoyGetNumDevs()
+HOOK_FUNCTION(UINT, WINAPI, joyGetNumDevs)
+HOOKFUNC UINT WINAPI MyjoyGetNumDevs()
 {
 	debuglog(LCF_JOYPAD|LCF_UNTESTED, __FUNCTION__ " called.\n");
 return 0; // NYI
 	UINT rv = joyGetNumDevs();
 	return rv;
 }
-TRAMPFUNC MMRESULT WINAPI MyjoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+HOOK_FUNCTION(MMRESULT, WINAPI, joyGetDevCapsA, UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+HOOKFUNC MMRESULT WINAPI MyjoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
 	debuglog(LCF_JOYPAD|LCF_UNTESTED, __FUNCTION__ " called.\n");
 return MMSYSERR_NODRIVER; // NYI
 	MMRESULT rv = joyGetDevCapsA(uJoyID, pjc, cbjc);
 	return rv;
 }
-TRAMPFUNC MMRESULT WINAPI MyjoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
+HOOK_FUNCTION(MMRESULT, WINAPI, joyGetDevCapsW, UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
+HOOKFUNC MMRESULT WINAPI MyjoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
 	debuglog(LCF_JOYPAD|LCF_UNTESTED, __FUNCTION__ " called.\n");
 return MMSYSERR_NODRIVER; // NYI
@@ -1385,6 +1396,7 @@ return MMSYSERR_NODRIVER; // NYI
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, GetCursorPos, LPPOINT lpPoint)
 HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
 {
 	if(!lpPoint) { return FALSE; }
@@ -1395,6 +1407,7 @@ HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
 	return TRUE;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, GetCursorInfo, PCURSORINFO pci)
 HOOKFUNC BOOL WINAPI MyGetCursorInfo(PCURSORINFO pci)
 {
 	if(!GetCursorInfo(pci)) { return FALSE; }
@@ -1402,6 +1415,7 @@ HOOKFUNC BOOL WINAPI MyGetCursorInfo(PCURSORINFO pci)
 }
 
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateA, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter)
 {
 	debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
@@ -1431,6 +1445,7 @@ HOOKFUNC HRESULT WINAPI MyDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, L
 
 	return rv;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateW, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter)
 {
 	debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
@@ -1461,6 +1476,7 @@ HOOKFUNC HRESULT WINAPI MyDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, L
 	return rv;
 }
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateEx, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
 {
 	debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
@@ -1484,6 +1500,7 @@ HOOKFUNC HRESULT WINAPI MyDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, 
 }
 
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectInput8Create, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
 {
 	debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");

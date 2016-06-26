@@ -234,6 +234,7 @@ int cllApiNum = -1;
 
 //void debugsplatmem(DWORD address, const char* name);
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, LdrLoadDll, PWCHAR PathToFile, ULONG Flags, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle)
 HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle)
 {
 //debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
@@ -429,6 +430,7 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 //	return rv;
 //}
 
+HOOK_FUNCTION(VOID, NTAPI, KiUserCallbackDispatcher, ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength)
 HOOKFUNC VOID NTAPI MyKiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength)
 {
 	//ENTER(ApiNumber);
@@ -498,6 +500,7 @@ const char* riidToName(REFIID riid)
 void UpdateLoadedOrUnloadedDllHooks();
 
 // in case either MyCoCreateInstance doesn't call MyCoCreateInstanceEx or MyCoCreateInstance is called and MyCoCreateInstanceEx failed to get hooked
+HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
 {
 	ThreadLocalStuff& curtls = tls;
@@ -556,6 +559,7 @@ static void PostCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, 
 	UpdateLoadedOrUnloadedDllHooks();
 }
 
+HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoGetClassObject, REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv)
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv)
 {
 	const char* oldName = tls.curThreadCreateName;
@@ -566,6 +570,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid, DWORD dwClsC
 }
 
 // in case either MyCoCreateInstanceEx is directly instead of from MyCoCreateInstance, or MyCoCreateInstanceEx is called from MyCoCreateInstance but MyCoCreateInstance failed to get hooked
+HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
 {
 	debuglog(LCF_MODULE, __FUNCTION__ "(clsid=0x%X, dwCount=%d) called.\n", Clsid.Data1, dwCount);
@@ -625,8 +630,9 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN p
 //};
 
 #define IMPLEMENT_MyDllGetClassObject(suffix) \
-TRAMPFUNC HRESULT STDAPICALLTYPE TrampDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) TRAMPOLINE_DEF \
-static HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
+TRAMPFUNC HRESULT STDAPICALLTYPE TrampDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
+HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
+HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
 { \
 	const char* oldName = tls.curThreadCreateName; \
 	PreCoGetClassObject(rclsid,riid,ppv, #suffix, oldName); \
@@ -640,6 +646,8 @@ IMPLEMENT_MyDllGetClassObject(quartz)
 //IMPLEMENT_MyDllGetClassObject(bass)
 
 
+HOOK_FUNCTION(HRESULT, STDMETHODCALLTYPE, IUnknown_QueryInterface_Proxy,
+              IUnknown __RPC_FAR * This,REFIID riid,void __RPC_FAR *__RPC_FAR *ppvObject)
 HOOKFUNC HRESULT STDMETHODCALLTYPE MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This,REFIID riid,void __RPC_FAR *__RPC_FAR *ppvObject)
 {
 	debuglog(LCF_MODULE|LCF_UNTESTED, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
@@ -676,26 +684,31 @@ struct AutoUntrust
 	}
 };
 
+HOOK_FUNCTION(PVOID, NTAPI, RtlAllocateHeap, PVOID HeapHandle, ULONG Flags, SIZE_T Size)
 HOOKFUNC PVOID NTAPI MyRtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size)
 {
 	AutoUntrust au;
 	return RtlAllocateHeap(HeapHandle, Flags, Size);
 }
+HOOK_FUNCTION(PVOID, NTAPI, RtlCreateHeap, ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters)
 HOOKFUNC PVOID NTAPI MyRtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters)
 {
 	AutoUntrust au;
 	return RtlCreateHeap(Flags, HeapBase, ReserveSize, CommitSize, Lock, Parameters);
 }
+HOOK_FUNCTION(PVOID, RPC_ENTRY, NdrAllocate, PMIDL_STUB_MESSAGE pStubMsg, size_t Len)
 HOOKFUNC PVOID RPC_ENTRY MyNdrAllocate(PMIDL_STUB_MESSAGE pStubMsg, size_t Len)
 {
 	AutoUntrust au;
 	return NdrAllocate(pStubMsg, Len);
 }
+HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitializeNew, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 HOOKFUNC void RPC_ENTRY MyNdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 {
 	AutoUntrust au;
 	return NdrClientInitializeNew(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
 }
+HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitialize, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 {
 	AutoUntrust au;
@@ -706,8 +719,19 @@ HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_M
 
 
 
-HOOKFUNC BOOL WINAPI MyCreateProcessA(
+HOOK_FUNCTION(BOOL, WINAPI, CreateProcessA,
 	LPCSTR lpApplicationName,
+	LPSTR lpCommandLine,
+	LPSECURITY_ATTRIBUTES lpProcessAttributes,
+	LPSECURITY_ATTRIBUTES lpThreadAttributes,
+	BOOL bInheritHandles,
+	DWORD dwCreationFlags,
+	LPVOID lpEnvironment,
+	LPCSTR lpCurrentDirectory,
+	LPSTARTUPINFOA lpStartupInfo,
+	LPPROCESS_INFORMATION lpProcessInformation
+)
+HOOKFUNC BOOL WINAPI MyCreateProcessA(LPCSTR lpApplicationName,
 	LPSTR lpCommandLine,
 	LPSECURITY_ATTRIBUTES lpProcessAttributes,
 	LPSECURITY_ATTRIBUTES lpThreadAttributes,
@@ -736,8 +760,19 @@ HOOKFUNC BOOL WINAPI MyCreateProcessA(
 	return rv;
 }
 
-HOOKFUNC BOOL WINAPI MyCreateProcessW(
+HOOK_FUNCTION(BOOL, WINAPI, CreateProcessW,
 	LPCWSTR lpApplicationName,
+	LPWSTR lpCommandLine,
+	LPSECURITY_ATTRIBUTES lpProcessAttributes,
+	LPSECURITY_ATTRIBUTES lpThreadAttributes,
+	BOOL bInheritHandles,
+	DWORD dwCreationFlags,
+	LPVOID lpEnvironment,
+	LPCWSTR lpCurrentDirectory,
+	LPSTARTUPINFOW lpStartupInfo,
+	LPPROCESS_INFORMATION lpProcessInformation
+)
+HOOKFUNC BOOL WINAPI MyCreateProcessW(LPCWSTR lpApplicationName,
 	LPWSTR lpCommandLine,
 	LPSECURITY_ATTRIBUTES lpProcessAttributes,
 	LPSECURITY_ATTRIBUTES lpThreadAttributes,
@@ -766,6 +801,7 @@ HOOKFUNC BOOL WINAPI MyCreateProcessW(
 	return rv;
 }
 
+HOOK_FUNCTION(VOID, WINAPI, ExitProcess, DWORD dwExitCode)
 HOOKFUNC VOID WINAPI MyExitProcess(DWORD dwExitCode)
 {
 	debuglog(LCF_PROCESS, __FUNCTION__ " called.\n");
@@ -816,6 +852,7 @@ struct _tiddata {
 typedef struct _tiddata * _ptiddata;
 BOOL FlsRecursing = FALSE;
 std::map<DWORD,DWORD *> fseeds;
+HOOK_FUNCTION(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData)
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 	BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
 	if ((!FlsRecursing) && (lpFlsData != NULL)) {
@@ -832,6 +869,7 @@ HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
 }
 BOOL TlsRecursing = FALSE;
 std::map<DWORD,DWORD *> tseeds;
+HOOK_FUNCTION(BOOL, WINAPI, TlsSetValue, DWORD dwTlsIndex, LPVOID lpTlsValue)
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
 	BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
 	if ((!TlsRecursing) && (lpTlsValue != NULL)) {
@@ -848,9 +886,10 @@ HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
 }
 
 // not really hooked, I just needed their trampolines
+HOOK_FUNCTION(LPVOID, WINAPI, TlsGetValue, DWORD dwTlsIndex)
 HOOKFUNC LPVOID WINAPI MyTlsGetValue(DWORD dwTlsIndex) IMPOSSIBLE_IMPL
+HOOK_FUNCTION(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex)
 HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
-
 
 void ModuleDllMainInit()
 {
@@ -874,9 +913,9 @@ void ApplyModuleIntercepts()
 		MAKE_INTERCEPT(1, RPCRT4, IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
 
 		MAKE_INTERCEPT(0, KERNEL32, FlsGetValue), // get trampoline only
-		MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
+		//MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
 		MAKE_INTERCEPT(1, KERNEL32, FlsSetValue),
-		MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
+		//MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
 
 		MAKE_INTERCEPT(1, KERNEL32, ExitProcess),
 		MAKE_INTERCEPT(1, KERNEL32, CreateProcessA),

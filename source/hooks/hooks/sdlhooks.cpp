@@ -45,6 +45,7 @@ static void SDLFrameBoundary(SDL_Surface* screen)
 	}
 }
 
+HOOK_FUNCTION(int, SDLCALL, SDL_Flip, SDL_Surface* screen)
 HOOKFUNC int SDLCALL MySDL_Flip(SDL_Surface* screen)
 {
 	debuglog(LCF_SDL|LCF_FRAME, __FUNCTION__ " called.\n");
@@ -60,6 +61,7 @@ HOOKFUNC int SDLCALL MySDL_Flip(SDL_Surface* screen)
 		SDLFrameBoundary(screen);
 	return rv;
 }
+HOOK_FUNCTION(void, SDLCALL, SDL_UpdateRect, SDL_Surface* screen, int x, int y, int w, int h)
 HOOKFUNC void SDLCALL MySDL_UpdateRect(SDL_Surface* screen, int x, int y, int w, int h)
 {
 	usingSDLOrDD = true;
@@ -71,6 +73,7 @@ HOOKFUNC void SDLCALL MySDL_UpdateRect(SDL_Surface* screen, int x, int y, int w,
 	if(!used_sdl_flip && isEntireScreen)
 		SDLFrameBoundary(screen);
 }
+HOOK_FUNCTION(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects)
 HOOKFUNC void SDLCALL MySDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_Rect* rects)
 {
 	debuglog(LCF_SDL|LCF_FRAME, __FUNCTION__ "(0x%X, %d, 0x%X) called.\n", screen, numrects, rects);
@@ -81,6 +84,7 @@ HOOKFUNC void SDLCALL MySDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_R
 	if(!used_sdl_flip)
 		SDLFrameBoundary(screen);
 }
+HOOK_FUNCTION(void, SDLCALL, SDL_GL_SwapBuffers)
 HOOKFUNC void SDLCALL MySDL_GL_SwapBuffers()
 {
 	debuglog(LCF_SDL|LCF_OGL|LCF_FRAME, __FUNCTION__ " called.\n");
@@ -95,6 +99,7 @@ HOOKFUNC void SDLCALL MySDL_GL_SwapBuffers()
 	if(!used_sdl_flip && !alreadyDidBoundary)
 		FrameBoundary();
 }
+HOOK_FUNCTION(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags)
 HOOKFUNC SDL_Surface* SDLCALL MySDL_SetVideoMode(int width, int height, int bpp, unsigned int flags)
 {
 	debuglog(LCF_SDL|LCF_UNTESTED, __FUNCTION__ "(%d,%d,%d,0x%X) called.\n",width,height,bpp,flags);
@@ -108,12 +113,14 @@ HOOKFUNC SDL_Surface* SDLCALL MySDL_SetVideoMode(int width, int height, int bpp,
 	return rv;
 }
 
-HOOKFUNC int MySDL_LockSurface (SDL_Surface *surface)
+HOOK_FUNCTION(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface)
+HOOKFUNC int SDLCALL MySDL_LockSurface(SDL_Surface *surface)
 {
 	debuglog(LCF_SDL|LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", surface);
 	return SDL_LockSurface(surface);
 }
-HOOKFUNC void MySDL_UnlockSurface (SDL_Surface *surface)
+HOOK_FUNCTION(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface)
+HOOKFUNC void SDLCALL MySDL_UnlockSurface(SDL_Surface *surface)
 {
 	debuglog(LCF_SDL|LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", surface);
 	SDL_UnlockSurface(surface);

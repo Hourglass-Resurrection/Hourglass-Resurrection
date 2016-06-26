@@ -1001,7 +1001,8 @@ HRESULT (STDMETHODCALLTYPE* MyDirect3D8::CreateDevice)(IDirect3D8* pThis, UINT A
 
 
 
-HOOKFUNC IDirect3D8* WINAPI MyDirect3DCreate8(UINT SDKVersion)
+HOOK_FUNCTION(IDirect3D8*, WINAPI, Direct3DCreate8, UINT SDKVersion)
+IDirect3D8* WINAPI MyDirect3DCreate8(UINT SDKVersion)
 {
 	debuglog(LCF_D3D, __FUNCTION__ " called.\n");
 	ThreadLocalStuff& curtls = tls;

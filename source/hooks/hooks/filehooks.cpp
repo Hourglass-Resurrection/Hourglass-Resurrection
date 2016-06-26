@@ -4,8 +4,16 @@
 #include "../global.h"
 #include "shared/ipc.h"
 
-HOOKFUNC HANDLE WINAPI MyCreateFileA(
+HOOK_FUNCTION(HANDLE, WINAPI, CreateFileA,
 	LPCSTR lpFileName,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes,
+	HANDLE hTemplateFile
+)
+HOOKFUNC HANDLE WINAPI MyCreateFileA(LPCSTR lpFileName,
 	DWORD dwDesiredAccess,
 	DWORD dwShareMode,
 	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
@@ -26,8 +34,16 @@ HOOKFUNC HANDLE WINAPI MyCreateFileA(
 	);
 }
 
-HOOKFUNC HANDLE WINAPI MyCreateFileW(
+HOOK_FUNCTION(HANDLE, WINAPI, CreateFileW,
 	LPCWSTR lpFileName,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes,
+	HANDLE hTemplateFile
+)
+HOOKFUNC HANDLE WINAPI MyCreateFileW(LPCWSTR lpFileName,
 	DWORD dwDesiredAccess,
 	DWORD dwShareMode,
 	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
@@ -48,6 +64,8 @@ HOOKFUNC HANDLE WINAPI MyCreateFileW(
 	);
 }
 
+HOOK_FUNCTION(HFILE, WINAPI, OpenFile,
+              LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
 HOOKFUNC HFILE WINAPI MyOpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
 {
 	debugprintf(__FUNCTION__ "(0x%X) called: %s\n", uStyle, lpFileName);

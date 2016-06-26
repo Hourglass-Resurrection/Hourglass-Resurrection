@@ -11,12 +11,12 @@ TRAMPFUNC HANDLE WINAPI CreateThread(
 		LPVOID lpParameter,
 		DWORD dwCreationFlags,
 		LPDWORD lpThreadId
-	) TRAMPOLINE_DEF
+	);
 #define ExitThread TrampExitThread
-TRAMPFUNC VOID WINAPI ExitThread(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
+TRAMPFUNC VOID WINAPI ExitThread(DWORD dwExitCode);
 #define TerminateThread TrampTerminateThread
-TRAMPFUNC BOOL WINAPI TerminateThread(HANDLE hThread, DWORD dwExitCode) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI TerminateThread(HANDLE hThread, DWORD dwExitCode);
 #define GetExitCodeThread TrampGetExitCodeThread
-TRAMPFUNC BOOL WINAPI GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
 #define NtSetInformationThread TrampNtSetInformationThread
-TRAMPFUNC NTSTATUS NTAPI NtSetInformationThread(HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength) TRAMPOLINE_DEF
+TRAMPFUNC NTSTATUS NTAPI NtSetInformationThread(HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength);

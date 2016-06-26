@@ -1858,7 +1858,8 @@ struct MyDirectDrawGammaControl
 	DEF(IDirectDrawGammaControl)
 #undef DEF
 
-
+HOOK_FUNCTION(HRESULT, WINAPI, DirectDrawCreate,
+              GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectDrawCreate(GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter)
 {
 	debuglog(LCF_DDRAW, __FUNCTION__ " called.\n");
@@ -1876,6 +1877,8 @@ HOOKFUNC HRESULT WINAPI MyDirectDrawCreate(GUID FAR *lpGUID, LPDIRECTDRAW FAR *l
 	return rv;
 }
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectDrawCreateEx,
+              GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID riid,IUnknown FAR *pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectDrawCreateEx(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID riid,IUnknown FAR *pUnkOuter)
 {
 	debuglog(LCF_DDRAW, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
@@ -1892,6 +1895,7 @@ HOOKFUNC HRESULT WINAPI MyDirectDrawCreateEx(GUID FAR * lpGuid, LPVOID  *lplpDD,
 	return rv;
 }
 
+HOOK_FUNCTION(HRESULT, WINAPI, CheckFullscreen)
 HOOKFUNC HRESULT WINAPI MyCheckFullscreen()
 {
 	debuglog(LCF_DDRAW|LCF_UNTESTED|LCF_TODO, __FUNCTION__ " called.\n");

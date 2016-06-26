@@ -44,16 +44,16 @@ struct SDL_Rect
 #define SDLCALL __cdecl
 
 #define SDL_Flip TrampSDL_Flip
-TRAMPFUNC int SDLCALL SDL_Flip(SDL_Surface *screen) TRAMPOLINE_DEF
+TRAMPFUNC int SDLCALL SDL_Flip(SDL_Surface *screen);
 #define SDL_UpdateRect TrampSDL_UpdateRect
-TRAMPFUNC void SDLCALL SDL_UpdateRect(SDL_Surface *screen, int x, int y, int w, int h) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void SDLCALL SDL_UpdateRect(SDL_Surface *screen, int x, int y, int w, int h);
 #define SDL_UpdateRects TrampSDL_UpdateRects
-TRAMPFUNC void SDLCALL SDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_Rect* rects) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void SDLCALL SDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_Rect* rects);
 #define SDL_GL_SwapBuffers TrampSDL_GL_SwapBuffers
-TRAMPFUNC void SDLCALL SDL_GL_SwapBuffers() TRAMPOLINE_DEF_VOID
+TRAMPFUNC void SDLCALL SDL_GL_SwapBuffers();
 #define SDL_SetVideoMode TrampSDL_SetVideoMode
-TRAMPFUNC SDL_Surface* SDLCALL SDL_SetVideoMode(int width, int height, int bpp, unsigned int flags) TRAMPOLINE_DEF
+TRAMPFUNC SDL_Surface* SDLCALL SDL_SetVideoMode(int width, int height, int bpp, unsigned int flags);
 #define SDL_LockSurface TrampSDL_LockSurface
-TRAMPFUNC int SDLCALL SDL_LockSurface (SDL_Surface *surface) TRAMPOLINE_DEF
+TRAMPFUNC int SDLCALL SDL_LockSurface (SDL_Surface *surface);
 #define SDL_UnlockSurface TrampSDL_UnlockSurface
-TRAMPFUNC void SDLCALL SDL_UnlockSurface (SDL_Surface *surface) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void SDLCALL SDL_UnlockSurface (SDL_Surface *surface);

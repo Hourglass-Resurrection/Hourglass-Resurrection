@@ -167,7 +167,8 @@ static bool HDCSizeBigEnoughForFrameBoundary(HDC hdc)
 
 
 int depth_SwapBuffers = 0;
-HOOKFUNC BOOL MySwapBuffers(HDC hdc)
+HOOK_FUNCTION(BOOL, WINAPI, SwapBuffers, HDC hdc)
+HOOKFUNC BOOL WINAPI MySwapBuffers(HDC hdc)
 {
 	depth_SwapBuffers++;
 	//if(!usingSDLOrDD)
@@ -215,8 +216,15 @@ static bool s_gdiPendingRefresh;
 bool RedrawScreenGDI();
 
 
-HOOKFUNC BOOL WINAPI MyStretchBlt(
+HOOK_FUNCTION(BOOL, WINAPI, StretchBlt,
 	HDC hdcDest,
+	int nXOriginDest, int nYOriginDest,
+	int nWidthDest, int nHeightDest,
+	HDC hdcSrc,
+	int nXOriginSrc, int nYOriginSrc,
+	int nWidthSrc, int nHeightSrc,
+	DWORD dwRop)
+HOOKFUNC BOOL WINAPI MyStretchBlt(HDC hdcDest,
 	int nXOriginDest, int nYOriginDest,
 	int nWidthDest, int nHeightDest,
 	HDC hdcSrc,
@@ -275,8 +283,14 @@ HOOKFUNC BOOL WINAPI MyStretchBlt(
 
 	return rv;
 }
-HOOKFUNC BOOL WINAPI MyBitBlt(
+HOOK_FUNCTION(BOOL, WINAPI, BitBlt,
 	HDC hdcDest,
+	int nXDest, int nYDest,
+	int nWidth, int nHeight,
+	HDC hdcSrc,
+	int nXSrc, int nYSrc,
+	DWORD dwRop)
+HOOKFUNC BOOL WINAPI MyBitBlt(HDC hdcDest,
 	int nXDest, int nYDest,
 	int nWidth, int nHeight,
 	HDC hdcSrc,
@@ -385,6 +399,8 @@ bool RedrawScreenGDI()
 }
 
 
+HOOK_FUNCTION(int, WINAPI, SetDIBitsToDevice,
+              HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, CONST VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse)
 HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, CONST VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse)
 {
 	int rv = SetDIBitsToDevice(hdc, xDest, yDest, w, h, xSrc, ySrc, StartScan, cLines, lpvBits, lpbmi, ColorUse);
@@ -407,6 +423,8 @@ HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, 
 	return rv;
 }
 
+HOOK_FUNCTION(int, WINAPI, StretchDIBits,
+              HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, CONST VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop)
 HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, CONST VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop)
 {
 	int rv = StretchDIBits(hdc, xDest, yDest, DestWidth, DestHeight, xSrc, ySrc, SrcWidth, SrcHeight, lpBits, lpbmi, iUsage, rop);
@@ -436,6 +454,7 @@ HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth
 
 
 
+HOOK_FUNCTION(int, WINAPI, ChoosePixelFormat, HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd)
 HOOKFUNC int WINAPI MyChoosePixelFormat(HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd)
 {
 	debuglog(LCF_GDI, __FUNCTION__ " called.\n");
@@ -443,6 +462,7 @@ HOOKFUNC int WINAPI MyChoosePixelFormat(HDC hdc, CONST PIXELFORMATDESCRIPTOR* pf
 	return rv;
 }
 int depth_SetPixelFormat = 0;
+HOOK_FUNCTION(BOOL, WINAPI, SetPixelFormat, HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
 HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
 {
 	debuglog(LCF_UNTESTED|LCF_GDI, __FUNCTION__ " called.\n");
@@ -457,6 +477,7 @@ HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESC
 		rv = TRUE;
 	return rv;
 }
+HOOK_FUNCTION(COLORREF, WINAPI, GetPixel, HDC hdc, int xx, int yy)
 HOOKFUNC COLORREF WINAPI MyGetPixel(HDC hdc, int xx, int yy)
 {
 	debuglog(LCF_TODO|LCF_UNTESTED|LCF_DESYNC|LCF_GDI, __FUNCTION__ " called.\n");
@@ -465,6 +486,7 @@ HOOKFUNC COLORREF WINAPI MyGetPixel(HDC hdc, int xx, int yy)
 	return rv;
 }
 
+HOOK_FUNCTION(int, WINAPI, GetDeviceCaps, HDC hdc, int index)
 HOOKFUNC int WINAPI MyGetDeviceCaps(HDC hdc, int index)
 {
 //	debuglog(LCF_TODO|LCF_UNTESTED|LCF_DESYNC|LCF_GDI, __FUNCTION__ "(%d) called.\n", index);
@@ -547,6 +569,7 @@ bool DoesFontExistW(CONST LOGFONTW *lplf)
 #define _L(x) _L2(x)
 
 
+HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectA, CONST LOGFONTA *lplf)
 HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
 {
 	debuglog(LCF_GDI, __FUNCTION__ " called (quality=%d, charset=%d, lfFaceName=%s).\n", lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
@@ -583,6 +606,7 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
 
 	return rv;
 }
+HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectW, CONST LOGFONTW *lplf)
 HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
 {
 	debuglog(LCF_GDI, __FUNCTION__ " called (quality=%d, charset=%d, lfFaceName=%S).\n", lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
@@ -609,6 +633,7 @@ HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
 
 
 
+HOOK_FUNCTION(LONG, WINAPI, ChangeDisplaySettingsA, LPDEVMODEA lpDevMode, DWORD dwFlags)
 HOOKFUNC LONG WINAPI MyChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlags)
 {
     if (lpDevMode)
@@ -635,6 +660,7 @@ HOOKFUNC LONG WINAPI MyChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlag
 	if(lpDevMode) FakeBroadcastDisplayChange(lpDevMode->dmPelsWidth,lpDevMode->dmPelsHeight,lpDevMode->dmBitsPerPel);
 	return rv;
 }
+HOOK_FUNCTION(LONG, WINAPI, ChangeDisplaySettingsW, LPDEVMODEW lpDevMode, DWORD dwFlags)
 HOOKFUNC LONG WINAPI MyChangeDisplaySettingsW(LPDEVMODEW lpDevMode, DWORD dwFlags)
 {
 	if(lpDevMode)

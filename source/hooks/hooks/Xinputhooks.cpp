@@ -8,10 +8,11 @@
 
 static bool gs_xinput_enabled = true;
 
-HOOKFUNC DWORD WINAPI MyXInputGetState(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetState,
     DWORD         dwUserIndex, // [in] Index of the user's controller.
     XINPUT_STATE* pState       // [out] Receives the current state of the controller.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
 
@@ -55,10 +56,11 @@ HOOKFUNC DWORD WINAPI MyXInputGetState(
     return ERROR_SUCCESS;
 }
 
-HOOKFUNC DWORD WINAPI MyXInputGetStateEx(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetStateEx,
     DWORD         dwUserIndex, // [in] Index of the user's controller.
     XINPUT_STATE* pState       // [out] Receives the current state of the controller.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetStateEx(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
 
@@ -72,10 +74,11 @@ HOOKFUNC DWORD WINAPI MyXInputGetStateEx(
     return MyXInputGetState(dwUserIndex, pState);
 }
 
-HOOKFUNC DWORD WINAPI MyXInputSetState(
+HOOK_FUNCTION(DWORD, WINAPI, XInputSetState,
     DWORD             dwUserIndex, // [in] Index of the user's controller.
     XINPUT_VIBRATION* pVibration   // [in, out] The vibration information to send to the controller.
 )
+HOOKFUNC DWORD WINAPI MyXInputSetState(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
@@ -87,11 +90,12 @@ HOOKFUNC DWORD WINAPI MyXInputSetState(
     return ERROR_SUCCESS;
 }
 
-HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetCapabilities,
     DWORD                dwUserIndex,  // [in] Index of the gamer associated with the device.
     DWORD                dwFlags,      // [in] Input flags that identify the device type.
     XINPUT_CAPABILITIES* pCapabilities // [out] Receives the capabilities.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
 
@@ -133,11 +137,12 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
     return ERROR_SUCCESS;
 }
 
-HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetDSoundAudioDeviceGuids,
     DWORD dwUserIndex,       // [in] Index of the gamer associated with the device.
     GUID* pDSoundRenderGuid, // [out] DSound device ID for render.
     GUID* pDSoundCaptureGuid // [out] DSound device ID for capture.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
@@ -406,11 +411,12 @@ struct KeystrokeState
     }
 };
 
-HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetKeystroke,
     DWORD             dwUserIndex, // [in] Index of the gamer associated with the device.
     DWORD             dwReserved,  // [in] Reserved.
     XINPUT_KEYSTROKE* pKeystroke   // [out] Receives the keystroke.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(DWORD dwUserIndex, DWORD dwReserved, XINPUT_KEYSTROKE* pKeystroke)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
 
@@ -461,20 +467,22 @@ HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(
     return ERROR_SUCCESS;
 }
 
-HOOKFUNC void WINAPI MyXInputEnable(
+HOOK_FUNCTION(void, WINAPI, XInputEnable,
     BOOL enable // [in] Indicates whether XInput is enabled or disabled.
 )
+HOOKFUNC void WINAPI MyXInputEnable(BOOL enable)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(enable = %d) called.\n", enable);
 
     gs_xinput_enabled = (enable == FALSE) ? false : true;
 }
 
-HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetBatteryInformation,
     DWORD                       dwUserIndex,        // [in] Index of the gamer associated with the device.
     BYTE                        devType,            // [in] Which device on this user index.
     XINPUT_BATTERY_INFORMATION* pBatteryInformation // [out] Contains the level and types of batteries.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 
@@ -492,13 +500,14 @@ HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(
     return ERROR_SUCCESS;
 }
 
-HOOKFUNC DWORD MyXInputGetAudioDeviceIds(
+HOOK_FUNCTION(DWORD, WINAPI, XInputGetAudioDeviceIds,
     DWORD  dwUserIndex,      // [in] Index of the gamer associated with the device.
     LPWSTR pRenderDeviceId,  // [out, optional] Windows Core Audio device ID string for render (speakers).
     UINT*  pRenderCount,     // [in, out, optional] Size, in wide-chars, of the render device ID string buffer.
     LPWSTR pCaptureDeviceId, // [out, optional] Windows Core Audio device ID string for capture (microphone).
     UINT*  pCaptureCount     // [in, out, optional] Size, in wide-chars, of capture device ID string buffer.
 )
+HOOKFUNC DWORD WINAPI MyXInputGetAudioDeviceIds(DWORD dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount)
 {
     debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
 

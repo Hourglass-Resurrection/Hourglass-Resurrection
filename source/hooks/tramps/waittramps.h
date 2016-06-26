@@ -4,36 +4,36 @@
 #pragma once
 
 #define NtWaitForSingleObject TrampNtWaitForSingleObject
-TRAMPFUNC NTSTATUS NTAPI NtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout) TRAMPOLINE_DEF
+TRAMPFUNC NTSTATUS NTAPI NtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
 #define NtWaitForMultipleObjects TrampNtWaitForMultipleObjects
-TRAMPFUNC NTSTATUS NTAPI NtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER TimeOut) TRAMPOLINE_DEF
+TRAMPFUNC NTSTATUS NTAPI NtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER TimeOut);
 #define RtlEnterCriticalSection TrampRtlEnterCriticalSection
-TRAMPFUNC NTSTATUS NTAPI RtlEnterCriticalSection( RTL_CRITICAL_SECTION *crit ) TRAMPOLINE_DEF
+TRAMPFUNC NTSTATUS NTAPI RtlEnterCriticalSection( RTL_CRITICAL_SECTION *crit );
 #define RtlTryEnterCriticalSection TrampRtlTryEnterCriticalSection
-TRAMPFUNC BOOL NTAPI RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION* crit) TRAMPOLINE_DEF
+TRAMPFUNC BOOL NTAPI RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION* crit);
 
 #define WaitForSingleObject TrampWaitForSingleObject
-TRAMPFUNC DWORD WINAPI WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
 #define WaitForSingleObjectEx TrampWaitForSingleObjectEx
-TRAMPFUNC DWORD WINAPI WaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI WaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable);
 #define WaitForMultipleObjects TrampWaitForMultipleObjects
-TRAMPFUNC DWORD WINAPI WaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI WaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
 #define WaitForMultipleObjectsEx TrampWaitForMultipleObjectsEx
-TRAMPFUNC DWORD WINAPI WaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI WaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable);
 #define MsgWaitForMultipleObjects TrampMsgWaitForMultipleObjects
-TRAMPFUNC DWORD WINAPI MsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI MsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask);
 #define MsgWaitForMultipleObjectsEx TrampMsgWaitForMultipleObjectsEx
-TRAMPFUNC DWORD WINAPI MsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI MsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags);
 #define SignalObjectAndWait TrampSignalObjectAndWait
-TRAMPFUNC DWORD WINAPI SignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI SignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable);
 
 #define WaitMessage TrampWaitMessage
-TRAMPFUNC BOOL WINAPI WaitMessage() TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI WaitMessage();
 
 #define Sleep TrampSleep
-TRAMPFUNC VOID WINAPI Sleep(DWORD dwMilliseconds) TRAMPOLINE_DEF_VOID
+TRAMPFUNC VOID WINAPI Sleep(DWORD dwMilliseconds);
 #define SleepEx TrampSleepEx
-TRAMPFUNC VOID WINAPI SleepEx(DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_DEF_VOID
+TRAMPFUNC VOID WINAPI SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
 // maybe I should hook NtDelayExecution but that could cause problems and this seems fine...
 
 
@@ -41,5 +41,5 @@ TRAMPFUNC VOID WINAPI SleepEx(DWORD dwMilliseconds, BOOL bAlertable) TRAMPOLINE_
 // - Sleep calls SleepEx and both are hooked and I want to be able to call Sleep locally
 // - there's a place where I want to call Sleep before it's been hooked
 #undef Sleep
-VOID WINAPI UntrampedSleep(DWORD x) TRAMPOLINE_DEF_CUSTOM(Sleep(x))
+VOID WINAPI UntrampedSleep(DWORD x);
 #define Sleep(x) TrampSleepEx(x,0)

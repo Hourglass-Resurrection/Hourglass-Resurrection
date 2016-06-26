@@ -7,6 +7,11 @@
 
 void ThreadHandleToExitHandle(HANDLE& pHandle);
 
+#undef Sleep
+VOID WINAPI UntrampedSleep(DWORD x) { Sleep(x); }
+#define Sleep(x) TrampSleepEx(x,0)
+
+HOOK_FUNCTION(VOID, WINAPI, Sleep, DWORD dwMilliseconds)
 HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds)
 {
 	BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
@@ -42,6 +47,7 @@ HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds)
 	}
 }
 
+HOOK_FUNCTION(VOID, WINAPI, SleepEx, DWORD dwMilliseconds, BOOL bAlertable)
 HOOKFUNC VOID WINAPI MySleepEx(DWORD dwMilliseconds, BOOL bAlertable)
 {
 	debuglog(LCF_SLEEP|(dwMilliseconds?LCF_NONE:LCF_FREQUENT), __FUNCTION__"(%d, %d) called.\n", dwMilliseconds, bAlertable);
@@ -132,6 +138,8 @@ void TransferWait(DWORD& dwMilliseconds/*, bool rly=true*/)
 }
 
 
+HOOK_FUNCTION(DWORD, WINAPI, WaitForSingleObjectEx,
+              HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable)
 HOOKFUNC DWORD WINAPI MyWaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT|LCF_TODO, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
@@ -157,6 +165,8 @@ HOOKFUNC DWORD WINAPI MyWaitForSingleObjectEx(HANDLE hHandle, DWORD dwMillisecon
 	// careful not to do anything (not even a printf) after the wait function...
 	// many games will crash from a race condition if we don't return as fast as possible.
 }
+HOOK_FUNCTION(DWORD, WINAPI, WaitForSingleObject,
+              HANDLE hHandle, DWORD dwMilliseconds)
 HOOKFUNC DWORD WINAPI MyWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT/*|LCF_DESYNC*/, __FUNCTION__ "(%d) for 0x%X\n", dwMilliseconds, hHandle);
@@ -244,6 +254,8 @@ HOOKFUNC DWORD WINAPI MyWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds
 }
 
 
+HOOK_FUNCTION(DWORD, WINAPI, WaitForMultipleObjectsEx,
+              DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable)
 HOOKFUNC DWORD WINAPI MyWaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT|LCF_TODO, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
@@ -268,6 +280,8 @@ HOOKFUNC DWORD WINAPI MyWaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpH
 	// careful not to do anything (not even a printf) after the wait function...
 	// many games will crash from a race condition if we don't return as fast as possible.
 }
+HOOK_FUNCTION(DWORD, WINAPI, WaitForMultipleObjects,
+              DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds)
 HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT/*|LCF_DESYNC*/, __FUNCTION__ "(%d, count=%d, flag=%d)\n", dwMilliseconds, nCount, bWaitAll);
@@ -406,6 +420,8 @@ HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHan
 }
 
 
+HOOK_FUNCTION(DWORD, WINAPI, SignalObjectAndWait,
+              HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable)
 HOOKFUNC DWORD WINAPI MySignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable)
 {
 	debuglog(LCF_WAIT|LCF_SYNCOBJ|LCF_FREQUENT|LCF_DESYNC, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
@@ -431,6 +447,8 @@ HOOKFUNC DWORD WINAPI MySignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObje
 
 
 
+HOOK_FUNCTION(DWORD, WINAPI, MsgWaitForMultipleObjects,
+              DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask)
 HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X)\n", dwMilliseconds, dwWakeMask);
@@ -583,6 +601,8 @@ HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pH
 }
 
 // Ex versions disabled as a precaution, see the note in TransferWait about how hooking both might cause desyncs.
+HOOK_FUNCTION(DWORD, WINAPI, MsgWaitForMultipleObjectsEx,
+              DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags)
 HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT|LCF_TODO, __FUNCTION__ "(%d, 0x%X)\n", dwMilliseconds, dwWakeMask);
@@ -592,6 +612,8 @@ HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *
 	// many games will crash from a race condition if we don't return as fast as possible.
 }
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtWaitForSingleObject,
+              HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
 HOOKFUNC NTSTATUS NTAPI MyNtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
 {
 	DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
@@ -601,6 +623,8 @@ HOOKFUNC NTSTATUS NTAPI MyNtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable
 		return NtWaitForSingleObject(Handle, Alertable, Timeout);
 	}
 }
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtWaitForMultipleObjects,
+              ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
 HOOKFUNC NTSTATUS NTAPI MyNtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
 {
 	DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
@@ -611,12 +635,16 @@ HOOKFUNC NTSTATUS NTAPI MyNtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE Ob
 	}
 }
 
+HOOK_FUNCTION(BOOL, NTAPI, RtlTryEnterCriticalSection,
+              RTL_CRITICAL_SECTION* crit)
 HOOKFUNC BOOL NTAPI MyRtlTryEnterCriticalSection(RTL_CRITICAL_SECTION* crit)
 {
 	debuglog(LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%x) called.", (DWORD)crit);
 	return RtlTryEnterCriticalSection(crit);
 }
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, RtlEnterCriticalSection,
+              RTL_CRITICAL_SECTION *crit)
 HOOKFUNC NTSTATUS NTAPI MyRtlEnterCriticalSection(RTL_CRITICAL_SECTION *crit)
 {
 
@@ -625,6 +653,7 @@ HOOKFUNC NTSTATUS NTAPI MyRtlEnterCriticalSection(RTL_CRITICAL_SECTION *crit)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, WaitMessage)
 HOOKFUNC BOOL WINAPI MyWaitMessage()
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ " called.\n");

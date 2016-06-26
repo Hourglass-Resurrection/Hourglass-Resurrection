@@ -12,7 +12,7 @@ TRAMPFUNC HANDLE WINAPI CreateFileA(
 	DWORD dwCreationDisposition,
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile
-) TRAMPOLINE_DEF
+);
 #define CreateFileW TrampCreateFileW
 TRAMPFUNC HANDLE WINAPI CreateFileW(
 	LPCWSTR lpFileName,
@@ -22,6 +22,6 @@ TRAMPFUNC HANDLE WINAPI CreateFileW(
 	DWORD dwCreationDisposition,
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile
-) TRAMPOLINE_DEF
+);
 #define OpenFile TrampOpenFile
-TRAMPFUNC HFILE WINAPI OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle) TRAMPOLINE_DEF
+TRAMPFUNC HFILE WINAPI OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle);

@@ -284,7 +284,8 @@ struct MyReferenceClock : IReferenceClock
 
 // WARNING: don't call this directly unless you don't mind it advancing time.
 // calling detTimer.GetTicks() with no arguments is safer.
-HOOKFUNC DWORD WINAPI MytimeGetTime(void)
+HOOK_FUNCTION(DWORD, WINAPI, timeGetTime)
+HOOKFUNC DWORD WINAPI MytimeGetTime()
 {
 //	return timeGetTime();
 	debuglog(LCF_TIMEFUNC|LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ " called.\n");
@@ -293,6 +294,7 @@ HOOKFUNC DWORD WINAPI MytimeGetTime(void)
 	return rv;
 }
 
+HOOK_FUNCTION(VOID, WINAPI, GetSystemTimeAsFileTime, LPFILETIME lpSystemTimeAsFileTime)
 HOOKFUNC VOID WINAPI MyGetSystemTimeAsFileTime(LPFILETIME lpSystemTimeAsFileTime)
 {
 //#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
@@ -312,12 +314,14 @@ HOOKFUNC VOID WINAPI MyGetSystemTimeAsFileTime(LPFILETIME lpSystemTimeAsFileTime
 	//lpSystemTimeAsFileTime->dwLowDateTime = 0xC39A9DC8;
 	//lpSystemTimeAsFileTime->dwHighDateTime = 0x1C9FDDC;
 }
+HOOK_FUNCTION(VOID, WINAPI, GetSystemTime, LPSYSTEMTIME lpSystemTime)
 HOOKFUNC VOID WINAPI MyGetSystemTime(LPSYSTEMTIME lpSystemTime)
 {
 //	GetSystemTime(lpSystemTime);
 	debuglog(LCF_TIMEFUNC|LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", lpSystemTime);
 	*lpSystemTime = detTimer.GetSystemTime();
 }
+HOOK_FUNCTION(VOID, WINAPI, GetLocalTime, LPSYSTEMTIME lpLocalTime)
 HOOKFUNC VOID WINAPI MyGetLocalTime(LPSYSTEMTIME lpLocalTime)
 {
 //	GetLocalTime(lpLocalTime);
@@ -327,6 +331,7 @@ HOOKFUNC VOID WINAPI MyGetLocalTime(LPSYSTEMTIME lpLocalTime)
 	//lpLocalTime->wYear += 172; // TEMP HACK (some games don't like running in 1827 or whenever)
 }
 
+HOOK_FUNCTION(MMRESULT, WINAPI, timeGetSystemTime, LPMMTIME pmmt, UINT cbmmt)
 HOOKFUNC MMRESULT WINAPI MytimeGetSystemTime(LPMMTIME pmmt, UINT cbmmt)
 {
 //	return timeGetSystemTime(pmmt, cbmmt);
@@ -354,7 +359,8 @@ HOOKFUNC MMRESULT WINAPI MytimeGetSystemTime(LPMMTIME pmmt, UINT cbmmt)
 //	return rv;
 //}
 
-HOOKFUNC DWORD WINAPI MyGetTickCount(void)
+HOOK_FUNCTION(DWORD, WINAPI, GetTickCount)
+HOOKFUNC DWORD WINAPI MyGetTickCount()
 {
 	debuglog(LCF_TIMEFUNC|LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ " called.\n");
 //	DWORD a = GetTickCount();
@@ -364,12 +370,14 @@ HOOKFUNC DWORD WINAPI MyGetTickCount(void)
 	return b;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, GetSystemTimes, LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime)
 HOOKFUNC BOOL WINAPI MyGetSystemTimes(LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime)
 {
 	debuglog(LCF_TIMEFUNC|LCF_TODO|LCF_UNTESTED|LCF_DESYNC, __FUNCTION__ " called.\n");
 	return GetSystemTimes(lpIdleTime, lpKernelTime, lpUserTime);
 }
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtQuerySystemTime, PLARGE_INTEGER SystemTime)
 HOOKFUNC NTSTATUS NTAPI MyNtQuerySystemTime(PLARGE_INTEGER SystemTime)
 {
 	debuglog(LCF_TIMEFUNC|LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ " called.\n");
@@ -385,6 +393,7 @@ HOOKFUNC NTSTATUS NTAPI MyNtQuerySystemTime(PLARGE_INTEGER SystemTime)
 // note: hooking Zw versions of Nt functions is NOT necessary.
 // they both get hooked at once due to actually being the same function
 
+HOOK_FUNCTION(BOOL, WINAPI, QueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount)
 HOOKFUNC BOOL WINAPI MyQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount)
 {
 //	return QueryPerformanceCounter(lpPerformanceCount);
@@ -397,6 +406,7 @@ HOOKFUNC BOOL WINAPI MyQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount
 	}
 	return FALSE;
 }
+HOOK_FUNCTION(BOOL, WINAPI, QueryPerformanceFrequency, LARGE_INTEGER* lpPerformanceFrequency)
 HOOKFUNC BOOL WINAPI MyQueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceFrequency)
 {
 //	return QueryPerformanceFrequency(lpPerformanceFrequency);
@@ -410,7 +420,8 @@ HOOKFUNC BOOL WINAPI MyQueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceFre
 	return FALSE;
 }
 
-TRAMPFUNC NTSTATUS NTAPI MyNtQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency)
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtQueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency)
+HOOKFUNC NTSTATUS NTAPI MyNtQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency)
 {
 	debuglog(LCF_TIMEFUNC|LCF_FREQUENT, __FUNCTION__ " called.\n");
 

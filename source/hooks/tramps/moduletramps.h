@@ -4,42 +4,42 @@
 #pragma once
 
 //#define LoadLibraryExW TrampLoadLibraryExW
-//TRAMPFUNC HMODULE WINAPI LoadLibraryExW(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) TRAMPOLINE_DEF
+//TRAMPFUNC HMODULE WINAPI LoadLibraryExW(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
 #define LdrLoadDll TrampLdrLoadDll
-TRAMPFUNC NTSTATUS NTAPI LdrLoadDll(PWCHAR PathToFile, ULONG Flags, struct _LSA_UNICODE_STRING* ModuleFileName, PHANDLE ModuleHandle) TRAMPOLINE_DEF
+TRAMPFUNC NTSTATUS NTAPI LdrLoadDll(PWCHAR PathToFile, ULONG Flags, struct _LSA_UNICODE_STRING* ModuleFileName, PHANDLE ModuleHandle);
 //#define LdrUnloadDll TrampLdrUnloadDll
-//TRAMPFUNC NTSTATUS NTAPI LdrUnloadDll(HANDLE ModuleAddress) TRAMPOLINE_DEF
+//TRAMPFUNC NTSTATUS NTAPI LdrUnloadDll(HANDLE ModuleAddress);
 
 #define CallNextHookEx TrampCallNextHookEx
-TRAMPFUNC LRESULT WINAPI CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam) TRAMPOLINE_DEF
+TRAMPFUNC LRESULT WINAPI CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam);
 
 //#define RegisterUserApiHook TrampRegisterUserApiHook
-//TRAMPFUNC BOOL WINAPI RegisterUserApiHook(HINSTANCE hInst, FARPROC func) TRAMPOLINE_DEF
+//TRAMPFUNC BOOL WINAPI RegisterUserApiHook(HINSTANCE hInst, FARPROC func);
 
 #define KiUserCallbackDispatcher TrampKiUserCallbackDispatcher
-TRAMPFUNC VOID NTAPI KiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength) TRAMPOLINE_DEF_VOID
+TRAMPFUNC VOID NTAPI KiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength);
 
 
 #define CoCreateInstance TrampCoCreateInstance
-TRAMPFUNC HRESULT STDAPICALLTYPE CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT STDAPICALLTYPE CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
 #define CoCreateInstanceEx TrampCoCreateInstanceEx
-TRAMPFUNC HRESULT STDAPICALLTYPE CoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT STDAPICALLTYPE CoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
 #define CoGetClassObject TrampCoGetClassObject
-TRAMPFUNC HRESULT STDAPICALLTYPE CoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT STDAPICALLTYPE CoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv);
 #define IUnknown_QueryInterface_Proxy TrampIUnknown_QueryInterface_Proxy
-TRAMPFUNC HRESULT STDMETHODCALLTYPE IUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This,REFIID riid,void __RPC_FAR *__RPC_FAR *ppvObject) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT STDMETHODCALLTYPE IUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This,REFIID riid,void __RPC_FAR *__RPC_FAR *ppvObject);
 
 // not sure exactly where these belong but this seems close enough
 #define RtlAllocateHeap TrampRtlAllocateHeap
-TRAMPFUNC PVOID NTAPI RtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size) TRAMPOLINE_DEF
+TRAMPFUNC PVOID NTAPI RtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
 #define RtlCreateHeap TrampRtlCreateHeap
-TRAMPFUNC PVOID NTAPI RtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters) TRAMPOLINE_DEF
+TRAMPFUNC PVOID NTAPI RtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters);
 #define NdrAllocate TrampNdrAllocate
-TRAMPFUNC PVOID RPC_ENTRY NdrAllocate(PMIDL_STUB_MESSAGE pStubMsg, size_t Len) TRAMPOLINE_DEF
+TRAMPFUNC PVOID RPC_ENTRY NdrAllocate(PMIDL_STUB_MESSAGE pStubMsg, size_t Len);
 #define NdrClientInitializeNew TrampNdrClientInitializeNew
-TRAMPFUNC void RPC_ENTRY NdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void RPC_ENTRY NdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
 #define NdrClientInitialize TrampNdrClientInitialize
-TRAMPFUNC void RPC_ENTRY NdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void RPC_ENTRY NdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
 
 
 // not sure exactly where these belong but this seems close enough
@@ -55,7 +55,7 @@ TRAMPFUNC BOOL WINAPI CreateProcessA(
 	LPCSTR lpCurrentDirectory,
 	LPSTARTUPINFOA lpStartupInfo,
 	LPPROCESS_INFORMATION lpProcessInformation
-) TRAMPOLINE_DEF
+);
 #define CreateProcessW TrampCreateProcessW
 TRAMPFUNC BOOL WINAPI CreateProcessW(
 	LPCWSTR lpApplicationName,
@@ -68,27 +68,27 @@ TRAMPFUNC BOOL WINAPI CreateProcessW(
 	LPCWSTR lpCurrentDirectory,
 	LPSTARTUPINFOW lpStartupInfo,
 	LPPROCESS_INFORMATION lpProcessInformation
-) TRAMPOLINE_DEF
+);
 #define ExitProcess TrampExitProcess
-TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
+TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode);
 //#define OpenServiceA TrampOpenServiceA
-//TRAMPFUNC SC_HANDLE APIENTRY OpenServiceA(SC_HANDLE hSCManager, LPCSTR lpServiceName, DWORD dwDesiredAccess) TRAMPOLINE_DEF
+//TRAMPFUNC SC_HANDLE APIENTRY OpenServiceA(SC_HANDLE hSCManager, LPCSTR lpServiceName, DWORD dwDesiredAccess);
 //#define OpenServiceW TrampOpenServiceW
-//TRAMPFUNC SC_HANDLE APIENTRY OpenServiceW(SC_HANDLE hSCManager, LPCWSTR lpServiceName, DWORD dwDesiredAccess) TRAMPOLINE_DEF
+//TRAMPFUNC SC_HANDLE APIENTRY OpenServiceW(SC_HANDLE hSCManager, LPCWSTR lpServiceName, DWORD dwDesiredAccess);
 
 
 
 //#define GetProcAddress TrampGetProcAddress
-//TRAMPFUNC FARPROC WINAPI GetProcAddress(HMODULE hModule, LPCSTR lpProcName) TRAMPOLINE_DEF
+//TRAMPFUNC FARPROC WINAPI GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
 
 //#define IsDebuggerPresent TrampIsDebuggerPresent
-//TRAMPFUNC BOOL WINAPI IsDebuggerPresent(VOID) TRAMPOLINE_DEF
+//TRAMPFUNC BOOL WINAPI IsDebuggerPresent(VOID);
 //#define OutputDebugStringA TrampOutputDebugStringA
-//TRAMPFUNC VOID WINAPI OutputDebugStringA(LPCSTR lpOutputString) TRAMPOLINE_DEF_VOID
+//TRAMPFUNC VOID WINAPI OutputDebugStringA(LPCSTR lpOutputString);
 //#define OutputDebugStringW TrampOutputDebugStringW
-//TRAMPFUNC VOID WINAPI OutputDebugStringW(LPCWSTR lpOutputString) TRAMPOLINE_DEF_VOID
+//TRAMPFUNC VOID WINAPI OutputDebugStringW(LPCWSTR lpOutputString);
 //#define NtQueryInformationProcess TrampNtQueryInformationProcess
-//TRAMPFUNC NTSTATUS NTAPI NtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength) TRAMPOLINE_DEF
+//TRAMPFUNC NTSTATUS NTAPI NtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
 
 
@@ -104,7 +104,7 @@ TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
 //X(30) X(31) X(32) X(33) X(34) X(35) X(36) X(37) X(38) X(39) \
 //X(40) X(41) X(42) X(43) X(44) X(45) X(46) X(47) X(48) // 48 functions should be enough for anybody
 //typedef HRESULT (STDAPICALLTYPE *TypeOfDllGetClassObject) (REFCLSID rclsid, REFIID riid, LPVOID *ppv);
-//#define X(y) TRAMPFUNC HRESULT STDAPICALLTYPE Tramp##y##DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) TRAMPOLINE_DEF
+//#define X(y) TRAMPFUNC HRESULT STDAPICALLTYPE Tramp##y##DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
 //CodeGen_X_List
 //#undef X
 //TypeOfDllGetClassObject ArrayTrampDllGetClassObject[] = 
@@ -124,7 +124,7 @@ TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
 
 
 ////#define DllGetClassObject TrampDllGetClassObject
-//TRAMPFUNC HRESULT STDAPICALLTYPE TrampDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) TRAMPOLINE_DEF
+//TRAMPFUNC HRESULT STDAPICALLTYPE TrampDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
 
 #ifdef TlsSetValue
 #error this shouldn't happen (TlsSetValue already defined)
@@ -135,12 +135,12 @@ TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
 // this might seem universally safer, but the reason we usually avoid this way of defining trampolines is because:
 // if the function doesn't exist in the DLL, it will cause the game to immediately crash on startup.
 // for example, it's not safe to do this for FlsSetValue/FlsGetValue because those don't exist on Windows XP.
-TRAMPFUNC BOOL WINAPI TrampTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) TRAMPOLINE_DEF_CUSTOM(return TlsSetValue(dwTlsIndex,lpTlsValue))
-#define TlsSetValue TrampTlsSetValue
-TRAMPFUNC LPVOID WINAPI TrampTlsGetValue(DWORD dwTlsIndex) TRAMPOLINE_DEF_CUSTOM(return TlsGetValue(dwTlsIndex))
-#define TlsGetValue TrampTlsGetValue
+//TRAMPFUNC BOOL WINAPI TrampTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) { return TlsSetValue(dwTlsIndex, lpTlsValue); }
+//#define TlsSetValue TrampTlsSetValue
+//TRAMPFUNC LPVOID WINAPI TrampTlsGetValue(DWORD dwTlsIndex) { return TlsGetValue(dwTlsIndex); }
+//#define TlsGetValue TrampTlsGetValue
 
 #define FlsSetValue TrampFlsSetValue
-TRAMPFUNC BOOL WINAPI FlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI FlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData);
 #define FlsGetValue TrampFlsGetValue
-TRAMPFUNC PVOID WINAPI FlsGetValue(DWORD dwFlsIndex) TRAMPOLINE_DEF
+TRAMPFUNC PVOID WINAPI FlsGetValue(DWORD dwFlsIndex);

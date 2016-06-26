@@ -1104,6 +1104,7 @@ static inline void glSetError(GLenum error)
 
 
 
+HOOK_FUNCTION(void, GLAPI, glBegin, GLenum mode)
 HOOKFUNC void GLAPI MyglBegin(GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(mode=0x%X) called.\n", mode);
@@ -1121,6 +1122,7 @@ HOOKFUNC void GLAPI MyglBegin(GLenum mode)
 //static void OglGetD3dDrawInfo(GLenum mode, GLsizei count, DWORD& fvf, DWORD& elemSize, DWORD& primType, int& primCount, int& elemCount);
 static void OglDrawToD3D(GLenum mode, GLsizei count, GLint first, GLenum type, const GLvoid* indices, bool renderNow, bool makeDisplayList);
 
+HOOK_FUNCTION(void, GLAPI, glEnd)
 HOOKFUNC void GLAPI MyglEnd()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
@@ -1191,7 +1193,8 @@ HOOKFUNC void GLAPI MyglEnd()
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglEnd);
 }
 
-HOOKFUNC GLubyte* GLAPI MyglGetString(GLenum name)
+HOOK_FUNCTION(const GLubyte*, GLAPI, glGetString, GLenum name)
+HOOKFUNC const GLubyte* GLAPI MyglGetString(GLenum name)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(name=0x%X) called.\n", name);
 	//GLFUNCBOILERPLATE;
@@ -1221,6 +1224,7 @@ HOOKFUNC GLubyte* GLAPI MyglGetString(GLenum name)
 	return (GLubyte*)NULL;
 }
 
+HOOK_FUNCTION(void, GLAPI, glHint, GLenum target, GLenum mode)
 HOOKFUNC void GLAPI MyglHint(GLenum target, GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(target=0x%X, mode=0x%X) called.\n", target, mode);
@@ -1234,6 +1238,7 @@ HOOKFUNC void GLAPI MyglHint(GLenum target, GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglHint, glenum,target, glenum,mode);
 }
 
+HOOK_FUNCTION(void, GLAPI, glBindTexture, GLenum target, GLuint texture)
 HOOKFUNC void GLAPI MyglBindTexture(GLenum target, GLuint texture)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(target=0x%X, texture=%d) called.\n", target, texture);
@@ -1285,6 +1290,7 @@ HOOKFUNC void GLAPI MyglBindTexture(GLenum target, GLuint texture)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglBindTexture, glenum,target, gluint,texture);
 }
 
+HOOK_FUNCTION(void, GLAPI, glDeleteTextures, GLsizei n, const GLuint* textures)
 HOOKFUNC void GLAPI MyglDeleteTextures(GLsizei n, const GLuint* textures)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(n=%d, textures=%d) called.\n", n, textures);
@@ -1299,6 +1305,7 @@ HOOKFUNC void GLAPI MyglDeleteTextures(GLsizei n, const GLuint* textures)
 		oglTextures.pop_back();
 }
 
+HOOK_FUNCTION(void, GLAPI, glGenTextures, GLsizei n, GLuint* textures)
 HOOKFUNC void GLAPI MyglGenTextures(GLsizei n, GLuint* textures)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(n=%d, textures=0x%X) called.\n", n, textures);
@@ -1325,7 +1332,8 @@ HOOKFUNC void GLAPI MyglGenTextures(GLsizei n, GLuint* textures)
 
 
 
-HOOKFUNC void GLAPI MyglAccum (GLenum op, GLfloat value)
+HOOK_FUNCTION(void, GLAPI, glAccum, GLenum op, GLfloat value)
+HOOKFUNC void GLAPI MyglAccum(GLenum op, GLfloat value)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1344,7 +1352,8 @@ static const int GL_NOTEQUAL = 0x0205;
 static const int GL_GEQUAL = 0x0206;
 static const int GL_ALWAYS = 0x0207;
 
-HOOKFUNC void GLAPI MyglAlphaFunc (GLenum func, GLclampf ref)
+HOOK_FUNCTION(void, GLAPI, glAlphaFunc, GLenum func, GLclampf ref)
+HOOKFUNC void GLAPI MyglAlphaFunc(GLenum func, GLclampf ref)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(func=0x%X, ref=%g) called.\n", func, ref);
 	//GLFUNCBOILERPLATE;
@@ -1368,7 +1377,8 @@ HOOKFUNC void GLAPI MyglAlphaFunc (GLenum func, GLclampf ref)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglAlphaFunc, glenum,func, glclampf,ref);
 }
 
-HOOKFUNC void GLAPI MyglBitmap (GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
+HOOK_FUNCTION(void, GLAPI, glBitmap, GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
+HOOKFUNC void GLAPI MyglBitmap(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1405,7 +1415,8 @@ static DWORD OglBlendFactorToD3D(GLenum factor)
 	}
 }
 
-HOOKFUNC void GLAPI MyglBlendFunc (GLenum sfactor, GLenum dfactor)
+HOOK_FUNCTION(void, GLAPI, glBlendFunc, GLenum sfactor, GLenum dfactor)
+HOOKFUNC void GLAPI MyglBlendFunc(GLenum sfactor, GLenum dfactor)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(sfactor=0x%X, dfactor=0x%X) called.\n", sfactor, dfactor);
 	//GLFUNCBOILERPLATE;
@@ -1437,7 +1448,8 @@ static void MyglCallList_internal(GLuint list)
 	}
 }
 
-HOOKFUNC void GLAPI MyglCallList (GLuint list)
+HOOK_FUNCTION(void, GLAPI, glCallList, GLuint list)
+HOOKFUNC void GLAPI MyglCallList(GLuint list)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(list=%d) called.\n", list);
 	//GLFUNCBOILERPLATE;
@@ -1446,7 +1458,8 @@ HOOKFUNC void GLAPI MyglCallList (GLuint list)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglCallList, gluint,list);
 }
 
-HOOKFUNC void GLAPI MyglCallLists (GLsizei n, GLenum type, const GLvoid *lists)
+HOOK_FUNCTION(void, GLAPI, glCallLists, GLsizei n, GLenum type, const GLvoid *lists)
+HOOKFUNC void GLAPI MyglCallLists(GLsizei n, GLenum type, const GLvoid *lists)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(n=%d, type=0x%X, lists=0x%X) called.\n", n, type, lists);
 	//GLFUNCBOILERPLATE;
@@ -1479,7 +1492,8 @@ HOOKFUNC void GLAPI MyglCallLists (GLsizei n, GLenum type, const GLvoid *lists)
 	OGLPUSHDISPLAYLISTENTRY_2ARGV(idglCallLists, glsizei,n, glenum,type, OGLTypeToSize(type),lists,n);
 }
 
-HOOKFUNC void GLAPI MyglClear (GLbitfield mask)
+HOOK_FUNCTION(void, GLAPI, glClear, GLbitfield mask)
+HOOKFUNC void GLAPI MyglClear(GLbitfield mask)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(mask=0x%X) called.\n", mask);
 	//GLFUNCBOILERPLATE;
@@ -1500,7 +1514,8 @@ HOOKFUNC void GLAPI MyglClear (GLbitfield mask)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglClear, glbitfield,mask);
 }
 
-HOOKFUNC void GLAPI MyglClearAccum (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+HOOK_FUNCTION(void, GLAPI, glClearAccum, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+HOOKFUNC void GLAPI MyglClearAccum(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1510,7 +1525,8 @@ HOOKFUNC void GLAPI MyglClearAccum (GLfloat red, GLfloat green, GLfloat blue, GL
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglClearAccum, glfloat,red, glfloat,green, glfloat,blue, glfloat,alpha);
 }
 
-HOOKFUNC void GLAPI MyglClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
+HOOK_FUNCTION(void, GLAPI, glClearColor, GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
+HOOKFUNC void GLAPI MyglClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1521,7 +1537,8 @@ HOOKFUNC void GLAPI MyglClearColor (GLclampf red, GLclampf green, GLclampf blue,
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglClearColor, glclampf,red, glclampf,green, glclampf,blue, glclampf,alpha);
 }
 
-HOOKFUNC void GLAPI MyglClearDepth (GLclampd depth)
+HOOK_FUNCTION(void, GLAPI, glClearDepth, GLclampd depth)
+HOOKFUNC void GLAPI MyglClearDepth(GLclampd depth)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g) called.\n", (float)depth);
 	//GLFUNCBOILERPLATE;
@@ -1532,7 +1549,8 @@ HOOKFUNC void GLAPI MyglClearDepth (GLclampd depth)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglClearDepth, glclampd,depth);
 }
 
-HOOKFUNC void GLAPI MyglClearIndex (GLfloat c)
+HOOK_FUNCTION(void, GLAPI, glClearIndex, GLfloat c)
+HOOKFUNC void GLAPI MyglClearIndex(GLfloat c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1542,7 +1560,8 @@ HOOKFUNC void GLAPI MyglClearIndex (GLfloat c)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglClearIndex, glfloat,c);
 }
 
-HOOKFUNC void GLAPI MyglClearStencil (GLint s)
+HOOK_FUNCTION(void, GLAPI, glClearStencil, GLint s)
+HOOKFUNC void GLAPI MyglClearStencil(GLint s)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1553,7 +1572,8 @@ HOOKFUNC void GLAPI MyglClearStencil (GLint s)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglClearStencil, glint,s);
 }
 
-HOOKFUNC void GLAPI MyglClipPlane (GLenum plane, const GLdouble *equation)
+HOOK_FUNCTION(void, GLAPI, glClipPlane, GLenum plane, const GLdouble *equation)
+HOOKFUNC void GLAPI MyglClipPlane(GLenum plane, const GLdouble *equation)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1563,7 +1583,8 @@ HOOKFUNC void GLAPI MyglClipPlane (GLenum plane, const GLdouble *equation)
 	OGLPUSHDISPLAYLISTENTRY_1ARGV(idglClipPlane, glenum,plane, sizeof(GLdouble),equation,4);
 }
 
-HOOKFUNC void GLAPI MyglColor3b (GLbyte red, GLbyte green, GLbyte blue)
+HOOK_FUNCTION(void, GLAPI, glColor3b, GLbyte red, GLbyte green, GLbyte blue)
+HOOKFUNC void GLAPI MyglColor3b(GLbyte red, GLbyte green, GLbyte blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1574,7 +1595,8 @@ HOOKFUNC void GLAPI MyglColor3b (GLbyte red, GLbyte green, GLbyte blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3b, glbyte,red, glbyte,green, glbyte,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3bv (const GLbyte *v)
+HOOK_FUNCTION(void, GLAPI, glColor3bv, const GLbyte *v)
+HOOKFUNC void GLAPI MyglColor3bv(const GLbyte *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1585,7 +1607,8 @@ HOOKFUNC void GLAPI MyglColor3bv (const GLbyte *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3bv, sizeof(GLbyte),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3d (GLdouble red, GLdouble green, GLdouble blue)
+HOOK_FUNCTION(void, GLAPI, glColor3d, GLdouble red, GLdouble green, GLdouble blue)
+HOOKFUNC void GLAPI MyglColor3d(GLdouble red, GLdouble green, GLdouble blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1596,7 +1619,8 @@ HOOKFUNC void GLAPI MyglColor3d (GLdouble red, GLdouble green, GLdouble blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3d, gldouble,red, gldouble,green, gldouble,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glColor3dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglColor3dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1607,7 +1631,8 @@ HOOKFUNC void GLAPI MyglColor3dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3dv, sizeof(GLdouble),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3f (GLfloat red, GLfloat green, GLfloat blue)
+HOOK_FUNCTION(void, GLAPI, glColor3f, GLfloat red, GLfloat green, GLfloat blue)
+HOOKFUNC void GLAPI MyglColor3f(GLfloat red, GLfloat green, GLfloat blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1618,7 +1643,8 @@ HOOKFUNC void GLAPI MyglColor3f (GLfloat red, GLfloat green, GLfloat blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3f, glfloat,red, glfloat,green, glfloat,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glColor3fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglColor3fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1629,7 +1655,8 @@ HOOKFUNC void GLAPI MyglColor3fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3fv, sizeof(GLfloat),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3i (GLint red, GLint green, GLint blue)
+HOOK_FUNCTION(void, GLAPI, glColor3i, GLint red, GLint green, GLint blue)
+HOOKFUNC void GLAPI MyglColor3i(GLint red, GLint green, GLint blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1640,7 +1667,8 @@ HOOKFUNC void GLAPI MyglColor3i (GLint red, GLint green, GLint blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3i, glint,red, glint,green, glint,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glColor3iv, const GLint *v)
+HOOKFUNC void GLAPI MyglColor3iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1651,7 +1679,8 @@ HOOKFUNC void GLAPI MyglColor3iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3iv, sizeof(GLint),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3s (GLshort red, GLshort green, GLshort blue)
+HOOK_FUNCTION(void, GLAPI, glColor3s, GLshort red, GLshort green, GLshort blue)
+HOOKFUNC void GLAPI MyglColor3s(GLshort red, GLshort green, GLshort blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1662,7 +1691,8 @@ HOOKFUNC void GLAPI MyglColor3s (GLshort red, GLshort green, GLshort blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3s, glshort,red, glshort,green, glshort,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glColor3sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglColor3sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1673,7 +1703,8 @@ HOOKFUNC void GLAPI MyglColor3sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3sv, sizeof(GLshort),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3ub (GLubyte red, GLubyte green, GLubyte blue)
+HOOK_FUNCTION(void, GLAPI, glColor3ub, GLubyte red, GLubyte green, GLubyte blue)
+HOOKFUNC void GLAPI MyglColor3ub(GLubyte red, GLubyte green, GLubyte blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1684,7 +1715,8 @@ HOOKFUNC void GLAPI MyglColor3ub (GLubyte red, GLubyte green, GLubyte blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3ub, glubyte,red, glubyte,green, glubyte,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3ubv (const GLubyte *v)
+HOOK_FUNCTION(void, GLAPI, glColor3ubv, const GLubyte *v)
+HOOKFUNC void GLAPI MyglColor3ubv(const GLubyte *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1695,7 +1727,8 @@ HOOKFUNC void GLAPI MyglColor3ubv (const GLubyte *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3ubv, sizeof(GLubyte),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3ui (GLuint red, GLuint green, GLuint blue)
+HOOK_FUNCTION(void, GLAPI, glColor3ui, GLuint red, GLuint green, GLuint blue)
+HOOKFUNC void GLAPI MyglColor3ui(GLuint red, GLuint green, GLuint blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1706,7 +1739,8 @@ HOOKFUNC void GLAPI MyglColor3ui (GLuint red, GLuint green, GLuint blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3ui, gluint,red, gluint,green, gluint,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3uiv (const GLuint *v)
+HOOK_FUNCTION(void, GLAPI, glColor3uiv, const GLuint *v)
+HOOKFUNC void GLAPI MyglColor3uiv(const GLuint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1717,7 +1751,8 @@ HOOKFUNC void GLAPI MyglColor3uiv (const GLuint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3uiv, sizeof(GLuint),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor3us (GLushort red, GLushort green, GLushort blue)
+HOOK_FUNCTION(void, GLAPI, glColor3us, GLushort red, GLushort green, GLushort blue)
+HOOKFUNC void GLAPI MyglColor3us(GLushort red, GLushort green, GLushort blue)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1728,7 +1763,8 @@ HOOKFUNC void GLAPI MyglColor3us (GLushort red, GLushort green, GLushort blue)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglColor3us, glushort,red, glushort,green, glushort,blue);
 }
 
-HOOKFUNC void GLAPI MyglColor3usv (const GLushort *v)
+HOOK_FUNCTION(void, GLAPI, glColor3usv, const GLushort *v)
+HOOKFUNC void GLAPI MyglColor3usv(const GLushort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1739,7 +1775,8 @@ HOOKFUNC void GLAPI MyglColor3usv (const GLushort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor3usv, sizeof(GLushort),v,3);
 }
 
-HOOKFUNC void GLAPI MyglColor4b (GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4b, GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha)
+HOOKFUNC void GLAPI MyglColor4b(GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1750,7 +1787,8 @@ HOOKFUNC void GLAPI MyglColor4b (GLbyte red, GLbyte green, GLbyte blue, GLbyte a
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4b, glbyte,red, glbyte,green, glbyte,blue, glbyte,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4bv (const GLbyte *v)
+HOOK_FUNCTION(void, GLAPI, glColor4bv, const GLbyte *v)
+HOOKFUNC void GLAPI MyglColor4bv(const GLbyte *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1761,7 +1799,8 @@ HOOKFUNC void GLAPI MyglColor4bv (const GLbyte *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4bv, sizeof(GLbyte),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4d (GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4d, GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha)
+HOOKFUNC void GLAPI MyglColor4d(GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1772,7 +1811,8 @@ HOOKFUNC void GLAPI MyglColor4d (GLdouble red, GLdouble green, GLdouble blue, GL
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4d, gldouble,red, gldouble,green, gldouble,blue, gldouble,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glColor4dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglColor4dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1783,7 +1823,8 @@ HOOKFUNC void GLAPI MyglColor4dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4dv, sizeof(GLdouble),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4f (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+HOOKFUNC void GLAPI MyglColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g, %g, %g) called.\n", red, green, blue, alpha);
 	//GLFUNCBOILERPLATE;
@@ -1794,7 +1835,8 @@ HOOKFUNC void GLAPI MyglColor4f (GLfloat red, GLfloat green, GLfloat blue, GLflo
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4f, glfloat,red, glfloat,green, glfloat,blue, glfloat,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glColor4fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglColor4fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1805,7 +1847,8 @@ HOOKFUNC void GLAPI MyglColor4fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4fv, sizeof(GLfloat),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4i (GLint red, GLint green, GLint blue, GLint alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4i, GLint red, GLint green, GLint blue, GLint alpha)
+HOOKFUNC void GLAPI MyglColor4i(GLint red, GLint green, GLint blue, GLint alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1816,7 +1859,8 @@ HOOKFUNC void GLAPI MyglColor4i (GLint red, GLint green, GLint blue, GLint alpha
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4i, glint,red, glint,green, glint,blue, glint,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glColor4iv, const GLint *v)
+HOOKFUNC void GLAPI MyglColor4iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1827,7 +1871,8 @@ HOOKFUNC void GLAPI MyglColor4iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4iv, sizeof(GLint),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4s (GLshort red, GLshort green, GLshort blue, GLshort alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4s, GLshort red, GLshort green, GLshort blue, GLshort alpha)
+HOOKFUNC void GLAPI MyglColor4s(GLshort red, GLshort green, GLshort blue, GLshort alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1838,7 +1883,8 @@ HOOKFUNC void GLAPI MyglColor4s (GLshort red, GLshort green, GLshort blue, GLsho
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4s, glshort,red, glshort,green, glshort,blue, glshort,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glColor4sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglColor4sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1849,7 +1895,8 @@ HOOKFUNC void GLAPI MyglColor4sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4sv, sizeof(GLshort),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4ub (GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4ub, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
+HOOKFUNC void GLAPI MyglColor4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1860,7 +1907,8 @@ HOOKFUNC void GLAPI MyglColor4ub (GLubyte red, GLubyte green, GLubyte blue, GLub
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4ub, glubyte,red, glubyte,green, glubyte,blue, glubyte,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4ubv (const GLubyte *v)
+HOOK_FUNCTION(void, GLAPI, glColor4ubv, const GLubyte *v)
+HOOKFUNC void GLAPI MyglColor4ubv(const GLubyte *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1871,7 +1919,8 @@ HOOKFUNC void GLAPI MyglColor4ubv (const GLubyte *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4ubv, sizeof(GLubyte),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4ui (GLuint red, GLuint green, GLuint blue, GLuint alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4ui, GLuint red, GLuint green, GLuint blue, GLuint alpha)
+HOOKFUNC void GLAPI MyglColor4ui(GLuint red, GLuint green, GLuint blue, GLuint alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1882,7 +1931,8 @@ HOOKFUNC void GLAPI MyglColor4ui (GLuint red, GLuint green, GLuint blue, GLuint 
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4ui, gluint,red, gluint,green, gluint,blue, gluint,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4uiv (const GLuint *v)
+HOOK_FUNCTION(void, GLAPI, glColor4uiv, const GLuint *v)
+HOOKFUNC void GLAPI MyglColor4uiv(const GLuint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1893,7 +1943,8 @@ HOOKFUNC void GLAPI MyglColor4uiv (const GLuint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4uiv, sizeof(GLuint),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColor4us (GLushort red, GLushort green, GLushort blue, GLushort alpha)
+HOOK_FUNCTION(void, GLAPI, glColor4us, GLushort red, GLushort green, GLushort blue, GLushort alpha)
+HOOKFUNC void GLAPI MyglColor4us(GLushort red, GLushort green, GLushort blue, GLushort alpha)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1904,7 +1955,8 @@ HOOKFUNC void GLAPI MyglColor4us (GLushort red, GLushort green, GLushort blue, G
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColor4us, glushort,red, glushort,green, glushort,blue, glushort,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColor4usv (const GLushort *v)
+HOOK_FUNCTION(void, GLAPI, glColor4usv, const GLushort *v)
+HOOKFUNC void GLAPI MyglColor4usv(const GLushort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1915,7 +1967,8 @@ HOOKFUNC void GLAPI MyglColor4usv (const GLushort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglColor4usv, sizeof(GLushort),v,4);
 }
 
-HOOKFUNC void GLAPI MyglColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+HOOK_FUNCTION(void, GLAPI, glColorMask, GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+HOOKFUNC void GLAPI MyglColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1925,7 +1978,8 @@ HOOKFUNC void GLAPI MyglColorMask (GLboolean red, GLboolean green, GLboolean blu
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglColorMask, glboolean,red, glboolean,green, glboolean,blue, glboolean,alpha);
 }
 
-HOOKFUNC void GLAPI MyglColorMaterial (GLenum face, GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glColorMaterial, GLenum face, GLenum mode)
+HOOKFUNC void GLAPI MyglColorMaterial(GLenum face, GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1935,7 +1989,8 @@ HOOKFUNC void GLAPI MyglColorMaterial (GLenum face, GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglColorMaterial, glenum,face, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglCopyPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)
+HOOK_FUNCTION(void, GLAPI, glCopyPixels, GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)
+HOOKFUNC void GLAPI MyglCopyPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1945,7 +2000,8 @@ HOOKFUNC void GLAPI MyglCopyPixels (GLint x, GLint y, GLsizei width, GLsizei hei
 	OGLPUSHDISPLAYLISTENTRY_5ARG(idglCopyPixels, glint,x, glint,y, glsizei,width, glsizei,height, glenum,type);
 }
 
-HOOKFUNC void GLAPI MyglCullFace (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glCullFace, GLenum mode)
+HOOKFUNC void GLAPI MyglCullFace(GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1958,7 +2014,8 @@ HOOKFUNC void GLAPI MyglCullFace (GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglCullFace, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglDeleteLists (GLuint list, GLsizei range)
+HOOK_FUNCTION(void, GLAPI, glDeleteLists, GLuint list, GLsizei range)
+HOOKFUNC void GLAPI MyglDeleteLists(GLuint list, GLsizei range)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -1980,7 +2037,8 @@ HOOKFUNC void GLAPI MyglDeleteLists (GLuint list, GLsizei range)
 		oglDisplayLists.pop_back();
 }
 
-HOOKFUNC void GLAPI MyglDepthFunc (GLenum func)
+HOOK_FUNCTION(void, GLAPI, glDepthFunc, GLenum func)
+HOOKFUNC void GLAPI MyglDepthFunc(GLenum func)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(0x%X) called.\n", func);
 	//GLFUNCBOILERPLATE;
@@ -2003,7 +2061,8 @@ HOOKFUNC void GLAPI MyglDepthFunc (GLenum func)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglDepthFunc, glenum,func);
 }
 
-HOOKFUNC void GLAPI MyglDepthMask (GLboolean flag)
+HOOK_FUNCTION(void, GLAPI, glDepthMask, GLboolean flag)
+HOOKFUNC void GLAPI MyglDepthMask(GLboolean flag)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2015,7 +2074,8 @@ HOOKFUNC void GLAPI MyglDepthMask (GLboolean flag)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglDepthMask, glboolean,flag);
 }
 
-HOOKFUNC void GLAPI MyglDepthRange (GLclampd zNear, GLclampd zFar)
+HOOK_FUNCTION(void, GLAPI, glDepthRange, GLclampd zNear, GLclampd zFar)
+HOOKFUNC void GLAPI MyglDepthRange(GLclampd zNear, GLclampd zFar)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(near=%g, far=%g) called.\n", (float)zNear, (float)zFar);
 	//GLFUNCBOILERPLATE;
@@ -2036,7 +2096,8 @@ HOOKFUNC void GLAPI MyglDepthRange (GLclampd zNear, GLclampd zFar)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglDepthRange, glclampd,zNear, glclampd,zFar);
 }
 
-HOOKFUNC void GLAPI MyglDrawBuffer (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glDrawBuffer, GLenum mode)
+HOOKFUNC void GLAPI MyglDrawBuffer(GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2046,7 +2107,8 @@ HOOKFUNC void GLAPI MyglDrawBuffer (GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglDrawBuffer, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglDrawPixels (GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glDrawPixels, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
+HOOKFUNC void GLAPI MyglDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2056,7 +2118,8 @@ HOOKFUNC void GLAPI MyglDrawPixels (GLsizei width, GLsizei height, GLenum format
 	OGLPUSHDISPLAYLISTENTRY_5ARG(idglDrawPixels, glsizei,width, glsizei,height, glenum,format, glenum,type, ptr,(void*)pixels);
 }
 
-HOOKFUNC void GLAPI MyglEdgeFlag (GLboolean flag)
+HOOK_FUNCTION(void, GLAPI, glEdgeFlag, GLboolean flag)
+HOOKFUNC void GLAPI MyglEdgeFlag(GLboolean flag)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2066,7 +2129,8 @@ HOOKFUNC void GLAPI MyglEdgeFlag (GLboolean flag)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglEdgeFlag, glboolean,flag);
 }
 
-HOOKFUNC void GLAPI MyglEdgeFlagv (const GLboolean *flag)
+HOOK_FUNCTION(void, GLAPI, glEdgeFlagv, const GLboolean *flag)
+HOOKFUNC void GLAPI MyglEdgeFlagv(const GLboolean *flag)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2085,7 +2149,8 @@ static const int GL_COLOR_LOGIC_OP = 0x0BF2;
 static const int GL_SCISSOR_TEST = 0x0C11;
 static const int GL_STENCIL_TEST = 0x0B90;
 
-HOOKFUNC void GLAPI MyglEnable (GLenum cap)
+HOOK_FUNCTION(void, GLAPI, glEnable, GLenum cap)
+HOOKFUNC void GLAPI MyglEnable(GLenum cap)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(cap=0x%X) called.\n", cap);
 	//GLFUNCBOILERPLATE;
@@ -2131,7 +2196,8 @@ HOOKFUNC void GLAPI MyglEnable (GLenum cap)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglEnable, glenum,cap);
 }
 
-HOOKFUNC void GLAPI MyglDisable (GLenum cap)
+HOOK_FUNCTION(void, GLAPI, glDisable, GLenum cap)
+HOOKFUNC void GLAPI MyglDisable(GLenum cap)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(cap=0x%X) called.\n", cap);
 	//GLFUNCBOILERPLATE;
@@ -2174,7 +2240,8 @@ HOOKFUNC void GLAPI MyglDisable (GLenum cap)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglDisable, glenum,cap);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord1d (GLdouble u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord1d, GLdouble u)
+HOOKFUNC void GLAPI MyglEvalCoord1d(GLdouble u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2184,7 +2251,8 @@ HOOKFUNC void GLAPI MyglEvalCoord1d (GLdouble u)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglEvalCoord1d, gldouble,u);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord1dv (const GLdouble *u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord1dv, const GLdouble *u)
+HOOKFUNC void GLAPI MyglEvalCoord1dv(const GLdouble *u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2194,7 +2262,8 @@ HOOKFUNC void GLAPI MyglEvalCoord1dv (const GLdouble *u)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglEvalCoord1dv, sizeof(GLdouble),u,1);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord1f (GLfloat u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord1f, GLfloat u)
+HOOKFUNC void GLAPI MyglEvalCoord1f(GLfloat u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2204,7 +2273,8 @@ HOOKFUNC void GLAPI MyglEvalCoord1f (GLfloat u)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglEvalCoord1f, glfloat,u);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord1fv (const GLfloat *u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord1fv, const GLfloat *u)
+HOOKFUNC void GLAPI MyglEvalCoord1fv(const GLfloat *u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2214,7 +2284,8 @@ HOOKFUNC void GLAPI MyglEvalCoord1fv (const GLfloat *u)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglEvalCoord1fv, sizeof(GLfloat),u,1);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord2d (GLdouble u, GLdouble v)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord2d, GLdouble u, GLdouble v)
+HOOKFUNC void GLAPI MyglEvalCoord2d(GLdouble u, GLdouble v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2224,7 +2295,8 @@ HOOKFUNC void GLAPI MyglEvalCoord2d (GLdouble u, GLdouble v)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglEvalCoord2d, gldouble,u, gldouble,v);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord2dv (const GLdouble *u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord2dv, const GLdouble *u)
+HOOKFUNC void GLAPI MyglEvalCoord2dv(const GLdouble *u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2234,7 +2306,8 @@ HOOKFUNC void GLAPI MyglEvalCoord2dv (const GLdouble *u)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglEvalCoord2dv, sizeof(GLdouble),u,2);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord2f (GLfloat u, GLfloat v)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord2f, GLfloat u, GLfloat v)
+HOOKFUNC void GLAPI MyglEvalCoord2f(GLfloat u, GLfloat v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2244,7 +2317,8 @@ HOOKFUNC void GLAPI MyglEvalCoord2f (GLfloat u, GLfloat v)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglEvalCoord2f, glfloat,u, glfloat,v);
 }
 
-HOOKFUNC void GLAPI MyglEvalCoord2fv (const GLfloat *u)
+HOOK_FUNCTION(void, GLAPI, glEvalCoord2fv, const GLfloat *u)
+HOOKFUNC void GLAPI MyglEvalCoord2fv(const GLfloat *u)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2254,7 +2328,8 @@ HOOKFUNC void GLAPI MyglEvalCoord2fv (const GLfloat *u)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglEvalCoord2fv, sizeof(GLfloat),u,2);
 }
 
-HOOKFUNC void GLAPI MyglEvalMesh1 (GLenum mode, GLint i1, GLint i2)
+HOOK_FUNCTION(void, GLAPI, glEvalMesh1, GLenum mode, GLint i1, GLint i2)
+HOOKFUNC void GLAPI MyglEvalMesh1(GLenum mode, GLint i1, GLint i2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2263,7 +2338,8 @@ HOOKFUNC void GLAPI MyglEvalMesh1 (GLenum mode, GLint i1, GLint i2)
 	}
 }
 
-HOOKFUNC void GLAPI MyglEvalMesh2 (GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2)
+HOOK_FUNCTION(void, GLAPI, glEvalMesh2, GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2)
+HOOKFUNC void GLAPI MyglEvalMesh2(GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2272,7 +2348,8 @@ HOOKFUNC void GLAPI MyglEvalMesh2 (GLenum mode, GLint i1, GLint i2, GLint j1, GL
 	}
 }
 
-HOOKFUNC void GLAPI MyglEvalPoint1 (GLint i)
+HOOK_FUNCTION(void, GLAPI, glEvalPoint1, GLint i)
+HOOKFUNC void GLAPI MyglEvalPoint1(GLint i)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2281,7 +2358,8 @@ HOOKFUNC void GLAPI MyglEvalPoint1 (GLint i)
 	}
 }
 
-HOOKFUNC void GLAPI MyglEvalPoint2 (GLint i, GLint j)
+HOOK_FUNCTION(void, GLAPI, glEvalPoint2, GLint i, GLint j)
+HOOKFUNC void GLAPI MyglEvalPoint2(GLint i, GLint j)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2290,34 +2368,29 @@ HOOKFUNC void GLAPI MyglEvalPoint2 (GLint i, GLint j)
 	}
 }
 
-HOOKFUNC void GLAPI MyglFeedbackBuffer (GLsizei size, GLenum type, GLfloat *buffer)
+HOOK_FUNCTION(void, GLAPI, glFeedbackBuffer, GLsizei size, GLenum type, GLfloat *buffer)
+HOOKFUNC void GLAPI MyglFeedbackBuffer(GLsizei size, GLenum type, GLfloat *buffer)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglFinish (void)
+HOOK_FUNCTION(void, GLAPI, glFinish)
+HOOKFUNC void GLAPI MyglFinish()
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglFlush (void)
+HOOK_FUNCTION(void, GLAPI, glFlush)
+HOOKFUNC void GLAPI MyglFlush()
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglFogf (GLenum pname, GLfloat param)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglFogfv (GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glFogf, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglFogf(GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2326,7 +2399,8 @@ HOOKFUNC void GLAPI MyglFogfv (GLenum pname, const GLfloat *params)
 	}
 }
 
-HOOKFUNC void GLAPI MyglFogi (GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glFogfv, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglFogfv(GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2335,7 +2409,8 @@ HOOKFUNC void GLAPI MyglFogi (GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglFogiv (GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glFogi, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglFogi(GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2344,7 +2419,18 @@ HOOKFUNC void GLAPI MyglFogiv (GLenum pname, const GLint *params)
 	}
 }
 
-HOOKFUNC void GLAPI MyglFrontFace (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glFogiv, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglFogiv(GLenum pname, const GLint *params)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glFrontFace, GLenum mode)
+HOOKFUNC void GLAPI MyglFrontFace(GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2357,7 +2443,8 @@ HOOKFUNC void GLAPI MyglFrontFace (GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglFrontFace, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglFrustum (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+HOOK_FUNCTION(void, GLAPI, glFrustum, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+HOOKFUNC void GLAPI MyglFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2379,199 +2466,190 @@ HOOKFUNC void GLAPI MyglFrustum (GLdouble left, GLdouble right, GLdouble bottom,
 	OGLPUSHDISPLAYLISTENTRY_6ARG(idglFrustum, gldouble,left, gldouble,right, gldouble,bottom, gldouble,top, gldouble,zNear, gldouble,zFar);
 }
 
-HOOKFUNC void GLAPI MyglGetBooleanv (GLenum pname, GLboolean *params)
+HOOK_FUNCTION(void, GLAPI, glGetBooleanv, GLenum pname, GLboolean *params)
+HOOKFUNC void GLAPI MyglGetBooleanv(GLenum pname, GLboolean *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetClipPlane (GLenum plane, GLdouble *equation)
+HOOK_FUNCTION(void, GLAPI, glGetClipPlane, GLenum plane, GLdouble *equation)
+HOOKFUNC void GLAPI MyglGetClipPlane(GLenum plane, GLdouble *equation)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetDoublev (GLenum pname, GLdouble *params)
+HOOK_FUNCTION(void, GLAPI, glGetDoublev, GLenum pname, GLdouble *params)
+HOOKFUNC void GLAPI MyglGetDoublev(GLenum pname, GLdouble *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetFloatv (GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetFloatv, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetFloatv(GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetIntegerv (GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetIntegerv, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetIntegerv(GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetLightfv (GLenum light, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetLightfv, GLenum light, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetLightfv(GLenum light, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetLightiv (GLenum light, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetLightiv, GLenum light, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetLightiv(GLenum light, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetMapdv (GLenum target, GLenum query, GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glGetMapdv, GLenum target, GLenum query, GLdouble *v)
+HOOKFUNC void GLAPI MyglGetMapdv(GLenum target, GLenum query, GLdouble *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetMapfv (GLenum target, GLenum query, GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glGetMapfv, GLenum target, GLenum query, GLfloat *v)
+HOOKFUNC void GLAPI MyglGetMapfv(GLenum target, GLenum query, GLfloat *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetMapiv (GLenum target, GLenum query, GLint *v)
+HOOK_FUNCTION(void, GLAPI, glGetMapiv, GLenum target, GLenum query, GLint *v)
+HOOKFUNC void GLAPI MyglGetMapiv(GLenum target, GLenum query, GLint *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetMaterialfv (GLenum face, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetMaterialfv, GLenum face, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetMaterialfv(GLenum face, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetMaterialiv (GLenum face, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetMaterialiv, GLenum face, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetMaterialiv(GLenum face, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetPixelMapfv (GLenum map, GLfloat *values)
+HOOK_FUNCTION(void, GLAPI, glGetPixelMapfv, GLenum map, GLfloat *values)
+HOOKFUNC void GLAPI MyglGetPixelMapfv(GLenum map, GLfloat *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetPixelMapuiv (GLenum map, GLuint *values)
+HOOK_FUNCTION(void, GLAPI, glGetPixelMapuiv, GLenum map, GLuint *values)
+HOOKFUNC void GLAPI MyglGetPixelMapuiv(GLenum map, GLuint *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetPixelMapusv (GLenum map, GLushort *values)
+HOOK_FUNCTION(void, GLAPI, glGetPixelMapusv, GLenum map, GLushort *values)
+HOOKFUNC void GLAPI MyglGetPixelMapusv(GLenum map, GLushort *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetPolygonStipple (GLubyte *mask)
+HOOK_FUNCTION(void, GLAPI, glGetPolygonStipple, GLubyte *mask)
+HOOKFUNC void GLAPI MyglGetPolygonStipple(GLubyte *mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexEnvfv (GLenum target, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexEnvfv, GLenum target, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetTexEnvfv(GLenum target, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexEnviv (GLenum target, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexEnviv, GLenum target, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetTexEnviv(GLenum target, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexGendv (GLenum coord, GLenum pname, GLdouble *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexGendv, GLenum coord, GLenum pname, GLdouble *params)
+HOOKFUNC void GLAPI MyglGetTexGendv(GLenum coord, GLenum pname, GLdouble *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexGenfv (GLenum coord, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexGenfv, GLenum coord, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetTexGenfv(GLenum coord, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexGeniv (GLenum coord, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexGeniv, GLenum coord, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetTexGeniv(GLenum coord, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexImage (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glGetTexImage, GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
+HOOKFUNC void GLAPI MyglGetTexImage(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexLevelParameterfv (GLenum target, GLint level, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexLevelParameterfv, GLenum target, GLint level, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexLevelParameteriv, GLenum target, GLint level, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexParameterfv (GLenum target, GLenum pname, GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexParameterfv, GLenum target, GLenum pname, GLfloat *params)
+HOOKFUNC void GLAPI MyglGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglGetTexParameteriv (GLenum target, GLenum pname, GLint *params)
+HOOK_FUNCTION(void, GLAPI, glGetTexParameteriv, GLenum target, GLenum pname, GLint *params)
+HOOKFUNC void GLAPI MyglGetTexParameteriv(GLenum target, GLenum pname, GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglIndexMask (GLuint mask)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglIndexd (GLdouble c)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglIndexdv (const GLdouble *c)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglIndexf (GLfloat c)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglIndexfv (const GLfloat *c)
+HOOK_FUNCTION(void, GLAPI, glIndexMask, GLuint mask)
+HOOKFUNC void GLAPI MyglIndexMask(GLuint mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2580,7 +2658,8 @@ HOOKFUNC void GLAPI MyglIndexfv (const GLfloat *c)
 	}
 }
 
-HOOKFUNC void GLAPI MyglIndexi (GLint c)
+HOOK_FUNCTION(void, GLAPI, glIndexd, GLdouble c)
+HOOKFUNC void GLAPI MyglIndexd(GLdouble c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2589,7 +2668,8 @@ HOOKFUNC void GLAPI MyglIndexi (GLint c)
 	}
 }
 
-HOOKFUNC void GLAPI MyglIndexiv (const GLint *c)
+HOOK_FUNCTION(void, GLAPI, glIndexdv, const GLdouble *c)
+HOOKFUNC void GLAPI MyglIndexdv(const GLdouble *c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2598,7 +2678,8 @@ HOOKFUNC void GLAPI MyglIndexiv (const GLint *c)
 	}
 }
 
-HOOKFUNC void GLAPI MyglIndexs (GLshort c)
+HOOK_FUNCTION(void, GLAPI, glIndexf, GLfloat c)
+HOOKFUNC void GLAPI MyglIndexf(GLfloat c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2607,7 +2688,8 @@ HOOKFUNC void GLAPI MyglIndexs (GLshort c)
 	}
 }
 
-HOOKFUNC void GLAPI MyglIndexsv (const GLshort *c)
+HOOK_FUNCTION(void, GLAPI, glIndexfv, const GLfloat *c)
+HOOKFUNC void GLAPI MyglIndexfv(const GLfloat *c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2616,7 +2698,8 @@ HOOKFUNC void GLAPI MyglIndexsv (const GLshort *c)
 	}
 }
 
-HOOKFUNC void GLAPI MyglInitNames (void)
+HOOK_FUNCTION(void, GLAPI, glIndexi, GLint c)
+HOOKFUNC void GLAPI MyglIndexi(GLint c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2625,7 +2708,8 @@ HOOKFUNC void GLAPI MyglInitNames (void)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightModelf (GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glIndexiv, const GLint *c)
+HOOKFUNC void GLAPI MyglIndexiv(const GLint *c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2634,7 +2718,8 @@ HOOKFUNC void GLAPI MyglLightModelf (GLenum pname, GLfloat param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightModelfv (GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glIndexs, GLshort c)
+HOOKFUNC void GLAPI MyglIndexs(GLshort c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2643,7 +2728,8 @@ HOOKFUNC void GLAPI MyglLightModelfv (GLenum pname, const GLfloat *params)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightModeli (GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glIndexsv, const GLshort *c)
+HOOKFUNC void GLAPI MyglIndexsv(const GLshort *c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2652,7 +2738,8 @@ HOOKFUNC void GLAPI MyglLightModeli (GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightModeliv (GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glInitNames)
+HOOKFUNC void GLAPI MyglInitNames()
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2661,7 +2748,8 @@ HOOKFUNC void GLAPI MyglLightModeliv (GLenum pname, const GLint *params)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightf (GLenum light, GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glLightModelf, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglLightModelf(GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2670,7 +2758,8 @@ HOOKFUNC void GLAPI MyglLightf (GLenum light, GLenum pname, GLfloat param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightfv (GLenum light, GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glLightModelfv, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglLightModelfv(GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2679,7 +2768,8 @@ HOOKFUNC void GLAPI MyglLightfv (GLenum light, GLenum pname, const GLfloat *para
 	}
 }
 
-HOOKFUNC void GLAPI MyglLighti (GLenum light, GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glLightModeli, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglLightModeli(GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2688,7 +2778,8 @@ HOOKFUNC void GLAPI MyglLighti (GLenum light, GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLightiv (GLenum light, GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glLightModeliv, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglLightModeliv(GLenum pname, const GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2697,7 +2788,8 @@ HOOKFUNC void GLAPI MyglLightiv (GLenum light, GLenum pname, const GLint *params
 	}
 }
 
-HOOKFUNC void GLAPI MyglLineStipple (GLint factor, GLushort pattern)
+HOOK_FUNCTION(void, GLAPI, glLightf, GLenum light, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglLightf(GLenum light, GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2706,7 +2798,48 @@ HOOKFUNC void GLAPI MyglLineStipple (GLint factor, GLushort pattern)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLineWidth (GLfloat width)
+HOOK_FUNCTION(void, GLAPI, glLightfv, GLenum light, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglLightfv(GLenum light, GLenum pname, const GLfloat *params)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glLighti, GLenum light, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglLighti(GLenum light, GLenum pname, GLint param)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glLightiv, GLenum light, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglLightiv(GLenum light, GLenum pname, const GLint *params)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glLineStipple, GLint factor, GLushort pattern)
+HOOKFUNC void GLAPI MyglLineStipple(GLint factor, GLushort pattern)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glLineWidth, GLfloat width)
+HOOKFUNC void GLAPI MyglLineWidth(GLfloat width)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(width=%g) called.\n", width);
 	//GLFUNCBOILERPLATE;
@@ -2721,7 +2854,8 @@ HOOKFUNC void GLAPI MyglLineWidth (GLfloat width)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglLineWidth, glfloat,width);
 }
 
-HOOKFUNC void GLAPI MyglListBase (GLuint base)
+HOOK_FUNCTION(void, GLAPI, glListBase, GLuint base)
+HOOKFUNC void GLAPI MyglListBase(GLuint base)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2730,7 +2864,8 @@ HOOKFUNC void GLAPI MyglListBase (GLuint base)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLoadIdentity (void)
+HOOK_FUNCTION(void, GLAPI, glLoadIdentity)
+HOOKFUNC void GLAPI MyglLoadIdentity()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2750,7 +2885,8 @@ HOOKFUNC void GLAPI MyglLoadIdentity (void)
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglLoadIdentity);
 }
 
-HOOKFUNC void GLAPI MyglLoadMatrixd (const GLdouble *m)
+HOOK_FUNCTION(void, GLAPI, glLoadMatrixd, const GLdouble *m)
+HOOKFUNC void GLAPI MyglLoadMatrixd(const GLdouble *m)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2759,7 +2895,8 @@ HOOKFUNC void GLAPI MyglLoadMatrixd (const GLdouble *m)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLoadMatrixf (const GLfloat *m)
+HOOK_FUNCTION(void, GLAPI, glLoadMatrixf, const GLfloat *m)
+HOOKFUNC void GLAPI MyglLoadMatrixf(const GLfloat *m)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2768,7 +2905,8 @@ HOOKFUNC void GLAPI MyglLoadMatrixf (const GLfloat *m)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLoadName (GLuint name)
+HOOK_FUNCTION(void, GLAPI, glLoadName, GLuint name)
+HOOKFUNC void GLAPI MyglLoadName(GLuint name)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2777,7 +2915,8 @@ HOOKFUNC void GLAPI MyglLoadName (GLuint name)
 	}
 }
 
-HOOKFUNC void GLAPI MyglLogicOp (GLenum opcode)
+HOOK_FUNCTION(void, GLAPI, glLogicOp, GLenum opcode)
+HOOKFUNC void GLAPI MyglLogicOp(GLenum opcode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2786,7 +2925,8 @@ HOOKFUNC void GLAPI MyglLogicOp (GLenum opcode)
 	}
 }
 
-HOOKFUNC void GLAPI MyglMap1d (GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points)
+HOOK_FUNCTION(void, GLAPI, glMap1d, GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points)
+HOOKFUNC void GLAPI MyglMap1d(GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2795,7 +2935,8 @@ HOOKFUNC void GLAPI MyglMap1d (GLenum target, GLdouble u1, GLdouble u2, GLint st
 	}
 }
 
-HOOKFUNC void GLAPI MyglMap1f (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)
+HOOK_FUNCTION(void, GLAPI, glMap1f, GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)
+HOOKFUNC void GLAPI MyglMap1f(GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2804,7 +2945,8 @@ HOOKFUNC void GLAPI MyglMap1f (GLenum target, GLfloat u1, GLfloat u2, GLint stri
 	}
 }
 
-HOOKFUNC void GLAPI MyglMap2d (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)
+HOOK_FUNCTION(void, GLAPI, glMap2d, GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)
+HOOKFUNC void GLAPI MyglMap2d(GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2813,7 +2955,8 @@ HOOKFUNC void GLAPI MyglMap2d (GLenum target, GLdouble u1, GLdouble u2, GLint us
 	}
 }
 
-HOOKFUNC void GLAPI MyglMap2f (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)
+HOOK_FUNCTION(void, GLAPI, glMap2f, GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)
+HOOKFUNC void GLAPI MyglMap2f(GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2822,7 +2965,8 @@ HOOKFUNC void GLAPI MyglMap2f (GLenum target, GLfloat u1, GLfloat u2, GLint ustr
 	}
 }
 
-HOOKFUNC void GLAPI MyglMapGrid1d (GLint un, GLdouble u1, GLdouble u2)
+HOOK_FUNCTION(void, GLAPI, glMapGrid1d, GLint un, GLdouble u1, GLdouble u2)
+HOOKFUNC void GLAPI MyglMapGrid1d(GLint un, GLdouble u1, GLdouble u2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2831,7 +2975,8 @@ HOOKFUNC void GLAPI MyglMapGrid1d (GLint un, GLdouble u1, GLdouble u2)
 	}
 }
 
-HOOKFUNC void GLAPI MyglMapGrid1f (GLint un, GLfloat u1, GLfloat u2)
+HOOK_FUNCTION(void, GLAPI, glMapGrid1f, GLint un, GLfloat u1, GLfloat u2)
+HOOKFUNC void GLAPI MyglMapGrid1f(GLint un, GLfloat u1, GLfloat u2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2840,7 +2985,8 @@ HOOKFUNC void GLAPI MyglMapGrid1f (GLint un, GLfloat u1, GLfloat u2)
 	}
 }
 
-HOOKFUNC void GLAPI MyglMapGrid2d (GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2)
+HOOK_FUNCTION(void, GLAPI, glMapGrid2d, GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2)
+HOOKFUNC void GLAPI MyglMapGrid2d(GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2849,7 +2995,8 @@ HOOKFUNC void GLAPI MyglMapGrid2d (GLint un, GLdouble u1, GLdouble u2, GLint vn,
 	}
 }
 
-HOOKFUNC void GLAPI MyglMapGrid2f (GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2)
+HOOK_FUNCTION(void, GLAPI, glMapGrid2f, GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2)
+HOOKFUNC void GLAPI MyglMapGrid2f(GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2858,7 +3005,8 @@ HOOKFUNC void GLAPI MyglMapGrid2f (GLint un, GLfloat u1, GLfloat u2, GLint vn, G
 	}
 }
 
-HOOKFUNC void GLAPI MyglMaterialf (GLenum face, GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glMaterialf, GLenum face, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglMaterialf(GLenum face, GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2867,7 +3015,8 @@ HOOKFUNC void GLAPI MyglMaterialf (GLenum face, GLenum pname, GLfloat param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglMaterialfv (GLenum face, GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glMaterialfv, GLenum face, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglMaterialfv(GLenum face, GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2876,7 +3025,8 @@ HOOKFUNC void GLAPI MyglMaterialfv (GLenum face, GLenum pname, const GLfloat *pa
 	}
 }
 
-HOOKFUNC void GLAPI MyglMateriali (GLenum face, GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glMateriali, GLenum face, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglMateriali(GLenum face, GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2885,7 +3035,8 @@ HOOKFUNC void GLAPI MyglMateriali (GLenum face, GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglMaterialiv (GLenum face, GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glMaterialiv, GLenum face, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglMaterialiv(GLenum face, GLenum pname, const GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2894,7 +3045,8 @@ HOOKFUNC void GLAPI MyglMaterialiv (GLenum face, GLenum pname, const GLint *para
 	}
 }
 
-HOOKFUNC void GLAPI MyglMatrixMode (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glMatrixMode, GLenum mode)
+HOOKFUNC void GLAPI MyglMatrixMode(GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(mode=0x%X) called.\n", mode);
 	//GLFUNCBOILERPLATE;
@@ -2914,7 +3066,8 @@ HOOKFUNC void GLAPI MyglMatrixMode (GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglMatrixMode, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglMultMatrixd (const GLdouble *m)
+HOOK_FUNCTION(void, GLAPI, glMultMatrixd, const GLdouble *m)
+HOOKFUNC void GLAPI MyglMultMatrixd(const GLdouble *m)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2934,7 +3087,8 @@ HOOKFUNC void GLAPI MyglMultMatrixd (const GLdouble *m)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglMultMatrixd, sizeof(GLdouble),m,16);
 }
 
-HOOKFUNC void GLAPI MyglMultMatrixf (const GLfloat *m)
+HOOK_FUNCTION(void, GLAPI, glMultMatrixf, const GLfloat *m)
+HOOKFUNC void GLAPI MyglMultMatrixf(const GLfloat *m)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2948,7 +3102,8 @@ HOOKFUNC void GLAPI MyglMultMatrixf (const GLfloat *m)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglMultMatrixf, sizeof(GLfloat),m,16);
 }
 
-HOOKFUNC void GLAPI MyglNewList (GLuint list, GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glNewList, GLuint list, GLenum mode)
+HOOKFUNC void GLAPI MyglNewList(GLuint list, GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(list=%d, mode=0x%X) called.\n", list, mode);
 	//GLFUNCBOILERPLATE;
@@ -2970,7 +3125,8 @@ HOOKFUNC void GLAPI MyglNewList (GLuint list, GLenum mode)
 	oglAllowExecuteCommands = (mode == GL_COMPILE_AND_EXECUTE) && (ogld3d8Device != NULL);
 }
 
-HOOKFUNC void GLAPI MyglEndList (void)
+HOOK_FUNCTION(void, GLAPI, glEndList)
+HOOKFUNC void GLAPI MyglEndList()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2984,7 +3140,8 @@ HOOKFUNC void GLAPI MyglEndList (void)
 	oglAllowExecuteCommands = (ogld3d8Device != NULL);
 }
 
-HOOKFUNC void GLAPI MyglNormal3b (GLbyte nx, GLbyte ny, GLbyte nz)
+HOOK_FUNCTION(void, GLAPI, glNormal3b, GLbyte nx, GLbyte ny, GLbyte nz)
+HOOKFUNC void GLAPI MyglNormal3b(GLbyte nx, GLbyte ny, GLbyte nz)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -2996,7 +3153,8 @@ HOOKFUNC void GLAPI MyglNormal3b (GLbyte nx, GLbyte ny, GLbyte nz)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3bv (const GLbyte *v)
+HOOK_FUNCTION(void, GLAPI, glNormal3bv, const GLbyte *v)
+HOOKFUNC void GLAPI MyglNormal3bv(const GLbyte *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3008,7 +3166,8 @@ HOOKFUNC void GLAPI MyglNormal3bv (const GLbyte *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3d (GLdouble nx, GLdouble ny, GLdouble nz)
+HOOK_FUNCTION(void, GLAPI, glNormal3d, GLdouble nx, GLdouble ny, GLdouble nz)
+HOOKFUNC void GLAPI MyglNormal3d(GLdouble nx, GLdouble ny, GLdouble nz)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3020,7 +3179,8 @@ HOOKFUNC void GLAPI MyglNormal3d (GLdouble nx, GLdouble ny, GLdouble nz)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glNormal3dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglNormal3dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3032,7 +3192,8 @@ HOOKFUNC void GLAPI MyglNormal3dv (const GLdouble *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3f (GLfloat nx, GLfloat ny, GLfloat nz)
+HOOK_FUNCTION(void, GLAPI, glNormal3f, GLfloat nx, GLfloat ny, GLfloat nz)
+HOOKFUNC void GLAPI MyglNormal3f(GLfloat nx, GLfloat ny, GLfloat nz)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3044,7 +3205,8 @@ HOOKFUNC void GLAPI MyglNormal3f (GLfloat nx, GLfloat ny, GLfloat nz)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glNormal3fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglNormal3fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3056,7 +3218,8 @@ HOOKFUNC void GLAPI MyglNormal3fv (const GLfloat *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3i (GLint nx, GLint ny, GLint nz)
+HOOK_FUNCTION(void, GLAPI, glNormal3i, GLint nx, GLint ny, GLint nz)
+HOOKFUNC void GLAPI MyglNormal3i(GLint nx, GLint ny, GLint nz)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3068,7 +3231,8 @@ HOOKFUNC void GLAPI MyglNormal3i (GLint nx, GLint ny, GLint nz)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glNormal3iv, const GLint *v)
+HOOKFUNC void GLAPI MyglNormal3iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3080,7 +3244,8 @@ HOOKFUNC void GLAPI MyglNormal3iv (const GLint *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3s (GLshort nx, GLshort ny, GLshort nz)
+HOOK_FUNCTION(void, GLAPI, glNormal3s, GLshort nx, GLshort ny, GLshort nz)
+HOOKFUNC void GLAPI MyglNormal3s(GLshort nx, GLshort ny, GLshort nz)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3092,7 +3257,8 @@ HOOKFUNC void GLAPI MyglNormal3s (GLshort nx, GLshort ny, GLshort nz)
 	}
 }
 
-HOOKFUNC void GLAPI MyglNormal3sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glNormal3sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglNormal3sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3104,7 +3270,8 @@ HOOKFUNC void GLAPI MyglNormal3sv (const GLshort *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglOrtho (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+HOOK_FUNCTION(void, GLAPI, glOrtho, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+HOOKFUNC void GLAPI MyglOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3126,7 +3293,8 @@ HOOKFUNC void GLAPI MyglOrtho (GLdouble left, GLdouble right, GLdouble bottom, G
 	OGLPUSHDISPLAYLISTENTRY_6ARG(idglOrtho, gldouble,left, gldouble,right, gldouble,bottom, gldouble,top, gldouble,zNear, gldouble,zFar);
 }
 
-HOOKFUNC void GLAPI MyglPassThrough (GLfloat token)
+HOOK_FUNCTION(void, GLAPI, glPassThrough, GLfloat token)
+HOOKFUNC void GLAPI MyglPassThrough(GLfloat token)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3135,7 +3303,8 @@ HOOKFUNC void GLAPI MyglPassThrough (GLfloat token)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPixelMapfv (GLenum map, GLsizei mapsize, const GLfloat *values)
+HOOK_FUNCTION(void, GLAPI, glPixelMapfv, GLenum map, GLsizei mapsize, const GLfloat *values)
+HOOKFUNC void GLAPI MyglPixelMapfv(GLenum map, GLsizei mapsize, const GLfloat *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3144,7 +3313,8 @@ HOOKFUNC void GLAPI MyglPixelMapfv (GLenum map, GLsizei mapsize, const GLfloat *
 	}
 }
 
-HOOKFUNC void GLAPI MyglPixelMapuiv (GLenum map, GLsizei mapsize, const GLuint *values)
+HOOK_FUNCTION(void, GLAPI, glPixelMapuiv, GLenum map, GLsizei mapsize, const GLuint *values)
+HOOKFUNC void GLAPI MyglPixelMapuiv(GLenum map, GLsizei mapsize, const GLuint *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3153,7 +3323,8 @@ HOOKFUNC void GLAPI MyglPixelMapuiv (GLenum map, GLsizei mapsize, const GLuint *
 	}
 }
 
-HOOKFUNC void GLAPI MyglPixelMapusv (GLenum map, GLsizei mapsize, const GLushort *values)
+HOOK_FUNCTION(void, GLAPI, glPixelMapusv, GLenum map, GLsizei mapsize, const GLushort *values)
+HOOKFUNC void GLAPI MyglPixelMapusv(GLenum map, GLsizei mapsize, const GLushort *values)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3162,28 +3333,22 @@ HOOKFUNC void GLAPI MyglPixelMapusv (GLenum map, GLsizei mapsize, const GLushort
 	}
 }
 
-HOOKFUNC void GLAPI MyglPixelStoref (GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glPixelStoref, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglPixelStoref(GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglPixelStorei (GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glPixelStorei, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglPixelStorei(GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglPixelTransferf (GLenum pname, GLfloat param)
-{
-	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
-	//GLFUNCBOILERPLATE;
-	if(oglAllowExecuteCommands)
-	{
-	}
-}
-
-HOOKFUNC void GLAPI MyglPixelTransferi (GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glPixelTransferf, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglPixelTransferf(GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3192,7 +3357,8 @@ HOOKFUNC void GLAPI MyglPixelTransferi (GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPixelZoom (GLfloat xfactor, GLfloat yfactor)
+HOOK_FUNCTION(void, GLAPI, glPixelTransferi, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglPixelTransferi(GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3201,7 +3367,8 @@ HOOKFUNC void GLAPI MyglPixelZoom (GLfloat xfactor, GLfloat yfactor)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPointSize (GLfloat size)
+HOOK_FUNCTION(void, GLAPI, glPixelZoom, GLfloat xfactor, GLfloat yfactor)
+HOOKFUNC void GLAPI MyglPixelZoom(GLfloat xfactor, GLfloat yfactor)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3210,7 +3377,18 @@ HOOKFUNC void GLAPI MyglPointSize (GLfloat size)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPolygonMode (GLenum face, GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glPointSize, GLfloat size)
+HOOKFUNC void GLAPI MyglPointSize(GLfloat size)
+{
+	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
+	//GLFUNCBOILERPLATE;
+	if(oglAllowExecuteCommands)
+	{
+	}
+}
+
+HOOK_FUNCTION(void, GLAPI, glPolygonMode, GLenum face, GLenum mode)
+HOOKFUNC void GLAPI MyglPolygonMode(GLenum face, GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(face=0x%X, mode=0x%X) called.\n", face,mode);
 	//GLFUNCBOILERPLATE;
@@ -3243,7 +3421,8 @@ HOOKFUNC void GLAPI MyglPolygonMode (GLenum face, GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglTexParameterfv, glenum,face, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglPolygonStipple (const GLubyte *mask)
+HOOK_FUNCTION(void, GLAPI, glPolygonStipple, const GLubyte *mask)
+HOOKFUNC void GLAPI MyglPolygonStipple(const GLubyte *mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3252,7 +3431,8 @@ HOOKFUNC void GLAPI MyglPolygonStipple (const GLubyte *mask)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPopAttrib (void)
+HOOK_FUNCTION(void, GLAPI, glPopAttrib)
+HOOKFUNC void GLAPI MyglPopAttrib()
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3261,7 +3441,8 @@ HOOKFUNC void GLAPI MyglPopAttrib (void)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPopMatrix (void)
+HOOK_FUNCTION(void, GLAPI, glPopMatrix)
+HOOKFUNC void GLAPI MyglPopMatrix()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3278,7 +3459,8 @@ HOOKFUNC void GLAPI MyglPopMatrix (void)
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglPopMatrix);
 }
 
-HOOKFUNC void GLAPI MyglPopName (void)
+HOOK_FUNCTION(void, GLAPI, glPopName)
+HOOKFUNC void GLAPI MyglPopName()
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3287,7 +3469,8 @@ HOOKFUNC void GLAPI MyglPopName (void)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPushAttrib (GLbitfield mask)
+HOOK_FUNCTION(void, GLAPI, glPushAttrib, GLbitfield mask)
+HOOKFUNC void GLAPI MyglPushAttrib(GLbitfield mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3296,7 +3479,8 @@ HOOKFUNC void GLAPI MyglPushAttrib (GLbitfield mask)
 	}
 }
 
-HOOKFUNC void GLAPI MyglPushMatrix (void)
+HOOK_FUNCTION(void, GLAPI, glPushMatrix)
+HOOKFUNC void GLAPI MyglPushMatrix()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3309,7 +3493,8 @@ HOOKFUNC void GLAPI MyglPushMatrix (void)
 	OGLPUSHDISPLAYLISTENTRY_0ARG(idglPushMatrix);
 }
 
-HOOKFUNC void GLAPI MyglPushName (GLuint name)
+HOOK_FUNCTION(void, GLAPI, glPushName, GLuint name)
+HOOKFUNC void GLAPI MyglPushName(GLuint name)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3318,7 +3503,8 @@ HOOKFUNC void GLAPI MyglPushName (GLuint name)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2d (GLdouble x, GLdouble y)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2d, GLdouble x, GLdouble y)
+HOOKFUNC void GLAPI MyglRasterPos2d(GLdouble x, GLdouble y)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3327,7 +3513,8 @@ HOOKFUNC void GLAPI MyglRasterPos2d (GLdouble x, GLdouble y)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglRasterPos2dv(const GLdouble *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3336,7 +3523,8 @@ HOOKFUNC void GLAPI MyglRasterPos2dv (const GLdouble *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2f (GLfloat x, GLfloat y)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2f, GLfloat x, GLfloat y)
+HOOKFUNC void GLAPI MyglRasterPos2f(GLfloat x, GLfloat y)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3345,7 +3533,8 @@ HOOKFUNC void GLAPI MyglRasterPos2f (GLfloat x, GLfloat y)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglRasterPos2fv(const GLfloat *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3354,7 +3543,8 @@ HOOKFUNC void GLAPI MyglRasterPos2fv (const GLfloat *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2i (GLint x, GLint y)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2i, GLint x, GLint y)
+HOOKFUNC void GLAPI MyglRasterPos2i(GLint x, GLint y)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3363,7 +3553,8 @@ HOOKFUNC void GLAPI MyglRasterPos2i (GLint x, GLint y)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2iv, const GLint *v)
+HOOKFUNC void GLAPI MyglRasterPos2iv(const GLint *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3372,7 +3563,8 @@ HOOKFUNC void GLAPI MyglRasterPos2iv (const GLint *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2s (GLshort x, GLshort y)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2s, GLshort x, GLshort y)
+HOOKFUNC void GLAPI MyglRasterPos2s(GLshort x, GLshort y)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3381,7 +3573,8 @@ HOOKFUNC void GLAPI MyglRasterPos2s (GLshort x, GLshort y)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos2sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos2sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglRasterPos2sv(const GLshort *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3390,7 +3583,8 @@ HOOKFUNC void GLAPI MyglRasterPos2sv (const GLshort *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3d (GLdouble x, GLdouble y, GLdouble z)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3d, GLdouble x, GLdouble y, GLdouble z)
+HOOKFUNC void GLAPI MyglRasterPos3d(GLdouble x, GLdouble y, GLdouble z)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3399,7 +3593,8 @@ HOOKFUNC void GLAPI MyglRasterPos3d (GLdouble x, GLdouble y, GLdouble z)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglRasterPos3dv(const GLdouble *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3408,7 +3603,8 @@ HOOKFUNC void GLAPI MyglRasterPos3dv (const GLdouble *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3f (GLfloat x, GLfloat y, GLfloat z)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3f, GLfloat x, GLfloat y, GLfloat z)
+HOOKFUNC void GLAPI MyglRasterPos3f(GLfloat x, GLfloat y, GLfloat z)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3417,7 +3613,8 @@ HOOKFUNC void GLAPI MyglRasterPos3f (GLfloat x, GLfloat y, GLfloat z)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglRasterPos3fv(const GLfloat *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3426,7 +3623,8 @@ HOOKFUNC void GLAPI MyglRasterPos3fv (const GLfloat *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3i (GLint x, GLint y, GLint z)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3i, GLint x, GLint y, GLint z)
+HOOKFUNC void GLAPI MyglRasterPos3i(GLint x, GLint y, GLint z)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3435,7 +3633,8 @@ HOOKFUNC void GLAPI MyglRasterPos3i (GLint x, GLint y, GLint z)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3iv, const GLint *v)
+HOOKFUNC void GLAPI MyglRasterPos3iv(const GLint *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3444,7 +3643,8 @@ HOOKFUNC void GLAPI MyglRasterPos3iv (const GLint *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3s (GLshort x, GLshort y, GLshort z)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3s, GLshort x, GLshort y, GLshort z)
+HOOKFUNC void GLAPI MyglRasterPos3s(GLshort x, GLshort y, GLshort z)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3453,7 +3653,8 @@ HOOKFUNC void GLAPI MyglRasterPos3s (GLshort x, GLshort y, GLshort z)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos3sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos3sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglRasterPos3sv(const GLshort *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3462,7 +3663,8 @@ HOOKFUNC void GLAPI MyglRasterPos3sv (const GLshort *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4d, GLdouble x, GLdouble y, GLdouble z, GLdouble w)
+HOOKFUNC void GLAPI MyglRasterPos4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3471,7 +3673,8 @@ HOOKFUNC void GLAPI MyglRasterPos4d (GLdouble x, GLdouble y, GLdouble z, GLdoubl
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglRasterPos4dv(const GLdouble *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3480,7 +3683,8 @@ HOOKFUNC void GLAPI MyglRasterPos4dv (const GLdouble *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4f, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+HOOKFUNC void GLAPI MyglRasterPos4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3489,7 +3693,8 @@ HOOKFUNC void GLAPI MyglRasterPos4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglRasterPos4fv(const GLfloat *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3498,7 +3703,8 @@ HOOKFUNC void GLAPI MyglRasterPos4fv (const GLfloat *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4i (GLint x, GLint y, GLint z, GLint w)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4i, GLint x, GLint y, GLint z, GLint w)
+HOOKFUNC void GLAPI MyglRasterPos4i(GLint x, GLint y, GLint z, GLint w)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3507,7 +3713,8 @@ HOOKFUNC void GLAPI MyglRasterPos4i (GLint x, GLint y, GLint z, GLint w)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4iv, const GLint *v)
+HOOKFUNC void GLAPI MyglRasterPos4iv(const GLint *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3516,7 +3723,8 @@ HOOKFUNC void GLAPI MyglRasterPos4iv (const GLint *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4s (GLshort x, GLshort y, GLshort z, GLshort w)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4s, GLshort x, GLshort y, GLshort z, GLshort w)
+HOOKFUNC void GLAPI MyglRasterPos4s(GLshort x, GLshort y, GLshort z, GLshort w)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3525,7 +3733,8 @@ HOOKFUNC void GLAPI MyglRasterPos4s (GLshort x, GLshort y, GLshort z, GLshort w)
 	}
 }
 
-HOOKFUNC void GLAPI MyglRasterPos4sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glRasterPos4sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglRasterPos4sv(const GLshort *v)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3534,7 +3743,8 @@ HOOKFUNC void GLAPI MyglRasterPos4sv (const GLshort *v)
 	}
 }
 
-HOOKFUNC void GLAPI MyglReadBuffer (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glReadBuffer, GLenum mode)
+HOOKFUNC void GLAPI MyglReadBuffer(GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3543,13 +3753,15 @@ HOOKFUNC void GLAPI MyglReadBuffer (GLenum mode)
 	}
 }
 
-HOOKFUNC void GLAPI MyglReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glReadPixels, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
+HOOKFUNC void GLAPI MyglReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglRotated (GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
+HOOK_FUNCTION(void, GLAPI, glRotated, GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
+HOOKFUNC void GLAPI MyglRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3581,7 +3793,8 @@ HOOKFUNC void GLAPI MyglRotated (GLdouble angle, GLdouble x, GLdouble y, GLdoubl
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglRotated, gldouble,angle, gldouble,x, gldouble,y, gldouble,z);
 }
 
-HOOKFUNC void GLAPI MyglRotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+HOOK_FUNCTION(void, GLAPI, glRotatef, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+HOOKFUNC void GLAPI MyglRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(angle=%g, x=%g, y=%g, z=%g) called.\n", angle,x,y,z);
 	//GLFUNCBOILERPLATE;
@@ -3613,7 +3826,8 @@ HOOKFUNC void GLAPI MyglRotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglRotatef, glfloat,angle, glfloat,x, glfloat,y, glfloat,z);
 }
 
-HOOKFUNC void GLAPI MyglScaled (GLdouble x, GLdouble y, GLdouble z)
+HOOK_FUNCTION(void, GLAPI, glScaled, GLdouble x, GLdouble y, GLdouble z)
+HOOKFUNC void GLAPI MyglScaled(GLdouble x, GLdouble y, GLdouble z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3633,7 +3847,8 @@ HOOKFUNC void GLAPI MyglScaled (GLdouble x, GLdouble y, GLdouble z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglScaled, gldouble,x, gldouble,y, gldouble,z);
 }
 
-HOOKFUNC void GLAPI MyglScalef (GLfloat x, GLfloat y, GLfloat z)
+HOOK_FUNCTION(void, GLAPI, glScalef, GLfloat x, GLfloat y, GLfloat z)
+HOOKFUNC void GLAPI MyglScalef(GLfloat x, GLfloat y, GLfloat z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g, %g) called.\n", x,y,z);
 	//GLFUNCBOILERPLATE;
@@ -3653,7 +3868,8 @@ HOOKFUNC void GLAPI MyglScalef (GLfloat x, GLfloat y, GLfloat z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglScalef, glfloat,x, glfloat,y, glfloat,z);
 }
 
-HOOKFUNC void GLAPI MyglScissor (GLint x, GLint y, GLsizei width, GLsizei height)
+HOOK_FUNCTION(void, GLAPI, glScissor, GLint x, GLint y, GLsizei width, GLsizei height)
+HOOKFUNC void GLAPI MyglScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3662,13 +3878,15 @@ HOOKFUNC void GLAPI MyglScissor (GLint x, GLint y, GLsizei width, GLsizei height
 	}
 }
 
-HOOKFUNC void GLAPI MyglSelectBuffer (GLsizei size, GLuint *buffer)
+HOOK_FUNCTION(void, GLAPI, glSelectBuffer, GLsizei size, GLuint *buffer)
+HOOKFUNC void GLAPI MyglSelectBuffer(GLsizei size, GLuint *buffer)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
 
-HOOKFUNC void GLAPI MyglShadeModel (GLenum mode)
+HOOK_FUNCTION(void, GLAPI, glShadeModel, GLenum mode)
+HOOKFUNC void GLAPI MyglShadeModel(GLenum mode)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(mode=0x%X) called.\n", mode);
 	//GLFUNCBOILERPLATE;
@@ -3694,7 +3912,8 @@ HOOKFUNC void GLAPI MyglShadeModel (GLenum mode)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglShadeModel, glenum,mode);
 }
 
-HOOKFUNC void GLAPI MyglStencilFunc (GLenum func, GLint ref, GLuint mask)
+HOOK_FUNCTION(void, GLAPI, glStencilFunc, GLenum func, GLint ref, GLuint mask)
+HOOKFUNC void GLAPI MyglStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3703,7 +3922,8 @@ HOOKFUNC void GLAPI MyglStencilFunc (GLenum func, GLint ref, GLuint mask)
 	}
 }
 
-HOOKFUNC void GLAPI MyglStencilMask (GLuint mask)
+HOOK_FUNCTION(void, GLAPI, glStencilMask, GLuint mask)
+HOOKFUNC void GLAPI MyglStencilMask(GLuint mask)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3712,7 +3932,8 @@ HOOKFUNC void GLAPI MyglStencilMask (GLuint mask)
 	}
 }
 
-HOOKFUNC void GLAPI MyglStencilOp (GLenum fail, GLenum zfail, GLenum zpass)
+HOOK_FUNCTION(void, GLAPI, glStencilOp, GLenum fail, GLenum zfail, GLenum zpass)
+HOOKFUNC void GLAPI MyglStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3721,7 +3942,8 @@ HOOKFUNC void GLAPI MyglStencilOp (GLenum fail, GLenum zfail, GLenum zpass)
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1d (GLdouble s)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1d, GLdouble s)
+HOOKFUNC void GLAPI MyglTexCoord1d(GLdouble s)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3733,7 +3955,8 @@ HOOKFUNC void GLAPI MyglTexCoord1d (GLdouble s)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglTexCoord1d, gldouble,s);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglTexCoord1dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3745,7 +3968,8 @@ HOOKFUNC void GLAPI MyglTexCoord1dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord1dv, sizeof(GLdouble),v,1);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1f (GLfloat s)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1f, GLfloat s)
+HOOKFUNC void GLAPI MyglTexCoord1f(GLfloat s)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3757,7 +3981,8 @@ HOOKFUNC void GLAPI MyglTexCoord1f (GLfloat s)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglTexCoord1f, glfloat,s);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglTexCoord1fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3769,7 +3994,8 @@ HOOKFUNC void GLAPI MyglTexCoord1fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord1fv, sizeof(GLfloat),v,1);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1i (GLint s)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1i, GLint s)
+HOOKFUNC void GLAPI MyglTexCoord1i(GLint s)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3781,7 +4007,8 @@ HOOKFUNC void GLAPI MyglTexCoord1i (GLint s)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglTexCoord1i, glint,s);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1iv, const GLint *v)
+HOOKFUNC void GLAPI MyglTexCoord1iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3793,7 +4020,8 @@ HOOKFUNC void GLAPI MyglTexCoord1iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord1iv, sizeof(GLint),v,1);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1s (GLshort s)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1s, GLshort s)
+HOOKFUNC void GLAPI MyglTexCoord1s(GLshort s)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3805,7 +4033,8 @@ HOOKFUNC void GLAPI MyglTexCoord1s (GLshort s)
 	OGLPUSHDISPLAYLISTENTRY_1ARG(idglTexCoord1s, glshort,s);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord1sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord1sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglTexCoord1sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3817,7 +4046,8 @@ HOOKFUNC void GLAPI MyglTexCoord1sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord1sv, sizeof(GLshort),v,1);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2d (GLdouble s, GLdouble t)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2d, GLdouble s, GLdouble t)
+HOOKFUNC void GLAPI MyglTexCoord2d(GLdouble s, GLdouble t)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3829,7 +4059,8 @@ HOOKFUNC void GLAPI MyglTexCoord2d (GLdouble s, GLdouble t)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglTexCoord2d, gldouble,s, gldouble,t);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglTexCoord2dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3841,7 +4072,8 @@ HOOKFUNC void GLAPI MyglTexCoord2dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord2dv, sizeof(GLdouble),v,2);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2f (GLfloat s, GLfloat t)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2f, GLfloat s, GLfloat t)
+HOOKFUNC void GLAPI MyglTexCoord2f(GLfloat s, GLfloat t)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g) called.\n", s, t);
 	//GLFUNCBOILERPLATE;
@@ -3853,7 +4085,8 @@ HOOKFUNC void GLAPI MyglTexCoord2f (GLfloat s, GLfloat t)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglTexCoord2f, glfloat,s, glfloat,t);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglTexCoord2fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3865,7 +4098,8 @@ HOOKFUNC void GLAPI MyglTexCoord2fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord2fv, sizeof(GLfloat),v,2);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2i (GLint s, GLint t)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2i, GLint s, GLint t)
+HOOKFUNC void GLAPI MyglTexCoord2i(GLint s, GLint t)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3877,7 +4111,8 @@ HOOKFUNC void GLAPI MyglTexCoord2i (GLint s, GLint t)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglTexCoord2i, glint,s, glint,t);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2iv, const GLint *v)
+HOOKFUNC void GLAPI MyglTexCoord2iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3889,7 +4124,8 @@ HOOKFUNC void GLAPI MyglTexCoord2iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord2iv, sizeof(GLint),v,2);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2s (GLshort s, GLshort t)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2s, GLshort s, GLshort t)
+HOOKFUNC void GLAPI MyglTexCoord2s(GLshort s, GLshort t)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3901,7 +4137,8 @@ HOOKFUNC void GLAPI MyglTexCoord2s (GLshort s, GLshort t)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglTexCoord2s, glshort,s, glshort,t);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord2sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord2sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglTexCoord2sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3913,7 +4150,8 @@ HOOKFUNC void GLAPI MyglTexCoord2sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord2sv, sizeof(GLshort),v,2);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3d (GLdouble s, GLdouble t, GLdouble r)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3d, GLdouble s, GLdouble t, GLdouble r)
+HOOKFUNC void GLAPI MyglTexCoord3d(GLdouble s, GLdouble t, GLdouble r)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3926,7 +4164,8 @@ HOOKFUNC void GLAPI MyglTexCoord3d (GLdouble s, GLdouble t, GLdouble r)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexCoord3d, gldouble,s, gldouble,t, gldouble,r);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglTexCoord3dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3939,7 +4178,8 @@ HOOKFUNC void GLAPI MyglTexCoord3dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord3dv, sizeof(GLdouble),v,3);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3f (GLfloat s, GLfloat t, GLfloat r)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3f, GLfloat s, GLfloat t, GLfloat r)
+HOOKFUNC void GLAPI MyglTexCoord3f(GLfloat s, GLfloat t, GLfloat r)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3952,7 +4192,8 @@ HOOKFUNC void GLAPI MyglTexCoord3f (GLfloat s, GLfloat t, GLfloat r)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexCoord3f, glfloat,s, glfloat,t, glfloat,r);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglTexCoord3fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3965,7 +4206,8 @@ HOOKFUNC void GLAPI MyglTexCoord3fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord3fv, sizeof(GLfloat),v,3);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3i (GLint s, GLint t, GLint r)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3i, GLint s, GLint t, GLint r)
+HOOKFUNC void GLAPI MyglTexCoord3i(GLint s, GLint t, GLint r)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3978,7 +4220,8 @@ HOOKFUNC void GLAPI MyglTexCoord3i (GLint s, GLint t, GLint r)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexCoord3i, glint,s, glint,t, glint,r);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3iv, const GLint *v)
+HOOKFUNC void GLAPI MyglTexCoord3iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -3991,7 +4234,8 @@ HOOKFUNC void GLAPI MyglTexCoord3iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord3iv, sizeof(GLint),v,3);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3s (GLshort s, GLshort t, GLshort r)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3s, GLshort s, GLshort t, GLshort r)
+HOOKFUNC void GLAPI MyglTexCoord3s(GLshort s, GLshort t, GLshort r)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4004,7 +4248,8 @@ HOOKFUNC void GLAPI MyglTexCoord3s (GLshort s, GLshort t, GLshort r)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexCoord3s, glshort,s, glshort,t, glshort,r);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord3sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord3sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglTexCoord3sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4017,7 +4262,8 @@ HOOKFUNC void GLAPI MyglTexCoord3sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord3sv, sizeof(GLshort),v,3);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4d (GLdouble s, GLdouble t, GLdouble r, GLdouble q)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4d, GLdouble s, GLdouble t, GLdouble r, GLdouble q)
+HOOKFUNC void GLAPI MyglTexCoord4d(GLdouble s, GLdouble t, GLdouble r, GLdouble q)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4031,7 +4277,8 @@ HOOKFUNC void GLAPI MyglTexCoord4d (GLdouble s, GLdouble t, GLdouble r, GLdouble
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglTexCoord4d, gldouble,s, gldouble,t, gldouble,r, gldouble,q);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglTexCoord4dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4045,7 +4292,8 @@ HOOKFUNC void GLAPI MyglTexCoord4dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord4dv, sizeof(GLdouble),v,4);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4f (GLfloat s, GLfloat t, GLfloat r, GLfloat q)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4f, GLfloat s, GLfloat t, GLfloat r, GLfloat q)
+HOOKFUNC void GLAPI MyglTexCoord4f(GLfloat s, GLfloat t, GLfloat r, GLfloat q)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4059,7 +4307,8 @@ HOOKFUNC void GLAPI MyglTexCoord4f (GLfloat s, GLfloat t, GLfloat r, GLfloat q)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglTexCoord4f, glfloat,s, glfloat,t, glfloat,r, glfloat,q);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglTexCoord4fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4073,7 +4322,8 @@ HOOKFUNC void GLAPI MyglTexCoord4fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord4fv, sizeof(GLfloat),v,4);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4i (GLint s, GLint t, GLint r, GLint q)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4i, GLint s, GLint t, GLint r, GLint q)
+HOOKFUNC void GLAPI MyglTexCoord4i(GLint s, GLint t, GLint r, GLint q)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4087,7 +4337,8 @@ HOOKFUNC void GLAPI MyglTexCoord4i (GLint s, GLint t, GLint r, GLint q)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglTexCoord4i, glint,s, glint,t, glint,r, glint,q);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4iv, const GLint *v)
+HOOKFUNC void GLAPI MyglTexCoord4iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4101,7 +4352,8 @@ HOOKFUNC void GLAPI MyglTexCoord4iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglTexCoord4iv, sizeof(GLint),v,4);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4s (GLshort s, GLshort t, GLshort r, GLshort q)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4s, GLshort s, GLshort t, GLshort r, GLshort q)
+HOOKFUNC void GLAPI MyglTexCoord4s(GLshort s, GLshort t, GLshort r, GLshort q)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4115,7 +4367,8 @@ HOOKFUNC void GLAPI MyglTexCoord4s (GLshort s, GLshort t, GLshort r, GLshort q)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglTexCoord4i, glshort,s, glshort,t, glshort,r, glshort,q);
 }
 
-HOOKFUNC void GLAPI MyglTexCoord4sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glTexCoord4sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglTexCoord4sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4166,7 +4419,8 @@ static void oglSetTextureFunction(GLenum mode)
 	oglServerState.other.texFunctionMode = mode;
 }
 
-HOOKFUNC void GLAPI MyglTexEnvf (GLenum target, GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glTexEnvf, GLenum target, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglTexEnvf(GLenum target, GLenum pname, GLfloat param)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(target=0x%X, pname=0x%X, param=%g=0x%X) called.\n", target, pname, param,(GLenum)param);
 	//GLFUNCBOILERPLATE;
@@ -4195,7 +4449,8 @@ HOOKFUNC void GLAPI MyglTexEnvf (GLenum target, GLenum pname, GLfloat param)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexEnvf, glenum,target, glenum,pname, glfloat,param);
 }
 
-HOOKFUNC void GLAPI MyglTexEnvfv (GLenum target, GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glTexEnvfv, GLenum target, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglTexEnvfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4223,7 +4478,8 @@ HOOKFUNC void GLAPI MyglTexEnvfv (GLenum target, GLenum pname, const GLfloat *pa
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexEnvi (GLenum target, GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glTexEnvi, GLenum target, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglTexEnvi(GLenum target, GLenum pname, GLint param)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4252,7 +4508,8 @@ HOOKFUNC void GLAPI MyglTexEnvi (GLenum target, GLenum pname, GLint param)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexEnvi, glenum,target, glenum,pname, glint,param);
 }
 
-HOOKFUNC void GLAPI MyglTexEnviv (GLenum target, GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glTexEnviv, GLenum target, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglTexEnviv(GLenum target, GLenum pname, const GLint *params)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4280,7 +4537,8 @@ HOOKFUNC void GLAPI MyglTexEnviv (GLenum target, GLenum pname, const GLint *para
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGend (GLenum coord, GLenum pname, GLdouble param)
+HOOK_FUNCTION(void, GLAPI, glTexGend, GLenum coord, GLenum pname, GLdouble param)
+HOOKFUNC void GLAPI MyglTexGend(GLenum coord, GLenum pname, GLdouble param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4289,7 +4547,8 @@ HOOKFUNC void GLAPI MyglTexGend (GLenum coord, GLenum pname, GLdouble param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGendv (GLenum coord, GLenum pname, const GLdouble *params)
+HOOK_FUNCTION(void, GLAPI, glTexGendv, GLenum coord, GLenum pname, const GLdouble *params)
+HOOKFUNC void GLAPI MyglTexGendv(GLenum coord, GLenum pname, const GLdouble *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4298,7 +4557,8 @@ HOOKFUNC void GLAPI MyglTexGendv (GLenum coord, GLenum pname, const GLdouble *pa
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGenf (GLenum coord, GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glTexGenf, GLenum coord, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglTexGenf(GLenum coord, GLenum pname, GLfloat param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4307,7 +4567,8 @@ HOOKFUNC void GLAPI MyglTexGenf (GLenum coord, GLenum pname, GLfloat param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGenfv (GLenum coord, GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glTexGenfv, GLenum coord, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglTexGenfv(GLenum coord, GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4316,7 +4577,8 @@ HOOKFUNC void GLAPI MyglTexGenfv (GLenum coord, GLenum pname, const GLfloat *par
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGeni (GLenum coord, GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glTexGeni, GLenum coord, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglTexGeni(GLenum coord, GLenum pname, GLint param)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4325,7 +4587,8 @@ HOOKFUNC void GLAPI MyglTexGeni (GLenum coord, GLenum pname, GLint param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexGeniv (GLenum coord, GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glTexGeniv, GLenum coord, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglTexGeniv(GLenum coord, GLenum pname, const GLint *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4517,7 +4780,8 @@ static void oglTexImageND(int texture, GLenum target, GLint level, GLint interna
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexImage1D (GLenum target, GLint level, GLint internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glTexImage1D, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+HOOKFUNC void GLAPI MyglTexImage1D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4530,7 +4794,8 @@ HOOKFUNC void GLAPI MyglTexImage1D (GLenum target, GLint level, GLint internalFo
 	OGLPUSHDISPLAYLISTENTRY_8ARG(idglTexImage1D, glenum,target, glint,level, glint,internalFormat, glsizei,width, glint,border, glenum,format, glenum,type, ptr,(void*)pixels);
 }
 
-HOOKFUNC void GLAPI MyglTexImage2D (GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glTexImage2D, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+HOOKFUNC void GLAPI MyglTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(target=0x%X (oglTexture2DTarget=%d), level=%d, components=0x%X, width=%d, height=%d, border=%d, format=0x%X, type=0x%X, pixel=0x%X) called.\n", target, oglTexture2DTarget, level, internalFormat, width, height, border, format, type, pixels);
 	//GLFUNCBOILERPLATE;
@@ -4620,7 +4885,8 @@ static void OglTexParameter(GLenum pname, int param)
 	}
 }
 
-HOOKFUNC void GLAPI MyglTexParameterf (GLenum target, GLenum pname, GLfloat param)
+HOOK_FUNCTION(void, GLAPI, glTexParameterf, GLenum target, GLenum pname, GLfloat param)
+HOOKFUNC void GLAPI MyglTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4640,7 +4906,8 @@ HOOKFUNC void GLAPI MyglTexParameterf (GLenum target, GLenum pname, GLfloat para
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexParameterf, glenum,target, glenum,pname, glfloat,param);
 }
 
-HOOKFUNC void GLAPI MyglTexParameterfv (GLenum target, GLenum pname, const GLfloat *params)
+HOOK_FUNCTION(void, GLAPI, glTexParameterfv, GLenum target, GLenum pname, const GLfloat *params)
+HOOKFUNC void GLAPI MyglTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4660,7 +4927,8 @@ HOOKFUNC void GLAPI MyglTexParameterfv (GLenum target, GLenum pname, const GLflo
 	OGLPUSHDISPLAYLISTENTRY_2ARGV(idglTexParameterfv, glenum,target, glenum,pname, sizeof(GLfloat),params,1);
 }
 
-HOOKFUNC void GLAPI MyglTexParameteri (GLenum target, GLenum pname, GLint param)
+HOOK_FUNCTION(void, GLAPI, glTexParameteri, GLenum target, GLenum pname, GLint param)
+HOOKFUNC void GLAPI MyglTexParameteri(GLenum target, GLenum pname, GLint param)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(target=0x%X, pname=0x%X, param=%d=0x%X) called.\n", target, pname, param,param);
 	//GLFUNCBOILERPLATE;
@@ -4680,7 +4948,8 @@ HOOKFUNC void GLAPI MyglTexParameteri (GLenum target, GLenum pname, GLint param)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTexParameteri, glenum,target, glenum,pname, glint,param);
 }
 
-HOOKFUNC void GLAPI MyglTexParameteriv (GLenum target, GLenum pname, const GLint *params)
+HOOK_FUNCTION(void, GLAPI, glTexParameteriv, GLenum target, GLenum pname, const GLint *params)
+HOOKFUNC void GLAPI MyglTexParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4700,7 +4969,8 @@ HOOKFUNC void GLAPI MyglTexParameteriv (GLenum target, GLenum pname, const GLint
 	OGLPUSHDISPLAYLISTENTRY_2ARGV(idglTexParameteriv, glenum,target, glenum,pname, sizeof(GLint),params,1);
 }
 
-HOOKFUNC void GLAPI MyglTranslated (GLdouble x, GLdouble y, GLdouble z)
+HOOK_FUNCTION(void, GLAPI, glTranslated, GLdouble x, GLdouble y, GLdouble z)
+HOOKFUNC void GLAPI MyglTranslated(GLdouble x, GLdouble y, GLdouble z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4718,7 +4988,8 @@ HOOKFUNC void GLAPI MyglTranslated (GLdouble x, GLdouble y, GLdouble z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTranslated, gldouble,x, gldouble,y, gldouble,z);
 }
 
-HOOKFUNC void GLAPI MyglTranslatef (GLfloat x, GLfloat y, GLfloat z)
+HOOK_FUNCTION(void, GLAPI, glTranslatef, GLfloat x, GLfloat y, GLfloat z)
+HOOKFUNC void GLAPI MyglTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g, %g) called.\n", x,y,z);
 	//GLFUNCBOILERPLATE;
@@ -4736,7 +5007,8 @@ HOOKFUNC void GLAPI MyglTranslatef (GLfloat x, GLfloat y, GLfloat z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglTranslatef, glfloat,x, glfloat,y, glfloat,z);
 }
 
-HOOKFUNC void GLAPI MyglVertex2d (GLdouble x, GLdouble y)
+HOOK_FUNCTION(void, GLAPI, glVertex2d, GLdouble x, GLdouble y)
+HOOKFUNC void GLAPI MyglVertex2d(GLdouble x, GLdouble y)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4751,7 +5023,8 @@ HOOKFUNC void GLAPI MyglVertex2d (GLdouble x, GLdouble y)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2d, gldouble,x, gldouble,y);
 }
 
-HOOKFUNC void GLAPI MyglVertex2dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glVertex2dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglVertex2dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4766,7 +5039,8 @@ HOOKFUNC void GLAPI MyglVertex2dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2dv, sizeof(GLdouble),v,2);
 }
 
-HOOKFUNC void GLAPI MyglVertex2f (GLfloat x, GLfloat y)
+HOOK_FUNCTION(void, GLAPI, glVertex2f, GLfloat x, GLfloat y)
+HOOKFUNC void GLAPI MyglVertex2f(GLfloat x, GLfloat y)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g) called.\n", x, y);
 	//GLFUNCBOILERPLATE;
@@ -4781,7 +5055,8 @@ HOOKFUNC void GLAPI MyglVertex2f (GLfloat x, GLfloat y)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2f, glfloat,x, glfloat,y);
 }
 
-HOOKFUNC void GLAPI MyglVertex2fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glVertex2fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglVertex2fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4796,7 +5071,8 @@ HOOKFUNC void GLAPI MyglVertex2fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2fv, sizeof(GLfloat),v,2);
 }
 
-HOOKFUNC void GLAPI MyglVertex2i (GLint x, GLint y)
+HOOK_FUNCTION(void, GLAPI, glVertex2i, GLint x, GLint y)
+HOOKFUNC void GLAPI MyglVertex2i(GLint x, GLint y)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4811,7 +5087,8 @@ HOOKFUNC void GLAPI MyglVertex2i (GLint x, GLint y)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2i, glint,x, glint,y);
 }
 
-HOOKFUNC void GLAPI MyglVertex2iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glVertex2iv, const GLint *v)
+HOOKFUNC void GLAPI MyglVertex2iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4826,7 +5103,8 @@ HOOKFUNC void GLAPI MyglVertex2iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2iv, sizeof(GLint),v,2);
 }
 
-HOOKFUNC void GLAPI MyglVertex2s (GLshort x, GLshort y)
+HOOK_FUNCTION(void, GLAPI, glVertex2s, GLshort x, GLshort y)
+HOOKFUNC void GLAPI MyglVertex2s(GLshort x, GLshort y)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4841,7 +5119,8 @@ HOOKFUNC void GLAPI MyglVertex2s (GLshort x, GLshort y)
 	OGLPUSHDISPLAYLISTENTRY_2ARG(idglVertex2s, glshort,x, glshort,y);
 }
 
-HOOKFUNC void GLAPI MyglVertex2sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glVertex2sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglVertex2sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4856,7 +5135,8 @@ HOOKFUNC void GLAPI MyglVertex2sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex2sv, sizeof(GLshort),v,2);
 }
 
-HOOKFUNC void GLAPI MyglVertex3d (GLdouble x, GLdouble y, GLdouble z)
+HOOK_FUNCTION(void, GLAPI, glVertex3d, GLdouble x, GLdouble y, GLdouble z)
+HOOKFUNC void GLAPI MyglVertex3d(GLdouble x, GLdouble y, GLdouble z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4871,7 +5151,8 @@ HOOKFUNC void GLAPI MyglVertex3d (GLdouble x, GLdouble y, GLdouble z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3d, gldouble,x, gldouble,y, gldouble,z);
 }
 
-HOOKFUNC void GLAPI MyglVertex3dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glVertex3dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglVertex3dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4886,7 +5167,8 @@ HOOKFUNC void GLAPI MyglVertex3dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3dv, sizeof(GLdouble),v,3);
 }
 
-HOOKFUNC void GLAPI MyglVertex3f (GLfloat x, GLfloat y, GLfloat z)
+HOOK_FUNCTION(void, GLAPI, glVertex3f, GLfloat x, GLfloat y, GLfloat z)
+HOOKFUNC void GLAPI MyglVertex3f(GLfloat x, GLfloat y, GLfloat z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g, %g, %g) called.\n", x,y,z);
 	//GLFUNCBOILERPLATE;
@@ -4901,7 +5183,8 @@ HOOKFUNC void GLAPI MyglVertex3f (GLfloat x, GLfloat y, GLfloat z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3f, glfloat,x, glfloat,y, glfloat,z);
 }
 
-HOOKFUNC void GLAPI MyglVertex3fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glVertex3fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglVertex3fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4916,7 +5199,8 @@ HOOKFUNC void GLAPI MyglVertex3fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3fv, sizeof(GLfloat),v,3);
 }
 
-HOOKFUNC void GLAPI MyglVertex3i (GLint x, GLint y, GLint z)
+HOOK_FUNCTION(void, GLAPI, glVertex3i, GLint x, GLint y, GLint z)
+HOOKFUNC void GLAPI MyglVertex3i(GLint x, GLint y, GLint z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4931,7 +5215,8 @@ HOOKFUNC void GLAPI MyglVertex3i (GLint x, GLint y, GLint z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3i, glint,x, glint,y, glint,z);
 }
 
-HOOKFUNC void GLAPI MyglVertex3iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glVertex3iv, const GLint *v)
+HOOKFUNC void GLAPI MyglVertex3iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4946,7 +5231,8 @@ HOOKFUNC void GLAPI MyglVertex3iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3iv, sizeof(GLint),v,3);
 }
 
-HOOKFUNC void GLAPI MyglVertex3s (GLshort x, GLshort y, GLshort z)
+HOOK_FUNCTION(void, GLAPI, glVertex3s, GLshort x, GLshort y, GLshort z)
+HOOKFUNC void GLAPI MyglVertex3s(GLshort x, GLshort y, GLshort z)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4961,7 +5247,8 @@ HOOKFUNC void GLAPI MyglVertex3s (GLshort x, GLshort y, GLshort z)
 	OGLPUSHDISPLAYLISTENTRY_3ARG(idglVertex3s, glshort,x, glshort,y, glshort,z);
 }
 
-HOOKFUNC void GLAPI MyglVertex3sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glVertex3sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglVertex3sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4976,7 +5263,8 @@ HOOKFUNC void GLAPI MyglVertex3sv (const GLshort *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex3sv, sizeof(GLshort),v,3);
 }
 
-HOOKFUNC void GLAPI MyglVertex4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w)
+HOOK_FUNCTION(void, GLAPI, glVertex4d, GLdouble x, GLdouble y, GLdouble z, GLdouble w)
+HOOKFUNC void GLAPI MyglVertex4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -4991,7 +5279,8 @@ HOOKFUNC void GLAPI MyglVertex4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4d, gldouble,x, gldouble,y, gldouble,z, gldouble,w);
 }
 
-HOOKFUNC void GLAPI MyglVertex4dv (const GLdouble *v)
+HOOK_FUNCTION(void, GLAPI, glVertex4dv, const GLdouble *v)
+HOOKFUNC void GLAPI MyglVertex4dv(const GLdouble *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5006,7 +5295,8 @@ HOOKFUNC void GLAPI MyglVertex4dv (const GLdouble *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4dv, sizeof(GLdouble),v,4);
 }
 
-HOOKFUNC void GLAPI MyglVertex4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+HOOK_FUNCTION(void, GLAPI, glVertex4f, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+HOOKFUNC void GLAPI MyglVertex4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5021,7 +5311,8 @@ HOOKFUNC void GLAPI MyglVertex4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4f, glfloat,x, glfloat,y, glfloat,z, glfloat,w);
 }
 
-HOOKFUNC void GLAPI MyglVertex4fv (const GLfloat *v)
+HOOK_FUNCTION(void, GLAPI, glVertex4fv, const GLfloat *v)
+HOOKFUNC void GLAPI MyglVertex4fv(const GLfloat *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5036,7 +5327,8 @@ HOOKFUNC void GLAPI MyglVertex4fv (const GLfloat *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4fv, sizeof(GLfloat),v,4);
 }
 
-HOOKFUNC void GLAPI MyglVertex4i (GLint x, GLint y, GLint z, GLint w)
+HOOK_FUNCTION(void, GLAPI, glVertex4i, GLint x, GLint y, GLint z, GLint w)
+HOOKFUNC void GLAPI MyglVertex4i(GLint x, GLint y, GLint z, GLint w)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5051,7 +5343,8 @@ HOOKFUNC void GLAPI MyglVertex4i (GLint x, GLint y, GLint z, GLint w)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4i, glint,x, glint,y, glint,z, glint,w);
 }
 
-HOOKFUNC void GLAPI MyglVertex4iv (const GLint *v)
+HOOK_FUNCTION(void, GLAPI, glVertex4iv, const GLint *v)
+HOOKFUNC void GLAPI MyglVertex4iv(const GLint *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5066,7 +5359,8 @@ HOOKFUNC void GLAPI MyglVertex4iv (const GLint *v)
 	OGLPUSHDISPLAYLISTENTRY_0ARGV(idglVertex4iv, sizeof(GLint),v,4);
 }
 
-HOOKFUNC void GLAPI MyglVertex4s (GLshort x, GLshort y, GLshort z, GLshort w)
+HOOK_FUNCTION(void, GLAPI, glVertex4s, GLshort x, GLshort y, GLshort z, GLshort w)
+HOOKFUNC void GLAPI MyglVertex4s(GLshort x, GLshort y, GLshort z, GLshort w)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5081,7 +5375,8 @@ HOOKFUNC void GLAPI MyglVertex4s (GLshort x, GLshort y, GLshort z, GLshort w)
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglVertex4s, glshort,x, glshort,y, glshort,z, glshort,w);
 }
 
-HOOKFUNC void GLAPI MyglVertex4sv (const GLshort *v)
+HOOK_FUNCTION(void, GLAPI, glVertex4sv, const GLshort *v)
+HOOKFUNC void GLAPI MyglVertex4sv(const GLshort *v)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5097,7 +5392,8 @@ HOOKFUNC void GLAPI MyglVertex4sv (const GLshort *v)
 }
 
 
-HOOKFUNC void GLAPI MyglRectd (GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
+HOOK_FUNCTION(void, GLAPI, glRectd, GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
+HOOKFUNC void GLAPI MyglRectd(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g,%g,%g,%g) called.\n",(float)x1,(float)y1,(float)x2,(float)y2);
 	////GLFUNCBOILERPLATE;
@@ -5112,7 +5408,8 @@ HOOKFUNC void GLAPI MyglRectd (GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRectdv (const GLdouble *v1, const GLdouble *v2)
+HOOK_FUNCTION(void, GLAPI, glRectdv, const GLdouble *v1, const GLdouble *v2)
+HOOKFUNC void GLAPI MyglRectdv(const GLdouble *v1, const GLdouble *v2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	////GLFUNCBOILERPLATE;
@@ -5127,7 +5424,8 @@ HOOKFUNC void GLAPI MyglRectdv (const GLdouble *v1, const GLdouble *v2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRectf (GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
+HOOK_FUNCTION(void, GLAPI, glRectf, GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
+HOOKFUNC void GLAPI MyglRectf(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%g,%g,%g,%g) called.\n",x1,y1,x2,y2);
 	////GLFUNCBOILERPLATE;
@@ -5142,7 +5440,8 @@ HOOKFUNC void GLAPI MyglRectf (GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRectfv (const GLfloat *v1, const GLfloat *v2)
+HOOK_FUNCTION(void, GLAPI, glRectfv, const GLfloat *v1, const GLfloat *v2)
+HOOKFUNC void GLAPI MyglRectfv(const GLfloat *v1, const GLfloat *v2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	////GLFUNCBOILERPLATE;
@@ -5157,7 +5456,8 @@ HOOKFUNC void GLAPI MyglRectfv (const GLfloat *v1, const GLfloat *v2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRecti (GLint x1, GLint y1, GLint x2, GLint y2)
+HOOK_FUNCTION(void, GLAPI, glRecti, GLint x1, GLint y1, GLint x2, GLint y2)
+HOOKFUNC void GLAPI MyglRecti(GLint x1, GLint y1, GLint x2, GLint y2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%d,%d,%d,%d) called.\n",x1,y1,x2,y2);
 	////GLFUNCBOILERPLATE;
@@ -5172,7 +5472,8 @@ HOOKFUNC void GLAPI MyglRecti (GLint x1, GLint y1, GLint x2, GLint y2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRectiv (const GLint *v1, const GLint *v2)
+HOOK_FUNCTION(void, GLAPI, glRectiv, const GLint *v1, const GLint *v2)
+HOOKFUNC void GLAPI MyglRectiv(const GLint *v1, const GLint *v2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	////GLFUNCBOILERPLATE;
@@ -5187,7 +5488,8 @@ HOOKFUNC void GLAPI MyglRectiv (const GLint *v1, const GLint *v2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRects (GLshort x1, GLshort y1, GLshort x2, GLshort y2)
+HOOK_FUNCTION(void, GLAPI, glRects, GLshort x1, GLshort y1, GLshort x2, GLshort y2)
+HOOKFUNC void GLAPI MyglRects(GLshort x1, GLshort y1, GLshort x2, GLshort y2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(%d,%d,%d,%d) called.\n",(int)x1,(int)y1,(int)x2,(int)y2);
 	////GLFUNCBOILERPLATE;
@@ -5202,7 +5504,8 @@ HOOKFUNC void GLAPI MyglRects (GLshort x1, GLshort y1, GLshort x2, GLshort y2)
 	MyglEnd();
 }
 
-HOOKFUNC void GLAPI MyglRectsv (const GLshort *v1, const GLshort *v2)
+HOOK_FUNCTION(void, GLAPI, glRectsv, const GLshort *v1, const GLshort *v2)
+HOOKFUNC void GLAPI MyglRectsv(const GLshort *v1, const GLshort *v2)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	////GLFUNCBOILERPLATE;
@@ -5218,7 +5521,8 @@ HOOKFUNC void GLAPI MyglRectsv (const GLshort *v1, const GLshort *v2)
 }
 
 
-HOOKFUNC void GLAPI MyglViewport (GLint x, GLint y, GLsizei width, GLsizei height)
+HOOK_FUNCTION(void, GLAPI, glViewport, GLint x, GLint y, GLsizei width, GLsizei height)
+HOOKFUNC void GLAPI MyglViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(x=%d, y=%d, width=%d, height=%d) called.\n", x,y,width,height);
 	//GLFUNCBOILERPLATE;
@@ -5239,7 +5543,8 @@ HOOKFUNC void GLAPI MyglViewport (GLint x, GLint y, GLsizei width, GLsizei heigh
 	OGLPUSHDISPLAYLISTENTRY_4ARG(idglViewport, glint,x, glint,y, glsizei,width, glsizei,height);
 }
 
-HOOKFUNC GLuint GLAPI MyglGenLists (GLsizei range)
+HOOK_FUNCTION(GLuint, GLAPI, glGenLists, GLsizei range)
+HOOKFUNC GLuint GLAPI MyglGenLists(GLsizei range)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(range=%d) called.\n", range);
 	//GLFUNCBOILERPLATE;
@@ -5256,7 +5561,8 @@ HOOKFUNC GLuint GLAPI MyglGenLists (GLsizei range)
 	return index;
 }
 
-HOOKFUNC GLenum GLAPI MyglGetError (void)
+HOOK_FUNCTION(GLenum, GLAPI, glGetError)
+HOOKFUNC GLenum GLAPI MyglGetError()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5265,14 +5571,16 @@ HOOKFUNC GLenum GLAPI MyglGetError (void)
 	return rv;
 }
 
-HOOKFUNC GLboolean GLAPI MyglIsEnabled (GLenum cap)
+HOOK_FUNCTION(GLboolean, GLAPI, glIsEnabled, GLenum cap)
+HOOKFUNC GLboolean GLAPI MyglIsEnabled(GLenum cap)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 	return 0; // NYI
 }
 
-HOOKFUNC GLboolean GLAPI MyglIsList (GLuint list)
+HOOK_FUNCTION(GLboolean, GLAPI, glIsList, GLuint list)
+HOOKFUNC GLboolean GLAPI MyglIsList(GLuint list)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(list=%d) called.\n", list);
 	//GLFUNCBOILERPLATE;
@@ -5283,7 +5591,8 @@ HOOKFUNC GLboolean GLAPI MyglIsList (GLuint list)
 	return oglDisplayLists[list].valid;
 }
 
-HOOKFUNC GLint GLAPI MyglRenderMode (GLenum mode)
+HOOK_FUNCTION(GLint, GLAPI, glRenderMode, GLenum mode)
+HOOKFUNC GLint GLAPI MyglRenderMode(GLenum mode)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5292,13 +5601,15 @@ HOOKFUNC GLint GLAPI MyglRenderMode (GLenum mode)
 
 
 
-HOOKFUNC GLboolean GLAPI MyglAreTexturesResident (GLsizei n, const GLuint *textures, GLboolean *residences)
+HOOK_FUNCTION(GLboolean, GLAPI, glAreTexturesResident, GLsizei n, const GLuint *textures, GLboolean *residences)
+HOOKFUNC GLboolean GLAPI MyglAreTexturesResident(GLsizei n, const GLuint *textures, GLboolean *residences)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 	return 0; // NYI
 }
-HOOKFUNC void GLAPI MyglArrayElement (GLint i)
+HOOK_FUNCTION(void, GLAPI, glArrayElement, GLint i)
+HOOKFUNC void GLAPI MyglArrayElement(GLint i)
 { // NYI
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5306,7 +5617,8 @@ HOOKFUNC void GLAPI MyglArrayElement (GLint i)
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglColorPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glColorPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5321,7 +5633,8 @@ HOOKFUNC void GLAPI MyglColorPointer (GLint size, GLenum type, GLsizei stride, c
 	oglClientState.arrayState.colorArrayPointer = pointer;
 	oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglCopyTexImage1D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border)
+HOOK_FUNCTION(void, GLAPI, glCopyTexImage1D, GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border)
+HOOKFUNC void GLAPI MyglCopyTexImage1D(GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5329,7 +5642,8 @@ HOOKFUNC void GLAPI MyglCopyTexImage1D (GLenum target, GLint level, GLenum inter
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
+HOOK_FUNCTION(void, GLAPI, glCopyTexImage2D, GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
+HOOKFUNC void GLAPI MyglCopyTexImage2D(GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5337,7 +5651,8 @@ HOOKFUNC void GLAPI MyglCopyTexImage2D (GLenum target, GLint level, GLenum inter
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
+HOOK_FUNCTION(void, GLAPI, glCopyTexSubImage1D, GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
+HOOKFUNC void GLAPI MyglCopyTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5345,7 +5660,8 @@ HOOKFUNC void GLAPI MyglCopyTexSubImage1D (GLenum target, GLint level, GLint xof
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+HOOK_FUNCTION(void, GLAPI, glCopyTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+HOOKFUNC void GLAPI MyglCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5805,7 +6121,8 @@ static void OglDrawToD3D(GLenum mode, GLsizei count, GLint first, GLenum type, c
 	else
 		vb->Release();
 }
-HOOKFUNC void GLAPI MyglDrawArrays (GLenum mode, GLint first, GLsizei count)
+HOOK_FUNCTION(void, GLAPI, glDrawArrays, GLenum mode, GLint first, GLsizei count)
+HOOKFUNC void GLAPI MyglDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5816,7 +6133,8 @@ HOOKFUNC void GLAPI MyglDrawArrays (GLenum mode, GLint first, GLsizei count)
 	if(!ShouldSkipDrawing(false, true))
 		OglDrawToD3D(mode, count, first, 0,0, oglAllowExecuteCommands, oglMakingDisplayList!=0);
 }
-HOOKFUNC void GLAPI MyglDrawElements (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)
+HOOK_FUNCTION(void, GLAPI, glDrawElements, GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)
+HOOKFUNC void GLAPI MyglDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(mode=0x%X, count=%d, type=0x%X, indices=0x%X) called.\n", mode,count,type,indices);
 	//GLFUNCBOILERPLATE;
@@ -5829,7 +6147,8 @@ HOOKFUNC void GLAPI MyglDrawElements (GLenum mode, GLsizei count, GLenum type, c
 	if(!ShouldSkipDrawing(false, true))
 		OglDrawToD3D(mode, count, 0, type,indices, oglAllowExecuteCommands, oglMakingDisplayList!=0);
 }
-HOOKFUNC void GLAPI MyglEdgeFlagPointer (GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glEdgeFlagPointer, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglEdgeFlagPointer(GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5843,7 +6162,8 @@ static const int GL_COLOR_ARRAY = 0x8076;
 static const int GL_INDEX_ARRAY = 0x8077;
 static const int GL_TEXTURE_COORD_ARRAY = 0x8078;
 static const int GL_EDGE_FLAG_ARRAY = 0x8079;
-HOOKFUNC void GLAPI MyglEnableClientState (GLenum array)
+HOOK_FUNCTION(void, GLAPI, glEnableClientState, GLenum array)
+HOOKFUNC void GLAPI MyglEnableClientState(GLenum array)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(0x%X) called.\n", array);
 	//GLFUNCBOILERPLATE;
@@ -5858,7 +6178,8 @@ HOOKFUNC void GLAPI MyglEnableClientState (GLenum array)
 	}
 	oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglDisableClientState (GLenum array)
+HOOK_FUNCTION(void, GLAPI, glDisableClientState, GLenum array)
+HOOKFUNC void GLAPI MyglDisableClientState(GLenum array)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(0x%X) called.\n", array);
 	//GLFUNCBOILERPLATE;
@@ -5873,12 +6194,14 @@ HOOKFUNC void GLAPI MyglDisableClientState (GLenum array)
 	}
 	oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglGetPointerv (GLenum pname, GLvoid* *params)
+HOOK_FUNCTION(void, GLAPI, glGetPointerv, GLenum pname, GLvoid* *params)
+HOOKFUNC void GLAPI MyglGetPointerv(GLenum pname, GLvoid* *params)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 }
-HOOKFUNC void GLAPI MyglIndexPointer (GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glIndexPointer, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglIndexPointer(GLenum type, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5887,7 +6210,8 @@ HOOKFUNC void GLAPI MyglIndexPointer (GLenum type, GLsizei stride, const GLvoid 
 	//oglClientState.arrayState.indexArrayPointer = pointer;
 	//oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglIndexub (GLubyte c)
+HOOK_FUNCTION(void, GLAPI, glIndexub, GLubyte c)
+HOOKFUNC void GLAPI MyglIndexub(GLubyte c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5895,7 +6219,8 @@ HOOKFUNC void GLAPI MyglIndexub (GLubyte c)
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglIndexubv (const GLubyte *c)
+HOOK_FUNCTION(void, GLAPI, glIndexubv, const GLubyte *c)
+HOOKFUNC void GLAPI MyglIndexubv(const GLubyte *c)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -5903,7 +6228,8 @@ HOOKFUNC void GLAPI MyglIndexubv (const GLubyte *c)
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglInterleavedArrays (GLenum format, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glInterleavedArrays, GLenum format, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglInterleavedArrays(GLenum format, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_OGL, __FUNCTION__ "(format=0x%X, stride=0x%X, pointer=0x%X) called.\n", format,stride,pointer);
 	//GLFUNCBOILERPLATE;
@@ -5989,13 +6315,15 @@ HOOKFUNC void GLAPI MyglInterleavedArrays (GLenum format, GLsizei stride, const 
 	oglClientState.arrayState.normalArrayStride = stride;
 	oglClientState.arrayState.vertexArrayStride = stride;
 }
-HOOKFUNC GLboolean GLAPI MyglIsTexture (GLuint texture)
+HOOK_FUNCTION(GLboolean, GLAPI, glIsTexture, GLuint texture)
+HOOKFUNC GLboolean GLAPI MyglIsTexture(GLuint texture)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 	return 0; // NYI
 }
-HOOKFUNC void GLAPI MyglNormalPointer (GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glNormalPointer, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglNormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6008,7 +6336,8 @@ HOOKFUNC void GLAPI MyglNormalPointer (GLenum type, GLsizei stride, const GLvoid
 	oglClientState.arrayState.normalArrayPointer = pointer;
 	oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglPolygonOffset (GLfloat factor, GLfloat units)
+HOOK_FUNCTION(void, GLAPI, glPolygonOffset, GLfloat factor, GLfloat units)
+HOOKFUNC void GLAPI MyglPolygonOffset(GLfloat factor, GLfloat units)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6016,14 +6345,16 @@ HOOKFUNC void GLAPI MyglPolygonOffset (GLfloat factor, GLfloat units)
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglPushClientAttrib (GLbitfield mask)
+HOOK_FUNCTION(void, GLAPI, glPushClientAttrib, GLbitfield mask)
+HOOKFUNC void GLAPI MyglPushClientAttrib(GLbitfield mask)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
 	oglClientStateStack.push_back(oglClientState);
 	oglClientStateStack.back().mask = mask;
 }
-HOOKFUNC void GLAPI MyglPopClientAttrib (void)
+HOOK_FUNCTION(void, GLAPI, glPopClientAttrib)
+HOOKFUNC void GLAPI MyglPopClientAttrib()
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6038,7 +6369,8 @@ HOOKFUNC void GLAPI MyglPopClientAttrib (void)
 		oglClientState.arrayState = oglClientStateStack.back().arrayState;
 	oglClientStateStack.pop_back();
 }
-HOOKFUNC void GLAPI MyglPrioritizeTextures (GLsizei n, const GLuint *textures, const GLclampf *priorities)
+HOOK_FUNCTION(void, GLAPI, glPrioritizeTextures, GLsizei n, const GLuint *textures, const GLclampf *priorities)
+HOOKFUNC void GLAPI MyglPrioritizeTextures(GLsizei n, const GLuint *textures, const GLclampf *priorities)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6046,7 +6378,8 @@ HOOKFUNC void GLAPI MyglPrioritizeTextures (GLsizei n, const GLuint *textures, c
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglTexCoordPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glTexCoordPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6060,7 +6393,8 @@ HOOKFUNC void GLAPI MyglTexCoordPointer (GLint size, GLenum type, GLsizei stride
 	oglClientState.arrayState.texCoordArrayPointer = pointer;
 	oglClientState.arrayState.RecalculateSizes();
 }
-HOOKFUNC void GLAPI MyglTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glTexSubImage1D, GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
+HOOKFUNC void GLAPI MyglTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6068,7 +6402,8 @@ HOOKFUNC void GLAPI MyglTexSubImage1D (GLenum target, GLint level, GLint xoffset
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
+HOOK_FUNCTION(void, GLAPI, glTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
+HOOKFUNC void GLAPI MyglTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6076,7 +6411,8 @@ HOOKFUNC void GLAPI MyglTexSubImage2D (GLenum target, GLint level, GLint xoffset
 	{
 	}
 }
-HOOKFUNC void GLAPI MyglVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOK_FUNCTION(void, GLAPI, glVertexPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+HOOKFUNC void GLAPI MyglVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
 	debuglog(LCF_OGL, __FUNCTION__ " called.\n");
 	//GLFUNCBOILERPLATE;
@@ -6095,54 +6431,64 @@ HOOKFUNC void GLAPI MyglVertexPointer (GLint size, GLenum type, GLsizei stride, 
 
 // internal opengl
 
+HOOK_FUNCTION(void, GLAPI, glDebugEntry, DWORD arg1, DWORD arg2)
 HOOKFUNC void GLAPI MyglDebugEntry(DWORD arg1, DWORD arg2) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfBeginGlsBlock, DWORD arg1)
 HOOKFUNC void GLAPI MyGlmfBeginGlsBlock(DWORD arg1) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfEndGlsBlock, DWORD arg1)
 HOOKFUNC void GLAPI MyGlmfEndGlsBlock(DWORD arg1) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfCloseMetaFile, DWORD arg1)
 HOOKFUNC void GLAPI MyGlmfCloseMetaFile(DWORD arg1) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfEndPlayback, DWORD arg1)
 HOOKFUNC void GLAPI MyGlmfEndPlayback(DWORD arg1) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfInitPlayback, DWORD arg1, DWORD arg2, DWORD arg3)
 HOOKFUNC void GLAPI MyGlmfInitPlayback(DWORD arg1, DWORD arg2, DWORD arg3) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
+HOOK_FUNCTION(void, GLAPI, GlmfPlayGlsRecord, DWORD arg1, DWORD arg2, DWORD arg3, DWORD arg4)
 HOOKFUNC void GLAPI MyGlmfPlayGlsRecord(DWORD arg1, DWORD arg2, DWORD arg3, DWORD arg4) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 }
 
-HOOKFUNC int WINAPI MywglChoosePixelFormat(HDC hdc, const PIXELFORMATDESCRIPTOR* ppfd) 
+HOOK_FUNCTION(int, WINAPI, wglChoosePixelFormat, HDC hdc, const PIXELFORMATDESCRIPTOR* ppfd)
+HOOKFUNC int WINAPI MywglChoosePixelFormat(HDC hdc, const PIXELFORMATDESCRIPTOR* ppfd)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	return wglChoosePixelFormat(hdc, ppfd);
 }
 
-HOOKFUNC BOOL WINAPI MywglCopyContext(HGLRC context1, HGLRC context2, UINT i) 
+HOOK_FUNCTION(BOOL, WINAPI, wglCopyContext, HGLRC context1, HGLRC context2, UINT i)
+HOOKFUNC BOOL WINAPI MywglCopyContext(HGLRC context1, HGLRC context2, UINT i)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//return wglCopyContext(context1,context2,i);
 	return 0; // NYI
 }
 
+HOOK_FUNCTION(HGLRC, WINAPI, wglCreateContext, HDC hdc)
 HOOKFUNC HGLRC WINAPI MywglCreateContext(HDC hdc) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6158,7 +6504,8 @@ HOOKFUNC HGLRC WINAPI MywglCreateContext(HDC hdc)
 	return (HGLRC)ogld3d8;
 }
 
-HOOKFUNC HGLRC WINAPI MywglCreateLayerContext(HDC hdc, int i) 
+HOOK_FUNCTION(HGLRC, WINAPI, wglCreateLayerContext, HDC hdc, int i)
+HOOKFUNC HGLRC WINAPI MywglCreateLayerContext(HDC hdc, int i)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//return wglCreateLayerContext(hdc, i);
@@ -6174,6 +6521,7 @@ HOOKFUNC HGLRC WINAPI MywglCreateLayerContext(HDC hdc, int i)
 	return (HGLRC)ogld3d8;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglDeleteContext, HGLRC context)
 HOOKFUNC BOOL WINAPI MywglDeleteContext(HGLRC context) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6198,6 +6546,7 @@ HOOKFUNC BOOL WINAPI MywglDeleteContext(HGLRC context)
 	return TRUE;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglDescribeLayerPlane, HDC hdc, int i1, int i2, UINT i3, LPLAYERPLANEDESCRIPTOR pd)
 HOOKFUNC BOOL WINAPI MywglDescribeLayerPlane(HDC hdc, int i1, int i2, UINT i3, LPLAYERPLANEDESCRIPTOR pd) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6205,6 +6554,7 @@ HOOKFUNC BOOL WINAPI MywglDescribeLayerPlane(HDC hdc, int i1, int i2, UINT i3, L
 	return wglDescribeLayerPlane(hdc,i1,i2,i3,pd);
 }
 
+HOOK_FUNCTION(int, WINAPI, wglDescribePixelFormat, HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd)
 HOOKFUNC int WINAPI MywglDescribePixelFormat(HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6212,20 +6562,23 @@ HOOKFUNC int WINAPI MywglDescribePixelFormat(HDC hdc, int iPixelFormat, UINT nBy
 	return wglDescribePixelFormat(hdc, iPixelFormat, nBytes, ppfd);
 }
 
-HOOKFUNC HGLRC WINAPI MywglGetCurrentContext(VOID) 
+HOOK_FUNCTION(HGLRC, WINAPI, wglGetCurrentContext)
+HOOKFUNC HGLRC WINAPI MywglGetCurrentContext() 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//return wglGetCurrentContext();
 	return (HGLRC)ogld3d8;
 }
 
-HOOKFUNC HDC WINAPI MywglGetCurrentDC(VOID) 
+HOOK_FUNCTION(HDC, WINAPI, wglGetCurrentDC)
+HOOKFUNC HDC WINAPI MywglGetCurrentDC() 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	//return wglGetCurrentDC();
 	return oglCurrentHDC;
 }
 
+HOOK_FUNCTION(PROC, WINAPI, wglGetDefaultProcAddress, LPCSTR name)
 HOOKFUNC PROC WINAPI MywglGetDefaultProcAddress(LPCSTR name) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(\"%s\") called.\n", name);
@@ -6233,6 +6586,7 @@ HOOKFUNC PROC WINAPI MywglGetDefaultProcAddress(LPCSTR name)
 	return NULL; // extensions are NYI
 }
 
+HOOK_FUNCTION(int, WINAPI, wglGetLayerPaletteEntries, HDC hdc, int i1, int i2, int i3, COLORREF* cr)
 HOOKFUNC int WINAPI MywglGetLayerPaletteEntries(HDC hdc, int i1, int i2, int i3, COLORREF* cr) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6240,12 +6594,14 @@ HOOKFUNC int WINAPI MywglGetLayerPaletteEntries(HDC hdc, int i1, int i2, int i3,
 	return wglGetLayerPaletteEntries(hdc,i1,i2,i3,cr);
 }
 
+HOOK_FUNCTION(int, WINAPI, wglGetPixelFormat, HDC hdc)
 HOOKFUNC int WINAPI MywglGetPixelFormat(HDC hdc) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
 	return wglGetPixelFormat(hdc);
 }
 
+HOOK_FUNCTION(PROC, WINAPI, wglGetProcAddress, LPCSTR name)
 HOOKFUNC PROC WINAPI MywglGetProcAddress(LPCSTR name) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(\"%s\") called.\n", name);
@@ -6253,6 +6609,7 @@ HOOKFUNC PROC WINAPI MywglGetProcAddress(LPCSTR name)
 	return NULL; // extensions are NYI
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglMakeCurrent, HDC hdc, HGLRC context)
 HOOKFUNC BOOL WINAPI MywglMakeCurrent(HDC hdc, HGLRC context) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(hdc=0x%X, context=0x%X) called.\n", hdc, context);
@@ -6290,6 +6647,7 @@ HOOKFUNC BOOL WINAPI MywglMakeCurrent(HDC hdc, HGLRC context)
 	return TRUE;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglRealizeLayerPalette, HDC hdc, int i, BOOL b)
 HOOKFUNC BOOL WINAPI MywglRealizeLayerPalette(HDC hdc, int i, BOOL b) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6297,6 +6655,7 @@ HOOKFUNC BOOL WINAPI MywglRealizeLayerPalette(HDC hdc, int i, BOOL b)
 //	return wglRealizeLayerPalette(hdc,i,b);
 }
 
+HOOK_FUNCTION(int, WINAPI, wglSetLayerPaletteEntries, HDC hdc, int i1, int i2, int i3, CONST COLORREF* cr)
 HOOKFUNC int WINAPI MywglSetLayerPaletteEntries(HDC hdc, int i1, int i2, int i3, CONST COLORREF* cr) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6305,6 +6664,7 @@ HOOKFUNC int WINAPI MywglSetLayerPaletteEntries(HDC hdc, int i1, int i2, int i3,
 }
 
 HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd);
+HOOK_FUNCTION(BOOL, WINAPI, wglSetPixelFormat, HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
 HOOKFUNC BOOL WINAPI MywglSetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6317,6 +6677,7 @@ HOOKFUNC BOOL WINAPI MywglSetPixelFormat(HDC hdc, int format, CONST PIXELFORMATD
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglShareLists, HGLRC context1, HGLRC context2)
 HOOKFUNC BOOL WINAPI MywglShareLists(HGLRC context1, HGLRC context2) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6324,7 +6685,8 @@ HOOKFUNC BOOL WINAPI MywglShareLists(HGLRC context1, HGLRC context2)
 	return TRUE;
 }
 
-HOOKFUNC BOOL MySwapBuffers(HDC hdc);
+HOOKFUNC BOOL WINAPI MySwapBuffers(HDC hdc);
+HOOK_FUNCTION(BOOL, WINAPI, wglSwapBuffers, HDC hdc)
 HOOKFUNC BOOL WINAPI MywglSwapBuffers(HDC hdc) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6338,6 +6700,7 @@ HOOKFUNC BOOL WINAPI MywglSwapBuffers(HDC hdc)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglSwapLayerBuffers, HDC hdc, UINT i)
 HOOKFUNC BOOL WINAPI MywglSwapLayerBuffers(HDC hdc, UINT i) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6351,6 +6714,7 @@ HOOKFUNC BOOL WINAPI MywglSwapLayerBuffers(HDC hdc, UINT i)
 	return rv;
 }
 
+HOOK_FUNCTION(DWORD, WINAPI, wglSwapMultipleBuffers, UINT i, CONST WGLSWAP * s)
 HOOKFUNC DWORD WINAPI MywglSwapMultipleBuffers(UINT i, CONST WGLSWAP * s) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6366,6 +6730,7 @@ HOOKFUNC DWORD WINAPI MywglSwapMultipleBuffers(UINT i, CONST WGLSWAP * s)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglUseFontBitmapsA, HDC hdc, DWORD d1, DWORD d2, DWORD d3)
 HOOKFUNC BOOL WINAPI MywglUseFontBitmapsA(HDC hdc, DWORD d1, DWORD d2, DWORD d3) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6373,6 +6738,7 @@ HOOKFUNC BOOL WINAPI MywglUseFontBitmapsA(HDC hdc, DWORD d1, DWORD d2, DWORD d3)
 //	return wglUseFontBitmapsA(hdc,d1,d2,d3);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglUseFontBitmapsW, HDC hdc, DWORD d1, DWORD d2, DWORD d3)
 HOOKFUNC BOOL WINAPI MywglUseFontBitmapsW(HDC hdc, DWORD d1, DWORD d2, DWORD d3) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6380,6 +6746,7 @@ HOOKFUNC BOOL WINAPI MywglUseFontBitmapsW(HDC hdc, DWORD d1, DWORD d2, DWORD d3)
 //	return wglUseFontBitmapsW(hdc,d1,d2,d3);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglUseFontOutlinesA, HDC hdc, DWORD d1, DWORD d2, DWORD d3, FLOAT f1, FLOAT f2, int i, LPGLYPHMETRICSFLOAT lpgm)
 HOOKFUNC BOOL WINAPI MywglUseFontOutlinesA(HDC hdc, DWORD d1, DWORD d2, DWORD d3, FLOAT f1, FLOAT f2, int i, LPGLYPHMETRICSFLOAT lpgm) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");
@@ -6387,6 +6754,7 @@ HOOKFUNC BOOL WINAPI MywglUseFontOutlinesA(HDC hdc, DWORD d1, DWORD d2, DWORD d3
 //	return wglUseFontOutlinesA(hdc,d1,d2,d3,f1,f2,i,lpgm);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, wglUseFontOutlinesW, HDC hdc, DWORD d1, DWORD d2, DWORD d3, FLOAT f1, FLOAT f2, int i, LPGLYPHMETRICSFLOAT lpgm)
 HOOKFUNC BOOL WINAPI MywglUseFontOutlinesW(HDC hdc, DWORD d1, DWORD d2, DWORD d3, FLOAT f1, FLOAT f2, int i, LPGLYPHMETRICSFLOAT lpgm) 
 {
 	debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ " called.\n");

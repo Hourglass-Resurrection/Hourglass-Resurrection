@@ -358,342 +358,342 @@ typedef double		GLclampd;	// double precision float in [0,1]
 #define glTexSubImage1D TrampglTexSubImage1D
 #define glTexSubImage2D TrampglTexSubImage2D
 #define glVertexPointer TrampglVertexPointer
-TRAMPFUNC void GLAPI glBindTexture(GLenum target, GLuint texture) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDeleteTextures(GLsizei n, const GLuint *textures) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGenTextures(GLsizei n, GLuint *textures) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glAccum (GLenum op, GLfloat value) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glAlphaFunc (GLenum func, GLclampf ref) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glBegin (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glBitmap (GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glBlendFunc (GLenum sfactor, GLenum dfactor) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCallList (GLuint list) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCallLists (GLsizei n, GLenum type, const GLvoid *lists) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClear (GLbitfield mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClearAccum (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClearDepth (GLclampd depth) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClearIndex (GLfloat c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClearStencil (GLint s) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glClipPlane (GLenum plane, const GLdouble *equation) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3b (GLbyte red, GLbyte green, GLbyte blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3bv (const GLbyte *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3d (GLdouble red, GLdouble green, GLdouble blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3f (GLfloat red, GLfloat green, GLfloat blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3i (GLint red, GLint green, GLint blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3s (GLshort red, GLshort green, GLshort blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3ub (GLubyte red, GLubyte green, GLubyte blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3ubv (const GLubyte *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3ui (GLuint red, GLuint green, GLuint blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3uiv (const GLuint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3us (GLushort red, GLushort green, GLushort blue) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor3usv (const GLushort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4b (GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4bv (const GLbyte *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4d (GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4f (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4i (GLint red, GLint green, GLint blue, GLint alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4s (GLshort red, GLshort green, GLshort blue, GLshort alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4ub (GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4ubv (const GLubyte *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4ui (GLuint red, GLuint green, GLuint blue, GLuint alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4uiv (const GLuint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4us (GLushort red, GLushort green, GLushort blue, GLushort alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColor4usv (const GLushort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColorMaterial (GLenum face, GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCopyPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum type) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCullFace (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDeleteLists (GLuint list, GLsizei range) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDepthFunc (GLenum func) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDepthMask (GLboolean flag) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDepthRange (GLclampd zNear, GLclampd zFar) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDisable (GLenum cap) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDrawBuffer (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDrawPixels (GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEdgeFlag (GLboolean flag) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEdgeFlagv (const GLboolean *flag) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEnable (GLenum cap) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEnd (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEndList (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord1d (GLdouble u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord1dv (const GLdouble *u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord1f (GLfloat u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord1fv (const GLfloat *u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord2d (GLdouble u, GLdouble v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord2dv (const GLdouble *u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord2f (GLfloat u, GLfloat v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalCoord2fv (const GLfloat *u) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalMesh1 (GLenum mode, GLint i1, GLint i2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalMesh2 (GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalPoint1 (GLint i) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEvalPoint2 (GLint i, GLint j) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFeedbackBuffer (GLsizei size, GLenum type, GLfloat *buffer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFinish (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFlush (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFogf (GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFogfv (GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFogi (GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFogiv (GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFrontFace (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glFrustum (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetBooleanv (GLenum pname, GLboolean *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetClipPlane (GLenum plane, GLdouble *equation) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetDoublev (GLenum pname, GLdouble *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetFloatv (GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetIntegerv (GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetLightfv (GLenum light, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetLightiv (GLenum light, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetMapdv (GLenum target, GLenum query, GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetMapfv (GLenum target, GLenum query, GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetMapiv (GLenum target, GLenum query, GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetMaterialfv (GLenum face, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetMaterialiv (GLenum face, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetPixelMapfv (GLenum map, GLfloat *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetPixelMapuiv (GLenum map, GLuint *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetPixelMapusv (GLenum map, GLushort *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetPolygonStipple (GLubyte *mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexEnvfv (GLenum target, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexEnviv (GLenum target, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexGendv (GLenum coord, GLenum pname, GLdouble *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexGenfv (GLenum coord, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexGeniv (GLenum coord, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexImage (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexLevelParameterfv (GLenum target, GLint level, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexParameterfv (GLenum target, GLenum pname, GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetTexParameteriv (GLenum target, GLenum pname, GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glHint (GLenum target, GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexMask (GLuint mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexd (GLdouble c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexdv (const GLdouble *c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexf (GLfloat c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexfv (const GLfloat *c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexi (GLint c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexiv (const GLint *c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexs (GLshort c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexsv (const GLshort *c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glInitNames (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightModelf (GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightModelfv (GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightModeli (GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightModeliv (GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightf (GLenum light, GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightfv (GLenum light, GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLighti (GLenum light, GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLightiv (GLenum light, GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLineStipple (GLint factor, GLushort pattern) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLineWidth (GLfloat width) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glListBase (GLuint base) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLoadIdentity (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLoadMatrixd (const GLdouble *m) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLoadMatrixf (const GLfloat *m) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLoadName (GLuint name) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glLogicOp (GLenum opcode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMap1d (GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMap1f (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMap2d (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMap2f (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMapGrid1d (GLint un, GLdouble u1, GLdouble u2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMapGrid1f (GLint un, GLfloat u1, GLfloat u2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMapGrid2d (GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMapGrid2f (GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMaterialf (GLenum face, GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMaterialfv (GLenum face, GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMateriali (GLenum face, GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMaterialiv (GLenum face, GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMatrixMode (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMultMatrixd (const GLdouble *m) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glMultMatrixf (const GLfloat *m) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNewList (GLuint list, GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3b (GLbyte nx, GLbyte ny, GLbyte nz) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3bv (const GLbyte *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3d (GLdouble nx, GLdouble ny, GLdouble nz) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3f (GLfloat nx, GLfloat ny, GLfloat nz) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3i (GLint nx, GLint ny, GLint nz) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3s (GLshort nx, GLshort ny, GLshort nz) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glNormal3sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glOrtho (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPassThrough (GLfloat token) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelMapfv (GLenum map, GLsizei mapsize, const GLfloat *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelMapuiv (GLenum map, GLsizei mapsize, const GLuint *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelMapusv (GLenum map, GLsizei mapsize, const GLushort *values) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelStoref (GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelStorei (GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelTransferf (GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelTransferi (GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPixelZoom (GLfloat xfactor, GLfloat yfactor) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPointSize (GLfloat size) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPolygonMode (GLenum face, GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPolygonStipple (const GLubyte *mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPopAttrib (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPopMatrix (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPopName (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPushAttrib (GLbitfield mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPushMatrix (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPushName (GLuint name) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2d (GLdouble x, GLdouble y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2f (GLfloat x, GLfloat y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2i (GLint x, GLint y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2s (GLshort x, GLshort y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos2sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3d (GLdouble x, GLdouble y, GLdouble z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3f (GLfloat x, GLfloat y, GLfloat z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3i (GLint x, GLint y, GLint z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3s (GLshort x, GLshort y, GLshort z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos3sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4i (GLint x, GLint y, GLint z, GLint w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4s (GLshort x, GLshort y, GLshort z, GLshort w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRasterPos4sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glReadBuffer (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectd (GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectdv (const GLdouble *v1, const GLdouble *v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectf (GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectfv (const GLfloat *v1, const GLfloat *v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRecti (GLint x1, GLint y1, GLint x2, GLint y2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectiv (const GLint *v1, const GLint *v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRects (GLshort x1, GLshort y1, GLshort x2, GLshort y2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRectsv (const GLshort *v1, const GLshort *v2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRotated (GLdouble angle, GLdouble x, GLdouble y, GLdouble z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glRotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glScaled (GLdouble x, GLdouble y, GLdouble z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glScalef (GLfloat x, GLfloat y, GLfloat z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glScissor (GLint x, GLint y, GLsizei width, GLsizei height) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glSelectBuffer (GLsizei size, GLuint *buffer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glShadeModel (GLenum mode) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glStencilFunc (GLenum func, GLint ref, GLuint mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glStencilMask (GLuint mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glStencilOp (GLenum fail, GLenum zfail, GLenum zpass) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1d (GLdouble s) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1f (GLfloat s) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1i (GLint s) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1s (GLshort s) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord1sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2d (GLdouble s, GLdouble t) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2f (GLfloat s, GLfloat t) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2i (GLint s, GLint t) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2s (GLshort s, GLshort t) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord2sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3d (GLdouble s, GLdouble t, GLdouble r) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3f (GLfloat s, GLfloat t, GLfloat r) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3i (GLint s, GLint t, GLint r) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3s (GLshort s, GLshort t, GLshort r) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord3sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4d (GLdouble s, GLdouble t, GLdouble r, GLdouble q) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4f (GLfloat s, GLfloat t, GLfloat r, GLfloat q) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4i (GLint s, GLint t, GLint r, GLint q) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4s (GLshort s, GLshort t, GLshort r, GLshort q) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoord4sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexEnvf (GLenum target, GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexEnvfv (GLenum target, GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexEnvi (GLenum target, GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexEnviv (GLenum target, GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGend (GLenum coord, GLenum pname, GLdouble param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGendv (GLenum coord, GLenum pname, const GLdouble *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGenf (GLenum coord, GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGenfv (GLenum coord, GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGeni (GLenum coord, GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexGeniv (GLenum coord, GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexImage1D (GLenum target, GLint level, GLint components, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexImage2D (GLenum target, GLint level, GLint components, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexParameterf (GLenum target, GLenum pname, GLfloat param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexParameterfv (GLenum target, GLenum pname, const GLfloat *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexParameteri (GLenum target, GLenum pname, GLint param) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexParameteriv (GLenum target, GLenum pname, const GLint *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTranslated (GLdouble x, GLdouble y, GLdouble z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTranslatef (GLfloat x, GLfloat y, GLfloat z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2d (GLdouble x, GLdouble y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2f (GLfloat x, GLfloat y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2i (GLint x, GLint y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2s (GLshort x, GLshort y) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex2sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3d (GLdouble x, GLdouble y, GLdouble z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3f (GLfloat x, GLfloat y, GLfloat z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3i (GLint x, GLint y, GLint z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3s (GLshort x, GLshort y, GLshort z) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex3sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4dv (const GLdouble *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4fv (const GLfloat *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4i (GLint x, GLint y, GLint z, GLint w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4iv (const GLint *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4s (GLshort x, GLshort y, GLshort z, GLshort w) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertex4sv (const GLshort *v) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glViewport (GLint x, GLint y, GLsizei width, GLsizei height) TRAMPOLINE_DEF_VOID
-TRAMPFUNC GLuint GLAPI glGenLists (GLsizei range) TRAMPOLINE_DEF
-TRAMPFUNC GLenum GLAPI glGetError (void) TRAMPOLINE_DEF
-TRAMPFUNC const GLubyte * GLAPI glGetString (GLenum name) TRAMPOLINE_DEF
-TRAMPFUNC GLboolean GLAPI glIsEnabled (GLenum cap) TRAMPOLINE_DEF
-TRAMPFUNC GLboolean GLAPI glIsList (GLuint list) TRAMPOLINE_DEF
-TRAMPFUNC GLint GLAPI glRenderMode (GLenum mode) TRAMPOLINE_DEF
-TRAMPFUNC GLboolean GLAPI glAreTexturesResident (GLsizei n, const GLuint *textures, GLboolean *residences) TRAMPOLINE_DEF
-TRAMPFUNC void GLAPI glArrayElement (GLint i) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glColorPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCopyTexImage1D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDisableClientState (GLenum array) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDrawArrays (GLenum mode, GLint first, GLsizei count) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glDrawElements (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEdgeFlagPointer (GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glEnableClientState (GLenum array) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glGetPointerv (GLenum pname, GLvoid* *params) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexPointer (GLenum type, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexub (GLubyte c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glIndexubv (const GLubyte *c) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glInterleavedArrays (GLenum format, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC GLboolean GLAPI glIsTexture (GLuint texture) TRAMPOLINE_DEF
-TRAMPFUNC void GLAPI glNormalPointer (GLenum type, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPolygonOffset (GLfloat factor, GLfloat units) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPopClientAttrib (void) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPrioritizeTextures (GLsizei n, const GLuint *textures, const GLclampf *priorities) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glPushClientAttrib (GLbitfield mask) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexCoordPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) TRAMPOLINE_DEF_VOID
+TRAMPFUNC void GLAPI glBindTexture(GLenum target, GLuint texture);
+TRAMPFUNC void GLAPI glDeleteTextures(GLsizei n, const GLuint *textures);
+TRAMPFUNC void GLAPI glGenTextures(GLsizei n, GLuint *textures);
+TRAMPFUNC void GLAPI glAccum (GLenum op, GLfloat value);
+TRAMPFUNC void GLAPI glAlphaFunc (GLenum func, GLclampf ref);
+TRAMPFUNC void GLAPI glBegin (GLenum mode);
+TRAMPFUNC void GLAPI glBitmap (GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap);
+TRAMPFUNC void GLAPI glBlendFunc (GLenum sfactor, GLenum dfactor);
+TRAMPFUNC void GLAPI glCallList (GLuint list);
+TRAMPFUNC void GLAPI glCallLists (GLsizei n, GLenum type, const GLvoid *lists);
+TRAMPFUNC void GLAPI glClear (GLbitfield mask);
+TRAMPFUNC void GLAPI glClearAccum (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+TRAMPFUNC void GLAPI glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+TRAMPFUNC void GLAPI glClearDepth (GLclampd depth);
+TRAMPFUNC void GLAPI glClearIndex (GLfloat c);
+TRAMPFUNC void GLAPI glClearStencil (GLint s);
+TRAMPFUNC void GLAPI glClipPlane (GLenum plane, const GLdouble *equation);
+TRAMPFUNC void GLAPI glColor3b (GLbyte red, GLbyte green, GLbyte blue);
+TRAMPFUNC void GLAPI glColor3bv (const GLbyte *v);
+TRAMPFUNC void GLAPI glColor3d (GLdouble red, GLdouble green, GLdouble blue);
+TRAMPFUNC void GLAPI glColor3dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glColor3f (GLfloat red, GLfloat green, GLfloat blue);
+TRAMPFUNC void GLAPI glColor3fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glColor3i (GLint red, GLint green, GLint blue);
+TRAMPFUNC void GLAPI glColor3iv (const GLint *v);
+TRAMPFUNC void GLAPI glColor3s (GLshort red, GLshort green, GLshort blue);
+TRAMPFUNC void GLAPI glColor3sv (const GLshort *v);
+TRAMPFUNC void GLAPI glColor3ub (GLubyte red, GLubyte green, GLubyte blue);
+TRAMPFUNC void GLAPI glColor3ubv (const GLubyte *v);
+TRAMPFUNC void GLAPI glColor3ui (GLuint red, GLuint green, GLuint blue);
+TRAMPFUNC void GLAPI glColor3uiv (const GLuint *v);
+TRAMPFUNC void GLAPI glColor3us (GLushort red, GLushort green, GLushort blue);
+TRAMPFUNC void GLAPI glColor3usv (const GLushort *v);
+TRAMPFUNC void GLAPI glColor4b (GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha);
+TRAMPFUNC void GLAPI glColor4bv (const GLbyte *v);
+TRAMPFUNC void GLAPI glColor4d (GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha);
+TRAMPFUNC void GLAPI glColor4dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glColor4f (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+TRAMPFUNC void GLAPI glColor4fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glColor4i (GLint red, GLint green, GLint blue, GLint alpha);
+TRAMPFUNC void GLAPI glColor4iv (const GLint *v);
+TRAMPFUNC void GLAPI glColor4s (GLshort red, GLshort green, GLshort blue, GLshort alpha);
+TRAMPFUNC void GLAPI glColor4sv (const GLshort *v);
+TRAMPFUNC void GLAPI glColor4ub (GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
+TRAMPFUNC void GLAPI glColor4ubv (const GLubyte *v);
+TRAMPFUNC void GLAPI glColor4ui (GLuint red, GLuint green, GLuint blue, GLuint alpha);
+TRAMPFUNC void GLAPI glColor4uiv (const GLuint *v);
+TRAMPFUNC void GLAPI glColor4us (GLushort red, GLushort green, GLushort blue, GLushort alpha);
+TRAMPFUNC void GLAPI glColor4usv (const GLushort *v);
+TRAMPFUNC void GLAPI glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+TRAMPFUNC void GLAPI glColorMaterial (GLenum face, GLenum mode);
+TRAMPFUNC void GLAPI glCopyPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum type);
+TRAMPFUNC void GLAPI glCullFace (GLenum mode);
+TRAMPFUNC void GLAPI glDeleteLists (GLuint list, GLsizei range);
+TRAMPFUNC void GLAPI glDepthFunc (GLenum func);
+TRAMPFUNC void GLAPI glDepthMask (GLboolean flag);
+TRAMPFUNC void GLAPI glDepthRange (GLclampd zNear, GLclampd zFar);
+TRAMPFUNC void GLAPI glDisable (GLenum cap);
+TRAMPFUNC void GLAPI glDrawBuffer (GLenum mode);
+TRAMPFUNC void GLAPI glDrawPixels (GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+TRAMPFUNC void GLAPI glEdgeFlag (GLboolean flag);
+TRAMPFUNC void GLAPI glEdgeFlagv (const GLboolean *flag);
+TRAMPFUNC void GLAPI glEnable (GLenum cap);
+TRAMPFUNC void GLAPI glEnd (void);
+TRAMPFUNC void GLAPI glEndList (void);
+TRAMPFUNC void GLAPI glEvalCoord1d (GLdouble u);
+TRAMPFUNC void GLAPI glEvalCoord1dv (const GLdouble *u);
+TRAMPFUNC void GLAPI glEvalCoord1f (GLfloat u);
+TRAMPFUNC void GLAPI glEvalCoord1fv (const GLfloat *u);
+TRAMPFUNC void GLAPI glEvalCoord2d (GLdouble u, GLdouble v);
+TRAMPFUNC void GLAPI glEvalCoord2dv (const GLdouble *u);
+TRAMPFUNC void GLAPI glEvalCoord2f (GLfloat u, GLfloat v);
+TRAMPFUNC void GLAPI glEvalCoord2fv (const GLfloat *u);
+TRAMPFUNC void GLAPI glEvalMesh1 (GLenum mode, GLint i1, GLint i2);
+TRAMPFUNC void GLAPI glEvalMesh2 (GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2);
+TRAMPFUNC void GLAPI glEvalPoint1 (GLint i);
+TRAMPFUNC void GLAPI glEvalPoint2 (GLint i, GLint j);
+TRAMPFUNC void GLAPI glFeedbackBuffer (GLsizei size, GLenum type, GLfloat *buffer);
+TRAMPFUNC void GLAPI glFinish (void);
+TRAMPFUNC void GLAPI glFlush (void);
+TRAMPFUNC void GLAPI glFogf (GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glFogfv (GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glFogi (GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glFogiv (GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glFrontFace (GLenum mode);
+TRAMPFUNC void GLAPI glFrustum (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+TRAMPFUNC void GLAPI glGetBooleanv (GLenum pname, GLboolean *params);
+TRAMPFUNC void GLAPI glGetClipPlane (GLenum plane, GLdouble *equation);
+TRAMPFUNC void GLAPI glGetDoublev (GLenum pname, GLdouble *params);
+TRAMPFUNC void GLAPI glGetFloatv (GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetIntegerv (GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetLightfv (GLenum light, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetLightiv (GLenum light, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetMapdv (GLenum target, GLenum query, GLdouble *v);
+TRAMPFUNC void GLAPI glGetMapfv (GLenum target, GLenum query, GLfloat *v);
+TRAMPFUNC void GLAPI glGetMapiv (GLenum target, GLenum query, GLint *v);
+TRAMPFUNC void GLAPI glGetMaterialfv (GLenum face, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetMaterialiv (GLenum face, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetPixelMapfv (GLenum map, GLfloat *values);
+TRAMPFUNC void GLAPI glGetPixelMapuiv (GLenum map, GLuint *values);
+TRAMPFUNC void GLAPI glGetPixelMapusv (GLenum map, GLushort *values);
+TRAMPFUNC void GLAPI glGetPolygonStipple (GLubyte *mask);
+TRAMPFUNC void GLAPI glGetTexEnvfv (GLenum target, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetTexEnviv (GLenum target, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetTexGendv (GLenum coord, GLenum pname, GLdouble *params);
+TRAMPFUNC void GLAPI glGetTexGenfv (GLenum coord, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetTexGeniv (GLenum coord, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetTexImage (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
+TRAMPFUNC void GLAPI glGetTexLevelParameterfv (GLenum target, GLint level, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glGetTexParameterfv (GLenum target, GLenum pname, GLfloat *params);
+TRAMPFUNC void GLAPI glGetTexParameteriv (GLenum target, GLenum pname, GLint *params);
+TRAMPFUNC void GLAPI glHint (GLenum target, GLenum mode);
+TRAMPFUNC void GLAPI glIndexMask (GLuint mask);
+TRAMPFUNC void GLAPI glIndexd (GLdouble c);
+TRAMPFUNC void GLAPI glIndexdv (const GLdouble *c);
+TRAMPFUNC void GLAPI glIndexf (GLfloat c);
+TRAMPFUNC void GLAPI glIndexfv (const GLfloat *c);
+TRAMPFUNC void GLAPI glIndexi (GLint c);
+TRAMPFUNC void GLAPI glIndexiv (const GLint *c);
+TRAMPFUNC void GLAPI glIndexs (GLshort c);
+TRAMPFUNC void GLAPI glIndexsv (const GLshort *c);
+TRAMPFUNC void GLAPI glInitNames (void);
+TRAMPFUNC void GLAPI glLightModelf (GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glLightModelfv (GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glLightModeli (GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glLightModeliv (GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glLightf (GLenum light, GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glLightfv (GLenum light, GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glLighti (GLenum light, GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glLightiv (GLenum light, GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glLineStipple (GLint factor, GLushort pattern);
+TRAMPFUNC void GLAPI glLineWidth (GLfloat width);
+TRAMPFUNC void GLAPI glListBase (GLuint base);
+TRAMPFUNC void GLAPI glLoadIdentity (void);
+TRAMPFUNC void GLAPI glLoadMatrixd (const GLdouble *m);
+TRAMPFUNC void GLAPI glLoadMatrixf (const GLfloat *m);
+TRAMPFUNC void GLAPI glLoadName (GLuint name);
+TRAMPFUNC void GLAPI glLogicOp (GLenum opcode);
+TRAMPFUNC void GLAPI glMap1d (GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points);
+TRAMPFUNC void GLAPI glMap1f (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points);
+TRAMPFUNC void GLAPI glMap2d (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points);
+TRAMPFUNC void GLAPI glMap2f (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points);
+TRAMPFUNC void GLAPI glMapGrid1d (GLint un, GLdouble u1, GLdouble u2);
+TRAMPFUNC void GLAPI glMapGrid1f (GLint un, GLfloat u1, GLfloat u2);
+TRAMPFUNC void GLAPI glMapGrid2d (GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2);
+TRAMPFUNC void GLAPI glMapGrid2f (GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2);
+TRAMPFUNC void GLAPI glMaterialf (GLenum face, GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glMaterialfv (GLenum face, GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glMateriali (GLenum face, GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glMaterialiv (GLenum face, GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glMatrixMode (GLenum mode);
+TRAMPFUNC void GLAPI glMultMatrixd (const GLdouble *m);
+TRAMPFUNC void GLAPI glMultMatrixf (const GLfloat *m);
+TRAMPFUNC void GLAPI glNewList (GLuint list, GLenum mode);
+TRAMPFUNC void GLAPI glNormal3b (GLbyte nx, GLbyte ny, GLbyte nz);
+TRAMPFUNC void GLAPI glNormal3bv (const GLbyte *v);
+TRAMPFUNC void GLAPI glNormal3d (GLdouble nx, GLdouble ny, GLdouble nz);
+TRAMPFUNC void GLAPI glNormal3dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glNormal3f (GLfloat nx, GLfloat ny, GLfloat nz);
+TRAMPFUNC void GLAPI glNormal3fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glNormal3i (GLint nx, GLint ny, GLint nz);
+TRAMPFUNC void GLAPI glNormal3iv (const GLint *v);
+TRAMPFUNC void GLAPI glNormal3s (GLshort nx, GLshort ny, GLshort nz);
+TRAMPFUNC void GLAPI glNormal3sv (const GLshort *v);
+TRAMPFUNC void GLAPI glOrtho (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+TRAMPFUNC void GLAPI glPassThrough (GLfloat token);
+TRAMPFUNC void GLAPI glPixelMapfv (GLenum map, GLsizei mapsize, const GLfloat *values);
+TRAMPFUNC void GLAPI glPixelMapuiv (GLenum map, GLsizei mapsize, const GLuint *values);
+TRAMPFUNC void GLAPI glPixelMapusv (GLenum map, GLsizei mapsize, const GLushort *values);
+TRAMPFUNC void GLAPI glPixelStoref (GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glPixelStorei (GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glPixelTransferf (GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glPixelTransferi (GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glPixelZoom (GLfloat xfactor, GLfloat yfactor);
+TRAMPFUNC void GLAPI glPointSize (GLfloat size);
+TRAMPFUNC void GLAPI glPolygonMode (GLenum face, GLenum mode);
+TRAMPFUNC void GLAPI glPolygonStipple (const GLubyte *mask);
+TRAMPFUNC void GLAPI glPopAttrib (void);
+TRAMPFUNC void GLAPI glPopMatrix (void);
+TRAMPFUNC void GLAPI glPopName (void);
+TRAMPFUNC void GLAPI glPushAttrib (GLbitfield mask);
+TRAMPFUNC void GLAPI glPushMatrix (void);
+TRAMPFUNC void GLAPI glPushName (GLuint name);
+TRAMPFUNC void GLAPI glRasterPos2d (GLdouble x, GLdouble y);
+TRAMPFUNC void GLAPI glRasterPos2dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glRasterPos2f (GLfloat x, GLfloat y);
+TRAMPFUNC void GLAPI glRasterPos2fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glRasterPos2i (GLint x, GLint y);
+TRAMPFUNC void GLAPI glRasterPos2iv (const GLint *v);
+TRAMPFUNC void GLAPI glRasterPos2s (GLshort x, GLshort y);
+TRAMPFUNC void GLAPI glRasterPos2sv (const GLshort *v);
+TRAMPFUNC void GLAPI glRasterPos3d (GLdouble x, GLdouble y, GLdouble z);
+TRAMPFUNC void GLAPI glRasterPos3dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glRasterPos3f (GLfloat x, GLfloat y, GLfloat z);
+TRAMPFUNC void GLAPI glRasterPos3fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glRasterPos3i (GLint x, GLint y, GLint z);
+TRAMPFUNC void GLAPI glRasterPos3iv (const GLint *v);
+TRAMPFUNC void GLAPI glRasterPos3s (GLshort x, GLshort y, GLshort z);
+TRAMPFUNC void GLAPI glRasterPos3sv (const GLshort *v);
+TRAMPFUNC void GLAPI glRasterPos4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+TRAMPFUNC void GLAPI glRasterPos4dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glRasterPos4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+TRAMPFUNC void GLAPI glRasterPos4fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glRasterPos4i (GLint x, GLint y, GLint z, GLint w);
+TRAMPFUNC void GLAPI glRasterPos4iv (const GLint *v);
+TRAMPFUNC void GLAPI glRasterPos4s (GLshort x, GLshort y, GLshort z, GLshort w);
+TRAMPFUNC void GLAPI glRasterPos4sv (const GLshort *v);
+TRAMPFUNC void GLAPI glReadBuffer (GLenum mode);
+TRAMPFUNC void GLAPI glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
+TRAMPFUNC void GLAPI glRectd (GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
+TRAMPFUNC void GLAPI glRectdv (const GLdouble *v1, const GLdouble *v2);
+TRAMPFUNC void GLAPI glRectf (GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
+TRAMPFUNC void GLAPI glRectfv (const GLfloat *v1, const GLfloat *v2);
+TRAMPFUNC void GLAPI glRecti (GLint x1, GLint y1, GLint x2, GLint y2);
+TRAMPFUNC void GLAPI glRectiv (const GLint *v1, const GLint *v2);
+TRAMPFUNC void GLAPI glRects (GLshort x1, GLshort y1, GLshort x2, GLshort y2);
+TRAMPFUNC void GLAPI glRectsv (const GLshort *v1, const GLshort *v2);
+TRAMPFUNC void GLAPI glRotated (GLdouble angle, GLdouble x, GLdouble y, GLdouble z);
+TRAMPFUNC void GLAPI glRotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
+TRAMPFUNC void GLAPI glScaled (GLdouble x, GLdouble y, GLdouble z);
+TRAMPFUNC void GLAPI glScalef (GLfloat x, GLfloat y, GLfloat z);
+TRAMPFUNC void GLAPI glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
+TRAMPFUNC void GLAPI glSelectBuffer (GLsizei size, GLuint *buffer);
+TRAMPFUNC void GLAPI glShadeModel (GLenum mode);
+TRAMPFUNC void GLAPI glStencilFunc (GLenum func, GLint ref, GLuint mask);
+TRAMPFUNC void GLAPI glStencilMask (GLuint mask);
+TRAMPFUNC void GLAPI glStencilOp (GLenum fail, GLenum zfail, GLenum zpass);
+TRAMPFUNC void GLAPI glTexCoord1d (GLdouble s);
+TRAMPFUNC void GLAPI glTexCoord1dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glTexCoord1f (GLfloat s);
+TRAMPFUNC void GLAPI glTexCoord1fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glTexCoord1i (GLint s);
+TRAMPFUNC void GLAPI glTexCoord1iv (const GLint *v);
+TRAMPFUNC void GLAPI glTexCoord1s (GLshort s);
+TRAMPFUNC void GLAPI glTexCoord1sv (const GLshort *v);
+TRAMPFUNC void GLAPI glTexCoord2d (GLdouble s, GLdouble t);
+TRAMPFUNC void GLAPI glTexCoord2dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glTexCoord2f (GLfloat s, GLfloat t);
+TRAMPFUNC void GLAPI glTexCoord2fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glTexCoord2i (GLint s, GLint t);
+TRAMPFUNC void GLAPI glTexCoord2iv (const GLint *v);
+TRAMPFUNC void GLAPI glTexCoord2s (GLshort s, GLshort t);
+TRAMPFUNC void GLAPI glTexCoord2sv (const GLshort *v);
+TRAMPFUNC void GLAPI glTexCoord3d (GLdouble s, GLdouble t, GLdouble r);
+TRAMPFUNC void GLAPI glTexCoord3dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glTexCoord3f (GLfloat s, GLfloat t, GLfloat r);
+TRAMPFUNC void GLAPI glTexCoord3fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glTexCoord3i (GLint s, GLint t, GLint r);
+TRAMPFUNC void GLAPI glTexCoord3iv (const GLint *v);
+TRAMPFUNC void GLAPI glTexCoord3s (GLshort s, GLshort t, GLshort r);
+TRAMPFUNC void GLAPI glTexCoord3sv (const GLshort *v);
+TRAMPFUNC void GLAPI glTexCoord4d (GLdouble s, GLdouble t, GLdouble r, GLdouble q);
+TRAMPFUNC void GLAPI glTexCoord4dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glTexCoord4f (GLfloat s, GLfloat t, GLfloat r, GLfloat q);
+TRAMPFUNC void GLAPI glTexCoord4fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glTexCoord4i (GLint s, GLint t, GLint r, GLint q);
+TRAMPFUNC void GLAPI glTexCoord4iv (const GLint *v);
+TRAMPFUNC void GLAPI glTexCoord4s (GLshort s, GLshort t, GLshort r, GLshort q);
+TRAMPFUNC void GLAPI glTexCoord4sv (const GLshort *v);
+TRAMPFUNC void GLAPI glTexEnvf (GLenum target, GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glTexEnvfv (GLenum target, GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glTexEnvi (GLenum target, GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glTexEnviv (GLenum target, GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glTexGend (GLenum coord, GLenum pname, GLdouble param);
+TRAMPFUNC void GLAPI glTexGendv (GLenum coord, GLenum pname, const GLdouble *params);
+TRAMPFUNC void GLAPI glTexGenf (GLenum coord, GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glTexGenfv (GLenum coord, GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glTexGeni (GLenum coord, GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glTexGeniv (GLenum coord, GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glTexImage1D (GLenum target, GLint level, GLint components, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+TRAMPFUNC void GLAPI glTexImage2D (GLenum target, GLint level, GLint components, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+TRAMPFUNC void GLAPI glTexParameterf (GLenum target, GLenum pname, GLfloat param);
+TRAMPFUNC void GLAPI glTexParameterfv (GLenum target, GLenum pname, const GLfloat *params);
+TRAMPFUNC void GLAPI glTexParameteri (GLenum target, GLenum pname, GLint param);
+TRAMPFUNC void GLAPI glTexParameteriv (GLenum target, GLenum pname, const GLint *params);
+TRAMPFUNC void GLAPI glTranslated (GLdouble x, GLdouble y, GLdouble z);
+TRAMPFUNC void GLAPI glTranslatef (GLfloat x, GLfloat y, GLfloat z);
+TRAMPFUNC void GLAPI glVertex2d (GLdouble x, GLdouble y);
+TRAMPFUNC void GLAPI glVertex2dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glVertex2f (GLfloat x, GLfloat y);
+TRAMPFUNC void GLAPI glVertex2fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glVertex2i (GLint x, GLint y);
+TRAMPFUNC void GLAPI glVertex2iv (const GLint *v);
+TRAMPFUNC void GLAPI glVertex2s (GLshort x, GLshort y);
+TRAMPFUNC void GLAPI glVertex2sv (const GLshort *v);
+TRAMPFUNC void GLAPI glVertex3d (GLdouble x, GLdouble y, GLdouble z);
+TRAMPFUNC void GLAPI glVertex3dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glVertex3f (GLfloat x, GLfloat y, GLfloat z);
+TRAMPFUNC void GLAPI glVertex3fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glVertex3i (GLint x, GLint y, GLint z);
+TRAMPFUNC void GLAPI glVertex3iv (const GLint *v);
+TRAMPFUNC void GLAPI glVertex3s (GLshort x, GLshort y, GLshort z);
+TRAMPFUNC void GLAPI glVertex3sv (const GLshort *v);
+TRAMPFUNC void GLAPI glVertex4d (GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+TRAMPFUNC void GLAPI glVertex4dv (const GLdouble *v);
+TRAMPFUNC void GLAPI glVertex4f (GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+TRAMPFUNC void GLAPI glVertex4fv (const GLfloat *v);
+TRAMPFUNC void GLAPI glVertex4i (GLint x, GLint y, GLint z, GLint w);
+TRAMPFUNC void GLAPI glVertex4iv (const GLint *v);
+TRAMPFUNC void GLAPI glVertex4s (GLshort x, GLshort y, GLshort z, GLshort w);
+TRAMPFUNC void GLAPI glVertex4sv (const GLshort *v);
+TRAMPFUNC void GLAPI glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+TRAMPFUNC GLuint GLAPI glGenLists (GLsizei range);
+TRAMPFUNC GLenum GLAPI glGetError (void);
+TRAMPFUNC const GLubyte * GLAPI glGetString (GLenum name);
+TRAMPFUNC GLboolean GLAPI glIsEnabled (GLenum cap);
+TRAMPFUNC GLboolean GLAPI glIsList (GLuint list);
+TRAMPFUNC GLint GLAPI glRenderMode (GLenum mode);
+TRAMPFUNC GLboolean GLAPI glAreTexturesResident (GLsizei n, const GLuint *textures, GLboolean *residences);
+TRAMPFUNC void GLAPI glArrayElement (GLint i);
+TRAMPFUNC void GLAPI glColorPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC void GLAPI glCopyTexImage1D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border);
+TRAMPFUNC void GLAPI glCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+TRAMPFUNC void GLAPI glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width);
+TRAMPFUNC void GLAPI glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+TRAMPFUNC void GLAPI glDisableClientState (GLenum array);
+TRAMPFUNC void GLAPI glDrawArrays (GLenum mode, GLint first, GLsizei count);
+TRAMPFUNC void GLAPI glDrawElements (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
+TRAMPFUNC void GLAPI glEdgeFlagPointer (GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC void GLAPI glEnableClientState (GLenum array);
+TRAMPFUNC void GLAPI glGetPointerv (GLenum pname, GLvoid* *params);
+TRAMPFUNC void GLAPI glIndexPointer (GLenum type, GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC void GLAPI glIndexub (GLubyte c);
+TRAMPFUNC void GLAPI glIndexubv (const GLubyte *c);
+TRAMPFUNC void GLAPI glInterleavedArrays (GLenum format, GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC GLboolean GLAPI glIsTexture (GLuint texture);
+TRAMPFUNC void GLAPI glNormalPointer (GLenum type, GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC void GLAPI glPolygonOffset (GLfloat factor, GLfloat units);
+TRAMPFUNC void GLAPI glPopClientAttrib (void);
+TRAMPFUNC void GLAPI glPrioritizeTextures (GLsizei n, const GLuint *textures, const GLclampf *priorities);
+TRAMPFUNC void GLAPI glPushClientAttrib (GLbitfield mask);
+TRAMPFUNC void GLAPI glTexCoordPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+TRAMPFUNC void GLAPI glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels);
+TRAMPFUNC void GLAPI glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+TRAMPFUNC void GLAPI glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 
 // more internal windows opengl functions
 #define glDebugEntry TrampglDebugEntry
@@ -728,35 +728,35 @@ TRAMPFUNC void GLAPI glVertexPointer (GLint size, GLenum type, GLsizei stride, c
 #define wglUseFontBitmapsW TrampwglUseFontBitmapsW
 #define wglUseFontOutlinesA TrampwglUseFontOutlinesA
 #define wglUseFontOutlinesW TrampwglUseFontOutlinesW
-TRAMPFUNC void GLAPI glDebugEntry(DWORD arg1, DWORD arg2) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfBeginGlsBlock(DWORD arg1) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfEndGlsBlock(DWORD arg1) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfCloseMetaFile(DWORD arg1) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfEndPlayback(DWORD arg1) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfInitPlayback(DWORD arg1, DWORD arg2, DWORD arg3) TRAMPOLINE_DEF_VOID
-TRAMPFUNC void GLAPI GlmfPlayGlsRecord(DWORD arg1, DWORD arg2, DWORD arg3, DWORD arg4) TRAMPOLINE_DEF_VOID
-TRAMPFUNC int WINAPI wglChoosePixelFormat(HDC, const PIXELFORMATDESCRIPTOR *) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglCopyContext(HGLRC, HGLRC, UINT) TRAMPOLINE_DEF
-TRAMPFUNC HGLRC WINAPI wglCreateContext(HDC) TRAMPOLINE_DEF
-TRAMPFUNC HGLRC WINAPI wglCreateLayerContext(HDC, int) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglDeleteContext(HGLRC) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglDescribeLayerPlane(HDC, int, int, UINT, LPLAYERPLANEDESCRIPTOR) TRAMPOLINE_DEF
-TRAMPFUNC int WINAPI wglDescribePixelFormat(HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd) TRAMPOLINE_DEF
-TRAMPFUNC HGLRC WINAPI wglGetCurrentContext(VOID) TRAMPOLINE_DEF
-TRAMPFUNC HDC WINAPI wglGetCurrentDC(VOID) TRAMPOLINE_DEF
-TRAMPFUNC PROC WINAPI wglGetDefaultProcAddress(LPCSTR) TRAMPOLINE_DEF
-TRAMPFUNC int WINAPI wglGetLayerPaletteEntries(HDC, int, int, int, COLORREF *) TRAMPOLINE_DEF
-TRAMPFUNC int WINAPI wglGetPixelFormat(HDC hdc) TRAMPOLINE_DEF
-TRAMPFUNC PROC WINAPI wglGetProcAddress(LPCSTR) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglMakeCurrent(HDC, HGLRC) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglRealizeLayerPalette(HDC, int, BOOL) TRAMPOLINE_DEF
-TRAMPFUNC int WINAPI wglSetLayerPaletteEntries(HDC, int, int, int, CONST COLORREF *) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglSetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglShareLists(HGLRC, HGLRC) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglSwapBuffers(HDC hdc) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglSwapLayerBuffers(HDC, UINT) TRAMPOLINE_DEF
-TRAMPFUNC DWORD WINAPI wglSwapMultipleBuffers(UINT, CONST WGLSWAP *) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglUseFontBitmapsA(HDC, DWORD, DWORD, DWORD) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglUseFontBitmapsW(HDC, DWORD, DWORD, DWORD) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglUseFontOutlinesA(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT) TRAMPOLINE_DEF
-TRAMPFUNC BOOL WINAPI wglUseFontOutlinesW(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT) TRAMPOLINE_DEF
+TRAMPFUNC void GLAPI glDebugEntry(DWORD arg1, DWORD arg2);
+TRAMPFUNC void GLAPI GlmfBeginGlsBlock(DWORD arg1);
+TRAMPFUNC void GLAPI GlmfEndGlsBlock(DWORD arg1);
+TRAMPFUNC void GLAPI GlmfCloseMetaFile(DWORD arg1);
+TRAMPFUNC void GLAPI GlmfEndPlayback(DWORD arg1);
+TRAMPFUNC void GLAPI GlmfInitPlayback(DWORD arg1, DWORD arg2, DWORD arg3);
+TRAMPFUNC void GLAPI GlmfPlayGlsRecord(DWORD arg1, DWORD arg2, DWORD arg3, DWORD arg4);
+TRAMPFUNC int WINAPI wglChoosePixelFormat(HDC, const PIXELFORMATDESCRIPTOR *);
+TRAMPFUNC BOOL WINAPI wglCopyContext(HGLRC, HGLRC, UINT);
+TRAMPFUNC HGLRC WINAPI wglCreateContext(HDC);
+TRAMPFUNC HGLRC WINAPI wglCreateLayerContext(HDC, int);
+TRAMPFUNC BOOL WINAPI wglDeleteContext(HGLRC);
+TRAMPFUNC BOOL WINAPI wglDescribeLayerPlane(HDC, int, int, UINT, LPLAYERPLANEDESCRIPTOR);
+TRAMPFUNC int WINAPI wglDescribePixelFormat(HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd);
+TRAMPFUNC HGLRC WINAPI wglGetCurrentContext(VOID);
+TRAMPFUNC HDC WINAPI wglGetCurrentDC(VOID);
+TRAMPFUNC PROC WINAPI wglGetDefaultProcAddress(LPCSTR);
+TRAMPFUNC int WINAPI wglGetLayerPaletteEntries(HDC, int, int, int, COLORREF *);
+TRAMPFUNC int WINAPI wglGetPixelFormat(HDC hdc);
+TRAMPFUNC PROC WINAPI wglGetProcAddress(LPCSTR);
+TRAMPFUNC BOOL WINAPI wglMakeCurrent(HDC, HGLRC);
+TRAMPFUNC BOOL WINAPI wglRealizeLayerPalette(HDC, int, BOOL);
+TRAMPFUNC int WINAPI wglSetLayerPaletteEntries(HDC, int, int, int, CONST COLORREF *);
+TRAMPFUNC BOOL WINAPI wglSetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd);
+TRAMPFUNC BOOL WINAPI wglShareLists(HGLRC, HGLRC);
+TRAMPFUNC BOOL WINAPI wglSwapBuffers(HDC hdc);
+TRAMPFUNC BOOL WINAPI wglSwapLayerBuffers(HDC, UINT);
+TRAMPFUNC DWORD WINAPI wglSwapMultipleBuffers(UINT, CONST WGLSWAP *);
+TRAMPFUNC BOOL WINAPI wglUseFontBitmapsA(HDC, DWORD, DWORD, DWORD);
+TRAMPFUNC BOOL WINAPI wglUseFontBitmapsW(HDC, DWORD, DWORD, DWORD);
+TRAMPFUNC BOOL WINAPI wglUseFontOutlinesA(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT);
+TRAMPFUNC BOOL WINAPI wglUseFontOutlinesW(HDC, DWORD, DWORD, DWORD, FLOAT, FLOAT, int, LPGLYPHMETRICSFLOAT);

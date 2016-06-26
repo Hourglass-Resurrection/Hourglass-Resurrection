@@ -994,6 +994,7 @@ HRESULT (STDMETHODCALLTYPE* MyDirect3D9::QueryInterface)(IDirect3D9* pThis, REFI
 HRESULT (STDMETHODCALLTYPE* MyDirect3D9::CreateDevice)(IDirect3D9* pThis, UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS* pPresentationParameters,IDirect3DDevice9** ppReturnedDeviceInterface) = 0;
 
 
+HOOK_FUNCTION(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion)
 HOOKFUNC IDirect3D9* WINAPI MyDirect3DCreate9(UINT SDKVersion)
 {
 	debuglog(LCF_D3D, __FUNCTION__ " called.\n");

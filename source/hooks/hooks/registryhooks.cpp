@@ -48,38 +48,43 @@ static const char* RegistryKeyToName(HKEY hKey)
 	}
 } 
 
-HOOKFUNC LONG APIENTRY MyRegOpenKeyA(
+HOOK_FUNCTION(LONG, APIENTRY, RegOpenKeyA,
 HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult)
+HOOKFUNC LONG APIENTRY MyRegOpenKeyA(HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", \"%s\") called.\n", RegistryKeyToName(hKey), lpSubKey ? lpSubKey : "");
 	LONG rv = RegOpenKeyA(hKey, lpSubKey, phkResult);
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__" returned \"%s\".\n", RegistryKeyToName(phkResult ? *phkResult : 0));
 	return rv;
 }
-HOOKFUNC LONG APIENTRY MyRegOpenKeyW(
+HOOK_FUNCTION(LONG, APIENTRY, RegOpenKeyW,
 HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult)
+HOOKFUNC LONG APIENTRY MyRegOpenKeyW(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", \"%S\") called.\n", RegistryKeyToName(hKey), lpSubKey ? lpSubKey : L"");
 	LONG rv = RegOpenKeyW(hKey, lpSubKey, phkResult);
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__" returned \"%s\".\n", RegistryKeyToName(phkResult ? *phkResult : 0));
 	return rv;
 }
-HOOKFUNC LONG APIENTRY MyRegOpenKeyExA(
+HOOK_FUNCTION(LONG, APIENTRY, RegOpenKeyExA,
 HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
+HOOKFUNC LONG APIENTRY MyRegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", \"%s\") called.\n", RegistryKeyToName(hKey), lpSubKey ? lpSubKey : "");
 	LONG rv = RegOpenKeyExA(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__" returned \"%s\".\n", RegistryKeyToName(phkResult ? *phkResult : 0));
 	return rv;
 }
-HOOKFUNC LONG APIENTRY MyRegOpenKeyExW(
+HOOK_FUNCTION(LONG, APIENTRY, RegOpenKeyExW,
 HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
+HOOKFUNC LONG APIENTRY MyRegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO|LCF_FREQUENT, __FUNCTION__ "(\"%s\", \"%S\") called.\n", RegistryKeyToName(hKey), lpSubKey ? lpSubKey : L"");
 	LONG rv = RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 	debuglog(LCF_REGISTRY|LCF_TODO|LCF_FREQUENT, __FUNCTION__" returned \"%s\".\n", RegistryKeyToName(phkResult ? *phkResult : 0));
 	return rv;
 }
+HOOK_FUNCTION(LONG, APIENTRY, RegEnumKeyA, HKEY hKey, DWORD dwIndex, LPCSTR lpName, DWORD cchName)
 HOOKFUNC LONG APIENTRY MyRegEnumKeyA(HKEY hKey, DWORD dwIndex, LPCSTR lpName, DWORD cchName)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", %d) called.\n", RegistryKeyToName(hKey), dwIndex);
@@ -87,6 +92,7 @@ HOOKFUNC LONG APIENTRY MyRegEnumKeyA(HKEY hKey, DWORD dwIndex, LPCSTR lpName, DW
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__" returned \"%s\".\n", lpName);
 	return rv;
 }
+HOOK_FUNCTION(LONG, APIENTRY, RegEnumKeyW, HKEY hKey, DWORD dwIndex, LPCWSTR lpName, DWORD cchName)
 HOOKFUNC LONG APIENTRY MyRegEnumKeyW(HKEY hKey, DWORD dwIndex, LPCWSTR lpName, DWORD cchName)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", %d) called.\n", RegistryKeyToName(hKey), dwIndex);
@@ -94,8 +100,9 @@ HOOKFUNC LONG APIENTRY MyRegEnumKeyW(HKEY hKey, DWORD dwIndex, LPCWSTR lpName, D
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__" returned \"%S\".\n", lpName);
 	return rv;
 }
-HOOKFUNC LONG APIENTRY MyRegQueryValueExA(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
-													 LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
+HOOK_FUNCTION(LONG, APIENTRY, RegQueryValueExA,
+              HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
+HOOKFUNC LONG APIENTRY MyRegQueryValueExA(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", \"%s\") called.\n", RegistryKeyToName(hKey), lpValueName ? lpValueName : "");
 	LONG rv = RegQueryValueExA(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
@@ -111,8 +118,9 @@ HOOKFUNC LONG APIENTRY MyRegQueryValueExA(HKEY hKey, LPCSTR lpValueName, LPDWORD
 	return rv;
 }
 
-HOOKFUNC LONG APIENTRY MyRegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved,
-													 LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
+HOOK_FUNCTION(LONG, APIENTRY, RegQueryValueExW,
+              HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
+HOOKFUNC LONG APIENTRY MyRegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
 {
 	debuglog(LCF_REGISTRY|LCF_TODO, __FUNCTION__ "(\"%s\", \"%S\") called.\n", RegistryKeyToName(hKey), lpValueName ? lpValueName : L"");
 	LONG rv = RegQueryValueExW(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
@@ -128,12 +136,14 @@ HOOKFUNC LONG APIENTRY MyRegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWOR
 	return rv;
 }
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtQueryKey, IN HANDLE KeyHandle, IN DWORD KeyInformationClass, OUT PVOID KeyInformation, IN ULONG Length, OUT PULONG ResultLength)
 HOOKFUNC NTSTATUS NTAPI MyNtQueryKey(IN HANDLE KeyHandle, IN DWORD KeyInformationClass, OUT PVOID KeyInformation, IN ULONG Length, OUT PULONG ResultLength)
 {
 	return NtQueryKey(KeyHandle, KeyInformationClass, KeyInformation, Length, ResultLength);
 }
 
 
+HOOK_FUNCTION(int, WINAPI, GetSystemMetrics, int nIndex)
 HOOKFUNC int WINAPI MyGetSystemMetrics(int nIndex)
 {
 	ThreadLocalStuff& curtls = tls;
@@ -299,6 +309,7 @@ DWORD LocaleToCharset(LCID locale)
 }
 
 
+HOOK_FUNCTION(UINT, WINAPI, GetACP)
 HOOKFUNC UINT WINAPI MyGetACP()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -306,6 +317,7 @@ HOOKFUNC UINT WINAPI MyGetACP()
 		return LocaleToCodePage(tasflags.appLocale);
 	return GetACP();
 }
+HOOK_FUNCTION(UINT, WINAPI, GetOEMCP)
 HOOKFUNC UINT WINAPI MyGetOEMCP()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -313,6 +325,7 @@ HOOKFUNC UINT WINAPI MyGetOEMCP()
 		return LocaleToCodePage(tasflags.appLocale);
 	return GetOEMCP();
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetCPInfo, UINT CodePage, LPCPINFO lpCPInfo)
 HOOKFUNC BOOL WINAPI MyGetCPInfo(UINT CodePage, LPCPINFO lpCPInfo)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -320,6 +333,7 @@ HOOKFUNC BOOL WINAPI MyGetCPInfo(UINT CodePage, LPCPINFO lpCPInfo)
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return GetCPInfo(CodePage, lpCPInfo);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetCPInfoExA, UINT CodePage, DWORD dwFlags, LPCPINFOEXA lpCPInfoEx)
 HOOKFUNC BOOL WINAPI MyGetCPInfoExA(UINT CodePage, DWORD dwFlags, LPCPINFOEXA lpCPInfoEx)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -327,6 +341,7 @@ HOOKFUNC BOOL WINAPI MyGetCPInfoExA(UINT CodePage, DWORD dwFlags, LPCPINFOEXA lp
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return GetCPInfoExA(CodePage, dwFlags, lpCPInfoEx);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetCPInfoExW, UINT CodePage, DWORD dwFlags, LPCPINFOEXW lpCPInfoEx)
 HOOKFUNC BOOL WINAPI MyGetCPInfoExW(UINT CodePage, DWORD dwFlags, LPCPINFOEXW lpCPInfoEx)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -334,6 +349,7 @@ HOOKFUNC BOOL WINAPI MyGetCPInfoExW(UINT CodePage, DWORD dwFlags, LPCPINFOEXW lp
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return GetCPInfoExW(CodePage, dwFlags, lpCPInfoEx);
 }
+HOOK_FUNCTION(BOOL, WINAPI, IsDBCSLeadByte, BYTE TestChar)
 HOOKFUNC BOOL WINAPI MyIsDBCSLeadByte(BYTE TestChar)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -341,6 +357,7 @@ HOOKFUNC BOOL WINAPI MyIsDBCSLeadByte(BYTE TestChar)
 		return IsDBCSLeadByteEx(LocaleToCodePage(tasflags.appLocale), TestChar);
 	return IsDBCSLeadByte(TestChar);
 }
+HOOK_FUNCTION(BOOL, WINAPI, IsDBCSLeadByteEx, UINT CodePage, BYTE TestChar)
 HOOKFUNC BOOL WINAPI MyIsDBCSLeadByteEx(UINT CodePage, BYTE TestChar)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -348,6 +365,7 @@ HOOKFUNC BOOL WINAPI MyIsDBCSLeadByteEx(UINT CodePage, BYTE TestChar)
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return IsDBCSLeadByteEx(CodePage, TestChar);
 }
+HOOK_FUNCTION(int, WINAPI, MultiByteToWideChar, UINT CodePage, DWORD dwFlags, LPCSTR lpMultiByteStr, int cbMultiByte, LPWSTR lpWideCharStr, int cchWideChar)
 HOOKFUNC int WINAPI MyMultiByteToWideChar(UINT CodePage, DWORD dwFlags, LPCSTR lpMultiByteStr, int cbMultiByte, LPWSTR lpWideCharStr, int cchWideChar)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -355,6 +373,7 @@ HOOKFUNC int WINAPI MyMultiByteToWideChar(UINT CodePage, DWORD dwFlags, LPCSTR l
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return MultiByteToWideChar(CodePage, dwFlags, lpMultiByteStr, cbMultiByte, lpWideCharStr, cchWideChar);
 }
+HOOK_FUNCTION(int, WINAPI, WideCharToMultiByte, UINT CodePage, DWORD dwFlags, LPCWSTR lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCSTR lpDefaultChar, LPBOOL lpUsedDefaultChar)
 HOOKFUNC int WINAPI MyWideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWSTR lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCSTR lpDefaultChar, LPBOOL lpUsedDefaultChar)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", CodePage);
@@ -362,6 +381,7 @@ HOOKFUNC int WINAPI MyWideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWSTR 
 		CodePage = LocaleToCodePage(tasflags.appLocale);
 	return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
+HOOK_FUNCTION(int, WINAPI, GetLocaleInfoA, LCID Locale, LCTYPE LCType, LPSTR lpLCData, int cchData)
 HOOKFUNC int WINAPI MyGetLocaleInfoA(LCID Locale, LCTYPE LCType, LPSTR lpLCData, int cchData)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d, 0x%X) called.\n", Locale, LCType);
@@ -371,6 +391,7 @@ HOOKFUNC int WINAPI MyGetLocaleInfoA(LCID Locale, LCTYPE LCType, LPSTR lpLCData,
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d, 0x%X) returned \"%s\".\n", Locale, LCType, lpLCData);
 	return rv;
 }
+HOOK_FUNCTION(int, WINAPI, GetLocaleInfoW, LCID Locale, LCTYPE LCType, LPWSTR lpLCData, int cchData)
 HOOKFUNC int WINAPI MyGetLocaleInfoW(LCID Locale, LCTYPE LCType, LPWSTR lpLCData, int cchData)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d, 0x%X) called.\n", Locale, LCType);
@@ -380,6 +401,7 @@ HOOKFUNC int WINAPI MyGetLocaleInfoW(LCID Locale, LCTYPE LCType, LPWSTR lpLCData
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d, 0x%X) returned \"%S\".\n", Locale, LCType, lpLCData);
 	return rv;
 }
+HOOK_FUNCTION(int, WINAPI, LCMapStringA, LCID Locale, DWORD dwMapFlags, LPCSTR lpSrcStr, int cchSrc, LPSTR lpDestStr, int cchDest)
 HOOKFUNC int WINAPI MyLCMapStringA(LCID Locale, DWORD dwMapFlags, LPCSTR lpSrcStr, int cchSrc, LPSTR lpDestStr, int cchDest)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -387,6 +409,7 @@ HOOKFUNC int WINAPI MyLCMapStringA(LCID Locale, DWORD dwMapFlags, LPCSTR lpSrcSt
 		Locale = tasflags.appLocale;
 	return LCMapStringA(Locale, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest);
 }
+HOOK_FUNCTION(int, WINAPI, LCMapStringW, LCID Locale, DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest)
 HOOKFUNC int WINAPI MyLCMapStringW(LCID Locale, DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -394,6 +417,7 @@ HOOKFUNC int WINAPI MyLCMapStringW(LCID Locale, DWORD dwMapFlags, LPCWSTR lpSrcS
 		Locale = tasflags.appLocale;
 	return LCMapStringW(Locale, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest);
 }
+HOOK_FUNCTION(UINT, WINAPI, GetKBCodePage)
 HOOKFUNC UINT WINAPI MyGetKBCodePage()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -401,6 +425,7 @@ HOOKFUNC UINT WINAPI MyGetKBCodePage()
 		return tasflags.appLocale;
 	return GetKBCodePage();
 }
+HOOK_FUNCTION(LCID, WINAPI, ConvertDefaultLocale, LCID Locale)
 HOOKFUNC LCID WINAPI MyConvertDefaultLocale(LCID Locale)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -408,6 +433,7 @@ HOOKFUNC LCID WINAPI MyConvertDefaultLocale(LCID Locale)
 		return tasflags.appLocale;
 	return ConvertDefaultLocale(Locale);
 }
+HOOK_FUNCTION(LCID, WINAPI, GetThreadLocale)
 HOOKFUNC LCID WINAPI MyGetThreadLocale()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -415,6 +441,7 @@ HOOKFUNC LCID WINAPI MyGetThreadLocale()
 		return tasflags.appLocale;
 	return GetThreadLocale();
 }
+HOOK_FUNCTION(LCID, WINAPI, GetSystemDefaultLCID)
 HOOKFUNC LCID WINAPI MyGetSystemDefaultLCID()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -422,6 +449,7 @@ HOOKFUNC LCID WINAPI MyGetSystemDefaultLCID()
 		return tasflags.appLocale;
 	return GetSystemDefaultLCID();
 }
+HOOK_FUNCTION(LCID, WINAPI, GetUserDefaultLCID)
 HOOKFUNC LCID WINAPI MyGetUserDefaultLCID()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -429,6 +457,7 @@ HOOKFUNC LCID WINAPI MyGetUserDefaultLCID()
 		return tasflags.appLocale;
 	return GetUserDefaultLCID();
 }
+HOOK_FUNCTION(LANGID, WINAPI, GetSystemDefaultUILanguage)
 HOOKFUNC LANGID WINAPI MyGetSystemDefaultUILanguage()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -437,6 +466,7 @@ HOOKFUNC LANGID WINAPI MyGetSystemDefaultUILanguage()
 	return GetSystemDefaultUILanguage();
 }
 
+HOOK_FUNCTION(LANGID, WINAPI, GetUserDefaultUILanguage)
 HOOKFUNC LANGID WINAPI MyGetUserDefaultUILanguage()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -445,6 +475,7 @@ HOOKFUNC LANGID WINAPI MyGetUserDefaultUILanguage()
 	return GetUserDefaultUILanguage();
 }
 
+HOOK_FUNCTION(LANGID, WINAPI, GetSystemDefaultLangID)
 HOOKFUNC LANGID WINAPI MyGetSystemDefaultLangID()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -453,6 +484,7 @@ HOOKFUNC LANGID WINAPI MyGetSystemDefaultLangID()
 	return GetSystemDefaultLangID();
 }
 
+HOOK_FUNCTION(LANGID, WINAPI, GetUserDefaultLangID)
 HOOKFUNC LANGID WINAPI MyGetUserDefaultLangID()
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -464,6 +496,7 @@ HOOKFUNC LANGID WINAPI MyGetUserDefaultLangID()
 extern char keyboardLayoutName [KL_NAMELENGTH*2];
 extern HKL g_hklOverride;
 
+HOOK_FUNCTION(BOOL, WINAPI, GetKeyboardLayoutNameA, LPSTR pwszKLID)
 HOOKFUNC BOOL WINAPI MyGetKeyboardLayoutNameA(LPSTR pwszKLID)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -483,6 +516,7 @@ HOOKFUNC BOOL WINAPI MyGetKeyboardLayoutNameA(LPSTR pwszKLID)
 	}
 	return GetKeyboardLayoutNameA(pwszKLID);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetKeyboardLayoutNameW, LPWSTR pwszKLID)
 HOOKFUNC BOOL WINAPI MyGetKeyboardLayoutNameW(LPWSTR pwszKLID)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -502,6 +536,7 @@ HOOKFUNC BOOL WINAPI MyGetKeyboardLayoutNameW(LPWSTR pwszKLID)
 	}
 	return GetKeyboardLayoutNameW(pwszKLID);
 }
+HOOK_FUNCTION(HKL, WINAPI, GetKeyboardLayout, DWORD idThread)
 HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread)
 {
 	debuglog(LCF_REGISTRY|LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", idThread);
@@ -511,6 +546,7 @@ HOOKFUNC HKL WINAPI MyGetKeyboardLayout(DWORD idThread)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, TranslateCharsetInfo, DWORD FAR *lpSrc, LPCHARSETINFO lpCs, DWORD dwFlags)
 HOOKFUNC BOOL WINAPI MyTranslateCharsetInfo(DWORD FAR *lpSrc, LPCHARSETINFO lpCs, DWORD dwFlags)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -529,6 +565,7 @@ HOOKFUNC BOOL WINAPI MyTranslateCharsetInfo(DWORD FAR *lpSrc, LPCHARSETINFO lpCs
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, TextOutA, HDC hdc, int x, int y, LPCSTR lpString, int c)
 HOOKFUNC BOOL WINAPI MyTextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -547,6 +584,7 @@ HOOKFUNC BOOL WINAPI MyTextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c)
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, TextOutW, HDC hdc, int x, int y, LPCWSTR lpString, int c)
 HOOKFUNC BOOL WINAPI MyTextOutW(HDC hdc, int x, int y, LPCWSTR lpString, int c)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -556,6 +594,7 @@ HOOKFUNC BOOL WINAPI MyTextOutW(HDC hdc, int x, int y, LPCWSTR lpString, int c)
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, ExtTextOutA, HDC hdc, int x, int y, UINT options, CONST RECT * lprect, LPCSTR lpString, UINT c, CONST INT * lpDx)
 HOOKFUNC BOOL WINAPI MyExtTextOutA(HDC hdc, int x, int y, UINT options, CONST RECT * lprect, LPCSTR lpString, UINT c, CONST INT * lpDx)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -565,6 +604,7 @@ HOOKFUNC BOOL WINAPI MyExtTextOutA(HDC hdc, int x, int y, UINT options, CONST RE
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, ExtTextOutW, HDC hdc, int x, int y, UINT options, CONST RECT * lprect, LPCWSTR lpString, UINT c, CONST INT * lpDx)
 HOOKFUNC BOOL WINAPI MyExtTextOutW(HDC hdc, int x, int y, UINT options, CONST RECT * lprect, LPCWSTR lpString, UINT c, CONST INT * lpDx)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -574,6 +614,7 @@ HOOKFUNC BOOL WINAPI MyExtTextOutW(HDC hdc, int x, int y, UINT options, CONST RE
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, PolyTextOutA, HDC hdc, CONST POLYTEXTA * ppt, int nstrings)
 HOOKFUNC BOOL WINAPI MyPolyTextOutA(HDC hdc, CONST POLYTEXTA * ppt, int nstrings)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -583,6 +624,7 @@ HOOKFUNC BOOL WINAPI MyPolyTextOutA(HDC hdc, CONST POLYTEXTA * ppt, int nstrings
 	curtls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, PolyTextOutW, HDC hdc, CONST POLYTEXTW * ppt, int nstrings)
 HOOKFUNC BOOL WINAPI MyPolyTextOutW(HDC hdc, CONST POLYTEXTW * ppt, int nstrings)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -594,6 +636,7 @@ HOOKFUNC BOOL WINAPI MyPolyTextOutW(HDC hdc, CONST POLYTEXTW * ppt, int nstrings
 }
 
 
+HOOK_FUNCTION(int, WINAPI, CompareStringA, LCID Locale, DWORD dwCmpFlags, LPCSTR lpString1, int cchCount1, LPCSTR lpString2, int cchCount2)
 HOOKFUNC int WINAPI MyCompareStringA(LCID Locale, DWORD dwCmpFlags, LPCSTR lpString1, int cchCount1, LPCSTR lpString2, int cchCount2)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -601,6 +644,7 @@ HOOKFUNC int WINAPI MyCompareStringA(LCID Locale, DWORD dwCmpFlags, LPCSTR lpStr
 		Locale = tasflags.appLocale;
 	return CompareStringA(Locale, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
 }
+HOOK_FUNCTION(int, WINAPI, CompareStringW, LCID Locale, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2)
 HOOKFUNC int WINAPI MyCompareStringW(LCID Locale, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -608,6 +652,7 @@ HOOKFUNC int WINAPI MyCompareStringW(LCID Locale, DWORD dwCmpFlags, LPCWSTR lpSt
 		Locale = tasflags.appLocale;
 	return CompareStringW(Locale, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
 }
+HOOK_FUNCTION(int, WINAPI, GetCalendarInfoA, LCID Locale, CALID Calendar, CALTYPE CalType, LPSTR lpCalData, int cchData, LPDWORD lpValue)
 HOOKFUNC int WINAPI MyGetCalendarInfoA(LCID Locale, CALID Calendar, CALTYPE CalType, LPSTR lpCalData, int cchData, LPDWORD lpValue)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -615,6 +660,7 @@ HOOKFUNC int WINAPI MyGetCalendarInfoA(LCID Locale, CALID Calendar, CALTYPE CalT
 		Locale = tasflags.appLocale;
 	return GetCalendarInfoA(Locale, Calendar, CalType, lpCalData, cchData, lpValue);
 } 
+HOOK_FUNCTION(int, WINAPI, GetCalendarInfoW, LCID Locale, CALID Calendar, CALTYPE CalType, LPWSTR lpCalData, int cchData, LPDWORD lpValue)
 HOOKFUNC int WINAPI MyGetCalendarInfoW(LCID Locale, CALID Calendar, CALTYPE CalType, LPWSTR lpCalData, int cchData, LPDWORD lpValue)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -622,6 +668,7 @@ HOOKFUNC int WINAPI MyGetCalendarInfoW(LCID Locale, CALID Calendar, CALTYPE CalT
 		Locale = tasflags.appLocale;
 	return GetCalendarInfoW(Locale, Calendar, CalType, lpCalData, cchData, lpValue);
 }
+HOOK_FUNCTION(int, WINAPI, GetTimeFormatA, LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpTime, LPCSTR lpFormat, LPSTR lpTimeStr, int cchTime)
 HOOKFUNC int WINAPI MyGetTimeFormatA(LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpTime, LPCSTR lpFormat, LPSTR lpTimeStr, int cchTime)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -629,6 +676,7 @@ HOOKFUNC int WINAPI MyGetTimeFormatA(LCID Locale, DWORD dwFlags, CONST SYSTEMTIM
 		Locale = tasflags.appLocale;
 	return GetTimeFormatA(Locale, dwFlags, lpTime, lpFormat, lpTimeStr, cchTime);
 }
+HOOK_FUNCTION(int, WINAPI, GetTimeFormatW, LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpTime, LPCWSTR lpFormat, LPWSTR lpTimeStr, int cchTime)
 HOOKFUNC int WINAPI MyGetTimeFormatW(LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpTime, LPCWSTR lpFormat, LPWSTR lpTimeStr, int cchTime)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -636,6 +684,7 @@ HOOKFUNC int WINAPI MyGetTimeFormatW(LCID Locale, DWORD dwFlags, CONST SYSTEMTIM
 		Locale = tasflags.appLocale;
 	return GetTimeFormatW(Locale, dwFlags, lpTime, lpFormat, lpTimeStr, cchTime);
 }
+HOOK_FUNCTION(int, WINAPI, GetDateFormatA, LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpDate, LPCSTR lpFormat, LPSTR lpDateStr, int cchDate)
 HOOKFUNC int WINAPI MyGetDateFormatA(LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpDate, LPCSTR lpFormat, LPSTR lpDateStr, int cchDate)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -643,6 +692,7 @@ HOOKFUNC int WINAPI MyGetDateFormatA(LCID Locale, DWORD dwFlags, CONST SYSTEMTIM
 		Locale = tasflags.appLocale;
 	return GetDateFormatA(Locale, dwFlags, lpDate, lpFormat, lpDateStr, cchDate);
 }
+HOOK_FUNCTION(int, WINAPI, GetDateFormatW, LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpDate, LPCWSTR lpFormat, LPWSTR lpDateStr, int cchDate)
 HOOKFUNC int WINAPI MyGetDateFormatW(LCID Locale, DWORD dwFlags, CONST SYSTEMTIME *lpDate, LPCWSTR lpFormat, LPWSTR lpDateStr, int cchDate)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -650,6 +700,7 @@ HOOKFUNC int WINAPI MyGetDateFormatW(LCID Locale, DWORD dwFlags, CONST SYSTEMTIM
 		Locale = tasflags.appLocale;
 	return GetDateFormatW(Locale, dwFlags, lpDate, lpFormat, lpDateStr, cchDate);
 }
+HOOK_FUNCTION(int, WINAPI, GetNumberFormatA, LCID Locale, DWORD dwFlags, LPCSTR lpValue, CONST NUMBERFMTA *lpFormat, LPSTR lpNumberStr, int cchNumber)
 HOOKFUNC int WINAPI MyGetNumberFormatA(LCID Locale, DWORD dwFlags, LPCSTR lpValue, CONST NUMBERFMTA *lpFormat, LPSTR lpNumberStr, int cchNumber)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -657,6 +708,7 @@ HOOKFUNC int WINAPI MyGetNumberFormatA(LCID Locale, DWORD dwFlags, LPCSTR lpValu
 		Locale = tasflags.appLocale;
 	return GetNumberFormatA(Locale, dwFlags, lpValue, lpFormat, lpNumberStr, cchNumber);
 }
+HOOK_FUNCTION(int, WINAPI, GetNumberFormatW, LCID Locale, DWORD dwFlags, LPCWSTR lpValue, CONST NUMBERFMTW *lpFormat, LPWSTR lpNumberStr, int cchNumber)
 HOOKFUNC int WINAPI MyGetNumberFormatW(LCID Locale, DWORD dwFlags, LPCWSTR lpValue, CONST NUMBERFMTW *lpFormat, LPWSTR lpNumberStr, int cchNumber)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -664,6 +716,7 @@ HOOKFUNC int WINAPI MyGetNumberFormatW(LCID Locale, DWORD dwFlags, LPCWSTR lpVal
 		Locale = tasflags.appLocale;
 	return GetNumberFormatW(Locale, dwFlags, lpValue, lpFormat, lpNumberStr, cchNumber);
 }
+HOOK_FUNCTION(int, WINAPI, GetCurrencyFormatA, LCID Locale, DWORD dwFlags, LPCSTR lpValue, CONST CURRENCYFMTA *lpFormat, LPSTR lpCurrencyStr, int cchCurrency)
 HOOKFUNC int WINAPI MyGetCurrencyFormatA(LCID Locale, DWORD dwFlags, LPCSTR lpValue, CONST CURRENCYFMTA *lpFormat, LPSTR lpCurrencyStr, int cchCurrency)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -671,6 +724,7 @@ HOOKFUNC int WINAPI MyGetCurrencyFormatA(LCID Locale, DWORD dwFlags, LPCSTR lpVa
 		Locale = tasflags.appLocale;
 	return GetCurrencyFormatA(Locale, dwFlags, lpValue, lpFormat, lpCurrencyStr, cchCurrency);
 }
+HOOK_FUNCTION(int, WINAPI, GetCurrencyFormatW, LCID Locale, DWORD dwFlags, LPCWSTR lpValue, CONST CURRENCYFMTW *lpFormat, LPWSTR lpCurrencyStr, int cchCurrency)
 HOOKFUNC int WINAPI MyGetCurrencyFormatW(LCID Locale, DWORD dwFlags, LPCWSTR lpValue, CONST CURRENCYFMTW *lpFormat, LPWSTR lpCurrencyStr, int cchCurrency)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -678,12 +732,14 @@ HOOKFUNC int WINAPI MyGetCurrencyFormatW(LCID Locale, DWORD dwFlags, LPCWSTR lpV
 		Locale = tasflags.appLocale;
 	return GetCurrencyFormatW(Locale, dwFlags, lpValue, lpFormat, lpCurrencyStr, cchCurrency);
 }
+HOOK_FUNCTION(DWORD, WINAPI, GetTimeZoneInformation, LPTIME_ZONE_INFORMATION lpTimeZoneInformation)
 HOOKFUNC DWORD WINAPI MyGetTimeZoneInformation(LPTIME_ZONE_INFORMATION lpTimeZoneInformation)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
 	return GetTimeZoneInformation(lpTimeZoneInformation);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, SystemParametersInfoA, UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni)
 HOOKFUNC BOOL WINAPI MySystemParametersInfoA(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", uiAction);
@@ -695,6 +751,7 @@ HOOKFUNC BOOL WINAPI MySystemParametersInfoA(UINT uiAction, UINT uiParam, PVOID 
 	}
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, SystemParametersInfoW, UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni)
 HOOKFUNC BOOL WINAPI MySystemParametersInfoW(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", uiAction);
@@ -727,6 +784,7 @@ HOOKFUNC BOOL WINAPI MySystemParametersInfoW(UINT uiAction, UINT uiParam, PVOID 
 //}
 
 
+HOOK_FUNCTION(BOOL, WINAPI, GetStringTypeA, LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 HOOKFUNC BOOL WINAPI MyGetStringTypeA(LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -734,6 +792,7 @@ HOOKFUNC BOOL WINAPI MyGetStringTypeA(LCID Locale, DWORD dwInfoType, LPCSTR lpSr
 		Locale = tasflags.appLocale;
 	return GetStringTypeA(Locale, dwInfoType, lpSrcStr, cchSrc, lpCharType);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetStringTypeW, DWORD dwInfoType, LPCWSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 HOOKFUNC BOOL WINAPI MyGetStringTypeW(DWORD dwInfoType, LPCWSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ " called.\n");
@@ -743,6 +802,7 @@ HOOKFUNC BOOL WINAPI MyGetStringTypeW(DWORD dwInfoType, LPCWSTR lpSrcStr, int cc
 	tls.forceLocale--;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetStringTypeExA, LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 HOOKFUNC BOOL WINAPI MyGetStringTypeExA(LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -750,6 +810,7 @@ HOOKFUNC BOOL WINAPI MyGetStringTypeExA(LCID Locale, DWORD dwInfoType, LPCSTR lp
 		Locale = tasflags.appLocale;
 	return GetStringTypeExA(Locale, dwInfoType, lpSrcStr, cchSrc, lpCharType);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetStringTypeExW, LCID Locale, DWORD dwInfoType, LPCWSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 HOOKFUNC BOOL WINAPI MyGetStringTypeExW(LCID Locale, DWORD dwInfoType, LPCWSTR lpSrcStr, int cchSrc, LPWORD lpCharType)
 {
 	debuglog(LCF_REGISTRY, __FUNCTION__ "(%d) called.\n", Locale);
@@ -758,12 +819,14 @@ HOOKFUNC BOOL WINAPI MyGetStringTypeExW(LCID Locale, DWORD dwInfoType, LPCWSTR l
 	return GetStringTypeExW(Locale, dwInfoType, lpSrcStr, cchSrc, lpCharType);
 }
 
+HOOK_FUNCTION(VOID, WINAPI, SetFileApisToOEM)
 HOOKFUNC VOID WINAPI MySetFileApisToOEM()
 {
 	if(tasflags.appLocale)
 		return;
 	SetFileApisToOEM();
 }
+HOOK_FUNCTION(VOID, WINAPI, SetFileApisToANSI)
 HOOKFUNC VOID WINAPI MySetFileApisToANSI()
 {
 	if(tasflags.appLocale)

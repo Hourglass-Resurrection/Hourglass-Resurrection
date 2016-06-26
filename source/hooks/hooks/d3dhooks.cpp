@@ -422,6 +422,8 @@ template<> BOOL MyDirect3DDevice<IDirect3DDevice3>::Hook(IDirect3DDevice3* obj)
 
 
 
+HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreate, 
+              UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirect3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 {
 	d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
@@ -436,6 +438,8 @@ HOOKFUNC HRESULT WINAPI MyDirect3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LP
 	curtls.callerisuntrusted--;
 	return rv;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreate7,
+              UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirect3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 {
 	d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
@@ -450,6 +454,8 @@ HOOKFUNC HRESULT WINAPI MyDirect3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, L
 	curtls.callerisuntrusted--;
 	return rv;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreateDevice,
+              GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 {
 	// maybe unnecessary?
@@ -462,6 +468,8 @@ HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3d
 	curtls.callerisuntrusted--;
 	return rv;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreateDevice7,
+              GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 {
 	// maybe unnecessary?

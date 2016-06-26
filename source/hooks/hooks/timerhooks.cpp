@@ -502,6 +502,7 @@ void TickMultiMediaTimers(DWORD time)
 		}
 	}
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, timeSetEvent, UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
 HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
 {
 	if(tasflags.timersMode == 0)
@@ -535,6 +536,7 @@ static MMRESULT filterKillTimerResult(MMRESULT res)
 		return TIMERR_NOERROR;
 	return res;
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, timeKillEvent, UINT uTimerID)
 HOOKFUNC MMRESULT WINAPI MytimeKillEvent(UINT uTimerID)
 {
 	if(tasflags.timersMode == 2)
@@ -553,6 +555,7 @@ HOOKFUNC MMRESULT WINAPI MytimeKillEvent(UINT uTimerID)
 }
 
 
+HOOK_FUNCTION(UINT_PTR, WINAPI, SetTimer, HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc)
 HOOKFUNC UINT_PTR WINAPI MySetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc)
 {
 	debuglog(LCF_TIMERS, __FUNCTION__ "(0x%X, 0x%X, %d, 0x%X) called.\n", hWnd, nIDEvent, uElapse, lpTimerFunc);
@@ -561,6 +564,7 @@ HOOKFUNC UINT_PTR WINAPI MySetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, 
 	UINT_PTR rv = AddSetTimerTimer(hWnd, nIDEvent, uElapse, lpTimerFunc);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, KillTimer, HWND hWnd, UINT_PTR nIDEvent)
 HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
 {
 	debuglog(LCF_TIMERS, __FUNCTION__ "(0x%X, 0x%X) called.\n", hWnd, nIDEvent);
@@ -595,6 +599,7 @@ HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
 	return rv;
 }
 
+HOOK_FUNCTION(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData)
 HOOKFUNC DWORD WINAPI MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData)
 {
 	DWORD rv = QueueUserAPC(pfnAPC, hThread, dwData);
@@ -602,8 +607,10 @@ HOOKFUNC DWORD WINAPI MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR 
 	return rv;
 }
 
-HOOKFUNC BOOL WINAPI MyCreateTimerQueueTimer(
+HOOK_FUNCTION(BOOL, WINAPI, CreateTimerQueueTimer,
 	PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
+	PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags)
+HOOKFUNC BOOL WINAPI MyCreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
 	PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags)
 {
 	debuglog(LCF_TIMERS|LCF_TODO|LCF_DESYNC, __FUNCTION__ " called.\n");

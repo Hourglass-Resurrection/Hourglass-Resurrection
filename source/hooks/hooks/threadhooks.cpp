@@ -126,8 +126,15 @@ DWORD WINAPI MyEmptyThreadFunction(LPVOID lpParam)
 // 2 -> allow threads. create a thread normally, as if we hadn't hooked CreateThread.
 // 3 -> micromanaged "synchronous" threads. not currently working. abandoned and disabled, actually.
 
-HOOKFUNC HANDLE WINAPI MyCreateThread(
+HOOK_FUNCTION(HANDLE, WINAPI, CreateThread,
 		LPSECURITY_ATTRIBUTES lpThreadAttributes,
+		SIZE_T dwStackSize,
+		LPTHREAD_START_ROUTINE lpStartAddress,
+		LPVOID lpParameter,
+		DWORD dwCreationFlags,
+		LPDWORD lpThreadId
+	)
+HOOKFUNC HANDLE WINAPI MyCreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 		SIZE_T dwStackSize,
 		LPTHREAD_START_ROUTINE lpStartAddress,
 		LPVOID lpParameter,
@@ -333,6 +340,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
 	return handle;
 }
+HOOK_FUNCTION(VOID, WINAPI, ExitThread, DWORD dwExitCode)
 HOOKFUNC VOID WINAPI MyExitThread(DWORD dwExitCode)
 {
 	DWORD threadId = GetCurrentThreadId();
@@ -370,6 +378,7 @@ HOOKFUNC VOID WINAPI MyExitThread(DWORD dwExitCode)
 	ExitThread(dwExitCode);
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, TerminateThread, HANDLE hThread, DWORD dwExitCode)
 HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 {
 	debuglog(LCF_THREAD, __FUNCTION__ "(%d) called.\n", dwExitCode);
@@ -392,6 +401,7 @@ HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
 	}
 	return TerminateThread(hThread, dwExitCode);
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetExitCodeThread, HANDLE hThread, LPDWORD lpExitCode)
 HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
 {
 	debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
@@ -416,6 +426,7 @@ HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
 	return rv;
 }
 
+HOOK_FUNCTION(NTSTATUS, NTAPI, NtSetInformationThread, HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength)
 HOOKFUNC NTSTATUS NTAPI MyNtSetInformationThread(HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength)
 {
 	if(ThreadInformationClass == 0x11/*ThreadHideFromDebugger*/)

@@ -28,8 +28,9 @@ void CloseHandles(DWORD threadId)
 	LeaveCriticalSection(&s_handleCS);
 }
 
-HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,
-	BOOL bManualReset, BOOL bInitialState, LPCSTR lpName)
+HOOK_FUNCTION(HANDLE, WINAPI, CreateEventA,
+              LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName)
+HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName)
 {
 	// TODO: disabling this makes the DirectMusic timer somewhat saveable... what drives that timer??
 	HANDLE rv = CreateEventA(lpEventAttributes, bManualReset, bInitialState, lpName);
@@ -41,8 +42,9 @@ HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
-HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes,
-	BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName)
+HOOK_FUNCTION(HANDLE, WINAPI, CreateEventW,
+              LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName)
+HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName)
 {
 	HANDLE rv = CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName);
 	debuglog(LCF_SYNCOBJ|LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
@@ -54,6 +56,7 @@ HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes,
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenEventA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 {
 	HANDLE rv = OpenEventA(dwDesiredAccess, bInheritHandle, lpName);
@@ -64,6 +67,7 @@ HOOKFUNC HANDLE WINAPI MyOpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, 
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenEventW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
 {
 	HANDLE rv = OpenEventW(dwDesiredAccess, bInheritHandle, lpName);
@@ -74,12 +78,14 @@ HOOKFUNC HANDLE WINAPI MyOpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, 
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, SetEvent, HANDLE hEvent)
 HOOKFUNC BOOL WINAPI MySetEvent(HANDLE hEvent)
 {
 	debuglog(LCF_SYNCOBJ, __FUNCTION__ " called.\n");
 	BOOL rv = SetEvent(hEvent);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, ResetEvent, HANDLE hEvent)
 HOOKFUNC BOOL WINAPI MyResetEvent(HANDLE hEvent)
 {
 	debuglog(LCF_SYNCOBJ, __FUNCTION__ " called.\n");
@@ -87,6 +93,7 @@ HOOKFUNC BOOL WINAPI MyResetEvent(HANDLE hEvent)
 	return rv;
 }
 
+HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexA, LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName)
 {
 	HANDLE rv = CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
@@ -97,6 +104,7 @@ HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, B
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 {
 	HANDLE rv = OpenMutexA(dwDesiredAccess, bInheritHandle, lpName);
@@ -107,6 +115,7 @@ HOOKFUNC HANDLE WINAPI MyOpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, 
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexW, LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName)
 {
 	HANDLE rv = CreateMutexW(lpMutexWttributes, bInitialOwner, lpName);
@@ -117,6 +126,7 @@ HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, B
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
 {
 	HANDLE rv = OpenMutexW(dwDesiredAccess, bInheritHandle, lpName);
@@ -127,6 +137,7 @@ HOOKFUNC HANDLE WINAPI MyOpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, 
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, ReleaseMutex, HANDLE hMutex)
 HOOKFUNC BOOL WINAPI MyReleaseMutex(HANDLE hMutex)
 {
 	debuglog(LCF_SYNCOBJ|LCF_TODO, __FUNCTION__ " called.\n");
@@ -136,6 +147,7 @@ HOOKFUNC BOOL WINAPI MyReleaseMutex(HANDLE hMutex)
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, CloseHandle, HANDLE hObject)
 HOOKFUNC BOOL WINAPI MyCloseHandle(HANDLE hObject)
 {
 	debuglog(LCF_SYNCOBJ|LCF_TODO, __FUNCTION__ "(0x%X) called.\n", hObject);
@@ -163,6 +175,9 @@ HOOKFUNC BOOL WINAPI MyCloseHandle(HANDLE hObject)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, DuplicateHandle, HANDLE hSourceProcessHandle,
+    HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
+    DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
 HOOKFUNC BOOL WINAPI MyDuplicateHandle(HANDLE hSourceProcessHandle,
     HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
     DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
@@ -197,6 +212,7 @@ HOOKFUNC BOOL WINAPI MyDuplicateHandle(HANDLE hSourceProcessHandle,
 
 
 
+HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreA, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCSTR lpName)
 {
 	HANDLE rv = CreateSemaphoreA(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
@@ -207,6 +223,7 @@ HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttri
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreW, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCWSTR lpName)
 HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCWSTR lpName)
 {
 	HANDLE rv = CreateSemaphoreW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
@@ -217,6 +234,7 @@ HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttri
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreA, DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpName)
 {
 	HANDLE rv = OpenSemaphoreA(dwDesiredAccess, bInheritHandle, lpName);
@@ -227,6 +245,7 @@ HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess,BOOL bInheritHandl
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreW, DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpName)
 HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpName)
 {
 	HANDLE rv = OpenSemaphoreW(dwDesiredAccess, bInheritHandle, lpName);
@@ -237,6 +256,7 @@ HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess,BOOL bInheritHandl
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerA, LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCSTR lpTimerName)
 HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCSTR lpTimerName)
 {
 	HANDLE rv = CreateWaitableTimerA(lpTimerAttributes, bManualReset, lpTimerName);
@@ -247,6 +267,7 @@ HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttri
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerW, LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCWSTR lpTimerName)
 HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCWSTR lpTimerName)
 {
 	HANDLE rv = CreateWaitableTimerW(lpTimerAttributes, bManualReset, lpTimerName);
@@ -257,6 +278,7 @@ HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttri
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerA, DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpTimerName)
 HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpTimerName)
 {
 	HANDLE rv = OpenWaitableTimerA(dwDesiredAccess, bInheritHandle, lpTimerName);
@@ -267,6 +289,7 @@ HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess,BOOL bInheritH
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerW, DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpTimerName)
 HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpTimerName)
 {
 	HANDLE rv = OpenWaitableTimerW(dwDesiredAccess, bInheritHandle, lpTimerName);
@@ -277,12 +300,14 @@ HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess,BOOL bInheritH
 	LeaveCriticalSection(&s_handleCS);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, SetWaitableTimer, HANDLE hTimer,const LARGE_INTEGER *lpDueTime,LONG lPeriod,PTIMERAPCROUTINE pfnCompletionRoutine,LPVOID lpArgToCompletionRoutine,BOOL fResume)
 HOOKFUNC BOOL WINAPI MySetWaitableTimer(HANDLE hTimer,const LARGE_INTEGER *lpDueTime,LONG lPeriod,PTIMERAPCROUTINE pfnCompletionRoutine,LPVOID lpArgToCompletionRoutine,BOOL fResume)
 {
 	BOOL rv = SetWaitableTimer(hTimer, lpDueTime, lPeriod, pfnCompletionRoutine, lpArgToCompletionRoutine, fResume);
 	debuglog(LCF_SYNCOBJ|LCF_DESYNC|LCF_UNTESTED|LCF_TODO, __FUNCTION__ " returned %d.\n", rv);
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, CancelWaitableTimer, HANDLE hTimer)
 HOOKFUNC BOOL WINAPI MyCancelWaitableTimer(HANDLE hTimer)
 {
 	BOOL rv = CancelWaitableTimer(hTimer);

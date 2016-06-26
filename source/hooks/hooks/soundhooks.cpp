@@ -2534,6 +2534,7 @@ public:
 
 
 
+HOOK_FUNCTION(MMRESULT, WINAPI, waveOutWrite, HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 HOOKFUNC MMRESULT WINAPI MywaveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 {
 	// TODO: audio capture for AVI when DirectSound isn't used...
@@ -2542,6 +2543,7 @@ HOOKFUNC MMRESULT WINAPI MywaveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 	return rv;
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, Beep, DWORD dwFreq, DWORD dwDuration)
 HOOKFUNC BOOL WINAPI MyBeep(DWORD dwFreq, DWORD dwDuration)
 {
 	//BOOL rv = Beep(dwFreq, dwDuration;
@@ -2549,6 +2551,7 @@ HOOKFUNC BOOL WINAPI MyBeep(DWORD dwFreq, DWORD dwDuration)
 	BOOL rv = TRUE; // no beeping allowed
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, MessageBeep, UINT uType)
 HOOKFUNC BOOL WINAPI MyMessageBeep(UINT uType)
 {
 	//BOOL rv = MessageBeep(uType;
@@ -2556,6 +2559,7 @@ HOOKFUNC BOOL WINAPI MyMessageBeep(UINT uType)
 	BOOL rv = TRUE; // no beeping allowed
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, PlaySoundA, LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
 HOOKFUNC BOOL WINAPI MyPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
 {
 	//BOOL rv = PlaySoundA(pszSound, hmod, fdwSound);
@@ -2563,6 +2567,7 @@ HOOKFUNC BOOL WINAPI MyPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
 	BOOL rv = TRUE;
 	return rv;
 }
+HOOK_FUNCTION(BOOL, WINAPI, PlaySoundW, LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
 HOOKFUNC BOOL WINAPI MyPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
 {
 	//BOOL rv = PlaySoundW(pszSound, hmod, fdwSound);
@@ -2574,12 +2579,14 @@ HOOKFUNC BOOL WINAPI MyPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound
 static DWORD waveOutBaseTime = 0;
 static WAVEFORMATEX waveOutWaveFormat = {};
 
+HOOK_FUNCTION(MMRESULT, WINAPI, waveOutReset, HWAVEOUT hwo)
 HOOKFUNC MMRESULT WINAPI MywaveOutReset(HWAVEOUT hwo)
 {
 	MMRESULT rv = waveOutReset(hwo);
 	waveOutBaseTime = detTimer.GetTicks();
 	return rv;
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, waveOutOpen, LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
 HOOKFUNC MMRESULT WINAPI MywaveOutOpen(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
 {
 	MMRESULT rv = waveOutOpen(phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen);
@@ -2588,6 +2595,7 @@ HOOKFUNC MMRESULT WINAPI MywaveOutOpen(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEF
 		waveOutWaveFormat = *pwfx;
 	return rv;
 }
+HOOK_FUNCTION(MMRESULT, WINAPI, waveOutGetPosition, HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt)
 HOOKFUNC MMRESULT WINAPI MywaveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt)
 {
 	// FIXME
@@ -2602,6 +2610,7 @@ HOOKFUNC MMRESULT WINAPI MywaveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT 
 }
 
 
+HOOK_FUNCTION(MCIERROR, WINAPI, mciSendCommandA, MCIDEVICEID mciId, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 HOOKFUNC MCIERROR WINAPI MymciSendCommandA(MCIDEVICEID mciId, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
 	// MymciSendCommandA seems to call MymciSendCommandW at least once internally so maybe this isn't necessary,
@@ -2616,6 +2625,7 @@ HOOKFUNC MCIERROR WINAPI MymciSendCommandA(MCIDEVICEID mciId, UINT uMsg, DWORD_P
 	return rv;
 }
 
+HOOK_FUNCTION(MCIERROR, WINAPI, mciSendCommandW, MCIDEVICEID mciId, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 HOOKFUNC MCIERROR WINAPI MymciSendCommandW(MCIDEVICEID mciId, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
 	ThreadLocalStuff& curtls = tls;
@@ -2634,6 +2644,7 @@ HOOKFUNC MCIERROR WINAPI MymciSendCommandW(MCIDEVICEID mciId, UINT uMsg, DWORD_P
 	return rv;
 }
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundCreate, LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
 {
 	debuglog(LCF_DSOUND, __FUNCTION__ " called.\n");
@@ -2682,6 +2693,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
 		return rv;
 	}
 }
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundCreate8, LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS, LPUNKNOWN pUnkOuter)
 HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS, LPUNKNOWN pUnkOuter)
 {
 	debuglog(LCF_DSOUND, __FUNCTION__ " called.\n");
@@ -2747,6 +2759,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
 //	return rv;
 //}
 
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundEnumerateA, LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext)
 HOOKFUNC HRESULT WINAPI MyDirectSoundEnumerateA(LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext)
 {
 	debuglog(LCF_DSOUND|LCF_TODO, __FUNCTION__ " called.\n");
@@ -2759,6 +2772,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundEnumerateA(LPDSENUMCALLBACKA pDSEnumCallbac
 	pDSEnumCallback(0, "Primary Sound Driver", "", pContext);
 	return DS_OK;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundEnumerateW, LPDSENUMCALLBACKW pDSEnumCallback, LPVOID pContext)
 HOOKFUNC HRESULT WINAPI MyDirectSoundEnumerateW(LPDSENUMCALLBACKW pDSEnumCallback, LPVOID pContext)
 {
 	debuglog(LCF_DSOUND|LCF_TODO, __FUNCTION__ " called.\n");
@@ -2777,6 +2791,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundEnumerateW(LPDSENUMCALLBACKW pDSEnumCallbac
 //	HRESULT rv = DirectSoundCaptureCreate(pcGuidDevice, ppDSC, pUnkOuter);
 //	return rv;
 //}
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundCaptureEnumerateA, LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext)
 HOOKFUNC HRESULT WINAPI MyDirectSoundCaptureEnumerateA(LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext)
 {
 	debuglog(LCF_DSOUND|LCF_TODO, __FUNCTION__ " called.\n");
@@ -2784,6 +2799,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCaptureEnumerateA(LPDSENUMCALLBACKA pDSEnum
 	//return rv;
 	return DS_OK;
 }
+HOOK_FUNCTION(HRESULT, WINAPI, DirectSoundCaptureEnumerateW, LPDSENUMCALLBACKW pDSEnumCallback, LPVOID pContext)
 HOOKFUNC HRESULT WINAPI MyDirectSoundCaptureEnumerateW(LPDSENUMCALLBACKW pDSEnumCallback, LPVOID pContext)
 {
 	debuglog(LCF_DSOUND|LCF_TODO, __FUNCTION__ " called.\n");

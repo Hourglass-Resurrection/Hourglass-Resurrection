@@ -4,22 +4,22 @@
 #pragma once
 
 #define DirectDrawCreate TrampDirectDrawCreate
-TRAMPFUNC HRESULT WINAPI DirectDrawCreate(GUID FAR *lpGUID, struct IDirectDraw* FAR *lplpDD, IUnknown FAR *pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI DirectDrawCreate(GUID FAR *lpGUID, struct IDirectDraw* FAR *lplpDD, IUnknown FAR *pUnkOuter);
 #define DirectDrawCreateEx TrampDirectDrawCreateEx
-TRAMPFUNC HRESULT WINAPI DirectDrawCreateEx(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI DirectDrawCreateEx(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid, IUnknown FAR *pUnkOuter);
 #define CheckFullscreen TrampCheckFullscreen
-TRAMPFUNC HRESULT WINAPI CheckFullscreen() TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI CheckFullscreen();
 
 
 #define Direct3DCreate9 TrampDirect3DCreate9
-TRAMPFUNC struct IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion) TRAMPOLINE_DEF
+TRAMPFUNC struct IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion);
 #define Direct3DCreate8 TrampDirect3DCreate8
-TRAMPFUNC struct IDirect3D8* WINAPI Direct3DCreate8(UINT SDKVersion) TRAMPOLINE_DEF
+TRAMPFUNC struct IDirect3D8* WINAPI Direct3DCreate8(UINT SDKVersion);
 #define Direct3DCreate TrampDirect3DCreate
-TRAMPFUNC HRESULT WINAPI Direct3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI Direct3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
 #define Direct3DCreate7 TrampDirect3DCreate7
-TRAMPFUNC HRESULT WINAPI Direct3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI Direct3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
 #define Direct3DCreateDevice TrampDirect3DCreateDevice
-TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);
 #define Direct3DCreateDevice7 TrampDirect3DCreateDevice7
-TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
+TRAMPFUNC HRESULT WINAPI Direct3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);

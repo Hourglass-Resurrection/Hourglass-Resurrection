@@ -4,18 +4,18 @@
 #pragma once
 
 #define timeSetEvent TramptimeSetEvent
-TRAMPFUNC MMRESULT WINAPI timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent) TRAMPOLINE_DEF
+TRAMPFUNC MMRESULT WINAPI timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
 #define timeKillEvent TramptimeKillEvent
-TRAMPFUNC MMRESULT WINAPI timeKillEvent(UINT uTimerID) TRAMPOLINE_DEF
+TRAMPFUNC MMRESULT WINAPI timeKillEvent(UINT uTimerID);
 #define SetTimer TrampSetTimer
-TRAMPFUNC UINT_PTR WINAPI SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc) TRAMPOLINE_DEF
+TRAMPFUNC UINT_PTR WINAPI SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
 #define KillTimer TrampKillTimer
-TRAMPFUNC BOOL WINAPI KillTimer(HWND hWnd, UINT_PTR nIDEvent) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI KillTimer(HWND hWnd, UINT_PTR nIDEvent);
 #define CreateTimerQueueTimer TrampCreateTimerQueueTimer
-TRAMPFUNC BOOL WINAPI CreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback, PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI CreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback, PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
 #define SetWaitableTimer TrampSetWaitableTimer
-TRAMPFUNC BOOL WINAPI SetWaitableTimer(HANDLE hTimer,const LARGE_INTEGER *lpDueTime,LONG lPeriod,PTIMERAPCROUTINE pfnCompletionRoutine,LPVOID lpArgToCompletionRoutine,BOOL fResume) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI SetWaitableTimer(HANDLE hTimer,const LARGE_INTEGER *lpDueTime,LONG lPeriod,PTIMERAPCROUTINE pfnCompletionRoutine,LPVOID lpArgToCompletionRoutine,BOOL fResume);
 #define CancelWaitableTimer TrampCancelWaitableTimer
-TRAMPFUNC BOOL WINAPI CancelWaitableTimer(HANDLE hTimer) TRAMPOLINE_DEF
+TRAMPFUNC BOOL WINAPI CancelWaitableTimer(HANDLE hTimer);
 #define QueueUserAPC TrampQueueUserAPC
-TRAMPFUNC DWORD WINAPI QueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData) TRAMPOLINE_DEF
+TRAMPFUNC DWORD WINAPI QueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);

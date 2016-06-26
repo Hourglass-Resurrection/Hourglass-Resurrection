@@ -740,6 +740,7 @@ HOOKFUNC LONG WINAPI MyGetWindowLongW(HWND hWnd, int nIndex);
 
 
 
+HOOK_FUNCTION(LRESULT, WINAPI, CallNextHookEx, HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam)
 HOOKFUNC LRESULT WINAPI MyCallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam)
 {
 	//cmdprintf("SHORTTRACE: 3,50");
@@ -936,6 +937,7 @@ void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, 
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, SendNotifyMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC BOOL WINAPI MySendNotifyMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -982,6 +984,7 @@ HOOKFUNC BOOL WINAPI MySendNotifyMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LP
 	}
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, SendNotifyMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC BOOL WINAPI MySendNotifyMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1029,6 +1032,7 @@ HOOKFUNC BOOL WINAPI MySendNotifyMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LP
 #endif
 }
 
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageTimeoutA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
 HOOKFUNC LRESULT WINAPI MySendMessageTimeoutA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, %d) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
@@ -1081,6 +1085,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageTimeoutA(HWND hWnd, UINT Msg, WPARAM wParam
 	return SendMessageTimeoutA(hWnd, whitelistUserMessage(Msg), wParam, lParam, fuFlags, uTimeout, lpdwResult);
 #endif
 }
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageTimeoutW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
 HOOKFUNC LRESULT WINAPI MySendMessageTimeoutW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, %d) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
@@ -1133,6 +1138,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageTimeoutW(HWND hWnd, UINT Msg, WPARAM wParam
 	return SendMessageTimeoutW(hWnd, whitelistUserMessage(Msg), wParam, lParam, fuFlags, uTimeout, lpdwResult);
 #endif
 }
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageCallbackA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
 HOOKFUNC LRESULT WINAPI MySendMessageCallbackA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, 0x%X) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
@@ -1192,6 +1198,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageCallbackA(HWND hWnd, UINT Msg, WPARAM wPara
 	}
 #endif
 }
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageCallbackW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
 HOOKFUNC LRESULT WINAPI MySendMessageCallbackW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, 0x%X) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
@@ -1253,6 +1260,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageCallbackW(HWND hWnd, UINT Msg, WPARAM wPara
 }
 
 
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC LRESULT WINAPI MySendMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1288,6 +1296,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARA
 #endif
 }
 
+HOOK_FUNCTION(LRESULT, WINAPI, SendMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC LRESULT WINAPI MySendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1323,6 +1332,7 @@ HOOKFUNC LRESULT WINAPI MySendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARA
 #endif
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, PostMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC BOOL WINAPI MyPostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1373,6 +1383,7 @@ HOOKFUNC BOOL WINAPI MyPostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 #endif
 }
 
+HOOK_FUNCTION(BOOL, WINAPI, PostMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC BOOL WINAPI MyPostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1433,6 +1444,7 @@ HOOKFUNC BOOL WINAPI MyPostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, PostThreadMessageA, DWORD idThread,UINT Msg,WPARAM wParam,LPARAM lParam)
 HOOKFUNC BOOL WINAPI MyPostThreadMessageA(DWORD idThread,UINT Msg,WPARAM wParam,LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1473,6 +1485,7 @@ HOOKFUNC BOOL WINAPI MyPostThreadMessageA(DWORD idThread,UINT Msg,WPARAM wParam,
 	return rv;
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, PostThreadMessageW, DWORD idThread,UINT Msg,WPARAM wParam,LPARAM lParam)
 HOOKFUNC BOOL WINAPI MyPostThreadMessageW(DWORD idThread,UINT Msg,WPARAM wParam,LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1514,6 +1527,7 @@ HOOKFUNC BOOL WINAPI MyPostThreadMessageW(DWORD idThread,UINT Msg,WPARAM wParam,
 #endif
 }
 
+HOOK_FUNCTION(VOID, WINAPI, PostQuitMessage, int nExitCode)
 HOOKFUNC VOID WINAPI MyPostQuitMessage(int nExitCode)
 {
 	debuglog(LCF_PROCESS|LCF_ERROR, __FUNCTION__"(%d) called.", nExitCode);
@@ -1524,6 +1538,7 @@ HOOKFUNC VOID WINAPI MyPostQuitMessage(int nExitCode)
 
 
 
+HOOK_FUNCTION(BOOL, WINAPI, TranslateMessage, CONST MSG *lpMsg)
 HOOKFUNC BOOL WINAPI MyTranslateMessage(CONST MSG *lpMsg)
 {
 	MSG& msg = *const_cast<MSG*>(lpMsg);
@@ -1558,6 +1573,7 @@ HOOKFUNC BOOL WINAPI MyTranslateMessage(CONST MSG *lpMsg)
 	}
 }
 
+HOOK_FUNCTION(LRESULT, WINAPI, DispatchMessageA, CONST MSG *lpMsg)
 HOOKFUNC LRESULT WINAPI MyDispatchMessageA(CONST MSG *lpMsg)
 {
 	if(lpMsg) debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", (DWORD)lpMsg->hwnd, (DWORD)lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
@@ -1574,6 +1590,7 @@ HOOKFUNC LRESULT WINAPI MyDispatchMessageA(CONST MSG *lpMsg)
 	return rv;
 #endif
 }
+HOOK_FUNCTION(LRESULT, WINAPI, DispatchMessageW, CONST MSG *lpMsg)
 HOOKFUNC LRESULT WINAPI MyDispatchMessageW(CONST MSG *lpMsg)
 {
 	if(lpMsg) debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", (DWORD)lpMsg->hwnd, (DWORD)lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
@@ -1592,6 +1609,7 @@ HOOKFUNC LRESULT WINAPI MyDispatchMessageW(CONST MSG *lpMsg)
 }
 
 
+HOOK_FUNCTION(BOOL, WINAPI, GetMessageA, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 HOOKFUNC BOOL WINAPI MyGetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 {
 //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
@@ -1696,6 +1714,7 @@ HOOKFUNC BOOL WINAPI MyGetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, U
 	}
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetMessageW, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 HOOKFUNC BOOL WINAPI MyGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
 {
 //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
@@ -1797,6 +1816,7 @@ HOOKFUNC BOOL WINAPI MyGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, U
 //	return rv;
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, PeekMessageA, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 HOOKFUNC BOOL WINAPI MyPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
 //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
@@ -1890,6 +1910,7 @@ HOOKFUNC BOOL WINAPI MyPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, 
 //	return rv;
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, PeekMessageW, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 HOOKFUNC BOOL WINAPI MyPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
 //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
@@ -1983,6 +2004,7 @@ HOOKFUNC BOOL WINAPI MyPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, 
 #endif
 }
 
+HOOK_FUNCTION(DWORD, WINAPI, GetQueueStatus, UINT flags)
 HOOKFUNC DWORD WINAPI MyGetQueueStatus(UINT flags)
 {
 	debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X) called.\n", flags);
@@ -1998,6 +2020,7 @@ HOOKFUNC DWORD WINAPI MyGetQueueStatus(UINT flags)
 	return (flags & 0xFFFF) | (flags << 16); // I'm not sure what else I can do that's deterministic... (TODO: if the windows message queue is emulated then this can be made more accurate)
 #endif
 }
+HOOK_FUNCTION(BOOL, WINAPI, GetInputState)
 HOOKFUNC BOOL WINAPI MyGetInputState()
 {
 #ifdef EMULATE_MESSAGE_QUEUES
@@ -2033,6 +2056,7 @@ HOOKFUNC BOOL WINAPI MyGetInputState()
 
 
 
+HOOK_FUNCTION(LRESULT, WINAPI, DefWindowProcA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC LRESULT WINAPI MyDefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -2041,6 +2065,7 @@ HOOKFUNC LRESULT WINAPI MyDefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPA
 	tls.callerisuntrusted--;
 	return rv;
 }
+HOOK_FUNCTION(LRESULT, WINAPI, DefWindowProcW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 HOOKFUNC LRESULT WINAPI MyDefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -2051,6 +2076,7 @@ HOOKFUNC LRESULT WINAPI MyDefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPA
 }
 
 
+HOOK_FUNCTION(UINT, WINAPI, RegisterWindowMessageA, LPCSTR lpString)
 HOOKFUNC UINT WINAPI MyRegisterWindowMessageA(LPCSTR lpString)
 {
 //cmdprintf("SHORTTRACE: 3,50");
@@ -2058,6 +2084,7 @@ HOOKFUNC UINT WINAPI MyRegisterWindowMessageA(LPCSTR lpString)
 	debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(\"%s\") called. returned 0x%X, reserved=%d\n", lpString, rv, isMessageWhitelisted(rv));
 	return rv;
 }
+HOOK_FUNCTION(UINT, WINAPI, RegisterWindowMessageW, LPCWSTR lpString)
 HOOKFUNC UINT WINAPI MyRegisterWindowMessageW(LPCWSTR lpString)
 {
 //cmdprintf("SHORTTRACE: 3,50");
@@ -2067,7 +2094,8 @@ HOOKFUNC UINT WINAPI MyRegisterWindowMessageW(LPCWSTR lpString)
 }
 
 
-HOOKFUNC LONG WINAPI MyGetMessageTime(VOID)
+HOOK_FUNCTION(LONG, WINAPI, GetMessageTime)
+HOOKFUNC LONG WINAPI MyGetMessageTime()
 {
 	//return GetMessageTime();
 	debuglog(LCF_MESSAGES|LCF_TIMEFUNC|LCF_TIMEGET, __FUNCTION__ " called.\n");
@@ -2079,7 +2107,8 @@ HOOKFUNC LONG WINAPI MyGetMessageTime(VOID)
 #endif
 }
 
-HOOKFUNC DWORD WINAPI MyGetMessagePos(VOID)
+HOOK_FUNCTION(DWORD, WINAPI, GetMessagePos)
+HOOKFUNC DWORD WINAPI MyGetMessagePos()
 {
 	//return GetMessagePos();
 	debuglog(LCF_MESSAGES|LCF_MOUSE|LCF_UNTESTED, __FUNCTION__ " called.\n");
