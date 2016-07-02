@@ -24,9 +24,10 @@
  *
  * The usage of the C-cast for the return allows for void-functions to be declared.
  * The C-cast to void will cause the compiler to throw away the value that's being cast.
+ *
+ * The dummy typedef is to force ending the macro with a ;
  */
 #define HOOK_FUNCTION(return_type, call_convention, target, ...) \
-    HOOKFUNC return_type call_convention My##target(##__VA_ARGS__); \
     TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__) \
     { \
         static int x__ = 0; \
@@ -41,14 +42,12 @@
         x__++; \
         return (return_type)0; \
     } \
-    HOOKFUNC return_type call_convention Hook##target(##__VA_ARGS__) \
-    { \
-        static unsigned int my_target__ = reinterpret_cast<unsigned int>(My##target); \
-        _asm { jmp fword ptr[my_target__] }; \
-        return (return_type)0; \
-    }
+    typedef int dummy_typedef_##target
 
-
+#define HOOK_DECLARE(return_type, call_convention, target, ...) \
+    TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__); \
+    HOOKFUNC return_type call_convention My##target(##__VA_ARGS__); \
+    static auto& target = Tramp##target
 
 // API for actually performing interception/hooking
 

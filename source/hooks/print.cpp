@@ -9,6 +9,8 @@
 #include "shared/ipc.h"
 #include "intercept.h"
 
+#include "tramps/timetramps.h"
+
 //#define TRAMPFUNC __declspec(noinline)
 ////#define GetAsyncKeyState TrampGetAsyncKeyState
 ////TRAMPFUNC SHORT WINAPI GetAsyncKeyState(int vKey) ;
@@ -18,12 +20,8 @@
 
 extern TasFlags tasflags;
 
-extern int getCurrentThreadstamp();
-extern int getCurrentFramestamp();
-extern int getCurrentTimestamp();
 //extern int getCurrentTimestamp2();
 //extern int getCurrentTimestamp3();
-TRAMPFUNC DWORD WINAPI TramptimeGetTime(void);
 
 #ifndef debugprintf
 int debugprintf(const char* fmt, ...)
@@ -36,14 +34,14 @@ int debugprintf(const char* fmt, ...)
     char str[4096];
     memset(str, '\0', sizeof(str));
 
-    int threadStamp = getCurrentThreadstamp();
+    int threadStamp = Hooks::getCurrentThreadstamp();
     if (threadStamp)
     {
-        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: %08X: (f=%d, t=%d) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: %08X: (f=%d, t=%d) ", threadStamp, Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp());
     }
     else
     {
-        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: MAIN: (f=%d, t=%d) ", getCurrentFramestamp(), getCurrentTimestamp());
+        _snprintf(str, ARRAYSIZE(str) - 1, "MSG: MAIN: (f=%d, t=%d) ", Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp());
     }
 
     va_list args;
@@ -82,14 +80,14 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
     char str[4096];
     memset(str, '\0', sizeof(str));
 
-    int threadStamp = getCurrentThreadstamp();
+    int threadStamp = Hooks::getCurrentThreadstamp();
     if (threadStamp)
     {
-        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: %08X: (f=%d, t=%d, c=%08X) ", threadStamp, getCurrentFramestamp(), getCurrentTimestamp(), cat);
+        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: %08X: (f=%d, t=%d, c=%08X) ", threadStamp, Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp(), cat);
     }
     else
     {
-        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: MAIN: (f=%d, t=%d, c=%08X) ", getCurrentFramestamp(), getCurrentTimestamp(), cat);
+        _snprintf(str, ARRAYSIZE(str) - 1, "LOG: MAIN: (f=%d, t=%d, c=%08X) ", Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp(), cat);
     }
 
     va_list args;

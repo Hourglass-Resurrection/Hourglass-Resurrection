@@ -3,40 +3,37 @@
 
 #pragma once
 
-#define DirectInputCreateA TrampDirectInputCreateA
-TRAMPFUNC HRESULT WINAPI DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
-#define DirectInputCreateW TrampDirectInputCreateW
-TRAMPFUNC HRESULT WINAPI DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
-#define DirectInputCreateEx TrampDirectInputCreateEx
-TRAMPFUNC HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
-#define DirectInput8Create TrampDirectInput8Create
-TRAMPFUNC HRESULT WINAPI DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
+#include "../intercept.h"
 
-#define GetAsyncKeyState TrampGetAsyncKeyState
-TRAMPFUNC SHORT WINAPI GetAsyncKeyState(int vKey);
-#define GetKeyState TrampGetKeyState
-TRAMPFUNC SHORT WINAPI GetKeyState(int vKey);
-#define GetKeyboardState TrampGetKeyboardState
-TRAMPFUNC BOOL WINAPI GetKeyboardState(PBYTE lpKeyState);
-#define GetLastInputInfo TrampGetLastInputInfo
-TRAMPFUNC BOOL WINAPI GetLastInputInfo(PLASTINPUTINFO plii);
+namespace Hooks
+{
+    extern int g_midFrameAsyncKeyRequests;
 
-#define GetCursorPos TrampGetCursorPos
-TRAMPFUNC BOOL WINAPI GetCursorPos(LPPOINT lpPoint);
-#define GetCursorInfo TrampGetCursorInfo
-TRAMPFUNC BOOL WINAPI GetCursorInfo(PCURSORINFO pci);
+    HOOK_DECLARE(HRESULT, WINAPI, DirectInputCreateA, HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
+    HOOK_DECLARE(HRESULT, WINAPI, DirectInputCreateW, HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
+    HOOK_DECLARE(HRESULT, WINAPI, DirectInputCreateEx, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
+    HOOK_DECLARE(HRESULT, WINAPI, DirectInput8Create, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
 
-#define joySetCapture TrampjoySetCapture
-TRAMPFUNC MMRESULT WINAPI joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
-#define joyReleaseCapture TrampjoyReleaseCapture
-TRAMPFUNC MMRESULT WINAPI joyReleaseCapture(UINT uJoyID);
-#define joyGetPosEx TrampjoyGetPosEx
-TRAMPFUNC MMRESULT WINAPI joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
-#define joyGetPos TrampjoyGetPos
-TRAMPFUNC MMRESULT WINAPI joyGetPos(UINT uJoyID, LPJOYINFO pji);
-#define joyGetNumDevs TrampjoyGetNumDevs
-TRAMPFUNC UINT WINAPI joyGetNumDevs();
-#define joyGetDevCapsA TrampjoyGetDevCapsA
-TRAMPFUNC MMRESULT WINAPI joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-#define joyGetDevCapsW TrampjoyGetDevCapsW
-TRAMPFUNC MMRESULT WINAPI joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+    HOOK_DECLARE(SHORT, WINAPI, GetAsyncKeyState, int vKey);
+    HOOK_DECLARE(SHORT, WINAPI, GetKeyState, int vKey);
+    HOOK_DECLARE(BOOL, WINAPI, GetKeyboardState, PBYTE lpKeyState);
+    HOOK_DECLARE(BOOL, WINAPI, GetLastInputInfo, PLASTINPUTINFO plii);
+
+    HOOK_DECLARE(BOOL, WINAPI, GetCursorPos, LPPOINT lpPoint);
+    HOOK_DECLARE(BOOL, WINAPI, GetCursorInfo, PCURSORINFO pci);
+
+    HOOK_DECLARE(MMRESULT, WINAPI, joySetCapture, HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
+    HOOK_DECLARE(MMRESULT, WINAPI, joyReleaseCapture, UINT uJoyID);
+    HOOK_DECLARE(MMRESULT, WINAPI, joyGetPosEx, UINT uJoyID, LPJOYINFOEX pji);
+    HOOK_DECLARE(MMRESULT, WINAPI, joyGetPos, UINT uJoyID, LPJOYINFO pji);
+    HOOK_DECLARE(UINT, WINAPI, joyGetNumDevs);
+    HOOK_DECLARE(MMRESULT, WINAPI, joyGetDevCapsA, UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
+    HOOK_DECLARE(MMRESULT, WINAPI, joyGetDevCapsW, UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+
+    void ProcessFrameInput();
+
+    void ApplyInputIntercepts();
+
+    bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew);
+    bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew);
+}

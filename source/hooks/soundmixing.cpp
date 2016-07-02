@@ -42,7 +42,7 @@
 //   this performs linear interpolation of samples.
 //   some games would sound very noticeably wrong otherwise.
 template<typename fromtype, typename totype, int fromchannels, int tochannels>
-static void Mix(const unsigned char*__restrict buf, unsigned char*__restrict outbuf, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, CachedVolumeAndPan& volumes)
+static void Mix(const unsigned char*__restrict buf, unsigned char*__restrict outbuf, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, Hooks::CachedVolumeAndPan& volumes)
 {
 	enum { fromshift = (2+sizeof(fromtype)-sizeof(totype))<<3 }; // 16 when both buffers have the same bit/sample... this is for combining differing bitrates
 	enum { maxto = (1<<(8*sizeof(totype)-1))-1 }; // clamping magnitude (127 or 32767)
@@ -115,7 +115,7 @@ static void Mix(const unsigned char*__restrict buf, unsigned char*__restrict out
 }
 
 template<int fromchannels, int tochannels>
-static void Mix(const unsigned char* buf, unsigned char* outbuf, int myBitsPerSample, int outBitsPerSample, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, CachedVolumeAndPan& volumes)
+static void Mix(const unsigned char* buf, unsigned char* outbuf, int myBitsPerSample, int outBitsPerSample, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, Hooks::CachedVolumeAndPan& volumes)
 {
 	// note: WAV uses unsigned for 8-bit and signed for 16-bit (it makes a big difference!)
 	if(myBitsPerSample <= 8 && outBitsPerSample <= 8)
@@ -130,7 +130,7 @@ static void Mix(const unsigned char* buf, unsigned char* outbuf, int myBitsPerSa
 
 void MixFromToInternal(DWORD pos1, DWORD pos2, DWORD outPos1, DWORD outPos2, bool pos2IsLastSample,
 	DWORD outSamplesPerSec, WORD myBitsPerSample, WORD outBitsPerSample, WORD myChannels, WORD outChannels, WORD myBlockSize, WORD outBlockSize,
-	unsigned char* buffer, unsigned char* contiguousMixOutBuf, CachedVolumeAndPan& volumes)
+	unsigned char* buffer, unsigned char* contiguousMixOutBuf, Hooks::CachedVolumeAndPan& volumes)
 {
 	if(pos2 <= pos1 || outPos2 <= outPos1)
 		return; // not allowed

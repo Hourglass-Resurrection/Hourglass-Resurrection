@@ -192,5 +192,8 @@
     <ClInclude Include="..\shared\input.h">
       <Filter>Source Files\shared</Filter>
     </ClInclude>
+    <ClInclude Include="locale.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

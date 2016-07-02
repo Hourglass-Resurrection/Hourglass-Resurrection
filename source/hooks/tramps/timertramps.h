@@ -3,19 +3,22 @@
 
 #pragma once
 
-#define timeSetEvent TramptimeSetEvent
-TRAMPFUNC MMRESULT WINAPI timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
-#define timeKillEvent TramptimeKillEvent
-TRAMPFUNC MMRESULT WINAPI timeKillEvent(UINT uTimerID);
-#define SetTimer TrampSetTimer
-TRAMPFUNC UINT_PTR WINAPI SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
-#define KillTimer TrampKillTimer
-TRAMPFUNC BOOL WINAPI KillTimer(HWND hWnd, UINT_PTR nIDEvent);
-#define CreateTimerQueueTimer TrampCreateTimerQueueTimer
-TRAMPFUNC BOOL WINAPI CreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback, PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
-#define SetWaitableTimer TrampSetWaitableTimer
-TRAMPFUNC BOOL WINAPI SetWaitableTimer(HANDLE hTimer,const LARGE_INTEGER *lpDueTime,LONG lPeriod,PTIMERAPCROUTINE pfnCompletionRoutine,LPVOID lpArgToCompletionRoutine,BOOL fResume);
-#define CancelWaitableTimer TrampCancelWaitableTimer
-TRAMPFUNC BOOL WINAPI CancelWaitableTimer(HANDLE hTimer);
-#define QueueUserAPC TrampQueueUserAPC
-TRAMPFUNC DWORD WINAPI QueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
+#include "../intercept.h"
+
+namespace Hooks
+{
+    HOOK_DECLARE(MMRESULT, WINAPI, timeSetEvent, UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
+    HOOK_DECLARE(MMRESULT, WINAPI, timeKillEvent, UINT uTimerID);
+    HOOK_DECLARE(UINT_PTR, WINAPI, SetTimer, HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
+    HOOK_DECLARE(BOOL, WINAPI, KillTimer, HWND hWnd, UINT_PTR nIDEvent);
+    HOOK_DECLARE(BOOL, WINAPI, CreateTimerQueueTimer, PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback, PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
+    HOOK_DECLARE(BOOL, WINAPI, SetWaitableTimer, HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
+    HOOK_DECLARE(BOOL, WINAPI, CancelWaitableTimer, HANDLE hTimer);
+    HOOK_DECLARE(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
+
+    void ProcessTimers();
+
+    void ApplyTimerIntercepts();
+
+    void TimerDllMainInit();
+}

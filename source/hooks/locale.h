@@ -6,8 +6,28 @@
 
 #include <windows.h>
 
-UINT LocaleToCodePage(LCID locale);
-DWORD LocaleToCharset(LCID locale);
+inline UINT LocaleToCodePage(LCID locale)
+{
+    switch (locale)
+    {
+    case 1041: return 932; // shift-JIS
+    case 2052: return 936; // simplified chinese
+    case 1042: return 949; // korean
+    default: // most others NYI
+    case 1033: return 1252;
+    }
+}
+inline DWORD LocaleToCharset(LCID locale)
+{
+    switch (locale)
+    {
+    case 1041: return SHIFTJIS_CHARSET;
+    case 2052: return GB2312_CHARSET;
+    case 1042: return HANGUL_CHARSET;
+    default: // most others NYI
+    case 1033: return ANSI_CHARSET;
+    }
+}
 
 // it's not the most robust implementation but I'm just going for a little code reuse here.
 // leaves result on the stack in a variable of a name specified by wstr.

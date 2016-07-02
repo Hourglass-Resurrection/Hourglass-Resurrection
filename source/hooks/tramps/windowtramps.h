@@ -3,72 +3,52 @@
 
 #pragma once
 
-#define CreateWindowExA TrampCreateWindowExA
-TRAMPFUNC HWND WINAPI CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
-	LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-#define CreateWindowExW TrampCreateWindowExW
-TRAMPFUNC HWND WINAPI CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
-	LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-	HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-#define DestroyWindow TrampDestroyWindow
-TRAMPFUNC BOOL WINAPI DestroyWindow(HWND hWnd);
-#define CloseWindow TrampCloseWindow
-TRAMPFUNC BOOL WINAPI CloseWindow(HWND hWnd);
-#define SetWindowLongA TrampSetWindowLongA
-TRAMPFUNC LONG WINAPI SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
-#define SetWindowLongW TrampSetWindowLongW
-TRAMPFUNC LONG WINAPI SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong);
-#define GetWindowLongA TrampGetWindowLongA
-TRAMPFUNC LONG WINAPI GetWindowLongA(HWND hWnd, int nIndex);
-#define GetWindowLongW TrampGetWindowLongW
-TRAMPFUNC LONG WINAPI GetWindowLongW(HWND hWnd, int nIndex);
+#include <map>
 
+#include "../intercept.h"
 
-//#define InvalidateRect TrampInvalidateRect
-//TRAMPFUNC BOOL WINAPI InvalidateRect(HWND hWnd,CONST RECT *lpRect,BOOL bErase);
-//#define UpdateWindow TrampUpdateWindow
-//TRAMPFUNC BOOL WINAPI UpdateWindow(HWND hWnd);
+namespace Hooks
+{
+    extern std::map<HWND, WNDPROC> hwndToOrigHandler;
 
-#define MessageBoxA TrampMessageBoxA
-TRAMPFUNC int WINAPI MessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
-#define MessageBoxW TrampMessageBoxW
-TRAMPFUNC int WINAPI MessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
-#define MessageBoxExA TrampMessageBoxExA
-TRAMPFUNC int WINAPI MessageBoxExA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
-#define MessageBoxExW TrampMessageBoxExW
-TRAMPFUNC int WINAPI MessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId);
-#define DialogBoxParamA TrampDialogBoxParamA
-TRAMPFUNC INT_PTR WINAPI DialogBoxParamA(HINSTANCE hInstance,LPCSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam);
-#define DialogBoxParamW TrampDialogBoxParamW
-TRAMPFUNC INT_PTR WINAPI DialogBoxParamW(HINSTANCE hInstance,LPCWSTR lpTemplateName,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam);
-#define DialogBoxIndirectParamA TrampDialogBoxIndirectParamA
-TRAMPFUNC INT_PTR WINAPI DialogBoxIndirectParamA(HINSTANCE hInstance,LPCDLGTEMPLATEA hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam);
-#define DialogBoxIndirectParamW TrampDialogBoxIndirectParamW
-TRAMPFUNC INT_PTR WINAPI DialogBoxIndirectParamW(HINSTANCE hInstance,LPCDLGTEMPLATEW hDialogTemplate,HWND hWndParent,DLGPROC lpDialogFunc,LPARAM dwInitParam);
+    HOOK_DECLARE(HWND, WINAPI, CreateWindowExA, DWORD dwExStyle, LPCSTR lpClassName,
+        LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
+        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+    HOOK_DECLARE(HWND, WINAPI, CreateWindowExW, DWORD dwExStyle, LPCWSTR lpClassName,
+        LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
+        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+    HOOK_DECLARE(BOOL, WINAPI, DestroyWindow, HWND hWnd);
+    HOOK_DECLARE(BOOL, WINAPI, CloseWindow, HWND hWnd);
+    HOOK_DECLARE(LONG, WINAPI, SetWindowLongA, HWND hWnd, int nIndex, LONG dwNewLong);
+    HOOK_DECLARE(LONG, WINAPI, SetWindowLongW, HWND hWnd, int nIndex, LONG dwNewLong);
+    HOOK_DECLARE(LONG, WINAPI, GetWindowLongA, HWND hWnd, int nIndex);
+    HOOK_DECLARE(LONG, WINAPI, GetWindowLongW, HWND hWnd, int nIndex);
 
-#define MoveWindow TrampMoveWindow
-TRAMPFUNC BOOL WINAPI MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
-#define SetWindowPos TrampSetWindowPos
-TRAMPFUNC BOOL WINAPI SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
-#define ShowWindow TrampShowWindow
-TRAMPFUNC BOOL WINAPI ShowWindow(HWND hWnd, int nCmdShow);
-#define GetClientRect TrampGetClientRect
-TRAMPFUNC BOOL WINAPI GetClientRect(HWND hWnd, LPRECT lpRect);
-#define GetWindowRect TrampGetWindowRect
-TRAMPFUNC BOOL WINAPI GetWindowRect(HWND hWnd, LPRECT lpRect);
-#define ClientToScreen TrampClientToScreen
-TRAMPFUNC BOOL WINAPI ClientToScreen(HWND hWnd, LPPOINT lpPoint);
-#define ScreenToClient TrampScreenToClient
-TRAMPFUNC BOOL WINAPI ScreenToClient(HWND hWnd, LPPOINT lpPoint);
-#define SetWindowTextA TrampSetWindowTextA
-TRAMPFUNC BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
-#define SetWindowTextW TrampSetWindowTextW
-TRAMPFUNC BOOL WINAPI SetWindowTextW(HWND hWnd, LPCWSTR lpString);
+    //HOOK_DECLARE(BOOL, WINAPI, InvalidateRect, HWND hWnd, CONST RECT *lpRect, BOOL bErase)
+    //HOOK_DECLARE(BOOL, WINAPI, UpdateWindow(HWND hWnd);
 
-#define GetActiveWindow TrampGetActiveWindow
-TRAMPFUNC HWND WINAPI GetActiveWindow();
-#define GetForegroundWindow TrampGetForegroundWindow
-TRAMPFUNC HWND WINAPI GetForegroundWindow();
-#define GetFocus TrampGetFocus
-TRAMPFUNC HWND WINAPI GetFocus();
+    HOOK_DECLARE(int, WINAPI, MessageBoxA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+    HOOK_DECLARE(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
+    HOOK_DECLARE(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
+    HOOK_DECLARE(int, WINAPI, MessageBoxExW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId);
+    HOOK_DECLARE(INT_PTR, WINAPI, DialogBoxParamA, HINSTANCE hInstance, LPCSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+    HOOK_DECLARE(INT_PTR, WINAPI, DialogBoxParamW, HINSTANCE hInstance, LPCWSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+    HOOK_DECLARE(INT_PTR, WINAPI, DialogBoxIndirectParamA, HINSTANCE hInstance, LPCDLGTEMPLATEA hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+    HOOK_DECLARE(INT_PTR, WINAPI, DialogBoxIndirectParamW, HINSTANCE hInstance, LPCDLGTEMPLATEW hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+
+    HOOK_DECLARE(BOOL, WINAPI, MoveWindow, HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+    HOOK_DECLARE(BOOL, WINAPI, SetWindowPos, HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
+    HOOK_DECLARE(BOOL, WINAPI, ShowWindow, HWND hWnd, int nCmdShow);
+    HOOK_DECLARE(BOOL, WINAPI, GetClientRect, HWND hWnd, LPRECT lpRect);
+    HOOK_DECLARE(BOOL, WINAPI, GetWindowRect, HWND hWnd, LPRECT lpRect);
+    HOOK_DECLARE(BOOL, WINAPI, ClientToScreen, HWND hWnd, LPPOINT lpPoint);
+    HOOK_DECLARE(BOOL, WINAPI, ScreenToClient, HWND hWnd, LPPOINT lpPoint);
+    HOOK_DECLARE(BOOL, WINAPI, SetWindowTextA, HWND hWnd, LPCSTR lpString);
+    HOOK_DECLARE(BOOL, WINAPI, SetWindowTextW, HWND hWnd, LPCWSTR lpString);
+
+    HOOK_DECLARE(HWND, WINAPI, GetActiveWindow);
+    HOOK_DECLARE(HWND, WINAPI, GetForegroundWindow);
+    HOOK_DECLARE(HWND, WINAPI, GetFocus);
+
+    void ApplyWindowIntercepts();
+}

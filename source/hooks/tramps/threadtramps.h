@@ -3,20 +3,24 @@
 
 #pragma once
 
-#define CreateThread TrampCreateThread
-TRAMPFUNC HANDLE WINAPI CreateThread(
-		LPSECURITY_ATTRIBUTES lpThreadAttributes,
-		SIZE_T dwStackSize,
-		LPTHREAD_START_ROUTINE lpStartAddress,
-		LPVOID lpParameter,
-		DWORD dwCreationFlags,
-		LPDWORD lpThreadId
-	);
-#define ExitThread TrampExitThread
-TRAMPFUNC VOID WINAPI ExitThread(DWORD dwExitCode);
-#define TerminateThread TrampTerminateThread
-TRAMPFUNC BOOL WINAPI TerminateThread(HANDLE hThread, DWORD dwExitCode);
-#define GetExitCodeThread TrampGetExitCodeThread
-TRAMPFUNC BOOL WINAPI GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
-#define NtSetInformationThread TrampNtSetInformationThread
-TRAMPFUNC NTSTATUS NTAPI NtSetInformationThread(HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength);
+#include "../intercept.h"
+
+namespace Hooks
+{
+    HOOK_DECLARE(HANDLE, WINAPI, CreateThread,
+        LPSECURITY_ATTRIBUTES lpThreadAttributes,
+        SIZE_T dwStackSize,
+        LPTHREAD_START_ROUTINE lpStartAddress,
+        LPVOID lpParameter,
+        DWORD dwCreationFlags,
+        LPDWORD lpThreadId
+    );
+    HOOK_DECLARE(VOID, WINAPI, ExitThread, DWORD dwExitCode);
+    HOOK_DECLARE(BOOL, WINAPI, TerminateThread, HANDLE hThread, DWORD dwExitCode);
+    HOOK_DECLARE(BOOL, WINAPI, GetExitCodeThread, HANDLE hThread, LPDWORD lpExitCode);
+    HOOK_DECLARE(NTSTATUS, NTAPI, NtSetInformationThread, HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength);
+
+    void SetThreadName(DWORD dwThreadID, char* threadName);
+
+    void ApplyThreadIntercepts();
+}
