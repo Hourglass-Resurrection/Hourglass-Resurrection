@@ -42,6 +42,11 @@
         x__++; \
         return (return_type)0; \
     } \
+    __declspec(naked) return_type call_convention Hook##target(##__VA_ARGS__) \
+    { \
+        static unsigned int my_target__ = reinterpret_cast<unsigned int>(My##target); \
+        _asm { jmp dword ptr[my_target__] }; \
+    } \
     typedef int dummy_typedef_##target
 
 #define HOOK_DECLARE(return_type, call_convention, target, ...) \
