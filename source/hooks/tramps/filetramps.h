@@ -3,25 +3,31 @@
 
 #pragma once
 
-#define CreateFileA TrampCreateFileA
-TRAMPFUNC HANDLE WINAPI CreateFileA(
-	LPCSTR lpFileName,
-	DWORD dwDesiredAccess,
-	DWORD dwShareMode,
-	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-	DWORD dwCreationDisposition,
-	DWORD dwFlagsAndAttributes,
-	HANDLE hTemplateFile
-) TRAMPOLINE_DEF
-#define CreateFileW TrampCreateFileW
-TRAMPFUNC HANDLE WINAPI CreateFileW(
-	LPCWSTR lpFileName,
-	DWORD dwDesiredAccess,
-	DWORD dwShareMode,
-	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-	DWORD dwCreationDisposition,
-	DWORD dwFlagsAndAttributes,
-	HANDLE hTemplateFile
-) TRAMPOLINE_DEF
-#define OpenFile TrampOpenFile
-TRAMPFUNC HFILE WINAPI OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle) TRAMPOLINE_DEF
+#include "../intercept.h"
+
+namespace Hooks
+{
+    HOOK_DECLARE(HANDLE, WINAPI, CreateFileA,
+        LPCSTR lpFileName,
+        DWORD dwDesiredAccess,
+        DWORD dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD dwCreationDisposition,
+        DWORD dwFlagsAndAttributes,
+        HANDLE hTemplateFile
+    );
+
+    HOOK_DECLARE(HANDLE, WINAPI, CreateFileW,
+        LPCWSTR lpFileName,
+        DWORD dwDesiredAccess,
+        DWORD dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD dwCreationDisposition,
+        DWORD dwFlagsAndAttributes,
+        HANDLE hTemplateFile
+    );
+
+    HOOK_DECLARE(HFILE, WINAPI, OpenFile, LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle);
+
+    void ApplyFileIntercepts();
+}

@@ -52,11 +52,11 @@ public:
 			{
 				debuglog(LCF_TIMESET|LCF_TIMEGET, __FUNCTION__ ": using other timer's value: %d --> %d\n", ticks, lastSetTickValue);
 				ticks = lastSetTickValue; // prevent freezing when switching between timers
-				lasttime = timeGetTime();
+				lasttime = Hooks::timeGetTime();
 				lastTimerIsNonDet = true;
 			}
 
-			int tc = timeGetTime();
+			int tc = Hooks::timeGetTime();
 			int delta = tc - lasttime;
 			if(tasflags.fastForward) // fast-forward
 				delta *= 3; // arbitrary, but higher didn't work well for me with this timer

@@ -56,21 +56,7 @@
 #include <mmsystem.h>
 #include <strmif.h>
 
-#include "intercept.h" // in case TRAMPOLINE_DEF wasn't defined yet
-
-#ifndef DEFINE_TRAMPS
-	// temporarily change these macros from definition to declaration
-	#undef TRAMPOLINE_DEF
-	#undef TRAMPOLINE_DEF_VOID
-	#undef TRAMPOLINE_DEF_CUSTOM
-	#define TRAMPOLINE_DEF ;
-	#define TRAMPOLINE_DEF_VOID ;
-	#if _MSC_VER > 1310
-		#define TRAMPOLINE_DEF_CUSTOM(...) ;
-	#else
-		#define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__) ;
-	#endif
-#endif
+#include "../intercept.h" // in case; wasn't defined yet
 
 #include "timetramps.h"
 #include "timertramps.h"
@@ -90,19 +76,7 @@
 #include "soundtramps.h"
 #include "Xinputtramps.h"
 
-#ifndef DEFINE_TRAMPS
-	// restore definition macros
-	#undef TRAMPOLINE_DEF
-	#undef TRAMPOLINE_DEF_VOID
-	#undef TRAMPOLINE_DEF_CUSTOM
-	#define TRAMPOLINE_DEF  INTERNAL_TRAMPOLINE_DEF
-	#define TRAMPOLINE_DEF_VOID  INTERNAL_TRAMPOLINE_DEF_VOID
-	#if _MSC_VER > 1310
-		#define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
-	#else
-		#define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
-	#endif
-#else
+#ifdef DEFINE_TRAMPS
 	bool notramps = true;
 #endif
 

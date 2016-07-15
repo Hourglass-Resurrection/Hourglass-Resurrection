@@ -3,52 +3,40 @@
 
 #pragma once
 
-#define CreateEventA TrampCreateEventA
-TRAMPFUNC HANDLE WINAPI CreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName) TRAMPOLINE_DEF
-#define CreateEventW TrampCreateEventW
-TRAMPFUNC HANDLE WINAPI CreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName) TRAMPOLINE_DEF
-#define OpenEventA TrampOpenEventA
-TRAMPFUNC HANDLE WINAPI OpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName) TRAMPOLINE_DEF
-#define OpenEventW TrampOpenEventW
-TRAMPFUNC HANDLE WINAPI OpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName) TRAMPOLINE_DEF
-#define SetEvent TrampSetEvent
-TRAMPFUNC BOOL WINAPI SetEvent(HANDLE hEvent) TRAMPOLINE_DEF
-#define ResetEvent TrampResetEvent
-TRAMPFUNC BOOL WINAPI ResetEvent(HANDLE hEvent) TRAMPOLINE_DEF
+#include "../intercept.h"
 
-#define CreateMutexA TrampCreateMutexA
-TRAMPFUNC HANDLE WINAPI CreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName) TRAMPOLINE_DEF
-#define OpenMutexA TrampOpenMutexA
-TRAMPFUNC HANDLE WINAPI OpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName) TRAMPOLINE_DEF
-#define CreateMutexW TrampCreateMutexW
-TRAMPFUNC HANDLE WINAPI CreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName) TRAMPOLINE_DEF
-#define OpenMutexW TrampOpenMutexW
-TRAMPFUNC HANDLE WINAPI OpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName) TRAMPOLINE_DEF
-#define ReleaseMutex TrampReleaseMutex
-TRAMPFUNC BOOL WINAPI ReleaseMutex(HANDLE hMutex) TRAMPOLINE_DEF
+namespace Hooks
+{
+    HOOK_DECLARE(HANDLE, WINAPI, CreateEventA, LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, CreateEventW, LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenEventA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenEventW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
+    HOOK_DECLARE(BOOL, WINAPI, SetEvent, HANDLE hEvent);
+    HOOK_DECLARE(BOOL, WINAPI, ResetEvent, HANDLE hEvent);
 
-#define CreateSemaphoreA TrampCreateSemaphoreA
-TRAMPFUNC HANDLE WINAPI CreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCSTR lpName)  TRAMPOLINE_DEF
-#define CreateSemaphoreW TrampCreateSemaphoreW
-TRAMPFUNC HANDLE WINAPI CreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,LONG lInitialCount,LONG lMaximumCount,LPCWSTR lpName)  TRAMPOLINE_DEF
-#define OpenSemaphoreA TrampOpenSemaphoreA
-TRAMPFUNC HANDLE WINAPI OpenSemaphoreA(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpName)  TRAMPOLINE_DEF
-#define OpenSemaphoreW TrampOpenSemaphoreW
-TRAMPFUNC HANDLE WINAPI OpenSemaphoreW(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpName)  TRAMPOLINE_DEF
-#define CreateWaitableTimerA TrampCreateWaitableTimerA
-TRAMPFUNC HANDLE WINAPI CreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCSTR lpTimerName)  TRAMPOLINE_DEF
-#define CreateWaitableTimerW TrampCreateWaitableTimerW
-TRAMPFUNC HANDLE WINAPI CreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttributes,BOOL bManualReset,LPCWSTR lpTimerName)  TRAMPOLINE_DEF
-#define OpenWaitableTimerA TrampOpenWaitableTimerA
-TRAMPFUNC HANDLE WINAPI OpenWaitableTimerA(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCSTR lpTimerName)  TRAMPOLINE_DEF
-#define OpenWaitableTimerW TrampOpenWaitableTimerW
-TRAMPFUNC HANDLE WINAPI OpenWaitableTimerW(DWORD dwDesiredAccess,BOOL bInheritHandle,LPCWSTR lpTimerName)  TRAMPOLINE_DEF
+    HOOK_DECLARE(HANDLE, WINAPI, CreateMutexA, LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenMutexA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, CreateMutexW, LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenMutexW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_DECLARE(BOOL, WINAPI, ReleaseMutex, HANDLE hMutex);
 
-// close enough
-#define CloseHandle TrampCloseHandle
-TRAMPFUNC BOOL WINAPI CloseHandle(HANDLE hObject) TRAMPOLINE_DEF
-#define DuplicateHandle TrampDuplicateHandle
-TRAMPFUNC BOOL WINAPI DuplicateHandle(HANDLE hSourceProcessHandle,
-    HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
-    DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions
-) TRAMPOLINE_DEF
+    HOOK_DECLARE(HANDLE, WINAPI, CreateSemaphoreA, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, CreateSemaphoreW, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenSemaphoreA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenSemaphoreW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
+    HOOK_DECLARE(HANDLE, WINAPI, CreateWaitableTimerA, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCSTR lpTimerName);
+    HOOK_DECLARE(HANDLE, WINAPI, CreateWaitableTimerW, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenWaitableTimerA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpTimerName);
+    HOOK_DECLARE(HANDLE, WINAPI, OpenWaitableTimerW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpTimerName);
+
+    // close enough
+    HOOK_DECLARE(BOOL, WINAPI, CloseHandle, HANDLE hObject);
+    HOOK_DECLARE(BOOL, WINAPI, DuplicateHandle, HANDLE hSourceProcessHandle,
+        HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
+        DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions
+    );
+
+    void ApplySyncIntercepts();
+
+    void SyncDllMainInit();
+}

@@ -12,8 +12,6 @@ bool s_isSleepEnterFB = false;
 bool s_isWaitEnterFB = false;
 DeterministicTimer detTimer;
 
-void AdvanceTimeAndMixAll(DWORD ticks);
-
 // used to adjust the timers if we switch between them,
 // which isn't strictly necessary but it saves the user from
 // having to wait for the new timer to catch up to the old one
@@ -25,17 +23,17 @@ extern int lastSetTickValue;
 	{
 		debuglog(LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ " called.\n");
 		//TIME_ENTER();
-		lastExitTime = timeGetTime();
+		lastExitTime = Hooks::timeGetTime();
 	}
 	void NonDeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 	{
 		debuglog(LCF_TIMEGET|LCF_FREQUENT, __FUNCTION__ "(%d) called.\n", framesPerSecond);
 
 		//TIME_ENTER();
-		lastEnterTime = timeGetTime();
+		lastEnterTime = Hooks::timeGetTime();
 
 		GetTicks();
-		AdvanceTimeAndMixAll(ticks - lastEnterTicks);
+		Hooks::AdvanceTimeAndMixAll(ticks - lastEnterTicks);
 		lastEnterTicks = ticks;
 	}
 	void NonDeterministicTimer::Initialize(DWORD startTicks)
@@ -43,7 +41,7 @@ extern int lastSetTickValue;
 		//TIME_ENTER();
 		ticks = startTicks;
 		lastEnterTicks = startTicks;
-		lasttime = timeGetTime();
+		lasttime = Hooks::timeGetTime();
 		frameThreadId = 0;
 		lastEnterTime = lasttime;
 		lastExitTime = lasttime;
@@ -136,7 +134,7 @@ int getCurrentFramestampLogical();
 		}
 
 		// get the current actual time
-		DWORD time = timeGetTime();
+		DWORD time = Hooks::timeGetTime();
 
 		// calculate the target time we wanted to be at now
 		DWORD timeScale = tasflags.timescale;
@@ -181,7 +179,7 @@ int getCurrentFramestampLogical();
 
 		// must happen after any calls to SleepAndAccumulateOutput in this function,
 		// or AVIs will get skipping audio in games that sleep
-		AdvanceTimeAndMixAll(newTicks);
+		Hooks::AdvanceTimeAndMixAll(newTicks);
 
 		BOOL skip = tasflags.fastForward;
 		if(skip)
@@ -213,7 +211,7 @@ int getCurrentFramestampLogical();
 			while((int)(desiredTime - time) > 0)
 			{
 				Sleep(1);
-				time = timeGetTime();
+				time = Hooks::timeGetTime();
 				if(tasflags.fastForward || timeScaleDiv != tasflags.timescaleDivisor)
 					break;
 			}
@@ -227,7 +225,7 @@ int getCurrentFramestampLogical();
 
 		// if we accidentally waited too long,
 		// remember that so we can compensate for it the next time through.
-		lastOvershot = timeGetTime() - desiredTime;
+		lastOvershot = Hooks::timeGetTime() - desiredTime;
 		if((int)lastOvershot < 0) lastOvershot = 0;
 		if((int)lastOvershot > newTicks) lastOvershot = newTicks;
 //		debugprintf("overshot: %d\n", lastOvershot);
@@ -319,7 +317,7 @@ int getCurrentFramestampLogical();
 	{
 		TIME_ENTER();
 		InitializeWithoutDependencies(startTicks);
-		lastEnterTime = timeGetTime();
+		lastEnterTime = Hooks::timeGetTime();
 		OnSystemTimerRecalibrated(); // in case
 //		fullyInitialized = true;
 //		debugprintf("thread = 0x%X, framethread = 0x%X\n", frameThreadId, GetCurrentThreadId());

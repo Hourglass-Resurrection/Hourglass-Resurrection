@@ -6,43 +6,53 @@
 // first some helper macros to use when defining trampoline and hook functions
 
 #define TRAMPFUNC __declspec(noinline)
-#define HOOKFUNC //__declspec(noinline)
+#define HOOKFUNC __declspec(noinline)
 
-#define TRAMPOLINE_DEF  INTERNAL_TRAMPOLINE_DEF
-#define TRAMPOLINE_DEF_VOID  INTERNAL_TRAMPOLINE_DEF_VOID
-#if _MSC_VER > 1310
-	#define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
-#else
-	#define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
-#endif
+/*
+ * This macro is used to declare a hook function and a trampoline, and fill their bodies
+ * with pre-defined code. For Trampolines this his code is long enough to safely get
+ * overwritten with a jump to the target. The hook function is designed to jump to the
+ * My[x] implementation.
+ *
+ * The trampolines original contents should never get called. If it happens, it means that the
+ * DLL the trampoline points at hasn't been loaded yet. For "non-default" DLLs (such as
+ * kernel32.dll), this may indicate that the application doesn't use it.
+ *
+ * Intended usage example:
+ * HOOK_FUNCTION(DWORD, WINAPI, TargetFunction, params...)
+ * HOOKFUNC DWORD WINAPI MyTargetFunction(params...) { code; }
+ *
+ * The usage of the C-cast for the return allows for void-functions to be declared.
+ * The C-cast to void will cause the compiler to throw away the value that's being cast.
+ *
+ * The dummy typedef is to force ending the macro with a ;
+ */
+#define HOOK_FUNCTION(return_type, call_convention, target, ...) \
+    TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__) \
+    { \
+        static int x__ = 0; \
+        x__++; \
+        x__++; \
+        if (x__==2) \
+        { \
+            debugprintf("Function %s got called before it was set up!", __FUNCTION__); \
+            _asm { int 3 }; \
+        } \
+        x__++; \
+        x__++; \
+        return (return_type)0; \
+    } \
+    __declspec(naked) return_type call_convention Hook##target(##__VA_ARGS__) \
+    { \
+        static unsigned int my_target__ = reinterpret_cast<unsigned int>(My##target); \
+        _asm { jmp dword ptr[my_target__] }; \
+    } \
+    typedef int dummy_typedef_##target
 
-// this macro is used to fill trampolines with some default code as its original contents,
-// that's big enough to get overwritten with a jump to the target.
-// (more than big enough, and slightly different per function, to stay on the safe side.)
-#define TRAMPOLINE_CONTENTS \
-	static int x__ = 0; \
-	x__++; \
-	x__++; \
-	if(x__==2){debugprintf("Function '" __FUNCTION__ "' got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function '" __FUNCTION__ "'. This should never happen.", "Error", MB_ICONERROR);} \
-	x__++; \
-	x__++;
-#define INTERNAL_TRAMPOLINE_DEF { TRAMPOLINE_CONTENTS return 0; }
-#define INTERNAL_TRAMPOLINE_DEF_VOID { TRAMPOLINE_CONTENTS }
-
-// the trampoline's original contents should never get called.
-// mistakes in the code that could cause it to get called are:
-// 1: if you forget to use the TRAMPFUNC macro, and the compiler inlines the trampoline contents into the caller.
-// 2: if you're adding code that gets called from DllMain before hooks are set up, and you forget to check notramps.
-// 3: if you're calling the trampoline to a function that's in a DLL that isn't loaded by the game.
-// if you expect 2 or 3 to be a problem somewhere, you could put a call to the real function
-// inside the initial trampoline contents, but beware the linking requirements that can add.
-// mistake 3 can be fixed by setting the hook mode to force load that DLL so the trampoline is valid,
-// but I try to minimize this to keep the program as lightweight as I reasonably can.
-
-
-
-
-
+#define HOOK_DECLARE(return_type, call_convention, target, ...) \
+    TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__); \
+    HOOKFUNC return_type call_convention My##target(##__VA_ARGS__); \
+    static auto& target = Tramp##target
 
 // API for actually performing interception/hooking
 
