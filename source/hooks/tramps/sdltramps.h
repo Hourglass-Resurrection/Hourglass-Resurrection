@@ -47,13 +47,13 @@ namespace Hooks
         unsigned short w, h;
     };
 
-    HOOK_DECLARE(int, SDLCALL, SDL_Flip, SDL_Surface *screen);
-    HOOK_DECLARE(void, SDLCALL, SDL_UpdateRect, SDL_Surface *screen, int x, int y, int w, int h);
-    HOOK_DECLARE(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects);
-    HOOK_DECLARE(void, SDLCALL, SDL_GL_SwapBuffers);
-    HOOK_DECLARE(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags);
-    HOOK_DECLARE(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface);
-    HOOK_DECLARE(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface);
+    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_Flip, SDL_Surface *screen);
+    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UpdateRect, SDL_Surface *screen, int x, int y, int w, int h);
+    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects);
+    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_GL_SwapBuffers);
+    HOOK_FUNCTION_DECLARE(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags);
+    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface);
+    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface);
 
     void ApplySDLIntercepts();
 }

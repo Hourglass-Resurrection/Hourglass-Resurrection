@@ -7,7 +7,7 @@
 
 namespace Hooks
 {
-    HOOK_DECLARE(HANDLE, WINAPI, CreateFileA,
+    HOOK_FUNCTION_DECLARE(HANDLE, WINAPI, CreateFileA,
         LPCSTR lpFileName,
         DWORD dwDesiredAccess,
         DWORD dwShareMode,
@@ -17,7 +17,7 @@ namespace Hooks
         HANDLE hTemplateFile
     );
 
-    HOOK_DECLARE(HANDLE, WINAPI, CreateFileW,
+    HOOK_FUNCTION_DECLARE(HANDLE, WINAPI, CreateFileW,
         LPCWSTR lpFileName,
         DWORD dwDesiredAccess,
         DWORD dwShareMode,
@@ -27,7 +27,7 @@ namespace Hooks
         HANDLE hTemplateFile
     );
 
-    HOOK_DECLARE(HFILE, WINAPI, OpenFile, LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle);
+    HOOK_FUNCTION_DECLARE(HFILE, WINAPI, OpenFile, LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle);
 
     void ApplyFileIntercepts();
 }
