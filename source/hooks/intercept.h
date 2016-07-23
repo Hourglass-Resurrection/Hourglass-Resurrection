@@ -9,26 +9,13 @@
 #define HOOKFUNC __declspec(noinline)
 
 /*
- * This macro is used to declare a hook function and a trampoline, and fill their bodies
- * with pre-defined code. For Trampolines this his code is long enough to safely get
- * overwritten with a jump to the target. The hook function is designed to jump to the
- * My[x] implementation.
+ * The usage of the C - cast for the return allows for void - functions to be declared.
+ * The C - cast to void will cause the compiler to throw away the value that's being cast.
  *
- * The trampolines original contents should never get called. If it happens, it means that the
- * DLL the trampoline points at hasn't been loaded yet. For "non-default" DLLs (such as
- * kernel32.dll), this may indicate that the application doesn't use it.
- *
- * Intended usage example:
- * HOOK_FUNCTION(DWORD, WINAPI, TargetFunction, params...)
- * HOOKFUNC DWORD WINAPI MyTargetFunction(params...) { code; }
- *
- * The usage of the C-cast for the return allows for void-functions to be declared.
- * The C-cast to void will cause the compiler to throw away the value that's being cast.
- *
- * The dummy typedef is to force ending the macro with a ;
+ * The dummy typedef is to force ending the macro with a;
  */
-#define HOOK_FUNCTION(return_type, call_convention, target, ...) \
-    TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__) \
+#define INTERNAL_HOOK_DEF(return_type, call_convention, name, my_name, ...) \
+    TRAMPFUNC return_type call_convention Tramp##name(##__VA_ARGS__) \
     { \
         static int x__ = 0; \
         x__++; \
@@ -42,17 +29,56 @@
         x__++; \
         return (return_type)0; \
     } \
-    __declspec(naked) return_type call_convention Hook##target(##__VA_ARGS__) \
+    __declspec(naked) return_type call_convention Hook##name(##__VA_ARGS__) \
     { \
-        static unsigned int my_target__ = reinterpret_cast<unsigned int>(My##target); \
+        static unsigned int my_target__ = reinterpret_cast<unsigned int>(My##my_name); \
         _asm { jmp dword ptr[my_target__] }; \
     } \
-    typedef int dummy_typedef_##target
+    typedef int dummy_typedef_##name
 
-#define HOOK_DECLARE(return_type, call_convention, target, ...) \
-    TRAMPFUNC return_type call_convention Tramp##target(##__VA_ARGS__); \
-    HOOKFUNC return_type call_convention My##target(##__VA_ARGS__); \
-    static auto& target = Tramp##target
+#define INTERNAL_HOOK_DEC(return_type, call_convention, name, my_name, ...) \
+    TRAMPFUNC return_type call_convention Tramp##name(##__VA_ARGS__); \
+    HOOKFUNC return_type call_convention My##my_name(##__VA_ARGS__); \
+    static auto& my_name = Tramp##name
+
+/*
+ * These macros are used to set up a hook function and a trampoline, and fill their bodies
+ * with pre-defined code. For Trampolines this his code is long enough to safely get
+ * overwritten with a jump to the target. The hook function is designed to jump to the
+ * My[x] implementation.
+ *
+ * The trampolines original contents should never get called. If it happens, it means that the
+ * DLL the trampoline points at hasn't been loaded yet. For "non-default" DLLs (such as
+ * dinput.dll), this may indicate that the application doesn't use it.
+ *
+ * The HOOK_FUNCTION_DECLARE macro will take care of all the necessary header file declarations
+ * for a function hook, while the HOOK_FUNCTION macro will take care of all the definitions.
+ *
+ * Intended usage example (h file):
+ * HOOK_FUNCTION_DECLARE(DWORD, WINAPI, TargetFunction, params...);
+ * Intended usage example (cpp file):
+ * HOOK_FUNCTION(DWORD, WINAPI, TargetFunction, params...);
+ * HOOKFUNC DWORD WINAPI MyTargetFunction(params...) { code; }
+ *
+ * The ORDINAL variants work the same way, except the target is the ordinal number and the
+ * decoration will become the function name. The macro will bind the number to the name, so
+ * calling the Ordinal in your own code will use the decoration.
+ * Example that proxys a call from the hooked ordinal to the original:
+ * HOOK_ORDINAL(DWORD, WINAPI, 54, TargetFunction, params...);
+ * HOOKFUNC DWORD WINAPI MyTargetFunction(params...) { return TargetFunction(params...); }
+ */
+
+#define HOOK_FUNCTION(return_type, call_convention, target, ...) \
+    INTERNAL_HOOK_DEF(return_type, call_convention, target, target, ##__VA_ARGS__)
+
+#define HOOK_ORDINAL(return_type, call_convention, target, decoration, ...) \
+    INTERNAL_HOOK_DEF(return_type, call_convention, Ordinal##target##_##decoration, decoration, ##__VA_ARGS__)
+
+#define HOOK_FUNCTION_DECLARE(return_type, call_convention, target, ...) \
+    INTERNAL_HOOK_DEC(return_type, call_convention, target, target, ##__VA_ARGS__)
+
+#define HOOK_ORDINAL_DECLARE(return_type, call_convention, target, decoration, ...) \
+    INTERNAL_HOOK_DEC(return_type, call_convention, Ordinal##target##_##decoration, decoration, ##__VA_ARGS__)
 
 // API for actually performing interception/hooking
 
@@ -253,7 +279,7 @@ struct InterceptDescriptor
 #define MAKE_INTERCEPT(enabled, dll, name) {#dll".dll", #name, (FARPROC)My##name, (FARPROC)Tramp##name, enabled, false}
 #define MAKE_INTERCEPT2(enabled, dll, name, myname) {#dll".dll", #name, (FARPROC)My##myname, (FARPROC)Tramp##myname, enabled, false}
 #define MAKE_INTERCEPT3(enabled, dllWithExt, name, suffix) {#dllWithExt, #name, (FARPROC)My##name##_##suffix, (FARPROC)Tramp##name##_##suffix, enabled, false}
-#define MAKE_INTERCEPT_ORD(enabled, dll, name, ordinal) {#dll".dll", reinterpret_cast<const char*>(ordinal), (FARPROC)My##name, (FARPROC)Tramp##name, enabled, true}
+#define MAKE_INTERCEPT_ORD(enabled, dll, name, ordinal) {#dll".dll", reinterpret_cast<const char*>(ordinal), (FARPROC)My##name, (FARPROC)TrampOrdinal##ordinal##_##name, enabled, true}
 //#define MAKE_INTERCEPT_DYNAMICTRAMP(enabled, dllWithExt, name) {#dllWithExt, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?3:-3, ArrayName##name}
 //#define MAKE_INTERCEPT_ALLDLLS(enabled, name) {NULL, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?4:-4, (const char*)(void*)ArrayName##name}
 

@@ -15,17 +15,17 @@ namespace Hooks {
     extern int fakePixelFormatBPP;
     extern int fakeDisplayRefresh;
 
-    HOOK_DECLARE(HRESULT, WINAPI, DirectDrawCreate, GUID FAR *lpGUID, struct IDirectDraw* FAR *lplpDD, IUnknown FAR *pUnkOuter);
-    HOOK_DECLARE(HRESULT, WINAPI, DirectDrawCreateEx, GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid, IUnknown FAR *pUnkOuter);
-    HOOK_DECLARE(HRESULT, WINAPI, CheckFullscreen);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectDrawCreate, GUID FAR *lpGUID, struct IDirectDraw* FAR *lplpDD, IUnknown FAR *pUnkOuter);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectDrawCreateEx, GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid, IUnknown FAR *pUnkOuter);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, CheckFullscreen);
 
 
-    HOOK_DECLARE(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion);
-    HOOK_DECLARE(IDirect3D8*, WINAPI, Direct3DCreate8, UINT SDKVersion);
-    HOOK_DECLARE(HRESULT, WINAPI, Direct3DCreate, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
-    HOOK_DECLARE(HRESULT, WINAPI, Direct3DCreate7, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
-    HOOK_DECLARE(HRESULT, WINAPI, Direct3DCreateDevice, GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);
-    HOOK_DECLARE(HRESULT, WINAPI, Direct3DCreateDevice7, GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);
+    HOOK_FUNCTION_DECLARE(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion);
+    HOOK_FUNCTION_DECLARE(IDirect3D8*, WINAPI, Direct3DCreate8, UINT SDKVersion);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreate, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreate7, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreateDevice, GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreateDevice7, GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, struct IDirectDrawSurface* surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter);
 
     void BackupVideoMemoryOfAllDDrawSurfaces();
     void BackupVideoMemoryOfAllD3D8Surfaces();

@@ -11,32 +11,32 @@ namespace Hooks
     extern int cllApiNum;
     extern DllLoadInfos dllLoadInfos;
 
-    //HOOK_DECLARE(HMODULE WINAPI LoadLibraryExW(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
-    HOOK_DECLARE(NTSTATUS, NTAPI, LdrLoadDll, PWCHAR PathToFile, ULONG Flags, struct _LSA_UNICODE_STRING* ModuleFileName, PHANDLE ModuleHandle);
-    //HOOK_DECLARE(NTSTATUS NTAPI LdrUnloadDll(HANDLE ModuleAddress);
+    //HOOK_FUNCTION_DECLARE(HMODULE WINAPI LoadLibraryExW(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+    HOOK_FUNCTION_DECLARE(NTSTATUS, NTAPI, LdrLoadDll, PWCHAR PathToFile, ULONG Flags, struct _LSA_UNICODE_STRING* ModuleFileName, PHANDLE ModuleHandle);
+    //HOOK_FUNCTION_DECLARE(NTSTATUS NTAPI LdrUnloadDll(HANDLE ModuleAddress);
 
-    HOOK_DECLARE(LRESULT, WINAPI, CallNextHookEx, HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam);
+    HOOK_FUNCTION_DECLARE(LRESULT, WINAPI, CallNextHookEx, HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam);
 
-    //HOOK_DECLARE(BOOL WINAPI RegisterUserApiHook(HINSTANCE hInst, FARPROC func);
+    //HOOK_FUNCTION_DECLARE(BOOL WINAPI RegisterUserApiHook(HINSTANCE hInst, FARPROC func);
 
-    HOOK_DECLARE(VOID, NTAPI, KiUserCallbackDispatcher, ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength);
+    HOOK_FUNCTION_DECLARE(VOID, NTAPI, KiUserCallbackDispatcher, ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength);
 
 
-    HOOK_DECLARE(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
-    HOOK_DECLARE(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
-    HOOK_DECLARE(HRESULT, STDAPICALLTYPE, CoGetClassObject, REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv);
-    HOOK_DECLARE(HRESULT, STDMETHODCALLTYPE, IUnknown_QueryInterface_Proxy, IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject);
-
-    // not sure exactly where these belong but this seems close enough
-    HOOK_DECLARE(PVOID, NTAPI, RtlAllocateHeap, PVOID HeapHandle, ULONG Flags, SIZE_T Size);
-    HOOK_DECLARE(PVOID, NTAPI, RtlCreateHeap, ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters);
-    HOOK_DECLARE(PVOID, RPC_ENTRY, NdrAllocate, PMIDL_STUB_MESSAGE pStubMsg, size_t Len);
-    HOOK_DECLARE(void, RPC_ENTRY, NdrClientInitializeNew, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
-    HOOK_DECLARE(void, RPC_ENTRY, NdrClientInitialize, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
-
+    HOOK_FUNCTION_DECLARE(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
+    HOOK_FUNCTION_DECLARE(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
+    HOOK_FUNCTION_DECLARE(HRESULT, STDAPICALLTYPE, CoGetClassObject, REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv);
+    HOOK_FUNCTION_DECLARE(HRESULT, STDMETHODCALLTYPE, IUnknown_QueryInterface_Proxy, IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject);
 
     // not sure exactly where these belong but this seems close enough
-    HOOK_DECLARE(BOOL, WINAPI, CreateProcessA,
+    HOOK_FUNCTION_DECLARE(PVOID, NTAPI, RtlAllocateHeap, PVOID HeapHandle, ULONG Flags, SIZE_T Size);
+    HOOK_FUNCTION_DECLARE(PVOID, NTAPI, RtlCreateHeap, ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters);
+    HOOK_FUNCTION_DECLARE(PVOID, RPC_ENTRY, NdrAllocate, PMIDL_STUB_MESSAGE pStubMsg, size_t Len);
+    HOOK_FUNCTION_DECLARE(void, RPC_ENTRY, NdrClientInitializeNew, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
+    HOOK_FUNCTION_DECLARE(void, RPC_ENTRY, NdrClientInitialize, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
+
+
+    // not sure exactly where these belong but this seems close enough
+    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, CreateProcessA,
         LPCSTR lpApplicationName,
         LPSTR lpCommandLine,
         LPSECURITY_ATTRIBUTES lpProcessAttributes,
@@ -48,7 +48,7 @@ namespace Hooks
         LPSTARTUPINFOA lpStartupInfo,
         LPPROCESS_INFORMATION lpProcessInformation
     );
-    HOOK_DECLARE(BOOL, WINAPI, CreateProcessW,
+    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, CreateProcessW,
         LPCWSTR lpApplicationName,
         LPWSTR lpCommandLine,
         LPSECURITY_ATTRIBUTES lpProcessAttributes,
@@ -60,18 +60,18 @@ namespace Hooks
         LPSTARTUPINFOW lpStartupInfo,
         LPPROCESS_INFORMATION lpProcessInformation
     );
-    HOOK_DECLARE(VOID, WINAPI, ExitProcess, DWORD dwExitCode);
-    //HOOK_DECLARE(SC_HANDLE APIENTRY OpenServiceA(SC_HANDLE hSCManager, LPCSTR lpServiceName, DWORD dwDesiredAccess);
-    //HOOK_DECLARE(SC_HANDLE APIENTRY OpenServiceW(SC_HANDLE hSCManager, LPCWSTR lpServiceName, DWORD dwDesiredAccess);
+    HOOK_FUNCTION_DECLARE(VOID, WINAPI, ExitProcess, DWORD dwExitCode);
+    //HOOK_FUNCTION_DECLARE(SC_HANDLE APIENTRY OpenServiceA(SC_HANDLE hSCManager, LPCSTR lpServiceName, DWORD dwDesiredAccess);
+    //HOOK_FUNCTION_DECLARE(SC_HANDLE APIENTRY OpenServiceW(SC_HANDLE hSCManager, LPCWSTR lpServiceName, DWORD dwDesiredAccess);
 
 
 
-    //HOOK_DECLARE(FARPROC WINAPI GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
+    //HOOK_FUNCTION_DECLARE(FARPROC WINAPI GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
 
-    //HOOK_DECLARE(BOOL WINAPI IsDebuggerPresent(VOID);
-    //HOOK_DECLARE(VOID WINAPI OutputDebugStringA(LPCSTR lpOutputString);
-    //HOOK_DECLARE(VOID WINAPI OutputDebugStringW(LPCWSTR lpOutputString);
-    //HOOK_DECLARE(NTSTATUS NTAPI NtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
+    //HOOK_FUNCTION_DECLARE(BOOL WINAPI IsDebuggerPresent(VOID);
+    //HOOK_FUNCTION_DECLARE(VOID WINAPI OutputDebugStringA(LPCSTR lpOutputString);
+    //HOOK_FUNCTION_DECLARE(VOID WINAPI OutputDebugStringW(LPCWSTR lpOutputString);
+    //HOOK_FUNCTION_DECLARE(NTSTATUS NTAPI NtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
 
 
@@ -102,7 +102,7 @@ namespace Hooks
     //};
 
 
-    ////    //HOOK_DECLARE(HRESULT STDAPICALLTYPE TrampDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
+    ////    //HOOK_FUNCTION_DECLARE(HRESULT STDAPICALLTYPE TrampDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
 
 #ifdef TlsSetValue
 #error this shouldn't happen (TlsSetValue already defined)
@@ -113,11 +113,11 @@ namespace Hooks
 // this might seem universally safer, but the reason we usually avoid this way of defining trampolines is because:
 // if the function doesn't exist in the DLL, it will cause the game to immediately crash on startup.
 // for example, it's not safe to do this for FlsSetValue/FlsGetValue because those don't exist on Windows XP.
-//HOOK_DECLARE(BOOL WINAPI TrampTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) { return TlsSetValue(dwTlsIndex, lpTlsValue); }
-//HOOK_DECLARE(LPVOID WINAPI TrampTlsGetValue(DWORD dwTlsIndex) { return TlsGetValue(dwTlsIndex); }
+//HOOK_FUNCTION_DECLARE(BOOL WINAPI TrampTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) { return TlsSetValue(dwTlsIndex, lpTlsValue); }
+//HOOK_FUNCTION_DECLARE(LPVOID WINAPI TrampTlsGetValue(DWORD dwTlsIndex) { return TlsGetValue(dwTlsIndex); }
 //
-    HOOK_DECLARE(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
-    HOOK_DECLARE(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
+    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
+    HOOK_FUNCTION_DECLARE(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
 
     void UpdateLoadedOrUnloadedDllHooks();
 

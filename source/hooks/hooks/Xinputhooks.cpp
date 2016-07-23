@@ -58,7 +58,7 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetStateEx,
+    HOOK_ORDINAL(DWORD, WINAPI, 100, XInputGetStateEx,
         DWORD         dwUserIndex, // [in] Index of the user's controller.
         XINPUT_STATE* pState       // [out] Receives the current state of the controller.
     );

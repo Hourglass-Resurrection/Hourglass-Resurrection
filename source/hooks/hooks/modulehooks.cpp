@@ -629,7 +629,7 @@ namespace Hooks
     //};
 
 #define IMPLEMENT_MyDllGetClassObject(suffix) \
-HOOK_DECLARE(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
+HOOK_FUNCTION_DECLARE(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
 HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
 HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
 { \
