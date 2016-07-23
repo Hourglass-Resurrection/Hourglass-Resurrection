@@ -49,7 +49,7 @@
  *
  * The trampolines original contents should never get called. If it happens, it means that the
  * DLL the trampoline points at hasn't been loaded yet. For "non-default" DLLs (such as
- * kernel32.dll), this may indicate that the application doesn't use it.
+ * dinput.dll), this may indicate that the application doesn't use it.
  *
  * The HOOK_FUNCTION_DECLARE macro will take care of all the necessary header file declarations
  * for a function hook, while the HOOK_FUNCTION macro will take care of all the definitions.
@@ -279,7 +279,7 @@ struct InterceptDescriptor
 #define MAKE_INTERCEPT(enabled, dll, name) {#dll".dll", #name, (FARPROC)My##name, (FARPROC)Tramp##name, enabled, false}
 #define MAKE_INTERCEPT2(enabled, dll, name, myname) {#dll".dll", #name, (FARPROC)My##myname, (FARPROC)Tramp##myname, enabled, false}
 #define MAKE_INTERCEPT3(enabled, dllWithExt, name, suffix) {#dllWithExt, #name, (FARPROC)My##name##_##suffix, (FARPROC)Tramp##name##_##suffix, enabled, false}
-#define MAKE_INTERCEPT_ORD(enabled, dll, name, ordinal) {#dll".dll", reinterpret_cast<const char*>(ordinal), (FARPROC)My##name, (FARPROC)Tramp##Ordinal##ordinal##_##name, enabled, true}
+#define MAKE_INTERCEPT_ORD(enabled, dll, name, ordinal) {#dll".dll", reinterpret_cast<const char*>(ordinal), (FARPROC)My##name, (FARPROC)TrampOrdinal##ordinal##_##name, enabled, true}
 //#define MAKE_INTERCEPT_DYNAMICTRAMP(enabled, dllWithExt, name) {#dllWithExt, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?3:-3, ArrayName##name}
 //#define MAKE_INTERCEPT_ALLDLLS(enabled, name) {NULL, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?4:-4, (const char*)(void*)ArrayName##name}
 
