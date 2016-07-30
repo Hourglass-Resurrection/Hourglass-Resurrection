@@ -32,7 +32,7 @@ extern int WatchCount; // number of valid items in rswatches
 
 extern char Watch_Dir[1024];
 
-bool InsertWatch(const AddressWatcher& Watch, char *Comment);
+bool InsertWatch(const AddressWatcher& Watch, LPCSTR Comment);
 void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
 bool InsertWatch(const AddressWatcher& Watch, HWND parent=NULL); // asks user for comment
 void Update_RAM_Watch();

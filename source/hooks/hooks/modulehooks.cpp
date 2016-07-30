@@ -9,10 +9,10 @@
 DEFINE_LOCAL_GUID(CLSID_FilterGraphManager, 0xe436ebb3, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_LOCAL_GUID(CLSID_FilterGraphNoThread, 0xe436ebb8, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 
+using Log = DebugLog<LogCategory::MODULE>;
+
 namespace Hooks
 {
-    bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
-
     //static char currentModuleFilename [MAX_PATH+1] = {0};
     //static char dlltempDir [MAX_PATH+1] = {0};
     //
@@ -506,17 +506,18 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
     HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
     {
+        ENTER(riid.Data1, rclsid.Data1);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
         const char* newName = riidToName(chooseriid(riid, rclsid));
-        debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called.\n", riid.Data1, rclsid.Data1, newName ? newName : "?");
+        LOG() << "newName = " << newName;
         if (newName)
             curtls.curThreadCreateName = newName;
 
         HRESULT rv = E_FAIL;
 
-        if (TrySoundCoCreateInstance(riid, ppv))
+        if (DirectSound::TrySoundCoCreateInstance(riid, ppv))
         {
             rv = S_OK;
         }
@@ -536,8 +537,9 @@ namespace Hooks
 
     static void PreCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, const char* callerName, const char* oldName)
     {
+        ENTER(riid.Data1, rclsid.Data1, callerName);
         const char* newName = riidToName(chooseriid(riid, rclsid));
-        debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called by %s.\n", riid.Data1, rclsid.Data1, newName ? newName : "?", callerName);
+        LOG() << "newName = " << newName;
         if (rclsid.Data1 == CLSID_FilterGraphManager.Data1 /*&& tasflags.threadMode < 2*/)
             ((IID&)rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
         if (!oldName && !newName)
@@ -572,13 +574,13 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
     HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
     {
-        debuglog(LCF_MODULE, __FUNCTION__ "(clsid=0x%X, dwCount=%d) called.\n", Clsid.Data1, dwCount);
+        ENTER(Clsid.Data1, dwCount);
 
         // check for creating custom objects that skip COM
     //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
         for (DWORD i = 0; i < dwCount; i++)
         {
-            if (TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
+            if (DirectSound::TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
             {
                 pResults[i].hr = S_OK;
                 HRESULT rv = S_OK;
@@ -649,7 +651,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
             IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject);
     HOOKFUNC HRESULT STDMETHODCALLTYPE MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject)
     {
-        debuglog(LCF_MODULE | LCF_UNTESTED, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        ENTER(riid.Data1);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
@@ -742,7 +744,8 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
         LPPROCESS_INFORMATION lpProcessInformation
     )
     {
-        debuglog(LCF_PROCESS | LCF_TODO, __FUNCTION__ " called: %s\n", lpCommandLine);
+        ENTER(lpCommandLine);
+        DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
         BOOL rv = CreateProcessA(
             lpApplicationName,
@@ -783,7 +786,8 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
         LPPROCESS_INFORMATION lpProcessInformation
     )
     {
-        debuglog(LCF_PROCESS | LCF_TODO, __FUNCTION__ " called: %S\n", lpCommandLine);
+        ENTER(lpCommandLine);
+        DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
         BOOL rv = CreateProcessW(
             lpApplicationName,
@@ -803,7 +807,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     HOOK_FUNCTION(VOID, WINAPI, ExitProcess, DWORD dwExitCode);
     HOOKFUNC VOID WINAPI MyExitProcess(DWORD dwExitCode)
     {
-        debuglog(LCF_PROCESS, __FUNCTION__ " called.\n");
+        ENTER();
         _asm {int 3}
         while (true) { Sleep(10); }
     }
@@ -838,58 +842,6 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     //	//return rv;
     //}
 
-    struct _tiddata {
-        unsigned long   _tid;       /* thread ID */
-        uintptr_t _thandle;         /* thread handle */
-        int     _terrno;            /* errno value */
-        unsigned long   _tdoserrno; /* _doserrno value */
-        unsigned int    _fpds;      /* Floating Point data segment */
-        unsigned long   _holdrand;  /* rand() seed value */
-        //There's more than this in a full _tiddata struct, but this is probably everything we're interested in
-    };
-
-    typedef struct _tiddata * _ptiddata;
-    BOOL FlsRecursing = FALSE;
-    std::map<DWORD, DWORD *> fseeds;
-    HOOK_FUNCTION(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
-    HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
-        BOOL rv = FlsSetValue(dwFlsIndex, lpFlsData);
-        if ((!FlsRecursing) && (lpFlsData != NULL)) {
-            FlsRecursing = TRUE;
-            if (fseeds.find(dwFlsIndex) == fseeds.end()) {
-                _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
-                debuglog(LCF_THREAD, "FlsSetValue(%d,lpFlsData), set _tiddata structure at %08X", dwFlsIndex, ptd);
-                cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d", &(ptd->_holdrand), dwFlsIndex);
-                fseeds[dwFlsIndex] = &(ptd->_holdrand);
-            }
-            FlsRecursing = FALSE;
-        }
-        return rv;
-    }
-    /*BOOL TlsRecursing = FALSE;
-    std::map<DWORD, DWORD *> tseeds;
-    HOOK_FUNCTION(BOOL, WINAPI, TlsSetValue, DWORD dwTlsIndex, LPVOID lpTlsValue);
-    HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
-        BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
-        if ((!TlsRecursing) && (lpTlsValue != NULL)) {
-            TlsRecursing = TRUE;
-            if (tseeds.find(dwTlsIndex) == tseeds.end()) {
-                _ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
-                debuglog(LCF_THREAD, "TlsSetValue(%d,lpTlsValue), set _tiddata structure at %08X", dwTlsIndex, ptd);
-                cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d", &(ptd->_holdrand), dwTlsIndex);
-                tseeds[dwTlsIndex] = &(ptd->_holdrand);
-            }
-            TlsRecursing = FALSE;
-        }
-        return rv;
-    }*/
-
-    // not really hooked, I just needed their trampolines
-    /*HOOK_FUNCTION(LPVOID, WINAPI, TlsGetValue, DWORD dwTlsIndex);
-    HOOKFUNC LPVOID WINAPI MyTlsGetValue(DWORD dwTlsIndex) IMPOSSIBLE_IMPL*/
-    HOOK_FUNCTION(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
-    HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
-
     void ModuleDllMainInit()
     {
         InitializeCriticalSection(&s_dllLoadAndRetryInterceptCS);
@@ -910,11 +862,6 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
             MAKE_INTERCEPT(1, OLE32, CoGetClassObject),
             MAKE_INTERCEPT3(1, QUARTZ.DLL, DllGetClassObject, quartz), // this is mainly so we can hook the IReferenceClock used by DirectShow
             MAKE_INTERCEPT(1, RPCRT4, IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
-
-            MAKE_INTERCEPT(0, KERNEL32, FlsGetValue), // get trampoline only
-            //MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
-            MAKE_INTERCEPT(1, KERNEL32, FlsSetValue),
-            //MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
 
             MAKE_INTERCEPT(1, KERNEL32, ExitProcess),
             MAKE_INTERCEPT(1, KERNEL32, CreateProcessA),

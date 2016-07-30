@@ -7,6 +7,8 @@
 #include "../locale.h"
 #include <map>
 
+using Log = DebugLog<LogCategory::WINDOW>;
+
 namespace Hooks
 {
     static int createWindowDepth = 0;
@@ -22,7 +24,7 @@ namespace Hooks
         LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
         HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
     {
-        debuglog(LCF_WINDOW | LCF_TODO, __FUNCTION__ "(%d,%d,%d,%d,0x%X,0x%X) called.\n", X, Y, nWidth, nHeight, dwStyle, dwExStyle);
+        ENTER(X, Y, nWidth, nHeight, dwStyle, dwExStyle);
         createWindowDepth++;
 
         //if(tasflags.forceWindowed && X == 0 && Y == 0 && nWidth > 640 && nHeight > 480)
@@ -51,7 +53,7 @@ namespace Hooks
 
         curtls.treatDLLLoadsAsClient--;
         curtls.callerisuntrusted--;
-        debuglog(LCF_WINDOW, __FUNCTION__ " made hwnd = 0x%X.\n", hwnd);
+        LOG() << "made hwnd = " << hwnd;
 #ifdef EMULATE_MESSAGE_QUEUES
         if (hwnd)
         {
@@ -78,13 +80,14 @@ namespace Hooks
                 if (cls.lpfnWndProc)
                 {
                     oldProc = cls.lpfnWndProc;
-                    debuglog(LCF_WINDOW | LCF_TODO, "had to retrieve wndproc from wndclass (\"%s\") for some reason...\n", lpClassName);
+                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\""
+                          << lpClassName << ") for some reason...\n";
                 }
             }
-            debuglog(LCF_WINDOW, "oldProc[0x%X] = 0x%X\n", hwnd, oldProc);
+            LOG() << "oldProc[" << hwnd << "] = " << reinterpret_cast<DWORD>(oldProc);
             hwndToOrigHandler[hwnd] = oldProc;
             SetWindowLongA(hwnd, GWL_WNDPROC, (LONG)MyWndProcA);
-            cmdprintf("HWND: %d", hwnd);
+            IPC::SendIPCMessage(IPC::Command::CMD_HWND, &hwnd, sizeof(&hwnd));
 
             if (tasflags.windowActivateFlags & 2)
             {
@@ -149,7 +152,8 @@ namespace Hooks
         LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
         HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
     {
-        debuglog(LCF_WINDOW, __FUNCTION__ " called.\n");
+        ENTER(X, Y, nWidth, nHeight, dwStyle, dwExStyle);
+        LOG() << "Warning: Not yet implemented!";
         createWindowDepth++;
         HWND oldGamehwnd = gamehwnd;
         ThreadLocalStuff& curtls = tls;
@@ -160,7 +164,7 @@ namespace Hooks
             hWndParent, hMenu, hInstance, lpParam);
         curtls.treatDLLLoadsAsClient--;
         curtls.callerisuntrusted--;
-        debuglog(LCF_WINDOW, __FUNCTION__ " made hwnd = 0x%X.\n", hwnd);
+        LOG() << "made hwnd = " << hwnd;
 #ifdef EMULATE_MESSAGE_QUEUES
         if (hwnd)
         {
@@ -267,7 +271,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, CloseWindow, HWND hWnd);
     HOOKFUNC BOOL WINAPI MyCloseWindow(HWND hWnd)
     {
-        debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X) called.\n", hWnd);
+        ENTER(hWnd);
         BOOL rv = CloseWindow(hWnd);
         return rv;
     }
@@ -275,7 +279,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, DestroyWindow, HWND hWnd);
     HOOKFUNC BOOL WINAPI MyDestroyWindow(HWND hWnd)
     {
-        debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X) called.\n", hWnd);
+        ENTER(hWnd);
         ThreadLocalStuff& curtls = tls;
         curtls.destroyWindowDepth++;
         BOOL rv = DestroyWindow(hWnd);
@@ -294,19 +298,19 @@ namespace Hooks
     HOOK_FUNCTION(HWND, WINAPI, GetActiveWindow);
     HOOKFUNC HWND WINAPI MyGetActiveWindow()
     {
-        debuglog(LCF_WINDOW/*|LCF_DESYNC*/ | LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
+        ENTER(gamehwnd);
         return gamehwnd;
     }
     HOOK_FUNCTION(HWND, WINAPI, GetForegroundWindow);
     HOOKFUNC HWND WINAPI MyGetForegroundWindow()
     {
-        debuglog(LCF_WINDOW/*|LCF_DESYNC*/ | LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
+        ENTER(gamehwnd);
         return gamehwnd;
     }
     HOOK_FUNCTION(HWND, WINAPI, GetFocus);
     HOOKFUNC HWND WINAPI MyGetFocus()
     {
-        debuglog(LCF_WINDOW/*|LCF_DESYNC*/ | LCF_FREQUENT, __FUNCTION__ " called (0x%X).\n", gamehwnd);
+        ENTER(gamehwnd);
         return gamehwnd;
     }
 
@@ -314,47 +318,49 @@ namespace Hooks
     HOOK_FUNCTION(LONG, WINAPI, GetWindowLongA, HWND hWnd, int nIndex);
     HOOKFUNC LONG WINAPI MyGetWindowLongA(HWND hWnd, int nIndex)
     {
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
+        ENTER(nIndex, hWnd);
         if (nIndex == GWL_WNDPROC)
         {
             std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
             if (found != hwndToOrigHandler.end())
             {
-                debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " rV = 0x%X.\n", found->second);
+                LOG() << "returning known WNDPROC: "
+                      << reinterpret_cast<LPVOID>(found->second);
                 return (LONG)found->second;
             }
             else
             {
                 LONG rv = GetWindowLongA(hWnd, nIndex);
-                debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " rv! = 0x%X.\n", rv);
+                LOG() << "returning unknown WNDPROC: " << rv;
                 return rv;
             }
         }
         LONG rv = GetWindowLongA(hWnd, nIndex);
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " Rv = 0x%X.\n", rv);
+        LOG() << "rv: "<< rv;
         return rv;
     }
     HOOK_FUNCTION(LONG, WINAPI, GetWindowLongW, HWND hWnd, int nIndex);
     HOOKFUNC LONG WINAPI MyGetWindowLongW(HWND hWnd, int nIndex)
     {
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "(%d) called on 0x%X.\n", nIndex, hWnd);
+        ENTER(nIndex, hWnd);
         if (nIndex == GWL_WNDPROC)
         {
             std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
             if (found != hwndToOrigHandler.end())
             {
+                LOG() << "returning known WNDPROC: "
+                      << reinterpret_cast<LPVOID>(found->second);
                 return (LONG)found->second;
-                debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " rV = 0x%X.\n", found->second);
             }
             else
             {
                 LONG rv = GetWindowLongW(hWnd, nIndex);
-                debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " rv! = 0x%X.\n", rv);
+                LOG() << "returning unknown WNDPROC: " << rv;
                 return rv;
             }
         }
         LONG rv = GetWindowLongW(hWnd, nIndex);
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ " Rv = 0x%X.\n", rv);
+        LOG() << "rv: " << rv;
         return rv;
     }
 
@@ -362,15 +368,15 @@ namespace Hooks
     HOOK_FUNCTION(LONG, WINAPI, SetWindowLongA, HWND hWnd, int nIndex, LONG dwNewLong);
     HOOKFUNC LONG WINAPI MySetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
     {
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X) called on 0x%X.\n", nIndex, dwNewLong, hWnd);
+        ENTER(hWnd, nIndex, dwNewLong);
         if (nIndex == GWL_WNDPROC)
         {
             // the game is trying to change this window's procedure.
             // since we need it to stay replaced with our own winproc,
             // update our pointer to the original winproc instead.
             LONG rv = MyGetWindowLongA(hWnd, nIndex);
-            debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "hwndToOrigHandler[0x%X] = 0x%X.\n", hWnd, dwNewLong);
-            debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "rv = 0x%X.\n", rv);
+            LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
+            LEAVE(rv);
             hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
             SetWindowLongA(hWnd, GWL_WNDPROC, (LONG)MyWndProcA);
             return rv;
@@ -386,21 +392,21 @@ namespace Hooks
             }
         }
         LONG rv = SetWindowLongA(hWnd, nIndex, dwNewLong);
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "RV = 0x%X.\n", rv);
+        LEAVE(rv);
         return rv;
     }
     HOOK_FUNCTION(LONG, WINAPI, SetWindowLongW, HWND hWnd, int nIndex, LONG dwNewLong);
     HOOKFUNC LONG WINAPI MySetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
     {
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X) called on 0x%X.\n", nIndex, dwNewLong, hWnd);
+        ENTER(hWnd, nIndex, dwNewLong);
         if (nIndex == GWL_WNDPROC)
         {
             // the game is trying to change this window's procedure.
             // since we need it to stay replaced with our own winproc,
             // update our pointer to the original winproc instead.
             LONG rv = MyGetWindowLongW(hWnd, nIndex);
-            debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "hwndToOrigHandler[0x%X] = 0x%X.\n", hWnd, dwNewLong);
-            debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "rv = 0x%X.\n", rv);
+            LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
+            LEAVE(rv);
             hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
             SetWindowLongW(hWnd, GWL_WNDPROC, (LONG)MyWndProcW);
             return rv;
@@ -416,7 +422,7 @@ namespace Hooks
             }
         }
         LONG rv = SetWindowLongW(hWnd, nIndex, dwNewLong);
-        debuglog(LCF_WINDOW | LCF_FREQUENT, __FUNCTION__ "RV = 0x%X.\n", rv);
+        LEAVE(rv);
         return rv;
     }
 
@@ -424,7 +430,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, MoveWindow, HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
     HOOKFUNC BOOL WINAPI MyMoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
     {
-        debuglog(LCF_WINDOW | LCF_TODO, __FUNCTION__ "(0x%X, %d, %d, %d, %d, %d) called.\n", hWnd, X, Y, nWidth, nHeight, bRepaint);
+        ENTER(hWnd, X, Y, nWidth, nHeight, bRepaint);
         if (tasflags.forceWindowed)
         {
             if (IsWindowFakeFullscreen(hWnd))
@@ -539,7 +545,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SetWindowTextA, HWND hWnd, LPCSTR lpString);
     HOOKFUNC BOOL WINAPI MySetWindowTextA(HWND hWnd, LPCSTR lpString)
     {
-        debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X, \"%s\") called.\n", hWnd, lpString);
+        ENTER(hWnd, lpString);
         if (tasflags.appLocale)
         {
             str_to_wstr(wstr, lpString, LocaleToCodePage(tasflags.appLocale));
@@ -554,7 +560,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SetWindowTextW, HWND hWnd, LPCWSTR lpString);
     HOOKFUNC BOOL WINAPI MySetWindowTextW(HWND hWnd, LPCWSTR lpString)
     {
-        debuglog(LCF_WINDOW, __FUNCTION__ "(0x%X, \"%S\") called.\n", hWnd, lpString);
+        ENTER(hWnd, lpString);
         BOOL rv = SetWindowTextW(hWnd, lpString);
         DispatchMessageInternal(hWnd, WM_SETTEXT, 0, (LPARAM)lpString, false, MAF_BYPASSGAME | MAF_RETURN_OS);
         return rv;
@@ -611,27 +617,29 @@ namespace Hooks
     HOOK_FUNCTION(int, WINAPI, MessageBoxA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
     HOOKFUNC int WINAPI MyMessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
     {
-        debugprintf(__FUNCTION__ "(\"%s\", \"%s\")\n", lpCaption, lpText);
-        cmdprintf("SHORTTRACE: 3,50");
+        ENTER(lpCaption, lpText);
+        IPC::StackTrace stack_trace(3, 50);
+        IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
     HOOKFUNC int WINAPI MyMessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
     {
-        debugprintf(__FUNCTION__ "(\"%S\", \"%S\")\n", lpCaption, lpText);
-        cmdprintf("SHORTTRACE: 3,50");
+        ENTER(lpCaption, lpText);
+        IPC::StackTrace stack_trace(3, 50);
+        IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
     HOOKFUNC int WINAPI MyMessageBoxExA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId)
     {
-        debugprintf(__FUNCTION__ "(\"%s\", \"%s\")\n", lpCaption, lpText);
+        ENTER(lpCaption, lpText);
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(int, WINAPI, MessageBoxExW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId);;
     HOOKFUNC int WINAPI MyMessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId)
     {
-        debugprintf(__FUNCTION__ "(\"%S\", \"%S\")\n", lpCaption, lpText);
+        ENTER(lpCaption, lpText);
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxParamA, HINSTANCE hInstance, LPCSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);

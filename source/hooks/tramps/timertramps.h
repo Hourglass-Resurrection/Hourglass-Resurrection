@@ -14,7 +14,6 @@ namespace Hooks
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, CreateTimerQueueTimer, PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback, PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, SetWaitableTimer, HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, CancelWaitableTimer, HANDLE hTimer);
-    HOOK_FUNCTION_DECLARE(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
 
     void ProcessTimers();
 

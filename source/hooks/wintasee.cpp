@@ -98,7 +98,7 @@ bool redrawingScreen = false;
 
 bool RedrawScreen()
 {
-    VERBOSE_ENTER();
+    VERBOSE_LOG() << "called";
 	redrawingScreen = true;
 	if(Hooks::RedrawScreenD3D8())
 	{}
@@ -159,8 +159,8 @@ TasFlags tasflags = {};
 PALETTEENTRY activePalette [256];
 
 //HACK for externs
-LogCategoryFlag& g_includeLogFlags = tasflags.includeLogFlags;
-LogCategoryFlag& g_excludeLogFlags = tasflags.excludeLogFlags;
+//LogCategoryFlag& g_includeLogFlags = tasflags.includeLogFlags;
+//LogCategoryFlag& g_excludeLogFlags = tasflags.excludeLogFlags;
 
 
 CurrentInput previnput = {0};
@@ -207,7 +207,7 @@ bool IsInCurrentDllAddressSpace(DWORD address)
 bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
 {
 	int count = trustedRangeInfos.numInfos;
-	for(int i = 1; i < min(count, trustedRangeInfos.numInfos); i++)
+	for(int i = 1; i < std::min(count, trustedRangeInfos.numInfos); i++)
 		if(IsInRange(address, trustedRangeInfos.infos[i]))
 			return true;
 	return (address == 0);
@@ -215,7 +215,7 @@ bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
 bool IsInAnyTrustedAddressSpace(DWORD address)
 {
 	int count = trustedRangeInfos.numInfos;
-	for(int i = 0; i < min(count, trustedRangeInfos.numInfos); i++)
+	for(int i = 0; i < std::min(count, trustedRangeInfos.numInfos); i++)
 		if(IsInRange(address, trustedRangeInfos.infos[i]))
 			return true;
 	return (address == 0);
@@ -225,7 +225,14 @@ __declspec(noinline) bool IsNearStackTop(DWORD address)
 {
 	DWORD top = (DWORD)&top;
 	DWORD under = address - top;
-	return under < 0x1000;
+    /*
+     * TODO: Arbitrary limit of what is near a stack top.
+     * Expect random breakage if a function in a chain that ends up
+     * calling this allocates "too much" on the stack.
+     * Stack walks should be done in Hourglass instead, using dbghelp.
+     * -- Warepire
+     */
+	return under < 0x10000;
 }
 bool IsNear(DWORD address, DWORD address2)
 {
@@ -362,7 +369,7 @@ bool VerifyIsTrustedCaller(bool trusted)
 				if(errcount)
 				{
 					errcount--;
-					debuglog(LCF_ERROR|LCF_DESYNC, "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! 0x%X\n", frame);
+					DEBUG_LOG() << "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! frame=" << frame;
 					//cmdprintf("SHORTTRACE: 3,50");
 				}
 				return true;
@@ -580,7 +587,7 @@ bool pauseHandlerSuspendedSound = false;
 
 void SaveOrLoad(int slot, bool save)
 {
-    VERBOSE_ENTER();
+    VERBOSE_LOG() << "called.";
 	tls.callerisuntrusted++;
 	if(save && tasflags.storeVideoMemoryInSavestates)
 	{
@@ -588,15 +595,15 @@ void SaveOrLoad(int slot, bool save)
 		Hooks::BackupVideoMemoryOfAllD3D8Surfaces();
 		Hooks::BackupVideoMemoryOfAllD3D9Surfaces();
 	}
-	Hooks::StopAllSounds();
+	Hooks::DirectSound::StopAllSounds();
 	if(save)
 	{
-		cmdprintf("SAVE: %d", slot);
+        IPC::SendIPCMessage(IPC::Command::CMD_SAVE_STATE, &slot, sizeof(&slot));
 		save = !tasflags.stateLoaded; // otherwise "save" will be wrong after loading
 	}
 	else
 	{
-		cmdprintf("LOAD: %d", slot);
+        IPC::SendIPCMessage(IPC::Command::CMD_LOAD_STATE, &slot, sizeof(&slot));
 		// note: any code placed here will never run! execution continues in the above branch.
 	}
 	if(tasflags.stateLoaded > 0 && tasflags.storeVideoMemoryInSavestates)
@@ -606,11 +613,11 @@ void SaveOrLoad(int slot, bool save)
 		Hooks::RestoreVideoMemoryOfAllD3D9Surfaces();
 		RedrawScreen();
 	}
-	Hooks::ResumePlayingSounds();
+	Hooks::DirectSound::ResumePlayingSounds();
 	pauseHandlerContiguousCallCount = 0;
 	if(pauseHandlerSuspendedSound)
 	{
-		Hooks::PostResumeSound();
+		Hooks::DirectSound::PostResumeSound();
 		pauseHandlerSuspendedSound = false;
 	}
 	tls.callerisuntrusted--;
@@ -619,8 +626,8 @@ void SaveOrLoad(int slot, bool save)
 
 void GetFrameInput()
 {
-    VERBOSE_ENTER();
-	Hooks::ProcessFrameInput();
+    VERBOSE_LOG() << "called.";
+	Hooks::WinInput::ProcessFrameInput();
 }
 
 // pausehelper
@@ -641,14 +648,14 @@ void HandlePausedEvents()
 		{
 			if(pauseHandlerContiguousCallCount > 30)
 			{
-				verbosedebugprintf("suspended sound for pause\n");
-				Hooks::PreSuspendSound();
+				VERBOSE_LOG() << "suspended sound for pause";
+				Hooks::DirectSound::PreSuspendSound();
 				pauseHandlerSuspendedSound = true;
 			}
 			else if(pauseHandlerContiguousCallCount == 1)
 			{
 				if(!tasflags.fastForward)
-					Hooks::ForceAlignSound(false);
+					Hooks::DirectSound::ForceAlignSound(false);
 			}
 		}
 	}
@@ -701,17 +708,17 @@ void HandlePausedEvents()
 
 void HandleShutdown()
 {
-	Hooks::PreSuspendSound();
-	Hooks::BackDoorStopAll();
+	Hooks::DirectSound::PreSuspendSound();
+	Hooks::DirectSound::BackDoorStopAll();
 	fflush(NULL);
 	// ExitProcess doesn't work for me. sets wrong exit code or completely fails to exit.
 	TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); // but this does work.
 	ExitProcess(SUCCESSFUL_EXITCODE); // but if it doesn't then maybe this will?
 	// old version, left here in case TerminateProcess and ExitProcess somehow noop
 	//// just send anything so the WaitForDebugEvent call returns
-	cmdprintf("ok");
+	OutputDebugStringW(L"ok");
 	//// it might ask more than once
-	while(true) { cmdprintf("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+	while(true) { OutputDebugStringW(L"ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 
@@ -758,7 +765,7 @@ static int s_skipFreq = 8;
 void FrameBoundary(void* captureInfo, int captureInfoType)
 {
 	int localFrameCount = framecount;
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " called. (%d -> %d)\n", localFrameCount, localFrameCount+1);
+    DEBUG_LOG() << "called. Frame " << localFrameCount << " -> " << localFrameCount + 1;
 	//cmdprintf("SUSPENDALL: ");
 
 	int framerate = tasflags.framerate;
@@ -791,7 +798,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	// for this reason, localFrameCount should NOT be used except for things like debugging printouts.
 	if(inFrameBoundary)
 	{
-		debuglog(LCF_FRAME|LCF_UNTESTED, __FUNCTION__ " warning: attempting to handle recursion in FrameBoundary...\n");
+		DEBUG_LOG() << "warning: attempting to handle recursion in FrameBoundary...";
 		detTimer.ExitFrameBoundary();
 	}
 	detTimer.EnterFrameBoundary(framerate);
@@ -815,7 +822,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	framecount++;
 
 
-	debuglog(LCF_FRAME, "frameLOG: f=%d, t=%d\n", Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp());
+	DEBUG_LOG() << "New frame!";
 //	cmdprintf("DEBUGPAUSE: %d", getCurrentFramestamp());
 	//debuglog(LCF_FREQUENT|LCF_DESYNC|LCF_TODO|-1, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
 	//cmdprintf("SHORTTRACE: 3,50");
@@ -844,7 +851,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		float logicalfps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (totalRanTicks - measureTickCount); // this shows the logical (timer) frames-per-second instead of actual FPS
 		measureTickCount = totalRanTicks;
 
-		cmdprintf("FPS: %g %g", fps, logicalfps);
+        IPC::FPSInfo fps_info(fps, logicalfps);
+        IPC::SendIPCMessage(IPC::Command::CMD_FPS_UPDATE, &fps_info, sizeof(fps_info));
 		measureFrameTime = time;
 		measureFrameCount = totalRanFrames-totalSleepFrames;
 		lastSentFPS = (int)fps;
@@ -893,7 +901,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	{
 		UpdateInfoForDebugger();
 
-		cmdprintf("FRAME: %d %p %d", totalRanFrames, captureInfo, captureInfoType);
+        IPC::FrameBoundaryInfo frame_boundary_info(totalRanFrames, captureInfo, captureInfoType);
+        IPC::SendIPCMessage(IPC::Command::CMD_FRAME_BOUNDARY, &frame_boundary_info, sizeof(frame_boundary_info));
 
 		ranCommand = false;
 
@@ -922,7 +931,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 	pauseHandlerContiguousCallCount = 0;
 
-	Hooks::DoFrameBoundarySoundChecks();
+	Hooks::DirectSound::DoFrameBoundarySoundChecks();
 
 
 	if(framecount > 1)
@@ -960,19 +969,20 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 
 	// using gamehwnd isn't reliable enough
+    using Log = DebugLog<LogCategory::WINPUT>;
 	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
 	for(iter = Hooks::hwndToOrigHandler.begin(); iter != Hooks::hwndToOrigHandler.end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
-		DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
-		if(IsWindow(hwnd)
-		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
-		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
-		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
-		 || (!sentToAny && iter == Hooks::hwndToOrigHandler.end()))
-		 )
+        DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
+        if (IsWindow(hwnd)
+            && ((hwnd == gamehwnd && (style&WS_VISIBLE))
+                || ((style & (WS_VISIBLE | WS_CAPTION)) == (WS_VISIBLE | WS_CAPTION))
+                || ((style & (WS_VISIBLE | WS_POPUP)) == (WS_VISIBLE | WS_POPUP))
+                || (!sentToAny && iter == Hooks::hwndToOrigHandler.end()))
+            )
 		{
 			sentToAny = true;
 
@@ -980,7 +990,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
 
 			BYTE keyboardState[256];
-			Hooks::MyGetKeyboardState(keyboardState);
+			Hooks::WinInput::MyGetKeyboardState(keyboardState);
 
 			for(int i = 0; i < 256; i++)
 			{
@@ -988,7 +998,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				int prev = previnput.keys[i];
 				if(cur && !prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "DOWN: 0x%X\n", i);
+					LOG() << "DOWN: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, WM_KEYDOWN, i, 0);
 #else
@@ -1003,7 +1013,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 					for(int res = 0; res < results; res++)
 					{
 						int c = outbuf[res];
-						debuglog(LCF_KEYBOARD|LCF_FREQUENT, "CHAR: %c (0x%X)\n", (char)c, c);
+						LOG() << "CHAR: " << c;
 #ifdef EMULATE_MESSAGE_QUEUES
 						PostMessageInternal(hwnd, WM_CHAR, c, 0);
 #else
@@ -1014,7 +1024,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				}
 				else if(!cur && prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "UP: 0x%X\n", i);
+                    LOG() << "UP: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, WM_KEYUP, i, 0);
 #else
@@ -1042,8 +1052,9 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			LPARAM coords = (curinput.mouse.coords.y << 16) | (curinput.mouse.coords.x); // Not sure it's good when coords are negative...
 
 			// Send the MOUSEMOVE message if needed.
-			if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0)){
-				debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE MOVE\n");
+            if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0))
+            {
+				LOG() << "MOUSE MOVE";
 				//debugprintf("My MOUSE message is 0x%X with wParam = %d and lParam = %d\n",WM_MOUSEMOVE, flag, coords);
 				//debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(coords), GET_Y_LPARAM(coords));
 #ifdef EMULATE_MESSAGE_QUEUES
@@ -1057,12 +1068,13 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			WORD mouseButtonsUp[3] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
 			WORD mouseButtonsDown[3] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
 
-			for (int i = 0; i < 3; i++){
+            for (int i = 0; i < 3; i++)
+            {
 				int cur = curinput.mouse.di.rgbButtons[i];
 				int prev = previnput.mouse.di.rgbButtons[i];
 				if(cur && !prev)
 				{
-					debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
+					LOG() << "MOUSE BUTTON DOWN: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
 #else
@@ -1071,7 +1083,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				}
 				else if(!cur && prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
+					LOG() << "MOUSE BUTTON UP: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
 #else
@@ -1091,7 +1103,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 	Hooks::g_midFrameAsyncKeyRequests = 0;
 
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " returned. (%d -> %d)\n", localFrameCount, framecount);
+	DEBUG_LOG() << "returned. (" << localFrameCount << " -> " << framecount << ")";
 }
 
 
@@ -1192,7 +1204,8 @@ struct MyClassFactory : IClassFactory
 
 	STDMETHOD(CreateInstance)(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 	{
-		debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        using Log = DebugLog<LogCategory::MODULE>;
+		ENTER(riid.Data1);
 		HRESULT rv = m_cf->CreateInstance(pUnkOuter, riid, ppvObject);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObject, true);
@@ -1216,10 +1229,11 @@ private:
 
 void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 {
+    using Log = DebugLog<LogCategory::HOOK>;
 	if(!ppvOut)
 		return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+	ENTER(riid.Data1);
 
 	switch(riid.Data1)
 	{
@@ -1231,20 +1245,23 @@ void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectSound::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectInput::HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+                LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
+                      << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
+                      << riid.Data4[4] << riid.Data4[5] << riid.Data4[6] << riid.Data4[7];
 			break;
 	}
 }
 
 void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
 {
+    using Log = DebugLog<LogCategory::HOOK>;
 	if(!ppvOut)
 		return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+	ENTER(riid.Data1);
 
 	switch(riid.Data1)
 	{
@@ -1256,10 +1273,12 @@ void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool unc
 			&& !Hooks::HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
+			&& !Hooks::DirectSound::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectInput::HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+                LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
+                      << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
+                      << riid.Data4[4] << riid.Data4[5] << riid.Data4[6] << riid.Data4[7];
 			break;
 	}
 }
@@ -1413,7 +1432,7 @@ bool IsWindows7()     { return tasflags.osVersionMajor == 6 && tasflags.osVersio
 // PostDllMain is the code we run after DllMain to finish up initialization without restrictions.
 DWORD WINAPI PostDllMain(LPVOID lpParam)
 {
-    ENTER(lpParam);
+    DEBUG_LOG() << " (lpParam=" << lpParam << ") called.";
 	dllInitializationDone = true;
 
 	detTimer.OnSystemTimerRecalibrated();
@@ -1440,7 +1459,7 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 		if(!((DWORD)g_hklOverride & 0xFFFF0000))
 			(DWORD&)g_hklOverride |= ((DWORD)g_hklOverride << 16);
 	}
-	debugprintf("keyboardLayout = %s, hkl = %08X -> %08X", keyboardLayoutName, loadLayoutRv, g_hklOverride);
+	DEBUG_LOG() << "keyboardLayout = " << keyboardLayoutName << ", hkl = " << loadLayoutRv << " -> " << g_hklOverride;
 	curtls.callingClientLoadLibrary = FALSE;
 
 	if(tasflags.appLocale)
@@ -1454,11 +1473,11 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 		// didn't find it, somehow
 		Hooks::watchForCLLApiNum = false;
 		Hooks::cllApiNum = (IsWindows7() ? 65 : 66);
-		debugprintf("using ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", Hooks::cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "using ClientLoadLibrary ApiNumber = " << Hooks::cllApiNum << ". OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 	}
 	else
 	{
-		debugprintf("found ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", Hooks::cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "found ClientLoadLibrary ApiNumber = " << Hooks::cllApiNum << ". OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 	}
 	curtls.callingClientLoadLibrary = FALSE;
 
@@ -1466,8 +1485,8 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 
 	curtls.isFirstThread = true;
 
-	cmdprintf("POSTDLLMAINDONE: 0");
-	debugprintf(__FUNCTION__ " returned.\n");
+    IPC::SendIPCMessage(IPC::Command::CMD_POST_DLL_MAIN_DONE, nullptr, 0);
+	DEBUG_LOG() << "returned.";
 
 	return 0;
 }
@@ -1483,11 +1502,17 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		tasflags.debugPrintMode = 2;
+        /*
+         * HACK until new DLL injection is done.
+         * TODO: Remove.
+         * -- Warepire
+         */
+        IPC::SendIPCBufferAddress();
 		tasflags.timescale = 1;
 		tasflags.timescaleDivisor = 1;
+        tasflags.log_categories = { true };
 
-		debugprintf("DllMain started, injection must have worked.\n");
+		DEBUG_LOG() << "DllMain started, injection must have worked.";
 		hCurrentProcess = GetCurrentProcess();
 		DisableThreadLibraryCalls(hModule);
 
@@ -1500,34 +1525,43 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		Hooks::SoundDllMainInit();
 		Hooks::ModuleDllMainInit();
 
-		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
-		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
+        {
+            IPC::SendIPCMessage(IPC::Command::CMD_DLL_VERSION, &VERSION, sizeof(VERSION));
 
-		// tell it where to put commands
-		cmdprintf("HERESMYCARD: %Iu", commandSlot);
+            // tell it where to put commands
+            const char* command_slot_pointer = commandSlot;
+            IPC::SendIPCMessage(IPC::Command::CMD_COMMAND_BUF, &command_slot_pointer, sizeof(command_slot_pointer));
 
-		// tell it where to read/write full inputs status
-		cmdprintf("INPUTSBUF: %Iu", &curinput);
+            // tell it where to read/write full inputs status
+            const CurrentInput* current_input_pointer = &curinput;
+            IPC::SendIPCMessage(IPC::Command::CMD_INPUT_BUF, &current_input_pointer, sizeof(current_input_pointer));
 
-		// tell it where to write dll load/unload info
-		cmdprintf("DLLLOADINFOBUF: %Iu", &Hooks::dllLoadInfos); // must happen before we call Apply*Intercepts functions
+            // tell it where to write dll load/unload info
+            // must happen before we call Apply*Intercepts functions
+            const DllLoadInfos* dll_load_infos_pointer = &Hooks::dllLoadInfos;
+            IPC::SendIPCMessage(IPC::Command::CMD_DLL_LOAD_INFO_BUF, &dll_load_infos_pointer, sizeof(dll_load_infos_pointer));
 
-		// tell it where to write trusted address range info
-		cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
+            // tell it where to write trusted address range info
+            const TrustedRangeInfos* trusted_range_infos_pointer = &trustedRangeInfos;
+            IPC::SendIPCMessage(IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF, &trusted_range_infos_pointer, sizeof(trusted_range_infos_pointer));
 
-		// tell it where to write other flags (current only movie playback flag)
-		cmdprintf("TASFLAGSBUF: %Iu", &tasflags);
+            // tell it where to write other flags (current only movie playback flag)
+            const TasFlags* tas_flags_pointer = &tasflags;
+            IPC::SendIPCMessage(IPC::Command::CMD_TAS_FLAGS_BUF, &tas_flags_pointer, sizeof(tas_flags_pointer));
 
-		// tell it where we put sound capture information
-		cmdprintf("SOUNDINFO: %Iu", &Hooks::lastFrameSoundInfo);
+            // tell it where we put sound capture information
+            const LastFrameSoundInfo* last_frame_sound_info_pointer = &Hooks::lastFrameSoundInfo;
+            IPC::SendIPCMessage(IPC::Command::CMD_SOUND_INFO, &last_frame_sound_info_pointer, sizeof(last_frame_sound_info_pointer));
 
-		// tell it where we put other information (statistics for the debugger, etc)
-		cmdprintf("GENERALINFO: %Iu", &infoForDebugger);
-		cmdprintf("PALETTEENTRIES: %Iu", &activePalette);
+            // tell it where we put other information (statistics for the debugger, etc)
+            const InfoForDebugger* info_for_debugger_pointer = &infoForDebugger;
+            const PALETTEENTRY* active_palette_pointer = activePalette;
+            IPC::SendIPCMessage(IPC::Command::CMD_GENERAL_INFO, &info_for_debugger_pointer, sizeof(info_for_debugger_pointer));
+            IPC::SendIPCMessage(IPC::Command::CMD_PALETTE_ENTRIES, &active_palette_pointer, sizeof(active_palette_pointer));
 
-		// for the external viewport (a test/debugging thing that's probably currently disabled)
-		cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
-
+            // for the external viewport (a test/debugging thing that's probably currently disabled)
+            //cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
+        }
 
 		//cmdprintf("GETDLLLIST: %Iu", dllLeaveAloneList);
 
@@ -1552,7 +1586,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooks::ApplyThreadIntercepts();
         Hooks::ApplyMessageIntercepts();
         Hooks::ApplyWindowIntercepts();
-        Hooks::ApplyInputIntercepts();
+        Hooks::DirectInput::ApplyDirectInputIntercepts();
+        Hooks::WinInput::ApplyWinInputIntercepts();
         Hooks::ApplyGDIIntercepts();
         Hooks::ApplyDDrawIntercepts();
         Hooks::ApplyD3DIntercepts();
@@ -1560,14 +1595,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooks::ApplyD3D9Intercepts();
         Hooks::ApplyOGLIntercepts();
         Hooks::ApplySDLIntercepts();
-        Hooks::ApplySoundIntercepts();
+        Hooks::DirectSound::ApplyDirectSoundIntercepts();
+        Hooks::WinSound::ApplyWinSoundIntercepts();
         Hooks::ApplyWaitIntercepts();
         Hooks::ApplySyncIntercepts();
         Hooks::ApplyFileIntercepts();
         Hooks::ApplyRegistryIntercepts();
         Hooks::ApplyXinputIntercepts();
 
-		cmdprintf("GIMMEDLLLOADINFOS: 0");
+        IPC::SendIPCMessage(IPC::Command::CMD_GIMME_DLL_LOAD_INFOS, nullptr, 0);
 		Hooks::UpdateLoadedOrUnloadedDllHooks();
 
 		notramps = false;
@@ -1576,7 +1612,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		// let it replace it with one stored in a movie if it wants,
 		// then load the possibly-new keyboard layout
 		::GetKeyboardLayoutNameA(keyboardLayoutName);
-		cmdprintf("KEYBLAYOUT: %Iu", keyboardLayoutName);
+        {
+            /*
+             * TODO: Leaks the keyboardLayoutName value for direct edit.
+             *       Mainly because keyboardLayoutName in it's current form should be improved.
+             * -- Warepire
+             */
+            const char* keyboard_layout_name_pointer = keyboardLayoutName;
+            IPC::SendIPCMessage(IPC::Command::CMD_KEYBOARD_LAYOUT_NAME, &keyboard_layout_name_pointer, sizeof(keyboard_layout_name_pointer));
+        }
 		// moved to PostDllMain since it was causing a loader lock problem
 		//LoadKeyboardLayout(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
 
@@ -1592,7 +1636,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			//		SetCPGlobal(LocaleToCodePage(tasflags.appLocale));
 		}
 
-		debugprintf("version = %d, movie version = %d, OS = %d.%d.\n", VERSION, tasflags.movieVersion, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "version = " << VERSION << ", movie version = " << tasflags.movieVersion << ", OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 
 		// in case PostDllMain doesn't get called right away (although we really need it to...)
 		if(tasflags.osVersionMajor <= 6)
@@ -1619,7 +1663,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		break;
 	}
 
-	debugprintf("DllMain returned. (fdwReason = 0x%X)\n", fdwReason);
+    DEBUG_LOG() << "DllMain returned. (fdwReason = " << fdwReason << ")";
 
     return TRUE;
 }

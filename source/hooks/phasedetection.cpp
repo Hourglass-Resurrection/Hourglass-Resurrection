@@ -4,6 +4,8 @@
 #include "phasedetection.h"
 #include "print.h"
 
+using Log = DebugLog<LogCategory::DDRAW>;
+
 bool PhaseDetector::AdvanceAndCheckCycleBoundary(Key key)
 {
 	bool isCycleBoundary = true;
@@ -15,7 +17,7 @@ bool PhaseDetector::AdvanceAndCheckCycleBoundary(Key key)
 			if(currentTime - keyFound->second <= maxDiscardDist)
 			{
 				isCycleBoundary = false;
-				ddrawdebugprintf("frame eliminated (0x%X, %d)", keyFound->first, keyFound->second);
+				LOG() << "frame eliminated (" << keyFound->first << ", " << keyFound->second << ")";
 			}
 			else
 			{

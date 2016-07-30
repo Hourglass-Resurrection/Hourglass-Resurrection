@@ -6,6 +6,8 @@
 #include "../wintasee.h"
 #include "external/Xinput.h"
 
+using Log = DebugLog<LogCategory::XINPUT>;
+
 namespace Hooks
 {
     static bool gs_xinput_enabled = true;
@@ -16,7 +18,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
+        ENTER(dwUserIndex, gs_xinput_enabled);
 
         if (dwUserIndex > 3)
         {
@@ -64,8 +66,8 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetStateEx(DWORD dwUserIndex, XINPUT_STATE* pState)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
-
+        ENTER(dwUserIndex, gs_xinput_enabled);
+        LOG() << "Not yet implemented!";
         /*
          * This is an undocumented function of XInput 1.3 and above
          * that is said to also return the state of the guide button
@@ -82,7 +84,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputSetState(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+        ENTER(dwUserIndex);
 
         if (dwUserIndex > 3)
         {
@@ -99,7 +101,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
+        ENTER(dwUserIndex, dwFlags);
 
         if (dwUserIndex > 3)
         {
@@ -146,7 +148,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+        ENTER(dwUserIndex);
 
         if (dwUserIndex > 3)
         {
@@ -420,7 +422,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(DWORD dwUserIndex, DWORD dwReserved, XINPUT_KEYSTROKE* pKeystroke)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called; gs_xinput_enabled = %d.\n", dwUserIndex, static_cast<int>(gs_xinput_enabled));
+        ENTER(dwUserIndex, gs_xinput_enabled);
 
         if (dwUserIndex > 3 && dwUserIndex != XUSER_INDEX_ANY)
         {
@@ -474,7 +476,7 @@ namespace Hooks
     );
     HOOKFUNC void WINAPI MyXInputEnable(BOOL enable)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(enable = %d) called.\n", enable);
+        ENTER(enable);
 
         gs_xinput_enabled = (enable == FALSE) ? false : true;
     }
@@ -486,7 +488,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+        ENTER(dwUserIndex);
 
         if (dwUserIndex > 3)
         {
@@ -511,7 +513,7 @@ namespace Hooks
     );
     HOOKFUNC DWORD WINAPI MyXInputGetAudioDeviceIds(DWORD dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount)
     {
-        debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+        ENTER(dwUserIndex);
 
         if (dwUserIndex > 3)
         {
