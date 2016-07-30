@@ -5,7 +5,7 @@
 #include "../tls.h"
 #include <map>
 
-//using Log = DebugLog<LogCategory::MESSAGES>;
+using Log = DebugLog<LogCategory::SYNC>;
 
 namespace Hooks
 {
@@ -18,7 +18,7 @@ namespace Hooks
     {
         BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
 
-        debuglog(LCF_SLEEP | ((dwMilliseconds && isFrameThread) ? LCF_NONE : LCF_FREQUENT), __FUNCTION__"(%d) called.\n", dwMilliseconds);
+        ENTER(dwMilliseconds);
 
         //if(dwMilliseconds && s_frameThreadId == GetCurrentThreadId()) // main thread waiting?
         if (dwMilliseconds && isFrameThread)
@@ -33,7 +33,7 @@ namespace Hooks
             dwMilliseconds = 0;
 
             //verbosedebugprintf("DENIED: transferred to timer\n");
-            debuglog(LCF_SLEEP, "sleep transferred to timer.\n");
+            LOG() << "sleep transferred to timer.";
             return;
         }
 
@@ -52,7 +52,7 @@ namespace Hooks
     HOOK_FUNCTION(VOID, WINAPI, SleepEx, DWORD dwMilliseconds, BOOL bAlertable);
     HOOKFUNC VOID WINAPI MySleepEx(DWORD dwMilliseconds, BOOL bAlertable)
     {
-        debuglog(LCF_SLEEP | (dwMilliseconds ? LCF_NONE : LCF_FREQUENT), __FUNCTION__"(%d, %d) called.\n", dwMilliseconds, bAlertable);
+        ENTER(dwMilliseconds, bAlertable);
 
         BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
 
@@ -144,7 +144,7 @@ namespace Hooks
         HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable);
     HOOKFUNC DWORD WINAPI MyWaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT | LCF_TODO, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
+        ENTER(dwMilliseconds, bAlertable);
 
         {
             //		TransferWait(dwMilliseconds);
@@ -171,7 +171,7 @@ namespace Hooks
         HANDLE hHandle, DWORD dwMilliseconds);
     HOOKFUNC DWORD WINAPI MyWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT/*|LCF_DESYNC*/, __FUNCTION__ "(%d) for 0x%X\n", dwMilliseconds, hHandle);
+        ENTER(dwMilliseconds, hHandle);
 
         {
             if (tasflags.threadMode == 1)
@@ -235,7 +235,7 @@ namespace Hooks
                 if (rv == WAIT_TIMEOUT)
                 {
                     if (maxWaitTime)
-                        debuglog(LCF_WAIT | LCF_DESYNC | LCF_ERROR, __FUNCTION__": interrupted wait for 0x%X in case of deadlock.", hHandle);
+                        LOG() << "interrupted wait for " << hHandle << " in case of deadlock.";
                 }
                 rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
                 return rv;
@@ -260,7 +260,7 @@ namespace Hooks
         DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable);
     HOOKFUNC DWORD WINAPI MyWaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT | LCF_TODO, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
+        ENTER(dwMilliseconds, bAlertable);
 
         {
             //	TransferWait(dwMilliseconds);
@@ -286,9 +286,9 @@ namespace Hooks
         DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
     HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT/*|LCF_DESYNC*/, __FUNCTION__ "(%d, count=%d, flag=%d)\n", dwMilliseconds, nCount, bWaitAll);
-        for (int i = 0; i < (int)nCount; i++)
-            debuglog(LCF_WAIT | LCF_FREQUENT/*|LCF_DESYNC*/, "  0x%X\n", lpHandles[i]);
+        ENTER(dwMilliseconds, nCount, bWaitAll);
+        for (DWORD i = 0; i < nCount; i++)
+            LOG() << "    " << lpHandles[i];
 
 
         {
@@ -426,7 +426,7 @@ namespace Hooks
         HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable);
     HOOKFUNC DWORD WINAPI MySignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable)
     {
-        debuglog(LCF_WAIT | LCF_SYNCOBJ | LCF_FREQUENT | LCF_DESYNC, __FUNCTION__ "(%d, %d)\n", dwMilliseconds, bAlertable);
+        ENTER(dwMilliseconds, bAlertable);
 
         {
             //	TransferWait(dwMilliseconds);
@@ -453,7 +453,7 @@ namespace Hooks
         DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask);
     HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT, __FUNCTION__ "(%d, 0x%X)\n", dwMilliseconds, dwWakeMask);
+        ENTER(dwMilliseconds, dwWakeMask);
 
 
         {
@@ -607,7 +607,7 @@ namespace Hooks
         DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags);
     HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT | LCF_TODO, __FUNCTION__ "(%d, 0x%X)\n", dwMilliseconds, dwWakeMask);
+        ENTER(dwMilliseconds, dwWakeMask);
         //	TransferWait(dwMilliseconds);
         return MsgWaitForMultipleObjectsEx(nCount, pHandles, dwMilliseconds, dwWakeMask, dwFlags);
         // careful not to do anything (not even a printf) after the wait function...
@@ -619,7 +619,7 @@ namespace Hooks
     HOOKFUNC NTSTATUS NTAPI MyNtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
     {
         DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
-        debuglog(LCF_WAIT | LCF_FREQUENT | LCF_DESYNC, __FUNCTION__ "(%d)\n", dwMilliseconds);
+        ENTER(dwMilliseconds);
 
         {
             return NtWaitForSingleObject(Handle, Alertable, Timeout);
@@ -630,7 +630,7 @@ namespace Hooks
     HOOKFUNC NTSTATUS NTAPI MyNtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
     {
         DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
-        debuglog(LCF_WAIT | LCF_FREQUENT | LCF_DESYNC, __FUNCTION__ "(%d)\n", dwMilliseconds);
+        ENTER(dwMilliseconds);
 
         {
             return NtWaitForMultipleObjects(ObjectCount, ObjectsArray, WaitType, Alertable, Timeout);
@@ -641,7 +641,7 @@ namespace Hooks
         RTL_CRITICAL_SECTION* crit);
     HOOKFUNC BOOL NTAPI MyRtlTryEnterCriticalSection(RTL_CRITICAL_SECTION* crit)
     {
-        debuglog(LCF_WAIT | LCF_FREQUENT, __FUNCTION__ "(0x%x) called.", (DWORD)crit);
+        ENTER(crit);
         return RtlTryEnterCriticalSection(crit);
     }
 
@@ -658,7 +658,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, WaitMessage);
     HOOKFUNC BOOL WINAPI MyWaitMessage()
     {
-        debuglog(LCF_MESSAGES, __FUNCTION__ " called.\n");
+        ENTER();
 #ifdef EMULATE_MESSAGE_QUEUES
         bool firstWait = true;
         MessageQueue& mq = tls.messageQueue;

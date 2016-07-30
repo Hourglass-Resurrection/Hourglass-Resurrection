@@ -17,14 +17,12 @@ enum class LogCategory
     DETTIMER,
 	//LCF_TIMESET  = 1 << 8, // notifications of setting the internal time
 	//LCF_TIMEGET  = 1 << 9, // notifications of getting the internal time
-	//LCF_SYNCOBJ  = 1 << 10, // creating or modifying synchronization objects
-	//LCF_WAIT     = 1 << 11, // waiting on synchronization objects
-	SLEEP,
+	SYNC,
 	DDRAW,
 	D3D,
 	OGL,
 	GDI,
-	//LCF_SDL      = 1 << 17,
+	SDL,
 	DINPUT,
 	KEYBOARD,
 	MOUSE,

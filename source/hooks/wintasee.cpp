@@ -98,7 +98,7 @@ bool redrawingScreen = false;
 
 bool RedrawScreen()
 {
-    VERBOSE_ENTER();
+    VERBOSE_LOG() << "called";
 	redrawingScreen = true;
 	if(Hooks::RedrawScreenD3D8())
 	{}
@@ -207,7 +207,7 @@ bool IsInCurrentDllAddressSpace(DWORD address)
 bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
 {
 	int count = trustedRangeInfos.numInfos;
-	for(int i = 1; i < min(count, trustedRangeInfos.numInfos); i++)
+	for(int i = 1; i < std::min(count, trustedRangeInfos.numInfos); i++)
 		if(IsInRange(address, trustedRangeInfos.infos[i]))
 			return true;
 	return (address == 0);
@@ -215,7 +215,7 @@ bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
 bool IsInAnyTrustedAddressSpace(DWORD address)
 {
 	int count = trustedRangeInfos.numInfos;
-	for(int i = 0; i < min(count, trustedRangeInfos.numInfos); i++)
+	for(int i = 0; i < std::min(count, trustedRangeInfos.numInfos); i++)
 		if(IsInRange(address, trustedRangeInfos.infos[i]))
 			return true;
 	return (address == 0);
@@ -362,7 +362,7 @@ bool VerifyIsTrustedCaller(bool trusted)
 				if(errcount)
 				{
 					errcount--;
-					debuglog(LCF_ERROR|LCF_DESYNC, "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! 0x%X\n", frame);
+					DEBUG_LOG() << "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! frame=" << frame;
 					//cmdprintf("SHORTTRACE: 3,50");
 				}
 				return true;
@@ -580,7 +580,7 @@ bool pauseHandlerSuspendedSound = false;
 
 void SaveOrLoad(int slot, bool save)
 {
-    VERBOSE_ENTER();
+    VERBOSE_LOG() << "called.";
 	tls.callerisuntrusted++;
 	if(save && tasflags.storeVideoMemoryInSavestates)
 	{
@@ -619,7 +619,7 @@ void SaveOrLoad(int slot, bool save)
 
 void GetFrameInput()
 {
-    VERBOSE_ENTER();
+    VERBOSE_LOG() << "called.";
 	Hooks::ProcessFrameInput();
 }
 
@@ -641,7 +641,7 @@ void HandlePausedEvents()
 		{
 			if(pauseHandlerContiguousCallCount > 30)
 			{
-				verbosedebugprintf("suspended sound for pause\n");
+				VERBOSE_LOG() << "suspended sound for pause";
 				Hooks::PreSuspendSound();
 				pauseHandlerSuspendedSound = true;
 			}
@@ -758,7 +758,7 @@ static int s_skipFreq = 8;
 void FrameBoundary(void* captureInfo, int captureInfoType)
 {
 	int localFrameCount = framecount;
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " called. (%d -> %d)\n", localFrameCount, localFrameCount+1);
+    DEBUG_LOG() << "called. Frame " << localFrameCount << " -> " << localFrameCount + 1;
 	//cmdprintf("SUSPENDALL: ");
 
 	int framerate = tasflags.framerate;
@@ -791,7 +791,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	// for this reason, localFrameCount should NOT be used except for things like debugging printouts.
 	if(inFrameBoundary)
 	{
-		debuglog(LCF_FRAME|LCF_UNTESTED, __FUNCTION__ " warning: attempting to handle recursion in FrameBoundary...\n");
+		DEBUG_LOG() << "warning: attempting to handle recursion in FrameBoundary...";
 		detTimer.ExitFrameBoundary();
 	}
 	detTimer.EnterFrameBoundary(framerate);
@@ -815,7 +815,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	framecount++;
 
 
-	debuglog(LCF_FRAME, "frameLOG: f=%d, t=%d\n", Hooks::getCurrentFramestamp(), Hooks::getCurrentTimestamp());
+	DEBUG_LOG() << "New frame!";
 //	cmdprintf("DEBUGPAUSE: %d", getCurrentFramestamp());
 	//debuglog(LCF_FREQUENT|LCF_DESYNC|LCF_TODO|-1, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
 	//cmdprintf("SHORTTRACE: 3,50");

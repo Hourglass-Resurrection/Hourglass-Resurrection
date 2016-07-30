@@ -9,6 +9,8 @@
 
 extern char commandSlot[256 * 8];
 
+using Log = DebugLog<LogCategory::THREAD>;
+
 namespace Hooks
 {
     void CloseHandles(DWORD threadId); // extern
@@ -90,7 +92,7 @@ namespace Hooks
             SetThreadLocale(tasflags.appLocale);
             SetThreadUILanguage(tasflags.appLocale);
         }
-        debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
+        ENTER();
         DWORD threadId = GetCurrentThreadId();
         ThreadWrapperInfo& info = *(ThreadWrapperInfo*)lpParam;
         while (true)
@@ -108,13 +110,13 @@ namespace Hooks
             info.beforecallvalid = false;
             //		return info.exitcode;
             info.idling = true;
-            debuglog(LCF_THREAD, "Thread pretended to exit:           handle=0x%X, id=0x%X\n", info.handle, GetCurrentThreadId());
+            LOG() << "Pretended to exit. handle=" << info.handle << ", id=" << GetCurrentThreadId();
             CloseHandles(threadId);
             //CloseHandle(info.handle);
             SetEvent(info.exitEvent);
             while (info.idling)
                 Sleep(1);
-            debuglog(LCF_THREAD, "MyCreateThread reused thread:       handle=0x%X, id=0x%X\n", info.handle, GetCurrentThreadId());
+            LOG() << "Reused thread. handle=" << info.handle << ", id=" << GetCurrentThreadId();
         }
     }
 
@@ -146,14 +148,13 @@ namespace Hooks
         LPDWORD lpThreadId
     )
     {
-        debuglog(LCF_THREAD, __FUNCTION__"(0x%X) called, tls.curThreadCreateName = %s\n", (DWORD)lpStartAddress, tls.curThreadCreateName);
+        ENTER(lpStartAddress, tls.curThreadCreateName);
         //cmdprintf("SHORTTRACE: 3,50");
 
         if (tasflags.threadMode == 0 || tasflags.threadMode == 3 && !tls.curThreadCreateName || tasflags.threadMode == 4 && tls.curThreadCreateName || (tasflags.threadMode == 5 && !VerifyIsTrustedCaller(!tls.callerisuntrusted)))
         {
             const char* threadTypeName = tls.curThreadCreateName;
-
-            debuglog(LCF_THREAD, __FUNCTION__": thread creation denied. \"%s\"\n", threadTypeName ? threadTypeName : "unknown_thread");
+            LOG() << "thread creation denied. name=" << (threadTypeName ? threadTypeName : "unknown_thread");
             cmdprintf("DENIEDTHREAD: %Iu", lpStartAddress);
 
             // FIXME: it's a terrible hack to choose between these two methods depending on whether we have a thread name,
@@ -201,7 +202,7 @@ namespace Hooks
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
             SetThreadName(*lpThreadId, name);
-            debuglog(LCF_THREAD, __FUNCTION__": created real thread and named it \"%s\".\n", name);
+            LOG() << "created real thread and named it: " << name;
             return rv;
         }
 
@@ -254,7 +255,8 @@ namespace Hooks
                 }
                 if (resumeResult == (DWORD)-1)
                 {
-                    debuglog(LCF_THREAD | LCF_ERROR, __FUNCTION__ " abandoning thread (handle=0x%X (ph=0x%X), id=0x%X)! error code 0x%X\n", twi->handle, twi->privateHandle, twi->threadId, GetLastError());
+                    LOG() << "abandoning thread (handle=" << twi->handle << " (ph=" << twi->privateHandle
+                          << "), id=" << twi->threadId << "! error code " << GetLastError();
                     twi->comatose = true;
                     continue; // private handle became invalid somehow?... give it up and keep searching for something else that's valid to reuse
                 }
@@ -283,7 +285,8 @@ namespace Hooks
                     }
                     sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
                     SetThreadName(twi->threadId, name);
-                    debuglog(LCF_THREAD, __FUNCTION__ " reused wrapper thread and renamed it \"%s\": handle=0x%X->0x%X (ph=0x%X), id=0x%X\n", name, oldHandle, twi->handle, twi->privateHandle, twi->threadId);
+                    LOG() << "reused wrapper thread and renamed it: " << name << ". handle=" << oldHandle
+                          << "->" << twi->handle << " (ph=" << twi->privateHandle << "), id=" << twi->threadId;
                 }
 
                 twi->idling = false;
@@ -339,7 +342,8 @@ namespace Hooks
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
             SetThreadName(twi->threadId, name);
-            debuglog(LCF_THREAD, __FUNCTION__": created real (wrapper) thread and named it \"%s\": handle=0x%X (ph=0x%X), id=0x%X.\n", name, twi->handle, twi->privateHandle, twi->threadId);
+            LOG() << "created real (wrapper) thread and named it: " << name << ". handle=" << twi->handle
+                  << " (ph=" << twi->privateHandle << "), id=" << twi->threadId;
         }
 
         return handle;
@@ -347,8 +351,9 @@ namespace Hooks
     HOOK_FUNCTION(VOID, WINAPI, ExitThread, DWORD dwExitCode);
     HOOKFUNC VOID WINAPI MyExitThread(DWORD dwExitCode)
     {
+        ENTER(dwExitCode);
         DWORD threadId = GetCurrentThreadId();
-        debuglog(LCF_THREAD, __FUNCTION__ "(%d) called on 0x%X.\n", dwExitCode, threadId);
+        LOG() << "called for thread: " << threadId;
         ThreadWrapperInfo* twi = threadWrappers[threadId];
         if (twi)
         {
@@ -385,7 +390,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, TerminateThread, HANDLE hThread, DWORD dwExitCode);
     HOOKFUNC BOOL WINAPI MyTerminateThread(HANDLE hThread, DWORD dwExitCode)
     {
-        debuglog(LCF_THREAD, __FUNCTION__ "(%d) called.\n", dwExitCode);
+        ENTER(dwExitCode);
 
         //DWORD threadId = GetThreadId(hThread); // function doesn't exist on windows 2000...
         DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
@@ -408,7 +413,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, GetExitCodeThread, HANDLE hThread, LPDWORD lpExitCode);
     HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
     {
-        debuglog(LCF_THREAD, __FUNCTION__ " called.\n");
+        ENTER(hThread, lpExitCode);
         DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
         ThreadWrapperInfo* twi = threadWrappers[threadId];
         if (twi && (twi->comatose || twi->idling))
@@ -416,17 +421,15 @@ namespace Hooks
             if (lpExitCode)
             {
                 *lpExitCode = twi->exitcode;
-                debuglog(LCF_THREAD, __FUNCTION__ " returned 0x%X!\n", *lpExitCode);
+                LOG() << "wrapper thread faked exit code " << *lpExitCode;
                 return TRUE;
             }
-            debuglog(LCF_THREAD | LCF_ERROR, __FUNCTION__ " failed!\n");
             return FALSE;
         }
         BOOL rv = GetExitCodeThread(hThread, lpExitCode);
+        LOG() << "returned " << rv;
         if (rv)
-            debuglog(LCF_THREAD, __FUNCTION__ " returned 0x%X.\n", *lpExitCode);
-        else
-            debuglog(LCF_THREAD | LCF_ERROR, __FUNCTION__ " failed.\n");
+            LOG() << " thread gave exit code " << *lpExitCode;
         return rv;
     }
 
@@ -435,7 +438,7 @@ namespace Hooks
     {
         if (ThreadInformationClass == 0x11/*ThreadHideFromDebugger*/)
         {
-            debugprintf(__FUNCTION__ ": denied setting ThreadHideFromDebugger\n");
+            LOG() << "denied setting ThreadHideFromDebugger";
             return 0; // STATUS_SUCCESS
         }
         NTSTATUS rv = NtSetInformationThread(ThreadHandle, ThreadInformationClass, ThreadInformation, ThreadInformationLength);

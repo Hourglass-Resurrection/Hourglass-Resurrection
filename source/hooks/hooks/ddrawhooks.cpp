@@ -313,15 +313,15 @@ namespace Hooks
 	    static HRESULT(STDMETHODCALLTYPE *Blt)(DIRECTDRAWSURFACEN* pThis, LPRECT destRect,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags, LPDDBLTFX bltfx);
 	    static HRESULT STDMETHODCALLTYPE MyBlt(DIRECTDRAWSURFACEN* pThis, LPRECT destRect,DIRECTDRAWSURFACEN* pSource, LPRECT srcRect,DWORD flags, LPDDBLTFX bltfx)
 	    {
-		    ENTER(pThis);
+		    ENTER(pThis, destRect, pSource, srcRect, flags, bltfx);
 		    //cmdprintf("SHORTTRACE: 3,50");
 
-
-		    ddrawdebugprintf("(%X,%X,%X,%X,%X).\n", destRect,pSource,srcRect,flags,bltfx);
 		    if(destRect)
-			    ddrawdebugprintf("destRect: (%d,%d,%d,%d)\n", destRect->left, destRect->top, destRect->right, destRect->bottom);
+			    LOG() << "destRect: left=" << destRect->left << ", top=" << destRect->top
+                      << ", right=" << destRect->right << ", bottom=" << destRect->bottom;
 		    if(srcRect)
-			    ddrawdebugprintf("srcRect: (%d,%d,%d,%d)\n", srcRect->left, srcRect->top, srcRect->right, srcRect->bottom);
+                LOG() << "srcRect: left=" << srcRect->left << ", top=" << srcRect->top
+                      << ", right=" << srcRect->right << ", bottom=" << srcRect->bottom
 
 		    flags |= DDBLT_WAIT;
 		    flags &= ~DDBLT_DONOTWAIT;
@@ -460,7 +460,7 @@ namespace Hooks
 			    if(destIsPrimary && pSource)
 			    {
 				    if(s_theBackBuffer != pSource)
-					    ddrawdebugprintf("s_theBackBuffer: 0x%X -> 0x%X\n", s_theBackBuffer, pSource);
+					    LOG() << "s_theBackBuffer: " << s_theBackBuffer << " -> " << pSource;
 				    s_theBackBuffer = pSource;
 			    }
 
@@ -607,17 +607,17 @@ namespace Hooks
 
 		    ENTER();
 		    DDSURFACEDESCN& ddsd = *lpddsdesc;
-		    ddrawdebugprintf("dwFlags = 0x%X.\n", ddsd.dwFlags);
-		    ddrawdebugprintf("dwWidth,dwHeight = %d,%d.\n", ddsd.dwWidth,ddsd.dwHeight);
-		    ddrawdebugprintf("lPitch = %d.\n", ddsd.lPitch);
-		    ddrawdebugprintf("dwBackBufferCount = %d.\n", ddsd.dwBackBufferCount);
-		    ddrawdebugprintf("dwRefreshRate = %d.\n", ddsd.dwRefreshRate);
-		    ddrawdebugprintf("lpSurface = %d.\n", ddsd.lpSurface);
-		    ddrawdebugprintf("ddckCKSrcOverlay = %d.\n", ddsd.ddckCKSrcOverlay);
-		    ddrawdebugprintf("ddckCKSrcBlt = %d.\n", ddsd.ddckCKSrcBlt);
-		    ddrawdebugprintf("ddpfPixelFormat.dwRGBBitCount = %d.\n", ddsd.ddpfPixelFormat.dwRGBBitCount);
-		    ddrawdebugprintf("ddsCaps = 0x%X.\n", ddsd.ddsCaps.dwCaps);
-		    ddrawdebugprintf("rv = 0x%X.\n", rv);
+		    LOG() << "dwFlags = " << ddsd.dwFlags;
+		    LOG() << "dwWidth = " << ddsd.dwWidth << "dwHeight = " << ddsd.dwHeight;
+		    LOG() << "lPitch = " << ddsd.lPitch;
+		    LOG() << "dwBackBufferCount = " << ddsd.dwBackBufferCount;
+		    LOG() << "dwRefreshRate = " << ddsd.dwRefreshRate;
+		    LOG() << "lpSurface = " << ddsd.lpSurface;
+		    LOG() << "ddckCKSrcOverlay = " << ddsd.ddckCKSrcOverlay;
+		    LOG() << "ddckCKSrcBlt = " << ddsd.ddckCKSrcBlt;
+		    LOG() << "ddpfPixelFormat.dwRGBBitCount = " << ddsd.ddpfPixelFormat.dwRGBBitCount;
+		    LOG() << "ddsCaps = " << ddsd.ddsCaps.dwCaps;
+		    LOG() << "rv = " << rv;
 
 		    //if(fakeDisplayValid)
 		    //{
@@ -632,7 +632,7 @@ namespace Hooks
 			    {
 				    ddsd.ddsCaps.dwCaps &= ~DDSCAPS_OFFSCREENPLAIN;
 				    ddsd.ddsCaps.dwCaps |= DDSCAPS_BACKBUFFER | DDSCAPS_COMPLEX | DDSCAPS_FLIP;
-				    ddrawdebugprintf("ddsCaps = 0x%X.\n", ddsd.ddsCaps.dwCaps);
+				    LOG() << "ddsCaps = " << ddsd.ddsCaps.dwCaps;
 			    }
 		    }
 
@@ -644,7 +644,7 @@ namespace Hooks
 				    //ddsd.ddpfPixelFormat.dwRGBBitCount = fakePixelFormatBPP;
 				    ddsd.dwWidth = fakeDisplayWidth;
 				    ddsd.dwHeight = fakeDisplayHeight;
-				    ddrawdebugprintf("dwWidth,dwHeight = %d,%d.\n", ddsd.dwWidth,ddsd.dwHeight);
+                    LOG() << "dwWidth = " << ddsd.dwWidth << "dwHeight = " << ddsd.dwHeight;
 			    }
 		    }
 
@@ -661,7 +661,7 @@ namespace Hooks
 
 		    ENTER();
 		    if(lpddpfmt)
-			    ddrawdebugprintf("dwRGBBitCount = %d.\n", lpddpfmt->dwRGBBitCount);
+			    LOG() << "dwRGBBitCount = " << lpddpfmt->dwRGBBitCount;
 
 		    return rv;
 	    }
@@ -806,12 +806,13 @@ namespace Hooks
 	    static HRESULT(STDMETHODCALLTYPE *GetDC)(DIRECTDRAWSURFACEN* pThis, HDC* lphDC);
 	    static HRESULT STDMETHODCALLTYPE MyGetDC(DIRECTDRAWSURFACEN* pThis, HDC* lphDC)
 	    {
+            ENTER(lphDC);
 		    if(!lphDC)
 			    return DDERR_INVALIDPARAMS;
 
 		    // normal case
 		    HRESULT rv = GetDC(pThis, lphDC);
-		    ddrawdebugprintf(__FUNCTION__ " called. returned 0x%X, got 0x%X\n", rv, lphDC?*lphDC:0);
+            LOG() << "returned " << rv << ", got " << *lphDC;
 		
 		    if(FAILED(rv))
 		    {
@@ -884,8 +885,9 @@ namespace Hooks
 	    static HRESULT(STDMETHODCALLTYPE *GetFlipStatus)(DIRECTDRAWSURFACEN* pThis, DWORD flags);
 	    static HRESULT STDMETHODCALLTYPE MyGetFlipStatus(DIRECTDRAWSURFACEN* pThis, DWORD flags)
 	    {
+            ENTER(flags);
 		    HRESULT rv = GetFlipStatus(pThis, flags);
-		    debugprintf(__FUNCTION__ " called, return 0x%X\n", rv);
+		    LOG() << "rv = " << rv;
 		    return rv;
 	    }
 
@@ -907,33 +909,38 @@ namespace Hooks
 	    static HRESULT(STDMETHODCALLTYPE *SetColorKey)(DIRECTDRAWSURFACEN* pThis, DWORD dwFlags, LPDDCOLORKEY pKey);
         static HRESULT STDMETHODCALLTYPE MySetColorKey(DIRECTDRAWSURFACEN* pThis, DWORD dwFlags, LPDDCOLORKEY pKey)
 	    {
+            ENTER(dwFlags, pKey);
 		    HRESULT rv = SetColorKey(pThis, dwFlags, pKey);
-		    if(pKey)
-			    ddrawdebugprintf(__FUNCTION__ "(0x%X, 0x%X - 0x%X) called, hr=0x%X.\n", dwFlags, pKey->dwColorSpaceLowValue, pKey->dwColorSpaceHighValue, rv);
-		    else
-			    ddrawdebugprintf(__FUNCTION__ "(0x%X, NULL) called, hr=0x%X.\n", dwFlags, rv);
+            if (pKey)
+            {
+                LOG() << "dwColorSpaceLowValue = " << pKey->dwColorSpaceLowValue
+                      << " dwColorSpaceHighValue = " << pKey->dwColorSpaceHighValue;
+            }
+            LOG() << "rv = " << rv;
 		    return rv;
 	    }
 
 	    static HRESULT(STDMETHODCALLTYPE *GetAttachedSurface)(DIRECTDRAWSURFACEN* pThis, DDSCAPSN* lpddscaps, DIRECTDRAWSURFACEN** ppsurf);
 	    static HRESULT STDMETHODCALLTYPE MyGetAttachedSurface(DIRECTDRAWSURFACEN* pThis, DDSCAPSN* lpddscaps, DIRECTDRAWSURFACEN** ppsurf)
 	    {
+            ENTER(lpddscaps);
 		    if(!lpddscaps || !ppsurf)
 			    return DDERR_INVALIDPARAMS;
 
+            LOG() << "dwCaps = " << lpddscaps->dwCaps;
 		    if(lpddscaps->dwCaps & DDSCAPS_BACKBUFFER)
 		    {
 			    GetAttachedFakeBackBuf(pThis, ppsurf);
 			    if(*ppsurf)
 			    {
 				    HRESULT rv = DD_OK;
-				    ddrawdebugprintf(__FUNCTION__ "(dwCaps=0x%X) called. returned 0x%X, got 0x%X\n", lpddscaps->dwCaps, rv, *ppsurf);
+				    LOG() << "returned " << rv << ", got " << *ppsurf;
 				    return rv;
 			    }
 		    }
 
 		    HRESULT rv = GetAttachedSurface(pThis, lpddscaps, ppsurf);
-		    ddrawdebugprintf(__FUNCTION__ "(dwCaps=0x%X) called. returned 0x%X, got 0x%X\n", lpddscaps->dwCaps, rv, *ppsurf);
+		    LOG() << "returned " << rv << ", got " << *ppsurf;
 		    return rv;
 	    }
 

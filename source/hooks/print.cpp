@@ -117,8 +117,8 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
         return "[Time]";
     case LogCategory::DETTIMER:
         return "[Det. Timer]";
-    case LogCategory::SLEEP:
-        return "[Sleep]";
+    case LogCategory::SYNC:
+        return "[Synchronization]";
     case LogCategory::DDRAW:
         return "[DDraw]";
     case LogCategory::D3D:
@@ -127,6 +127,8 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
         return "[OpenGL]";
     case LogCategory::GDI:
         return "[GDI]";
+    case LogCategory::SDL:
+        return "[SDL:TODO:Remove!]";
     case LogCategory::DINPUT:
         return "[DInput]";
     case LogCategory::KEYBOARD:

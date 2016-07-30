@@ -28,14 +28,15 @@ int cmdprintf(const char* fmt, ...);
 #define FMT_ARGS_7(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_6(__VA_ARGS__),)
 #define FMT_ARGS_8(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_7(__VA_ARGS__),)
 #define FMT_ARGS_9(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_8(__VA_ARGS__),)
+#define FMT_ARGS_10(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_9(__VA_ARGS__),)
 
 /*
  * Using the MSVC preprocessor comma erasure for
  * correct handling of 0 arguments.
  */
 #define FOR_EACH_ADD_ARG(...) __0, __VA_ARGS__
-#define FOR_EACH_RSEQ_N() 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define FOR_EACH_ARG_N(__1, __2, __3, __4, __5, __6, __7, __8, __9, __10, N, ...) N
+#define FOR_EACH_RSEQ_N() 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+#define FOR_EACH_ARG_N(__1, __2, __3, __4, __5, __6, __7, __8, __9, __10, __11, N, ...) N
 #define FOR_EACH_NARG_(...) CONCATENATE(FOR_EACH_ARG_N(__VA_ARGS__),)
 #define FOR_EACH_NARG(...) FOR_EACH_NARG_(FOR_EACH_ADD_ARG(__VA_ARGS__), FOR_EACH_RSEQ_N())
 

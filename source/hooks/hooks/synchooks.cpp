@@ -4,9 +4,11 @@
 #include "../global.h"
 #include "shared/ipc.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
-#include <algorithm>
+
+using Log = DebugLog<LogCategory::SYNC>;
 
 namespace Hooks
 {
@@ -24,7 +26,7 @@ namespace Hooks
         for (iter = handles.begin(); iter != handles.end(); iter++)
         {
             HANDLE handle = *iter;
-            debugprintf("CLOSING HANDLE: 0x%X\n", (void*)handle);
+            DEBUG_LOG() << "CLOSING HANDLE: " << handle;
             CloseHandle(handle);
         }
         handles.clear();
@@ -35,9 +37,10 @@ namespace Hooks
         LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName)
     {
+        ENTER();
         // TODO: disabling this makes the DirectMusic timer somewhat saveable... what drives that timer??
         HANDLE rv = CreateEventA(lpEventAttributes, bManualReset, bInitialState, lpName);
-        debuglog(LCF_SYNCOBJ | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         //verbosedebugprintf("%d %d %s\n", bManualReset, bInitialState, lpName);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
@@ -49,8 +52,9 @@ namespace Hooks
         LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName)
     {
+        ENTER();
         HANDLE rv = CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName);
-        debuglog(LCF_SYNCOBJ | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -62,8 +66,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenEventA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenEventA(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -73,8 +78,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenEventW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenEventW(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -84,14 +90,14 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SetEvent, HANDLE hEvent);
     HOOKFUNC BOOL WINAPI MySetEvent(HANDLE hEvent)
     {
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " called.\n");
+        ENTER(hEvent);
         BOOL rv = SetEvent(hEvent);
         return rv;
     }
     HOOK_FUNCTION(BOOL, WINAPI, ResetEvent, HANDLE hEvent);
     HOOKFUNC BOOL WINAPI MyResetEvent(HANDLE hEvent)
     {
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " called.\n");
+        ENTER(hEvent);
         BOOL rv = ResetEvent(hEvent);
         return rv;
     }
@@ -99,8 +105,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexA, LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -110,8 +117,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenMutexA(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -121,8 +129,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexW, LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = CreateMutexW(lpMutexWttributes, bInitialOwner, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -132,8 +141,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenMutexW(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -143,7 +153,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, ReleaseMutex, HANDLE hMutex);
     HOOKFUNC BOOL WINAPI MyReleaseMutex(HANDLE hMutex)
     {
-        debuglog(LCF_SYNCOBJ | LCF_TODO, __FUNCTION__ " called.\n");
+        ENTER();
 
         BOOL rv = ReleaseMutex(hMutex);
         return rv;
@@ -153,7 +163,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, CloseHandle, HANDLE hObject);
     HOOKFUNC BOOL WINAPI MyCloseHandle(HANDLE hObject)
     {
-        debuglog(LCF_SYNCOBJ | LCF_TODO, __FUNCTION__ "(0x%X) called.\n", hObject);
+        ENTER(hObject);
         BOOL rv = TRUE;
         //	if(threadWrappersOriginalHandleToId.find(hObject) == threadWrappersOriginalHandleToId.end())
         {
@@ -192,7 +202,7 @@ namespace Hooks
             hTargetProcessHandle, lpTargetHandle,
             dwDesiredAccess, bInheritHandle, dwOptions);
 
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ "(0x%X -> 0x%X).\n", hSourceProcessHandle, *lpTargetHandle);
+        LOG() << "hSourceHandle " << hSourceHandle << " -> lpTargetHandle " << *lpTargetHandle;
 
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
@@ -218,8 +228,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreA, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = CreateSemaphoreA(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -229,8 +240,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreW, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName);
     HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName)
     {
+        ENTER();
         HANDLE rv = CreateSemaphoreW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -240,8 +252,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenSemaphoreA(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -251,8 +264,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
     {
+        ENTER();
         HANDLE rv = OpenSemaphoreW(dwDesiredAccess, bInheritHandle, lpName);
-        debuglog(LCF_SYNCOBJ, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -262,8 +276,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerA, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCSTR lpTimerName);
     HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCSTR lpTimerName)
     {
+        ENTER();
         HANDLE rv = CreateWaitableTimerA(lpTimerAttributes, bManualReset, lpTimerName);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -273,8 +288,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerW, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
     HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName)
     {
+        ENTER();
         HANDLE rv = CreateWaitableTimerW(lpTimerAttributes, bManualReset, lpTimerName);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -284,8 +300,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpTimerName);
     HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpTimerName)
     {
+        ENTER();
         HANDLE rv = OpenWaitableTimerA(dwDesiredAccess, bInheritHandle, lpTimerName);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -295,8 +312,9 @@ namespace Hooks
     HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpTimerName);
     HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpTimerName)
     {
+        ENTER();
         HANDLE rv = OpenWaitableTimerW(dwDesiredAccess, bInheritHandle, lpTimerName);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned 0x%X.\n", rv);
+        LOG() << "returned " << rv;
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -306,15 +324,17 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SetWaitableTimer, HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
     HOOKFUNC BOOL WINAPI MySetWaitableTimer(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume)
     {
+        ENTER();
         BOOL rv = SetWaitableTimer(hTimer, lpDueTime, lPeriod, pfnCompletionRoutine, lpArgToCompletionRoutine, fResume);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned %d.\n", rv);
+        LOG() << "returned " << rv;
         return rv;
     }
     HOOK_FUNCTION(BOOL, WINAPI, CancelWaitableTimer, HANDLE hTimer);
     HOOKFUNC BOOL WINAPI MyCancelWaitableTimer(HANDLE hTimer)
     {
+        ENTER();
         BOOL rv = CancelWaitableTimer(hTimer);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned %d.\n", rv);
+        LOG() << "returned " << rv;
         return rv;
     }
 

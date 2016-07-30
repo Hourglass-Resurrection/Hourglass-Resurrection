@@ -9,6 +9,8 @@
 DEFINE_LOCAL_GUID(CLSID_FilterGraphManager, 0xe436ebb3, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_LOCAL_GUID(CLSID_FilterGraphNoThread, 0xe436ebb8, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 
+using Log = DebugLog<LogCategory::MODULE>;
+
 namespace Hooks
 {
     bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
@@ -506,11 +508,12 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
     HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
     {
+        ENTER(riid.Data1, rclsid.Data1);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
         const char* newName = riidToName(chooseriid(riid, rclsid));
-        debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called.\n", riid.Data1, rclsid.Data1, newName ? newName : "?");
+        LOG() << "newName = " << newName;
         if (newName)
             curtls.curThreadCreateName = newName;
 
@@ -536,8 +539,9 @@ namespace Hooks
 
     static void PreCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, const char* callerName, const char* oldName)
     {
+        ENTER(riid.Data1, rclsid.Data1, callerName);
         const char* newName = riidToName(chooseriid(riid, rclsid));
-        debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called by %s.\n", riid.Data1, rclsid.Data1, newName ? newName : "?", callerName);
+        LOG() << "newName = " << newName;
         if (rclsid.Data1 == CLSID_FilterGraphManager.Data1 /*&& tasflags.threadMode < 2*/)
             ((IID&)rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
         if (!oldName && !newName)
@@ -572,7 +576,7 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
     HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
     {
-        debuglog(LCF_MODULE, __FUNCTION__ "(clsid=0x%X, dwCount=%d) called.\n", Clsid.Data1, dwCount);
+        ENTER(Clsid.Data1, dwCount);
 
         // check for creating custom objects that skip COM
     //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
@@ -649,7 +653,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
             IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject);
     HOOKFUNC HRESULT STDMETHODCALLTYPE MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject)
     {
-        debuglog(LCF_MODULE | LCF_UNTESTED, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        ENTER(riid.Data1);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
@@ -742,7 +746,8 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
         LPPROCESS_INFORMATION lpProcessInformation
     )
     {
-        debuglog(LCF_PROCESS | LCF_TODO, __FUNCTION__ " called: %s\n", lpCommandLine);
+        ENTER(lpCommandLine);
+        DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
         BOOL rv = CreateProcessA(
             lpApplicationName,
@@ -783,7 +788,8 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
         LPPROCESS_INFORMATION lpProcessInformation
     )
     {
-        debuglog(LCF_PROCESS | LCF_TODO, __FUNCTION__ " called: %S\n", lpCommandLine);
+        ENTER(lpCommandLine);
+        DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
         BOOL rv = CreateProcessW(
             lpApplicationName,
@@ -803,7 +809,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     HOOK_FUNCTION(VOID, WINAPI, ExitProcess, DWORD dwExitCode);
     HOOKFUNC VOID WINAPI MyExitProcess(DWORD dwExitCode)
     {
-        debuglog(LCF_PROCESS, __FUNCTION__ " called.\n");
+        ENTER();
         _asm {int 3}
         while (true) { Sleep(10); }
     }
