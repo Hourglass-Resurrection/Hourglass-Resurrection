@@ -91,6 +91,9 @@
     <ClCompile Include="hooks\Xinputhooks.cpp">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClCompile>
+    <ClCompile Include="ipc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
@@ -193,6 +196,9 @@
       <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="locale.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ipc.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

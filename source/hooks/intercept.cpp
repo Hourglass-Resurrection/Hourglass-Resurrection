@@ -8,8 +8,11 @@
 #include "shared/asm.h"
 #include "shared/ipc.h"
 
+using Log = DebugLog<LogCategory::HOOK>;
+
 BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, BOOL rvOnSkip)
 {
+    ENTER(dwAddressToIntercept, dwReplaced, dwTrampoline, trampolineOnly, rvOnSkip);
 	if(!dwAddressToIntercept)
 		return FALSE;
 
@@ -34,18 +37,20 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 			if(pTargetTail == pHook)
 			{
 				if(i == 0)
-					debugprintf("already hooked. skipping.\n");
+					LOG() << "already hooked. skipping.";
 				else
-					debugprintf("already hooked (from 0x%X to 0x%X), although the hook chain is longer than expected. skipping.\n", pTargetTail-diff, pTargetTail);
+					LOG() << "already hooked (from " << pTargetTail - diff  << " to " << pTargetTail
+                          << ") although the hook chain is longer than expected. skipping.";
 				return rvOnSkip;
 			}
 			else
 			{
 				if(i < 64)
-					debugprintf("rejump detected in target (from 0x%X to 0x%X). following chain...\n", pTargetTail-diff, pTargetTail);
+					LOG() << "rejump detected in target (from " << pTargetTail - diff << " to " << pTargetTail
+                          << "). following chain...";
 				else
 				{
-					debugprintf("hook chain is too long. target function jumps to itself? skipping.\n");
+					LOG() << "hook chain is too long. target function jumps to itself? skipping.";
 					return rvOnSkip;
 				}
 			}
@@ -53,7 +58,8 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 
 		if(pTargetHead == pHook || pTramp == pHook || pTargetHead == pTramp)
 		{
-			debugprintf("bad input? target=0x%X, hook=0x%X, tramp=0x%X. skipping hook.\n", pTargetHead, pHook, pTramp);
+			LOG() << "bad input? target=" << pTargetHead << ", hook=" << pHook
+                  << ", tramp=" << pTramp << ". skipping hook.";
 			return rvOnSkip;
 		}
 	//}
@@ -74,12 +80,13 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 		}
 	}*/
 
-	debuglog(LCF_HOOK, "want to hook 0x%X to call 0x%X, and want trampoline 0x%X to call 0x%X\n", pTargetHead, pHook, pTramp, pTargetTail);
+	LOG() << "want to hook " << pTargetHead << " to call " << pHook
+          << ", and want trampoline " << pTramp << " to call " << pTargetTail;
 
 	if(*pTramp == JMP_REL32)
 	{
 		int diff = *(DWORD*)(pTramp+1) + 5;
-		debugprintf("rejump detected in trampoline (from 0x%X to 0x%X). giving up.\n", pTramp, pTramp+diff);
+		LOG() << "rejump detected in trampoline (from " << pTramp << " to " << pTramp + diff << ". giving up.";
 		return rvOnSkip;
 	}
 
@@ -169,11 +176,11 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 {
 	if (ordinal)
 	{
-		debuglog(LCF_MODULE | LCF_HOOK, "InterceptAPI(%s.(LPCSTR)%p) %s\n", c_szDllName, c_szApiName, "started...");
+		LOG() << "(" << c_szDllName << "." << reinterpret_cast<DWORD>(c_szApiName) << ") started...";
 	}
 	else
 	{
-		debuglog(LCF_MODULE | LCF_HOOK, "InterceptAPI(%s.%s) %s\n", c_szDllName, c_szApiName, "started...");
+        LOG() << "(" << c_szDllName << "." << c_szApiName << ") started...";
 	}
 
 	HMODULE hModule = GetModuleHandle(c_szDllName);
@@ -181,11 +188,11 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 	{
 		if (ordinal)
 		{
-			debugprintf("WARNING: Loading module %s to hook (LPCSTR)%p\n", c_szDllName, c_szApiName);
+			DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook " << reinterpret_cast<DWORD>(c_szApiName);
 		}
 		else
 		{
-			debugprintf("WARNING: Loading module %s to hook %s\n", c_szDllName, c_szApiName);
+			DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook " << c_szApiName;
 		}
 		// dangerous according to the documentation,
 		// but the alternative is usually to fail spectacularly anyway
@@ -194,17 +201,21 @@ BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
 	}
 	FARPROC dwAddressToIntercept = GetProcAddress(hModule, (char*)c_szApiName); 
 	BOOL rv = InterceptGlobalFunction(dwAddressToIntercept, dwReplaced, dwTrampoline, trampolineOnly, rvOnSkip);
-	if (rv || allowTrack)
-	{
-		if (ordinal)
-		{
-			debugprintf("InterceptAPI(%s.(LPCSTR)%p) %s \t(0x%X, 0x%X)\n", c_szDllName, c_szApiName, rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!", dwAddressToIntercept, dwTrampoline);
-		}
-		else
-		{
-			debugprintf("InterceptAPI(%s.%s) %s \t(0x%X, 0x%X)\n", c_szDllName, c_szApiName, rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!", dwAddressToIntercept, dwTrampoline);
-		}
-	}
+    if (rv || allowTrack)
+    {
+        if (ordinal)
+        {
+            LOG() << "(" << c_szDllName << "." << reinterpret_cast<DWORD>(c_szApiName) << ") "
+                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!")
+                  << "\t(" << dwAddressToIntercept << ", " << dwTrampoline << ")";
+        }
+        else
+        {
+            LOG() << "(" << c_szDllName << "." << c_szApiName << ") "
+                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!")
+                  << "\t(" << dwAddressToIntercept << ", " << dwTrampoline << ")";
+        }
+    }
 
 	if(/*!rv && */allowTrack)
 	{
@@ -309,7 +320,7 @@ void RetryInterceptAPIs(const char* c_szDllName)
 	found = pendingInterceptAPICalls.find(c_szDllName);
 	if(found != pendingInterceptAPICalls.end() && !found->second.empty())
 	{
-		debugprintf("Hooking delayed load DLL: %s\n", c_szDllName);
+		LOG() << "Hooking delayed load DLL: " << c_szDllName;
 		HookDelayLoadedDll(c_szDllName, found->second);
 	}
 	//if(!multiDllInterceptAPICalls.empty())
@@ -321,7 +332,7 @@ void RetryInterceptAPIs(const char* c_szDllName)
 
 void UnInterceptUnloadingAPIs(const char* c_szDllName)
 {
-	debuglog(LCF_MODULE, "Unloaded delayed load DLL: %s\n", c_szDllName);
+	LOG() << "Unloaded delayed load DLL: " << c_szDllName;
 	//std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
 	//found = delayHookedInterceptAPICalls.find(c_szDllName);
 	//if(found == delayHookedInterceptAPICalls.end())

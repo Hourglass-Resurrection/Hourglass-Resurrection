@@ -12,6 +12,8 @@ DEFINE_LOCAL_GUID(IID_IDirect3DSwapChain9, 0x794950F2, 0xADFC, 0x458A, 0x90, 0x5
 DEFINE_LOCAL_GUID(IID_IDirect3DSurface9, 0x0CFBAF3A, 0x9FF6, 0x429A, 0x99, 0xB3, 0xA2, 0x79, 0x6A, 0xF8, 0xB8, 0x9B);
 DEFINE_LOCAL_GUID(IID_IDirect3DTexture9, 0x85C31227, 0x3DE5, 0x4F00, 0x9B, 0x3A, 0xF1, 0x1A, 0xC3, 0x8C, 0x18, 0xB5);
 
+using Log = DebugLog<LogCategory::D3D>;
+
 namespace Hooks
 {
     //#define SAVESTATE_DX9_TEXTURES
@@ -131,7 +133,7 @@ namespace Hooks
         static ULONG(STDMETHODCALLTYPE *Release)(IDirect3DDevice9* pThis);
         static ULONG STDMETHODCALLTYPE MyRelease(IDirect3DDevice9* pThis)
         {
-            D3D_ENTER(pThis);
+            ENTER(pThis);
             ULONG rv = Release(pThis);
             if (rv == 0)
             {
@@ -144,7 +146,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DDevice9* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DDevice9* pThis, REFIID riid, void** ppvObj)
         {
-            D3D_ENTER();
+            ENTER();
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -154,7 +156,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Reset)(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters);
         static HRESULT STDMETHODCALLTYPE MyReset(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters)
         {
-            D3D_ENTER();
+            ENTER();
             ProcessPresentationParams9(pPresentationParameters, NULL, pThis);
             d3d9BackBufActive = true;
             d3d9BackBufDirty = true;
@@ -229,7 +231,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Present)(IDirect3DDevice9* pThis, CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion);
         static HRESULT STDMETHODCALLTYPE MyPresent(IDirect3DDevice9* pThis, CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
         {
-            D3D_ENTER();
+            ENTER();
 
             HRESULT rv;
             if (ShouldSkipDrawing(d3d9BackBufDirty, !d3d9BackBufDirty))
@@ -260,7 +262,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *GetSwapChain)(IDirect3DDevice9* pThis, UINT iSwapChain, IDirect3DSwapChain9** pSwapChain);
         static HRESULT STDMETHODCALLTYPE MyGetSwapChain(IDirect3DDevice9* pThis, UINT iSwapChain, IDirect3DSwapChain9** pSwapChain)
         {
-            D3D_ENTER(iSwapChain);
+            ENTER(iSwapChain);
             HRESULT rv = GetSwapChain(pThis, iSwapChain, pSwapChain);
             if (SUCCEEDED(rv))
                 HookCOMInterface(IID_IDirect3DSwapChain9, (LPVOID*)pSwapChain);
@@ -270,7 +272,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateAdditionalSwapChain)(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DSwapChain9** pSwapChain);
         static HRESULT STDMETHODCALLTYPE MyCreateAdditionalSwapChain(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DSwapChain9** pSwapChain)
         {
-            D3D_ENTER();
+            ENTER();
             ProcessPresentationParams9(pPresentationParameters, NULL, pThis);
             HRESULT rv = CreateAdditionalSwapChain(pThis, pPresentationParameters, pSwapChain);
             if (SUCCEEDED(rv))
@@ -287,7 +289,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *SetRenderTarget)(IDirect3DDevice9* pThis, DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget);
         static HRESULT STDMETHODCALLTYPE MySetRenderTarget(IDirect3DDevice9* pThis, DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
         {
-            D3D_ENTER(RenderTargetIndex);
+            ENTER(RenderTargetIndex);
             HRESULT rv = SetRenderTarget(pThis, RenderTargetIndex, pRenderTarget);
             IDirect3DSurface9* pBackBuffer;
             if (SUCCEEDED(pThis->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
@@ -299,14 +301,15 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *GetRenderTarget)(IDirect3DDevice9* pThis, DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget);
         static HRESULT STDMETHODCALLTYPE MyGetRenderTarget(IDirect3DDevice9* pThis, DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget)
         {
+            ENTER(ppRenderTarget);
             HRESULT rv = GetRenderTarget(pThis, RenderTargetIndex, ppRenderTarget);
-            d3ddebugprintf(__FUNCTION__ "(%d) called, returned 0x%X\n", RenderTargetIndex, (SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : NULL);
+            LOG() << "returned " << ((SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : NULL);
             return rv;
         }
 
         static void Lock(IDirect3DDevice9* pThis, DDSURFACEDESC& desc, IDirect3DSurface9*& pBackBuffer, bool getBackBuffer = true)
         {
-            D3D_ENTER();
+            ENTER();
             if (getBackBuffer)
                 pThis->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
 
@@ -356,7 +359,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Clear)(IDirect3DDevice9* pThis, DWORD Count, CONST D3DRECT* pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
         static HRESULT STDMETHODCALLTYPE MyClear(IDirect3DDevice9* pThis, DWORD Count, CONST D3DRECT* pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
         {
-            D3D_ENTER();
+            ENTER();
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = Clear(pThis, Count, pRects, Flags, Color, Z, Stencil);
@@ -368,7 +371,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawPrimitive)(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
         static HRESULT STDMETHODCALLTYPE MyDrawPrimitive(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
         {
-            D3D_ENTER();
+            ENTER();
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawPrimitive(pThis, PrimitiveType, StartVertex, PrimitiveCount);
@@ -380,7 +383,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawIndexedPrimitive)(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE primitiveType, INT baseVertexIndex, UINT minIndex, UINT NumVertices, UINT startIndex, UINT primCount);
         static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitive(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE primitiveType, INT baseVertexIndex, UINT minIndex, UINT NumVertices, UINT startIndex, UINT primCount)
         {
-            D3D_ENTER();
+            ENTER();
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawIndexedPrimitive(pThis, primitiveType, baseVertexIndex, minIndex, NumVertices, startIndex, primCount);
@@ -392,7 +395,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawPrimitiveUP)(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
         static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveUP(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride)
         {
-            D3D_ENTER();
+            ENTER();
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawPrimitiveUP(pThis, PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
@@ -404,7 +407,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawIndexedPrimitiveUP)(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertexIndices, UINT PrimitiveCount, CONST void* pIndexData, D3DFORMAT IndexDataFormat, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
         static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveUP(IDirect3DDevice9* pThis, D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertexIndices, UINT PrimitiveCount, CONST void* pIndexData, D3DFORMAT IndexDataFormat, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride)
         {
-            D3D_ENTER();
+            ENTER();
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawIndexedPrimitiveUP(pThis, PrimitiveType, MinVertexIndex, NumVertexIndices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
@@ -419,7 +422,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateTexture)(IDirect3DDevice9* pThis, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
         static HRESULT STDMETHODCALLTYPE MyCreateTexture(IDirect3DDevice9* pThis, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle)
         {
-            d3ddebugprintf(__FUNCTION__ "(%dx%d) called.\n", Width, Height);
+            ENTER(Width, Height);
             HRESULT rv = CreateTexture(pThis, Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
             if (SUCCEEDED(rv))
             {
@@ -444,7 +447,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateRenderTarget)(IDirect3DDevice9* pThis, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
         static HRESULT STDMETHODCALLTYPE MyCreateRenderTarget(IDirect3DDevice9* pThis, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
         {
-            d3ddebugprintf(__FUNCTION__ "(%dx%d) called.\n", Width, Height);
+            ENTER(Width, Height);
             Lockable = TRUE;
             HRESULT rv = CreateRenderTarget(pThis, Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
             if (SUCCEEDED(rv))
@@ -458,7 +461,7 @@ namespace Hooks
         //static HRESULT(STDMETHODCALLTYPE *CreateImageSurface)(IDirect3DDevice9* pThis, UINT Width,UINT Height,D3DFORMAT Format,IDirect3DSurface9** ppSurface);
         //static HRESULT STDMETHODCALLTYPE MyCreateImageSurface(IDirect3DDevice9* pThis, UINT Width,UINT Height,D3DFORMAT Format,IDirect3DSurface9** ppSurface)
         //{
-        //	D3D_ENTER();
+        //	ENTER();
         //	HRESULT rv = CreateImageSurface(pThis,Width,Height,Format,ppSurface);
         //	return rv;
         //}
@@ -500,7 +503,7 @@ namespace Hooks
         static ULONG(STDMETHODCALLTYPE *Release)(IDirect3DSwapChain9* pThis);
         static ULONG STDMETHODCALLTYPE MyRelease(IDirect3DSwapChain9* pThis)
         {
-            D3D_ENTER(pThis);
+            ENTER(pThis);
             ULONG rv = Release(pThis);
             if (rv == 0)
             {
@@ -512,7 +515,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DSwapChain9* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DSwapChain9* pThis, REFIID riid, void** ppvObj)
         {
-            D3D_ENTER();
+            ENTER();
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -522,7 +525,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Present)(IDirect3DSwapChain9* pThis, CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags);
         static HRESULT STDMETHODCALLTYPE MyPresent(IDirect3DSwapChain9* pThis, CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags)
         {
-            D3D_ENTER();
+            ENTER();
 
             HRESULT rv;
             if (ShouldSkipDrawing(true, false))
@@ -633,7 +636,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DSurface9* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DSurface9* pThis, REFIID riid, void** ppvObj)
         {
-            D3D_ENTER(riid.Data1);
+            ENTER(riid.Data1);
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -643,7 +646,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *UnlockRect)(IDirect3DSurface9* pThis);
         static HRESULT STDMETHODCALLTYPE MyUnlockRect(IDirect3DSurface9* pThis)
         {
-            D3D_ENTER(pThis);
+            ENTER(pThis);
             HRESULT rv = UnlockRect(pThis);
             IDirect3DSurface9_CustomData& surf9 = surface9data[pThis];
             surf9.videoMemoryBackupDirty = TRUE;
@@ -706,7 +709,7 @@ namespace Hooks
         static HRESULT STDMETHODCALLTYPE MySetPrivateData(IDirect3DTexture9* pThis, REFGUID refguid, CONST void* pData, DWORD SizeOfData, DWORD Flags)
         {
             HRESULT hr = SetPrivateData(pThis, refguid, pData, SizeOfData, Flags);
-            D3D_ENTER(pThis);
+            ENTER(pThis);
 
             IDirect3DTexture9_CustomData& tex9 = texture9data[pThis];
             tex9.dirty = true;
@@ -718,7 +721,7 @@ namespace Hooks
         static HRESULT STDMETHODCALLTYPE MyFreePrivateData(IDirect3DTexture9* pThis, REFGUID refguid)
         {
             HRESULT hr = FreePrivateData(pThis, refguid);
-            D3D_ENTER(pThis);
+            ENTER(pThis);
 
             IDirect3DTexture9_CustomData& tex9 = texture9data[pThis];
             tex9.dirty = false;
@@ -731,7 +734,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DTexture9* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DTexture9* pThis, REFIID riid, void** ppvObj)
         {
-            D3D_ENTER(riid.Data1);
+            ENTER(riid.Data1);
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -741,7 +744,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *UnlockRect)(IDirect3DTexture9* pThis, UINT Level);
         static HRESULT STDMETHODCALLTYPE MyUnlockRect(IDirect3DTexture9* pThis, UINT Level)
         {
-            D3D_ENTER(pThis);
+            ENTER(pThis);
             HRESULT rv = UnlockRect(pThis, Level);
             IDirect3DTexture9_CustomData& tex9 = texture9data[pThis];
             tex9.dirty = true;
@@ -969,7 +972,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3D9* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3D9* pThis, REFIID riid, void** ppvObj)
         {
-            D3D_ENTER();
+            ENTER();
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -979,7 +982,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateDevice)(IDirect3D9* pThis, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface);
         static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3D9* pThis, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface)
         {
-            D3D_ENTER();
+            ENTER();
             ProcessPresentationParams9(pPresentationParameters, pThis, NULL);
             HRESULT rv = CreateDevice(pThis, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
             if (SUCCEEDED(rv))
@@ -999,7 +1002,7 @@ namespace Hooks
     HOOK_FUNCTION(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion);
     HOOKFUNC IDirect3D9* WINAPI MyDirect3DCreate9(UINT SDKVersion)
     {
-        debuglog(LCF_D3D, __FUNCTION__ " called.\n");
+        ENTER();
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         IDirect3D9* rv = Direct3DCreate9(SDKVersion);

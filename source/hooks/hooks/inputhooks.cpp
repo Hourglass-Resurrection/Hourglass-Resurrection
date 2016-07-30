@@ -42,20 +42,10 @@ DEFINE_LOCAL_GUID(GUID_Key, 0x55728220, 0xD33C, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 
 DEFINE_LOCAL_GUID(GUID_POV, 0xA36D02F2, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
 DEFINE_LOCAL_GUID(GUID_Unknown, 0xA36D02F3, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
 
+using Log = DebugLog<LogCategory::DINPUT>;
+
 namespace Hooks
 {
-    #if defined(_DEBUG) || 0//0
-        #define _DINPUTDEBUG
-    #endif
-
-    #if defined(_DINPUTDEBUG)
-        #define dinputdebugprintf debugprintf
-        #define DINPUT_ENTER ENTER
-    #else
-        #define dinputdebugprintf(...) ((void)0)
-        #define DINPUT_ENTER(...) ((void)0)
-    #endif
-
     template<typename IDirectInputDeviceN> struct IDirectInputDeviceTraits {};
     template<> struct IDirectInputDeviceTraits<IDirectInputDeviceA>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
     template<> struct IDirectInputDeviceTraits<IDirectInputDeviceW>   { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum {defaultDIDEVICEOBJECTDATAsize = 16}; };
@@ -120,25 +110,25 @@ namespace Hooks
 
 	    BufferedInput(BufferedInputList& buflist) : data(NULL), size(0), used(0), startOffset(0), overflowed(FALSE), event(NULL), bufferList(buflist)
 	    {
-		    dinputdebugprintf(__FUNCTION__ "(0x%X) adding self to list.\n", this);
+            LOG() << "(" << this << ") adding self to list.";
 		    bufferList.push_back(this);
 	    }
 	    ~BufferedInput()
 	    {
 		    Resize(0);
 
-		    dinputdebugprintf(__FUNCTION__ "(0x%X) removing self from list.\n", this);
+		    LOG() << "(" << this << ") removing self from list.";
 		    bufferList.erase(std::remove(bufferList.begin(), bufferList.end(), this), bufferList.end());
 	    }
 	    void Resize(DWORD newSize)
 	    {
-            DINPUT_ENTER(newSize);
+            ENTER(newSize);
 		    DWORD oldSize = size;
 		    size = newSize;
 
 		    if(oldSize != newSize)
 		    {
-			    dinputdebugprintf(__FUNCTION__ " allocating %u -> %u.\n", oldSize, newSize);
+                LOG() << "allocating " << oldSize << " -> " << newSize;
 			    data = (DIDEVICEOBJECTDATA*)realloc(data, newSize * sizeof(DIDEVICEOBJECTDATA));
 
 			    if(used > newSize)
@@ -147,15 +137,15 @@ namespace Hooks
 				    overflowed = TRUE;
 			    }
 		    }
-		    dinputdebugprintf(__FUNCTION__ " done.\n");
+            LOG() << "done.";
 	    }
 	    HRESULT GetData(DWORD elemSize, LPDIDEVICEOBJECTDATA dataOut, LPDWORD numElements, DWORD flags)
 	    {
-		    DINPUT_ENTER(elemSize, dataOut, numElements, flags);
+		    ENTER(elemSize, dataOut, numElements, flags);
 		    if(!numElements)
 			    return DIERR_INVALIDPARAM;
 
-		    dinputdebugprintf(__FUNCTION__ " size=%d, used=%d, *numElements=%d\n", size, used, *numElements);
+		    LOG() << "size=" << size << ", used=" << used << "*numElements=" << *numElements;
 
 		    DWORD retrieved = 0;
 		    DWORD requested = *numElements;
@@ -165,7 +155,8 @@ namespace Hooks
 		    {
 			    while(requested && newUsed)
 			    {
-				    dinputdebugprintf(__FUNCTION__ " assigning %d bytes to 0x%X from 0x%X.\n", elemSize, &dataOut[retrieved], &data[(startOffset + retrieved) % size]);
+                    LOG() << "assigning " << elemSize << " bytes to "
+                          << &dataOut[retrieved] << " from " << &data[(startOffset + retrieved) % size];
 				    if(dataOut)
 					    dataOut[retrieved] = data[(startOffset + retrieved) % size];
 				    retrieved++;
@@ -177,7 +168,8 @@ namespace Hooks
 		    {
 			    while(requested && newUsed)
 			    {
-				    dinputdebugprintf(__FUNCTION__ " copying %d bytes to 0x%X from 0x%X.\n", elemSize, &dataOut[retrieved], &data[(startOffset + retrieved) % size]);
+                    LOG() << "copying " << elemSize << " bytes to "
+                          << &dataOut[retrieved] << " from " << &data[(startOffset + retrieved) % size];
 				    if(dataOut)
 					    memcpy(((char*)dataOut) + elemSize * retrieved, &data[(startOffset + retrieved) % size], elemSize);
 
@@ -197,13 +189,15 @@ namespace Hooks
 				    //}
 
 				    DIDEVICEOBJECTDATA& to = *(DIDEVICEOBJECTDATA*)(((char*)dataOut) + elemSize * retrieved);
-				    dinputdebugprintf("BufferedInput::GotEvent(VK=0x??, DIK=0x%X, data=0x%X, id=0x%X) (used=%d)", to.dwOfs, to.dwData, to.dwSequence, newUsed);
+                    LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs << ", data=" 
+                          << to.dwData << ", id=" << to.dwSequence << ") (used=" << newUsed <<")";
 
 				    retrieved++;
 				    requested--;
 				    newUsed--;
 
-				    dinputdebugprintf("BufferedInput::GotEvent(VK=0x??, DIK=0x%X, data=0x%X, id=0x%X) (used=%d)", to.dwOfs, to.dwData, to.dwSequence, newUsed);
+                    LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs << ", data="
+                        << to.dwData << ", id=" << to.dwSequence << ") (used=" << newUsed << ")";
 			    }
 		    }
 
@@ -226,7 +220,7 @@ namespace Hooks
 	    }
 	    void AddEvent(DIDEVICEOBJECTDATA inputEvent)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    if(used >= size)
 			    overflowed = TRUE;
 		    else
@@ -238,30 +232,33 @@ namespace Hooks
 			    int DIK = MapVirtualKeyEx(VK, /*MAPVK_VK_TO_VSC*/0, keyboardLayout) & 0xFF;
 			    inputEvent.dwOfs = DIK;
 
-			    dinputdebugprintf(__FUNCTION__ "(VK=0x%X, DIK=0x%X, data=0x%X, id=0x%X) (used=%d)\n", VK, DIK, inputEvent.dwData, inputEvent.dwSequence, used);
+			    LOG() << "(VK=" << VK << ", DIK=" << DIK << ", data=" << inputEvent.dwData
+                      << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
 
 			    data[(startOffset + used) % size] = inputEvent;
 			    used++;
 
-			    dinputdebugprintf(__FUNCTION__ "(VK=0x%X, DIK=0x%X, data=0x%X, id=0x%X) (used=%d)\n", VK, DIK, inputEvent.dwData, inputEvent.dwSequence, used);
+                LOG() << "(VK=" << VK << ", DIK=" << DIK << ", data=" << inputEvent.dwData
+                      << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
 		    }
 		    if(event)
 			    SetEvent(event);
 	    }
 	    static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    for(int i = (int)bufferList.size()-1; i >= 0; i--)
 			    bufferList[i]->AddEvent(inputEvent);
 	    }
 	    void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    if(used >= size)
 			    overflowed = TRUE;
 		    else
 		    {
-			    dinputdebugprintf(__FUNCTION__ "(dwOfs=0x%X, data=0x%X, id=0x%X) (used=%d)\n", inputEvent.dwOfs, inputEvent.dwData, inputEvent.dwSequence, used);
+			    LOG() << "(dwOfs=" << inputEvent.dwOfs << ", data=" << inputEvent.dwData
+                      << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
 
 			    data[(startOffset + used) % size] = inputEvent;
 			    used++;
@@ -271,7 +268,7 @@ namespace Hooks
 	    }
 	    static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    for(int i = (int)bufferList.size()-1; i >= 0; i--)
 			    bufferList[i]->AddMouseEvent(inputEvent);
 	    }
@@ -297,20 +294,21 @@ namespace Hooks
 	    typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEIMAGEINFOHEADERN LPDIDEVICEIMAGEINFOHEADERN;
 	    typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::NCHAR NCHAR;
 
-	    MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_type(emptyGUID), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+        MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_type(emptyGUID), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
 	    {
-		    debugprintf("MyDirectInputDevice created without GUID.\n");
+            LOG() << "created without GUID.";
 	    }
 
-	    MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid) : m_device(device), m_type(guid), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+        MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid) : m_device(device), m_type(guid), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
 	    {
-		    debugprintf("MyDirectInputDevice created, received GUID: %Xl, %Xh, %Xh, %s.\n", guid.Data1, guid.Data2, guid.Data3, guid.Data4);
+            LOG() << "created, received GUID: " << guid.Data1 << " " << guid.Data2
+                  << " " << guid.Data3 << " " << guid.Data4;
 	    }
 
 	    /*** IUnknown methods ***/
 	    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    HRESULT rv = m_device->QueryInterface(riid, ppvObj);
 		    if(SUCCEEDED(rv))
 			    HookCOMInterface(riid, ppvObj);
@@ -319,15 +317,17 @@ namespace Hooks
 
 	    STDMETHOD_(ULONG,AddRef)()
 	    {
+            ENTER();
 		    ULONG count = m_device->AddRef();
-		    dinputdebugprintf(__FUNCTION__ " called (returned %d).\n", count);
+		    LOG() << "returned " << count;
 		    return count;
 	    }
 
 	    STDMETHOD_(ULONG,Release)()
 	    {
+            ENTER();
 		    ULONG count = m_device->Release();
-		    dinputdebugprintf(__FUNCTION__ " called (returned %d).\n", count);
+            LOG() << "returned " << count;
 		    if(0 == count)
 			    delete this;
 		    return count;
@@ -336,7 +336,7 @@ namespace Hooks
 	    /*** IDirectInputDevice methods ***/
 	    STDMETHOD(GetCapabilities)(LPDIDEVCAPS lpDIDevCaps)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    if(m_type == GUID_SysMouse)
 		    {
 			    // This function requires that lpDIDevCaps exists and that it's dwSize member is initialized to either
@@ -364,7 +364,7 @@ namespace Hooks
 
 	    STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)	
 	    {
-            DINPUT_ENTER(dwFlags);
+            ENTER(dwFlags);
 
 		    if(m_type == GUID_SysMouse)
 		    {
@@ -438,7 +438,7 @@ namespace Hooks
 
 	    STDMETHOD(GetProperty)(REFGUID rguid, LPDIPROPHEADER ph)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->GetProperty(rguid, ph));
 		    if(&rguid == &DIPROP_BUFFERSIZE)
 		    {
@@ -454,7 +454,7 @@ namespace Hooks
 
 	    STDMETHOD(SetProperty)(REFGUID rguid, LPCDIPROPHEADER ph)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->SetProperty(rguid, ph);
 		    if(&rguid == &DIPROP_BUFFERSIZE)
 		    {
@@ -472,7 +472,7 @@ namespace Hooks
 
 	    STDMETHOD(Acquire)()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->Acquire();
 		    if(m_acquired)
 			    return DI_NOEFFECT;
@@ -482,7 +482,7 @@ namespace Hooks
 
 	    STDMETHOD(Unacquire)()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->Unacquire();
 		    if(!m_acquired)
 			    return DI_NOEFFECT;
@@ -492,7 +492,7 @@ namespace Hooks
 
 	    STDMETHOD(GetDeviceState)(DWORD size, LPVOID data)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->GetDeviceState(size, data));
 
 		    if(!m_acquired)
@@ -567,7 +567,7 @@ namespace Hooks
 
 	    STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->GetDeviceData(size, data, numElements, flags);
 		    if(!m_acquired)
 			    return DIERR_NOTACQUIRED;
@@ -580,7 +580,7 @@ namespace Hooks
 
 	    STDMETHOD(SetDataFormat)(LPCDIDATAFORMAT lpdf)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->SetDataFormat(df));
 		
 		    //debugprintf("df = 0x%X\n", df); // can't get at c_dfDIKeyboard... so do it at a lower level
@@ -604,7 +604,7 @@ namespace Hooks
 
 	    STDMETHOD(SetEventNotification)(HANDLE event)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->SetEventNotification(event));
 		    if(m_acquired)
 			    return DIERR_ACQUIRED;
@@ -614,7 +614,7 @@ namespace Hooks
 
 	    STDMETHOD(SetCooperativeLevel)(HWND window, DWORD level)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    if(IsWindow(window))
 			    gamehwnd = window;
 		    if(m_type == GUID_SysMouse){
@@ -626,7 +626,7 @@ namespace Hooks
 
 	    STDMETHOD(GetObjectInfo)(LPDIDEVICEOBJECTINSTANCEN pdidoi, DWORD dwObj, DWORD dwHow)
 	    {
-            DINPUT_ENTER(dwObj, dwHow);
+            ENTER(dwObj, dwHow);
 		    if(m_type == GUID_SysMouse)
 		    {
 			    // This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
@@ -755,21 +755,21 @@ namespace Hooks
 
 	    STDMETHOD(GetDeviceInfo)(LPDIDEVICEINSTANCEN di)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->GetDeviceInfo(di));
 		    return DIERR_INVALIDPARAM; // NYI!
 	    }
 
 	    STDMETHOD(RunControlPanel)(HWND owner, DWORD flags)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->RunControlPanel(owner, flags));
 		    return DI_OK;
 	    }
 
 	    STDMETHOD(Initialize)(HINSTANCE instance, DWORD version, REFGUID rguid)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->Initialize(instance, version, rguid));
 		    return DI_OK;
 	    }
@@ -777,49 +777,49 @@ namespace Hooks
 	    // DirectInputDevice2 methods
         STDMETHOD(CreateEffect)(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT * c, LPUNKNOWN d)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->CreateEffect(a,b,c,d);
 		    return DIERR_DEVICEFULL;
 	    }
         STDMETHOD(EnumEffects)(LPDIENUMEFFECTSCALLBACKN a, LPVOID b, DWORD c)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->EnumEffects(a,b,c);
 		    return DI_OK;
 	    }
         STDMETHOD(GetEffectInfo)(LPDIEFFECTINFON a, REFGUID b)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->GetEffectInfo(a,b);
 		    return E_POINTER;
 	    }
         STDMETHOD(GetForceFeedbackState)(LPDWORD a)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->GetForceFeedbackState(a);
 		    return DIERR_UNSUPPORTED;
 	    }
         STDMETHOD(SendForceFeedbackCommand)(DWORD a)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->SendForceFeedbackCommand(a);
 		    return DIERR_UNSUPPORTED;
 	    }
         STDMETHOD(EnumCreatedEffectObjects)(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->EnumCreatedEffectObjects(a,b,c);
 		    return DI_OK;
 	    }
         STDMETHOD(Escape)(LPDIEFFESCAPE a)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->Escape(a);
 		    return DI_OK;
 	    }
         STDMETHOD(Poll)()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->Poll());
 		    if(!m_acquired)
 			    return DIERR_NOTACQUIRED;
@@ -828,39 +828,39 @@ namespace Hooks
 
 	    STDMETHOD(SendDeviceData)(DWORD a, LPCDIDEVICEOBJECTDATA b, LPDWORD c, DWORD d)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return rvfilter(m_device->SendDeviceData(a,b,c,d));
 		    return DI_OK; // according to the documentation, this function never does anything anyway and should not be called
 	    }
 	    // IDirectInputDevice7 methods
         STDMETHOD(EnumEffectsInFile)(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->EnumEffectsInFile(a,b,c,d);
 		    return DI_OK;
 	    }
         STDMETHOD(WriteEffectToFile)(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->WriteEffectToFile(a,b,c,d);
 		    return DIERR_INVALIDPARAM; // more like DIERR_NYI
 	    }
 	    // IDirectInputDevice8 methods
         STDMETHOD(BuildActionMap)(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->BuildActionMap(a,b,c);
 		    return DIERR_MAPFILEFAIL; // more like DIERR_NYI
 	    }
         STDMETHOD(SetActionMap)(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->SetActionMap(a,b,c);
 		    return DIERR_INVALIDPARAM; // more like DIERR_NYI
 	    }
         STDMETHOD(GetImageInfo)(LPDIDEVICEIMAGEINFOHEADERN a)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    //return m_device->GetImageInfo(a);
 		    return DIERR_MAPFILEFAIL; // more like DIERR_NYI
 	    }
@@ -954,17 +954,17 @@ namespace Hooks
 
 	    MyDirectInput(IDirectInputN* di) : m_di(di)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 	    }
 	    ~MyDirectInput()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 	    }
 
 	    /*** IUnknown methods ***/
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    HRESULT rv = m_di->QueryInterface(riid, ppvObj);
 		    if(SUCCEEDED(rv))
 			    HookCOMInterface(riid, ppvObj);
@@ -973,13 +973,13 @@ namespace Hooks
 
         ULONG STDMETHODCALLTYPE AddRef()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->AddRef();
 	    }
 
         ULONG STDMETHODCALLTYPE Release()
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    ULONG count = m_di->Release();
 		    if(0 == count)
 			    delete this;
@@ -990,7 +990,7 @@ namespace Hooks
         /*** IDirectInputN methods ***/
         STDMETHOD(CreateDevice)(REFGUID rguid, IDirectInputDeviceN** device, LPUNKNOWN unknown)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    ThreadLocalStuff& curtls = tls;
 		    curtls.callerisuntrusted++;
 		    HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
@@ -1008,7 +1008,7 @@ namespace Hooks
 
         STDMETHOD(EnumDevices)(DWORD devType,LPDIENUMDEVICESCALLBACKN callback, LPVOID ref, DWORD flags)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    // FIXME: NYI.
 		    // this is leaking data to the game!
 		    // for now, let's at least untrust it.
@@ -1021,25 +1021,25 @@ namespace Hooks
 
         STDMETHOD(GetDeviceStatus)(REFGUID rguid)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->GetDeviceStatus(rguid);
 	    }
 
         STDMETHOD(RunControlPanel)(HWND owner, DWORD flags)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->RunControlPanel(owner, flags);
 	    }
 
         STDMETHOD(Initialize)(HINSTANCE instance, DWORD version)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->Initialize(instance, version);
 	    }
 
 	    STDMETHOD(CreateDeviceEx)(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d)
 	    {
-            DINPUT_ENTER(a.Data1, b.Data1);
+            ENTER(a.Data1, b.Data1);
 		    ThreadLocalStuff& curtls = tls;
 		    curtls.callerisuntrusted++;
 		    HRESULT hr = m_di->CreateDeviceEx(a,b,c,d);
@@ -1051,17 +1051,17 @@ namespace Hooks
 
         STDMETHOD(FindDevice)(REFGUID a, LPCNSTR b, LPGUID c)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->FindDevice(a,b,c);
 	    }
         STDMETHOD(EnumDevicesBySemantics)(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->EnumDevicesBySemantics(a,b,c,d,e);
 	    }
         STDMETHOD(ConfigureDevices)(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d)
 	    {
-		    DINPUT_ENTER();
+		    ENTER();
 		    return m_di->ConfigureDevices(a,b,c,d);
 	    }
 
@@ -1414,7 +1414,7 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateA, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
     HOOKFUNC HRESULT WINAPI MyDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter)
     {
-	    debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
+	    ENTER();
 	    ThreadLocalStuff& curtls = tls;
 	    const char* oldName = curtls.curThreadCreateName;
 	    curtls.curThreadCreateName = "DirectInput";
@@ -1434,7 +1434,7 @@ namespace Hooks
 	    }
 	    else
 	    {
-		    debuglog(LCF_DINPUT|LCF_ERROR, "DirectInputCreateA FAILED, all on its own.\n");
+            LOG() << "DirectInputCreateA FAILED, all on its own. Returned " << rv;
 	    }
 	    curtls.curThreadCreateName = oldName;
 	    curtls.callerisuntrusted--;
@@ -1444,7 +1444,7 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateW, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
     HOOKFUNC HRESULT WINAPI MyDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter)
     {
-	    debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
+        ENTER();
 	    ThreadLocalStuff& curtls = tls;
 	    const char* oldName = curtls.curThreadCreateName;
 	    curtls.curThreadCreateName = "DirectInput";
@@ -1464,7 +1464,7 @@ namespace Hooks
 	    }
 	    else
 	    {
-		    debuglog(LCF_DINPUT|LCF_ERROR, "DirectInputCreateW FAILED, all on its own.\n");
+		    LOG() << "DirectInputCreateW FAILED, all on its own. Returned " << rv;
 	    }
 	    curtls.curThreadCreateName = oldName;
 	    curtls.callerisuntrusted--;
@@ -1475,7 +1475,7 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateEx, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
     HOOKFUNC HRESULT WINAPI MyDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
     {
-	    debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
+	    ENTER();
 	    ThreadLocalStuff& curtls = tls;
 	    curtls.callerisuntrusted++;
 	    const char* oldName = curtls.curThreadCreateName;
@@ -1488,7 +1488,7 @@ namespace Hooks
 	    }
 	    else
 	    {
-		    debuglog(LCF_DINPUT|LCF_ERROR, "DirectInputCreateEx FAILED, all on its own.\n");
+            LOG() << "DirectInputCreateEx FAILED, all on its own. Returned " << rv;
 	    }
 	    curtls.curThreadCreateName = oldName;
 	    curtls.callerisuntrusted--;
@@ -1499,7 +1499,7 @@ namespace Hooks
     HOOK_FUNCTION(HRESULT, WINAPI, DirectInput8Create, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
     HOOKFUNC HRESULT WINAPI MyDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
     {
-	    debuglog(LCF_DINPUT, __FUNCTION__ " called.\n");
+	    ENTER();
 	    ThreadLocalStuff& curtls = tls;
 	    curtls.callerisuntrusted++;
 	    const char* oldName = curtls.curThreadCreateName;
@@ -1512,7 +1512,7 @@ namespace Hooks
 	    }
 	    else
 	    {
-		    debuglog(LCF_DINPUT|LCF_ERROR, "DirectInput8Create FAILED, all on its own.\n");
+            LOG() << "DirectInput8Create FAILED, all on its own. Returned " << rv;
 	    }
 	    curtls.curThreadCreateName = oldName;
 	    curtls.callerisuntrusted--;

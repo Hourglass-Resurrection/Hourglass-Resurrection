@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "shared/ipc.h"
+#include "ipc.h"
+
 int debugprintf(const char* fmt, ...);
 int cmdprintf(const char* fmt, ...);
 
@@ -16,70 +19,121 @@ int cmdprintf(const char* fmt, ...);
  * -- YaLTeR
  */
 #define FMT_ARGS_0(...)
-#define FMT_ARGS_1(arg, ...) #arg " = 0x%lX"
-#define FMT_ARGS_2(arg, ...) #arg " = 0x%lX, " FMT_ARGS_1(__VA_ARGS__)
-#define FMT_ARGS_3(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_2(__VA_ARGS__),)
-#define FMT_ARGS_4(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_3(__VA_ARGS__),)
-#define FMT_ARGS_5(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_4(__VA_ARGS__),)
-#define FMT_ARGS_6(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_5(__VA_ARGS__),)
-#define FMT_ARGS_7(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_6(__VA_ARGS__),)
-#define FMT_ARGS_8(arg, ...) #arg " = 0x%lX, " CONCATENATE(FMT_ARGS_7(__VA_ARGS__),)
+#define FMT_ARGS_1(arg, ...) #arg << " = " << arg <<
+#define FMT_ARGS_2(arg, ...) #arg << " = " << arg << FMT_ARGS_1(__VA_ARGS__)
+#define FMT_ARGS_3(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_2(__VA_ARGS__),)
+#define FMT_ARGS_4(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_3(__VA_ARGS__),)
+#define FMT_ARGS_5(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_4(__VA_ARGS__),)
+#define FMT_ARGS_6(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_5(__VA_ARGS__),)
+#define FMT_ARGS_7(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_6(__VA_ARGS__),)
+#define FMT_ARGS_8(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_7(__VA_ARGS__),)
+#define FMT_ARGS_9(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_8(__VA_ARGS__),)
 
 /*
  * Using the MSVC preprocessor comma erasure for
  * correct handling of 0 arguments.
  */
 #define FOR_EACH_ADD_ARG(...) __0, __VA_ARGS__
-#define FOR_EACH_RSEQ_N() 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define FOR_EACH_ARG_N(__1, __2, __3, __4, __5, __6, __7, __8, __9, N, ...) N
+#define FOR_EACH_RSEQ_N() 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+#define FOR_EACH_ARG_N(__1, __2, __3, __4, __5, __6, __7, __8, __9, __10, N, ...) N
 #define FOR_EACH_NARG_(...) CONCATENATE(FOR_EACH_ARG_N(__VA_ARGS__),)
 #define FOR_EACH_NARG(...) FOR_EACH_NARG_(FOR_EACH_ADD_ARG(__VA_ARGS__), FOR_EACH_RSEQ_N())
 
 #define FMT_ARGS_(N, ...) CONCATENATE(FMT_ARGS_, N)(__VA_ARGS__)
 #define FMT_ARGS(...) FMT_ARGS_(FOR_EACH_NARG(__VA_ARGS__), __VA_ARGS__)
 
-#define ENTER(...) debugprintf("%s(" FMT_ARGS(__VA_ARGS__) ") called.\n", __FUNCTION__, __VA_ARGS__)
+/*
+ * The final << after the FMT_ARGS() isn't missing, FMT_ARGS() may evaluate to nothing.
+ */
+#define ENTER(...) Log() << __func__ << "(" << FMT_ARGS(__VA_ARGS__) ") called."
+#define LOG() Log() << __func__ << ": "
 
-//#define dinputdebugprintf verbosedebugprintf
-#define ddrawdebugprintf verbosedebugprintf
-#define d3ddebugprintf verbosedebugprintf
-#define dsounddebugprintf verbosedebugprintf
-#define dmusicdebugprintf verbosedebugprintf
-#define sdldebugprintf verbosedebugprintf
-#define gldebugprintf verbosedebugprintf
-#define registrydebugprintf verbosedebugprintf
-#define timedebugprintf verbosedebugprintf
+#define DEBUG_LOG() DebugLog<>() << __func__ << ": "
 
-#define DDRAW_ENTER VERBOSE_ENTER
-#define D3D_ENTER VERBOSE_ENTER
-#define DSOUND_ENTER VERBOSE_ENTER
-#define DMUSIC_ENTER VERBOSE_ENTER
-#define SDL_ENTER VERBOSE_ENTER
-#define GL_ENTER VERBOSE_ENTER
-#define REGISTRY_ENTER VERBOSE_ENTER
-#define TIME_ENTER VERBOSE_ENTER
-
-#if defined(_DEBUG) && 0//1
-    #define verbosedebugprintf debugprintf
-    #define VERBOSE_ENTER ENTER
-#else
-    #define verbosedebugprintf(...) ((void)0)
-    #define VERBOSE_ENTER(...) ((void)0)
-#endif
-
+#define VERBOSE_LOG() VerboseLog() << __func__ << ": "
 
 #include "shared/logcat.h"
 
-extern LogCategoryFlag& g_includeLogFlags;
-extern LogCategoryFlag& g_excludeLogFlags;
+/*constexpr*/ const char* LogCategoryToString(LogCategory category);
 
-// generally should always be enabled because it's controlled by a runtime option,
-// but maybe some faster-than-release configuration could disable it in the future
-#define ENABLE_LOGGING
+template<LogCategory category = LogCategory::ANY/*, const str* function = __func__*/>
+class DebugLog
+{
+public:
+    DebugLog() : m_category(category)
+    {
+        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        {
+            return;
+        }
+        m_print_message << LogCategoryToString(category);
+        int threadStamp = Hooks::getCurrentThreadstamp();
+        if (threadStamp)
+        {
+            m_print_message << "[" << threadStamp << "]";
+        }
+        else
+        {
+            m_print_message << "[MAIN]";
+        }
+        m_print_message << "[f=" << Hooks::getCurrentFramestamp() << "]";
+        m_print_message << "[t=" << Hooks::getCurrentTimestamp() << "] ";
+    }
 
-#ifdef ENABLE_LOGGING
-    int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...);
-    #define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
-#else
-    #define debuglog(cat, ...)         0
+    DebugLog(const DebugLog<category>&) = delete;
+    ~DebugLog()
+    {
+        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        {
+            return;
+        }
+        if (tasflags.debugPrintMode != 0)
+        {
+            m_print_message << "\n";
+            IPC::SendIPCMessage(IPC::Command::CMD_PRINT_MESSAGE, &m_print_message, sizeof(m_print_message));
+        }
+    }
+    DebugLog& operator=(const DebugLog&) = delete;
+
+    template<class T>
+    DebugLog& operator<<(const T& value)
+    {
+        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        {
+            return *this;
+        }
+        if (tasflags.debugPrintMode != 0)
+        {
+            m_print_message << value;
+        }
+        return *this;
+    }
+private:
+    IPC::PrintMessage m_print_message;
+    LogCategory m_category;
+};
+
+class VerboseLog
+{
+public:
+    VerboseLog();
+    VerboseLog(const VerboseLog&) = delete;
+    ~VerboseLog();
+    VerboseLog& operator=(const VerboseLog&) = delete;
+
+    template<class T>
+    VerboseLog& operator<<(const T& value)
+    {
+#ifdef VERBOSE_DEBUG
+        if (tasflags.debugPrintMode != 0)
+        {
+            m_print_message << value;
+        }
 #endif
+        return *this;
+    }
+private:
+#ifdef VERBOSE_DEBUG
+    IPC::PrintMessage m_print_message;
+#endif
+};

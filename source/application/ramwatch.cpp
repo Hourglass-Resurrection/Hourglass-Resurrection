@@ -506,7 +506,7 @@ int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 
 bool Save_Watches()
 {
-	char* slash = max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
+	char* slash = std::max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
 	strcpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
@@ -626,7 +626,7 @@ bool Load_Watches(bool clear, const char* filename)
 
 bool Load_Watches(bool clear)
 {
-	char* slash = max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
+	char* slash = std::max(strrchr(Config::exefilename, '\\'), strrchr(Config::exefilename, '/'));
 	strcpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;

@@ -49,8 +49,8 @@ namespace Hooks
             ULONG resultLength = 0;
             NtQueryKey(hKey, /*KeyNameInformation*/3, basicInfoBytes, MAXLEN, &resultLength);
             int length = (int)(((KEY_NAME_INFORMATION*)basicInfoBytes)->NameLength);
-            length = min(length, (int)resultLength);
-            length = min(length, MAXLEN);
+            length = std::min(length, (int)resultLength);
+            length = std::min(length, MAXLEN);
             static char rvtemp[MAXLEN];
             rvtemp[sizeof(rvtemp) - 1] = 0;
             char* rvtempPtr = rvtemp;

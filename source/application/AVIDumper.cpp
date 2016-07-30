@@ -4,6 +4,8 @@
 #include "logging.h"
 #include "CustomDLGs.h"
 
+#include <algorithm>
+
 #include <malloc.h>
 #include <stdio.h>
 
@@ -256,7 +258,7 @@ tryMoreSuggestions:
 		int usedInSize = 0;
 		while(inSize + startOffset)
 		{
-			int curInSize = min(inSize, (int)sizeof(inWorkBuffer) - startOffset);
+			int curInSize = std::min(inSize, (int)sizeof(inWorkBuffer) - startOffset);
 			memcpy(inWorkBuffer + startOffset, inBuffer + usedInSize, curInSize);
 			usedInSize += curInSize;
 			inSize -= curInSize;
@@ -563,12 +565,12 @@ struct AviFrameQueue
 		int rShiftLeft = leftShiftFromMask(rmask);
 		int gShiftLeft = leftShiftFromMask(gmask);
 		int bShiftLeft = leftShiftFromMask(bmask);
-		const int rShiftRight = max(0, -rShiftLeft);
-		const int gShiftRight = max(0, -gShiftLeft);
-		const int bShiftRight = max(0, -bShiftLeft);
-		rShiftLeft = max(0, rShiftLeft);
-		gShiftLeft = max(0, gShiftLeft);
-		bShiftLeft = max(0, bShiftLeft);
+		const int rShiftRight = std::max(0, -rShiftLeft);
+		const int gShiftRight = std::max(0, -gShiftLeft);
+		const int bShiftRight = std::max(0, -bShiftLeft);
+		rShiftLeft = std::max(0, rShiftLeft);
+		gShiftLeft = std::max(0, gShiftLeft);
+		bShiftLeft = std::max(0, bShiftLeft);
 
 		if(bytesPerInPixel == 4 && rmask == 0x00FF0000 && gmask == 0x0000FF00 && bmask == 0x000000FF)
 		{

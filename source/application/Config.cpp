@@ -45,8 +45,8 @@ namespace Config{
 		VERSION, //movie.version,
 		0, //osvi.dwMajorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
 		0, //osvi.dwMinorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
-		LCF_NONE|LCF_NONE, //includeLogFlags|traceLogFlags,
-		LCF_ERROR, //excludeLogFlags
+		//LCF_NONE|LCF_NONE, //includeLogFlags|traceLogFlags,
+		//LCF_ERROR, //excludeLogFlags
 	};
 
 	//int audioFrequency;
@@ -91,9 +91,9 @@ namespace Config{
 	//int appLocale;
 	int tempAppLocale = 0;
 	//int debugPrintMode;
-	LogCategoryFlag includeLogFlags = LCF_ERROR;
+	/*LogCategoryFlag includeLogFlags = LCF_ERROR;
 	LogCategoryFlag traceLogFlags = LCF_NONE;
-	LogCategoryFlag excludeLogFlags = LCF_NONE|LCF_FREQUENT;
+	LogCategoryFlag excludeLogFlags = LCF_NONE|LCF_FREQUENT;*/
 	int inputFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_OTHER|FOCUS_FLAG_TASER; // allowbackgroundinput;
 	int hotkeysFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_TASER; // allowbackgroundhotkeys;
 

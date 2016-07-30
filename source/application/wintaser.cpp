@@ -1874,8 +1874,8 @@ void SendTASFlags()
            ? EMUMODE_VIRTUALDIRECTSOUND : 0);
 	//localTASflags.fastForwardFlags = localTASflags.fastForwardFlags | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0);
 	localTASflags.appLocale = localTASflags.appLocale ? localTASflags.appLocale : tempAppLocale;
-	localTASflags.includeLogFlags = includeLogFlags | traceLogFlags;
-	localTASflags.excludeLogFlags = excludeLogFlags;
+	//localTASflags.includeLogFlags = includeLogFlags | traceLogFlags;
+	//localTASflags.excludeLogFlags = excludeLogFlags;
 
 	tasFlagsDirty = false;
 
@@ -2963,7 +2963,7 @@ DWORD CalculateModuleSize(LPVOID hModule, HANDLE hProcess)
 	while(VirtualQueryEx(hProcess, (char*)hModule+size+0x1000, &mbi, sizeof(mbi))
 	&& (DWORD)mbi.AllocationBase == (DWORD)hModule)
 		size += mbi.RegionSize;
-	return max(size, 0x10000);
+	return std::max(size, static_cast<DWORD>(0x10000));
 }
 
 void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)
@@ -3825,23 +3825,23 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							if(const char* cEquals = strstr(pstr+17, "c=")) {
 								logFlags = strtol(cEquals+2, 0, 16);
 							}
-							if(includeLogFlags & logFlags)
-							{
+							//if(includeLogFlags & logFlags)
+							//{
 								debugprintf("%s",pstr);
-							}
-							if(traceLogFlags & logFlags)
-							{
-								int minDepth = 3, maxDepth = 64;
-								// print the callstack of the thread
-								std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-								if(found != hGameThreads.end())
-								{
-									HANDLE hThread = found->second;
-									char msg [16+72];
-									sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-									StackTraceOfDepth(hThread, msg, minDepth, maxDepth, /*(found->second).hProcess*/hGameProcess);
-								}
-							}
+							//}
+							//if(traceLogFlags & logFlags)
+							//{
+							//	int minDepth = 3, maxDepth = 64;
+							//	// print the callstack of the thread
+							//	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+							//	if(found != hGameThreads.end())
+							//	{
+							//		HANDLE hThread = found->second;
+							//		char msg [16+72];
+							//		sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+							//		StackTraceOfDepth(hThread, msg, minDepth, maxDepth, /*(found->second).hProcess*/hGameProcess);
+							//	}
+							//}
 						}
 						else if(MessagePrefixMatch("PAUSEEXCEPTIONPRINTING"))
 							exceptionPrintingPaused++;
@@ -6074,109 +6074,109 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}	break;
 
 
-				case ID_INCLUDE_LCF_NONE: includeLogFlags = 0; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_ALL: includeLogFlags = ~LCF_FREQUENT; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_UNTESTED: includeLogFlags ^= LCF_UNTESTED; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_DESYNC: includeLogFlags ^= LCF_DESYNC; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_FREQUENT: includeLogFlags ^= LCF_FREQUENT; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_ERROR: includeLogFlags ^= LCF_ERROR; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_TODO: includeLogFlags ^= LCF_TODO; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_FRAME: includeLogFlags ^= LCF_FRAME; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_HOOK: includeLogFlags ^= LCF_HOOK; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_TIMEFUNC: includeLogFlags ^= LCF_TIMEFUNC; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_TIMESET: includeLogFlags ^= LCF_TIMESET; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_TIMEGET: includeLogFlags ^= LCF_TIMEGET; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_SYNCOBJ: includeLogFlags ^= LCF_SYNCOBJ; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_WAIT: includeLogFlags ^= LCF_WAIT; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_SLEEP: includeLogFlags ^= LCF_SLEEP; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_DDRAW: includeLogFlags ^= LCF_DDRAW; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_D3D: includeLogFlags ^= LCF_D3D; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_OGL: includeLogFlags ^= LCF_OGL; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_GDI: includeLogFlags ^= LCF_GDI; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_SDL: includeLogFlags ^= LCF_SDL; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_DINPUT: includeLogFlags ^= LCF_DINPUT; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_KEYBOARD: includeLogFlags ^= LCF_KEYBOARD; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_MOUSE: includeLogFlags ^= LCF_MOUSE; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_JOYPAD: includeLogFlags ^= LCF_JOYPAD; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_DSOUND: includeLogFlags ^= LCF_DSOUND; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_WSOUND: includeLogFlags ^= LCF_WSOUND; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_PROCESS: includeLogFlags ^= LCF_PROCESS; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_MODULE: includeLogFlags ^= LCF_MODULE; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_MESSAGES: includeLogFlags ^= LCF_MESSAGES; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_WINDOW: includeLogFlags ^= LCF_WINDOW; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_FILEIO: includeLogFlags ^= LCF_FILEIO; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_REGISTRY: includeLogFlags ^= LCF_REGISTRY; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_THREAD: includeLogFlags ^= LCF_THREAD; tasFlagsDirty = true; break;
-				case ID_INCLUDE_LCF_TIMERS: includeLogFlags ^= LCF_TIMERS; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_NONE: includeLogFlags = 0; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_ALL: includeLogFlags = ~LCF_FREQUENT; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_UNTESTED: includeLogFlags ^= LCF_UNTESTED; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_DESYNC: includeLogFlags ^= LCF_DESYNC; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_FREQUENT: includeLogFlags ^= LCF_FREQUENT; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_ERROR: includeLogFlags ^= LCF_ERROR; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_TODO: includeLogFlags ^= LCF_TODO; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_FRAME: includeLogFlags ^= LCF_FRAME; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_HOOK: includeLogFlags ^= LCF_HOOK; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_TIMEFUNC: includeLogFlags ^= LCF_TIMEFUNC; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_TIMESET: includeLogFlags ^= LCF_TIMESET; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_TIMEGET: includeLogFlags ^= LCF_TIMEGET; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_SYNCOBJ: includeLogFlags ^= LCF_SYNCOBJ; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_WAIT: includeLogFlags ^= LCF_WAIT; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_SLEEP: includeLogFlags ^= LCF_SLEEP; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_DDRAW: includeLogFlags ^= LCF_DDRAW; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_D3D: includeLogFlags ^= LCF_D3D; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_OGL: includeLogFlags ^= LCF_OGL; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_GDI: includeLogFlags ^= LCF_GDI; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_SDL: includeLogFlags ^= LCF_SDL; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_DINPUT: includeLogFlags ^= LCF_DINPUT; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_KEYBOARD: includeLogFlags ^= LCF_KEYBOARD; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_MOUSE: includeLogFlags ^= LCF_MOUSE; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_JOYPAD: includeLogFlags ^= LCF_JOYPAD; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_DSOUND: includeLogFlags ^= LCF_DSOUND; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_WSOUND: includeLogFlags ^= LCF_WSOUND; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_PROCESS: includeLogFlags ^= LCF_PROCESS; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_MODULE: includeLogFlags ^= LCF_MODULE; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_MESSAGES: includeLogFlags ^= LCF_MESSAGES; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_WINDOW: includeLogFlags ^= LCF_WINDOW; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_FILEIO: includeLogFlags ^= LCF_FILEIO; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_REGISTRY: includeLogFlags ^= LCF_REGISTRY; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_THREAD: includeLogFlags ^= LCF_THREAD; tasFlagsDirty = true; break;
+				//case ID_INCLUDE_LCF_TIMERS: includeLogFlags ^= LCF_TIMERS; tasFlagsDirty = true; break;
 
-				case ID_EXCLUDE_LCF_NONE: excludeLogFlags = 0; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_ALL: excludeLogFlags = ~0; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_UNTESTED: excludeLogFlags ^= LCF_UNTESTED; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_DESYNC: excludeLogFlags ^= LCF_DESYNC; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_FREQUENT: excludeLogFlags ^= LCF_FREQUENT; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_ERROR: excludeLogFlags ^= LCF_ERROR; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_TODO: excludeLogFlags ^= LCF_TODO; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_FRAME: excludeLogFlags ^= LCF_FRAME; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_HOOK: excludeLogFlags ^= LCF_HOOK; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_TIMEFUNC: excludeLogFlags ^= LCF_TIMEFUNC; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_TIMESET: excludeLogFlags ^= LCF_TIMESET; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_TIMEGET: excludeLogFlags ^= LCF_TIMEGET; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_SYNCOBJ: excludeLogFlags ^= LCF_SYNCOBJ; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_WAIT: excludeLogFlags ^= LCF_WAIT; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_SLEEP: excludeLogFlags ^= LCF_SLEEP; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_DDRAW: excludeLogFlags ^= LCF_DDRAW; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_D3D: excludeLogFlags ^= LCF_D3D; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_OGL: excludeLogFlags ^= LCF_OGL; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_GDI: excludeLogFlags ^= LCF_GDI; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_SDL: excludeLogFlags ^= LCF_SDL; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_DINPUT: excludeLogFlags ^= LCF_DINPUT; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_KEYBOARD: excludeLogFlags ^= LCF_KEYBOARD; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_MOUSE: excludeLogFlags ^= LCF_MOUSE; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_JOYPAD: excludeLogFlags ^= LCF_JOYPAD; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_DSOUND: excludeLogFlags ^= LCF_DSOUND; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_WSOUND: excludeLogFlags ^= LCF_WSOUND; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_PROCESS: excludeLogFlags ^= LCF_PROCESS; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_MODULE: excludeLogFlags ^= LCF_MODULE; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_MESSAGES: excludeLogFlags ^= LCF_MESSAGES; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_WINDOW: excludeLogFlags ^= LCF_WINDOW; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_FILEIO: excludeLogFlags ^= LCF_FILEIO; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_REGISTRY: excludeLogFlags ^= LCF_REGISTRY; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_THREAD: excludeLogFlags ^= LCF_THREAD; tasFlagsDirty = true; break;
-				case ID_EXCLUDE_LCF_TIMERS: excludeLogFlags ^= LCF_TIMERS; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_NONE: excludeLogFlags = 0; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_ALL: excludeLogFlags = ~0; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_UNTESTED: excludeLogFlags ^= LCF_UNTESTED; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_DESYNC: excludeLogFlags ^= LCF_DESYNC; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_FREQUENT: excludeLogFlags ^= LCF_FREQUENT; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_ERROR: excludeLogFlags ^= LCF_ERROR; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_TODO: excludeLogFlags ^= LCF_TODO; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_FRAME: excludeLogFlags ^= LCF_FRAME; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_HOOK: excludeLogFlags ^= LCF_HOOK; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_TIMEFUNC: excludeLogFlags ^= LCF_TIMEFUNC; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_TIMESET: excludeLogFlags ^= LCF_TIMESET; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_TIMEGET: excludeLogFlags ^= LCF_TIMEGET; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_SYNCOBJ: excludeLogFlags ^= LCF_SYNCOBJ; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_WAIT: excludeLogFlags ^= LCF_WAIT; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_SLEEP: excludeLogFlags ^= LCF_SLEEP; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_DDRAW: excludeLogFlags ^= LCF_DDRAW; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_D3D: excludeLogFlags ^= LCF_D3D; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_OGL: excludeLogFlags ^= LCF_OGL; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_GDI: excludeLogFlags ^= LCF_GDI; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_SDL: excludeLogFlags ^= LCF_SDL; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_DINPUT: excludeLogFlags ^= LCF_DINPUT; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_KEYBOARD: excludeLogFlags ^= LCF_KEYBOARD; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_MOUSE: excludeLogFlags ^= LCF_MOUSE; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_JOYPAD: excludeLogFlags ^= LCF_JOYPAD; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_DSOUND: excludeLogFlags ^= LCF_DSOUND; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_WSOUND: excludeLogFlags ^= LCF_WSOUND; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_PROCESS: excludeLogFlags ^= LCF_PROCESS; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_MODULE: excludeLogFlags ^= LCF_MODULE; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_MESSAGES: excludeLogFlags ^= LCF_MESSAGES; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_WINDOW: excludeLogFlags ^= LCF_WINDOW; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_FILEIO: excludeLogFlags ^= LCF_FILEIO; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_REGISTRY: excludeLogFlags ^= LCF_REGISTRY; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_THREAD: excludeLogFlags ^= LCF_THREAD; tasFlagsDirty = true; break;
+				//case ID_EXCLUDE_LCF_TIMERS: excludeLogFlags ^= LCF_TIMERS; tasFlagsDirty = true; break;
 
-				case ID_TRACE_LCF_NONE: traceLogFlags = 0; tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_ALL: traceLogFlags = ~LCF_FREQUENT; traceEnabled = true; tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_UNTESTED: traceLogFlags ^= LCF_UNTESTED; if(traceLogFlags & LCF_UNTESTED){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_DESYNC: traceLogFlags ^= LCF_DESYNC; if(traceLogFlags & LCF_DESYNC){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_ERROR: traceLogFlags ^= LCF_ERROR; if(traceLogFlags & LCF_ERROR){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_TODO: traceLogFlags ^= LCF_TODO; if(traceLogFlags & LCF_TODO){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_FRAME: traceLogFlags ^= LCF_FRAME; if(traceLogFlags & LCF_FRAME){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_HOOK: traceLogFlags ^= LCF_HOOK; if(traceLogFlags & LCF_HOOK){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_TIMEFUNC: traceLogFlags ^= LCF_TIMEFUNC; if(traceLogFlags & LCF_TIMEFUNC){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_TIMESET: traceLogFlags ^= LCF_TIMESET; if(traceLogFlags & LCF_TIMESET){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_TIMEGET: traceLogFlags ^= LCF_TIMEGET; if(traceLogFlags & LCF_TIMEGET){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_SYNCOBJ: traceLogFlags ^= LCF_SYNCOBJ; if(traceLogFlags & LCF_SYNCOBJ){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_WAIT: traceLogFlags ^= LCF_WAIT; if(traceLogFlags & LCF_WAIT){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_SLEEP: traceLogFlags ^= LCF_SLEEP; if(traceLogFlags & LCF_SLEEP){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_DDRAW: traceLogFlags ^= LCF_DDRAW; if(traceLogFlags & LCF_DDRAW){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_D3D: traceLogFlags ^= LCF_D3D; if(traceLogFlags & LCF_D3D){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_OGL: traceLogFlags ^= LCF_OGL; if(traceLogFlags & LCF_OGL){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_GDI: traceLogFlags ^= LCF_GDI; if(traceLogFlags & LCF_GDI){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_SDL: traceLogFlags ^= LCF_SDL; if(traceLogFlags & LCF_SDL){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_DINPUT: traceLogFlags ^= LCF_DINPUT; if(traceLogFlags & LCF_DINPUT){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_KEYBOARD: traceLogFlags ^= LCF_KEYBOARD; if(traceLogFlags & LCF_KEYBOARD){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_MOUSE: traceLogFlags ^= LCF_MOUSE; if(traceLogFlags & LCF_MOUSE){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_JOYPAD: traceLogFlags ^= LCF_JOYPAD; if(traceLogFlags & LCF_JOYPAD){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_DSOUND: traceLogFlags ^= LCF_DSOUND; if(traceLogFlags & LCF_DSOUND){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_WSOUND: traceLogFlags ^= LCF_WSOUND; if(traceLogFlags & LCF_WSOUND){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_PROCESS: traceLogFlags ^= LCF_PROCESS; if(traceLogFlags & LCF_PROCESS){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_MODULE: traceLogFlags ^= LCF_MODULE; if(traceLogFlags & LCF_MODULE){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_MESSAGES: traceLogFlags ^= LCF_MESSAGES; if(traceLogFlags & LCF_MESSAGES){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_WINDOW: traceLogFlags ^= LCF_WINDOW; if(traceLogFlags & LCF_WINDOW){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_FILEIO: traceLogFlags ^= LCF_FILEIO; if(traceLogFlags & LCF_FILEIO){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_REGISTRY: traceLogFlags ^= LCF_REGISTRY; if(traceLogFlags & LCF_REGISTRY){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_THREAD: traceLogFlags ^= LCF_THREAD; if(traceLogFlags & LCF_THREAD){traceEnabled = true;} tasFlagsDirty = true; break;
-				case ID_TRACE_LCF_TIMERS: traceLogFlags ^= LCF_TIMERS; if(traceLogFlags & LCF_TIMERS){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_NONE: traceLogFlags = 0; tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_ALL: traceLogFlags = ~LCF_FREQUENT; traceEnabled = true; tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_UNTESTED: traceLogFlags ^= LCF_UNTESTED; if(traceLogFlags & LCF_UNTESTED){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_DESYNC: traceLogFlags ^= LCF_DESYNC; if(traceLogFlags & LCF_DESYNC){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_ERROR: traceLogFlags ^= LCF_ERROR; if(traceLogFlags & LCF_ERROR){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_TODO: traceLogFlags ^= LCF_TODO; if(traceLogFlags & LCF_TODO){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_FRAME: traceLogFlags ^= LCF_FRAME; if(traceLogFlags & LCF_FRAME){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_HOOK: traceLogFlags ^= LCF_HOOK; if(traceLogFlags & LCF_HOOK){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_TIMEFUNC: traceLogFlags ^= LCF_TIMEFUNC; if(traceLogFlags & LCF_TIMEFUNC){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_TIMESET: traceLogFlags ^= LCF_TIMESET; if(traceLogFlags & LCF_TIMESET){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_TIMEGET: traceLogFlags ^= LCF_TIMEGET; if(traceLogFlags & LCF_TIMEGET){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_SYNCOBJ: traceLogFlags ^= LCF_SYNCOBJ; if(traceLogFlags & LCF_SYNCOBJ){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_WAIT: traceLogFlags ^= LCF_WAIT; if(traceLogFlags & LCF_WAIT){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_SLEEP: traceLogFlags ^= LCF_SLEEP; if(traceLogFlags & LCF_SLEEP){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_DDRAW: traceLogFlags ^= LCF_DDRAW; if(traceLogFlags & LCF_DDRAW){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_D3D: traceLogFlags ^= LCF_D3D; if(traceLogFlags & LCF_D3D){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_OGL: traceLogFlags ^= LCF_OGL; if(traceLogFlags & LCF_OGL){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_GDI: traceLogFlags ^= LCF_GDI; if(traceLogFlags & LCF_GDI){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_SDL: traceLogFlags ^= LCF_SDL; if(traceLogFlags & LCF_SDL){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_DINPUT: traceLogFlags ^= LCF_DINPUT; if(traceLogFlags & LCF_DINPUT){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_KEYBOARD: traceLogFlags ^= LCF_KEYBOARD; if(traceLogFlags & LCF_KEYBOARD){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_MOUSE: traceLogFlags ^= LCF_MOUSE; if(traceLogFlags & LCF_MOUSE){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_JOYPAD: traceLogFlags ^= LCF_JOYPAD; if(traceLogFlags & LCF_JOYPAD){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_DSOUND: traceLogFlags ^= LCF_DSOUND; if(traceLogFlags & LCF_DSOUND){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_WSOUND: traceLogFlags ^= LCF_WSOUND; if(traceLogFlags & LCF_WSOUND){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_PROCESS: traceLogFlags ^= LCF_PROCESS; if(traceLogFlags & LCF_PROCESS){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_MODULE: traceLogFlags ^= LCF_MODULE; if(traceLogFlags & LCF_MODULE){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_MESSAGES: traceLogFlags ^= LCF_MESSAGES; if(traceLogFlags & LCF_MESSAGES){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_WINDOW: traceLogFlags ^= LCF_WINDOW; if(traceLogFlags & LCF_WINDOW){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_FILEIO: traceLogFlags ^= LCF_FILEIO; if(traceLogFlags & LCF_FILEIO){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_REGISTRY: traceLogFlags ^= LCF_REGISTRY; if(traceLogFlags & LCF_REGISTRY){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_THREAD: traceLogFlags ^= LCF_THREAD; if(traceLogFlags & LCF_THREAD){traceEnabled = true;} tasFlagsDirty = true; break;
+				//case ID_TRACE_LCF_TIMERS: traceLogFlags ^= LCF_TIMERS; if(traceLogFlags & LCF_TIMERS){traceEnabled = true;} tasFlagsDirty = true; break;
 
 
 				case ID_DEBUGLOG_DISABLED: localTASflags.debugPrintMode = 0; tasFlagsDirty = true; break;

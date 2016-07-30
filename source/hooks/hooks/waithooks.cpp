@@ -5,6 +5,8 @@
 #include "../tls.h"
 #include <map>
 
+//using Log = DebugLog<LogCategory::MESSAGES>;
+
 namespace Hooks
 {
     void ThreadHandleToExitHandle(HANDLE& pHandle);

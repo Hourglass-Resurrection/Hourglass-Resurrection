@@ -378,7 +378,7 @@ namespace Hooks
 		    if(dwFlags & DSBLOCK_ENTIREBUFFER)
 			    dwBytes = bufferSize;
 		    else
-			    dwBytes = min(bufferSize, dwBytes);
+			    dwBytes = std::min(bufferSize, dwBytes);
 
 		    lockPtr1 = NULL;
 		    lockPtr2 = NULL;

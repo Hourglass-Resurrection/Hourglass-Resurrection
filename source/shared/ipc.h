@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <array>
+
 #include "logcat.h"
 #include <mmsystem.h>
 
@@ -37,8 +39,7 @@ struct TasFlags
 	int appLocale;
 	unsigned int movieVersion;
 	int osVersionMajor, osVersionMinor;
-	LogCategoryFlag includeLogFlags;
-	LogCategoryFlag excludeLogFlags;
+    std::array<bool, static_cast<size_t>(LogCategory::NUM_LOG_CATEGORIES)> log_categories;
 #ifdef _USRDLL
 	char reserved [256]; // just-in-case overwrite guard
 #endif
@@ -116,3 +117,91 @@ struct TrustedRangeInfos
 #ifndef SUCCESSFUL_EXITCODE
 #define SUCCESSFUL_EXITCODE 4242
 #endif
+
+#include <algorithm>
+#include <cstdio>
+
+/*
+ * Communication interface for the DLL, all communication is initiated by the DLL .
+ */
+
+/*
+ * Undefine some WinAPI names that get in the way.
+ */
+#undef GetMessage
+
+namespace IPC
+{
+    enum class Command : DWORD64
+    {
+        /*
+         * Ignore command values 0 and 1 to be able to distinguish between a command and a
+         * zeroed out command frame.
+         */
+        CMD_PRINT_MESSAGE = 0x0000000000000002,
+        CMD_PRINT_MESSAGE_REPLY,
+    };
+
+    struct CommandFrame
+    {
+        Command command;
+        DWORD command_data_size;
+        LPVOID command_data;
+    };
+
+    class PrintMessage
+    {
+    public:
+        PrintMessage() :
+            m_pos(0)
+        {
+            m_message[0] = '\0';
+        }
+        LPCSTR GetMessage() const
+        {
+            return m_message;
+        }
+        template<class T>
+        PrintMessage& operator<<(const T& value)
+        {
+            constexpr LPCSTR format = (sizeof(T) <= 4) ? "0x%lX" : "0x%I64X";
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        template<class T>
+        PrintMessage& operator<<(T* value)
+        {
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%p", value);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        PrintMessage& operator<<(const float& value)
+        {
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%g", value);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        PrintMessage& operator<<(const bool& value)
+        {
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%s", value ? "true" : "false");
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        PrintMessage& operator<<(LPCSTR str)
+        {
+            m_pos = snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%s", str);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        PrintMessage& operator<<(LPCWSTR str)
+        {
+            m_pos = snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%S", str);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+    private:
+        CHAR m_message[4096];
+        size_t m_pos;
+    };
+}

@@ -6,6 +6,8 @@
 
 int getCurrentFramestampLogical();
 
+using Log = DebugLog<LogCategory::TIME>;
+
 DEFINE_LOCAL_GUID(IID_IReferenceClock, 0x56a86897, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 
 namespace Hooks
@@ -42,17 +44,17 @@ namespace Hooks
     //{
     //	MyReferenceClock()
     //	{
-    //		DDRAW_ENTER();
+    //		ENTER();
     //	}
     //	~MyReferenceClock()
     //	{
-    //		DDRAW_ENTER();
+    //		ENTER();
     //	}
     //
     //	/*** IUnknown methods ***/
     //    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
     //	{
-    //		DDRAW_ENTER(riid.Data1);
+    //		ENTER(riid.Data1);
     //		HRESULT rv = m_dd->QueryInterface(riid, ppvObj);
     //		if(SUCCEEDED(rv))
     //			HookCOMInterface(riid, ppvObj);
@@ -61,13 +63,13 @@ namespace Hooks
     //
     //    ULONG STDMETHODCALLTYPE AddRef()
     //	{
-    //		DDRAW_ENTER();
+    //		ENTER();
     //		return m_dd->AddRef();
     //	}
     //
     //    ULONG STDMETHODCALLTYPE Release()
     //	{
-    //		DDRAW_ENTER();
+    //		ENTER();
     //		ULONG count = m_dd->Release();
     //		if(0 == count)
     //			delete this;
@@ -95,7 +97,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IReferenceClock* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IReferenceClock* pThis, REFIID riid, void** ppvObj)
         {
-            VERBOSE_ENTER(riid.Data1);
+            VERBOSE_LOG() << riid.Data1;
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -107,14 +109,14 @@ namespace Hooks
             return (LONGLONG)((ULONGLONG)(detTimer.GetTicks() /*+ 10*/) * 10000);
         }
 
-        static HRESULT(STDMETHODCALLTYPE *GetTime)              (IReferenceClock* pThis, REFERENCE_TIME *pTime);
+        static HRESULT(STDMETHODCALLTYPE *GetTime)(IReferenceClock* pThis, REFERENCE_TIME *pTime);
         static HRESULT STDMETHODCALLTYPE MyGetTime(IReferenceClock* pThis, REFERENCE_TIME *pTime)
         {
             //return GetTime(pThis, pTime);
             if (!pTime)
                 return E_POINTER;
             *pTime = GetTimeInternal();
-            debuglog(LCF_TIMERS | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called (%d).\n", (DWORD)*pTime);
+            ENTER(*pTime);
             return S_OK;
         }
 
@@ -127,10 +129,10 @@ namespace Hooks
             ReleaseSemaphore(hSemaphore, 1, NULL);
         }
 
-        static HRESULT(STDMETHODCALLTYPE *AdviseTime)           (IReferenceClock* pThis, REFERENCE_TIME rtBaseTime, REFERENCE_TIME rtStreamTime, HANDLE hEvent, LPDWORD pdwAdviseCookie);
+        static HRESULT(STDMETHODCALLTYPE *AdviseTime)(IReferenceClock* pThis, REFERENCE_TIME rtBaseTime, REFERENCE_TIME rtStreamTime, HANDLE hEvent, LPDWORD pdwAdviseCookie);
         static HRESULT STDMETHODCALLTYPE MyAdviseTime(IReferenceClock* pThis, REFERENCE_TIME rtBaseTime, REFERENCE_TIME rtStreamTime, HANDLE hEvent, LPDWORD pdwAdviseCookie)
         {
-            debuglog(LCF_TIMERS, __FUNCTION__ "(rtBaseTime=%d, rtStreamTime=%d) called.\n", (DWORD)(rtBaseTime / 10000), (DWORD)(rtStreamTime / 10000));
+            ENTER(rtBaseTime / 10000, rtStreamTime / 10000);
             //return AdviseTime(pThis, rtBaseTime, rtStreamTime, hEvent, pdwAdviseCookie);
             REFERENCE_TIME time = rtBaseTime + rtStreamTime;
             //		if((ULONGLONG)time >= 86400000L)
@@ -145,10 +147,11 @@ namespace Hooks
             return S_OK;
         }
 
-        static HRESULT(STDMETHODCALLTYPE *AdvisePeriodic)       (IReferenceClock* pThis, REFERENCE_TIME rtStartTime, REFERENCE_TIME rtPeriodTime, HANDLE hSemaphore, LPDWORD pdwAdviseCookie);
+        static HRESULT(STDMETHODCALLTYPE *AdvisePeriodic)(IReferenceClock* pThis, REFERENCE_TIME rtStartTime, REFERENCE_TIME rtPeriodTime, HANDLE hSemaphore, LPDWORD pdwAdviseCookie);
         static HRESULT STDMETHODCALLTYPE MyAdvisePeriodic(IReferenceClock* pThis, REFERENCE_TIME rtStartTime, REFERENCE_TIME rtPeriodTime, HANDLE hSemaphore, LPDWORD pdwAdviseCookie)
         {
-            debuglog(LCF_TIMERS | LCF_DESYNC | LCF_UNTESTED, __FUNCTION__ "(rtStartTime=%d, rtPeriodTime=%d) called.\n", (DWORD)(rtStartTime / 10000), (DWORD)(rtPeriodTime / 10000));
+            ENTER(rtStartTime / 10000, rtPeriodTime / 10000);
+            LOG() << "Warning: Not yet implemented!";
             return AdvisePeriodic(pThis, rtStartTime, rtPeriodTime, hSemaphore, pdwAdviseCookie);
             // following is NYI (or at least, not tested so it's probably broken)
     //		if((ULONGLONG)rtStartTime >= 86400000L)
@@ -164,10 +167,10 @@ namespace Hooks
                 return E_OUTOFMEMORY;
             return S_OK;
         }
-        static HRESULT(STDMETHODCALLTYPE *Unadvise)             (IReferenceClock* pThis, DWORD dwAdviseCookie);
+        static HRESULT(STDMETHODCALLTYPE *Unadvise)(IReferenceClock* pThis, DWORD dwAdviseCookie);
         static HRESULT STDMETHODCALLTYPE MyUnadvise(IReferenceClock* pThis, DWORD dwAdviseCookie)
         {
-            debuglog(LCF_TIMERS, __FUNCTION__ " called.\n");
+            ENTER();
             //return Unadvise(pThis, dwAdviseCookie);
             if (TIMERR_NOERROR == MytimeKillEvent((UINT)dwAdviseCookie))
                 return S_OK;
@@ -283,7 +286,7 @@ namespace Hooks
     HOOKFUNC DWORD WINAPI MytimeGetTime()
     {
         //	return timeGetTime();
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         DWORD rv = detTimer.GetTicks(TIMETYPE_TIMEGETTIME);
         //	debugprintf(__FUNCTION__ " called (%d).\n", rv);
         return rv;
@@ -303,7 +306,7 @@ namespace Hooks
 
         //	GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
         //	debugprintf("  ACTUAL: low = 0x%X (%d), high = 0x%X (%d)\n", lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwHighDateTime, lpSystemTimeAsFileTime->dwHighDateTime);
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", lpSystemTimeAsFileTime);
+        ENTER(lpSystemTimeAsFileTime);
         *lpSystemTimeAsFileTime = detTimer.GetFileTime();
         //	debugprintf("RETURNED: low = 0x%X (%d), high = 0x%X (%d)\n", lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwHighDateTime, lpSystemTimeAsFileTime->dwHighDateTime);
             //lpSystemTimeAsFileTime->dwLowDateTime = 0xC39A9DC8;
@@ -313,7 +316,7 @@ namespace Hooks
     HOOKFUNC VOID WINAPI MyGetSystemTime(LPSYSTEMTIME lpSystemTime)
     {
         //	GetSystemTime(lpSystemTime);
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", lpSystemTime);
+        ENTER(lpSystemTime);
         *lpSystemTime = detTimer.GetSystemTime();
     }
     HOOK_FUNCTION(VOID, WINAPI, GetLocalTime, LPSYSTEMTIME lpLocalTime);
@@ -321,7 +324,7 @@ namespace Hooks
     {
         //	GetLocalTime(lpLocalTime);
         //	GetSystemTime(lpLocalTime);
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", lpLocalTime);
+        ENTER(lpLocalTime);
         *lpLocalTime = detTimer.GetSystemTime();
         //lpLocalTime->wYear += 172; // TEMP HACK (some games don't like running in 1827 or whenever)
     }
@@ -330,7 +333,7 @@ namespace Hooks
     HOOKFUNC MMRESULT WINAPI MytimeGetSystemTime(LPMMTIME pmmt, UINT cbmmt)
     {
         //	return timeGetSystemTime(pmmt, cbmmt);
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         pmmt->wType = TIME_MS;
         pmmt->u.ms = detTimer.GetTicks(TIMETYPE_TIMEGETSYSTIME);
         return TIMERR_NOERROR;
@@ -357,7 +360,7 @@ namespace Hooks
     HOOK_FUNCTION(DWORD, WINAPI, GetTickCount);
     HOOKFUNC DWORD WINAPI MyGetTickCount()
     {
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         //	DWORD a = GetTickCount();
         DWORD b = detTimer.GetTicks(TIMETYPE_GETTICKCOUNT);
         //	debugprintf(__FUNCTION__ " called (%d -> %d).\n", a, b);
@@ -368,14 +371,15 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, GetSystemTimes, LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime);
     HOOKFUNC BOOL WINAPI MyGetSystemTimes(LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime)
     {
-        debuglog(LCF_TIMEFUNC | LCF_TODO | LCF_UNTESTED | LCF_DESYNC, __FUNCTION__ " called.\n");
+        ENTER();
+        LOG() << "Warning: Not yet implemented";
         return GetSystemTimes(lpIdleTime, lpKernelTime, lpUserTime);
     }
 
     HOOK_FUNCTION(NTSTATUS, NTAPI, NtQuerySystemTime, PLARGE_INTEGER SystemTime);
     HOOKFUNC NTSTATUS NTAPI MyNtQuerySystemTime(PLARGE_INTEGER SystemTime)
     {
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         //	return NtQuerySystemTime(SystemTime);
         if (SystemTime)
         {
@@ -392,7 +396,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount)
     {
         //	return QueryPerformanceCounter(lpPerformanceCount);
-        debuglog(LCF_TIMEFUNC | LCF_TIMEGET | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         if (lpPerformanceCount)
         {
             lpPerformanceCount->QuadPart = (LONGLONG)detTimer.GetTicks(TIMETYPE_QUERYPERFCOUNT) * (LONGLONG)715909 / (LONGLONG)(1000 / 5);
@@ -405,7 +409,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyQueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceFrequency)
     {
         //	return QueryPerformanceFrequency(lpPerformanceFrequency);
-        debuglog(LCF_TIMEFUNC | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
         if (lpPerformanceFrequency)
         {
             lpPerformanceFrequency->QuadPart = (LONGLONG)715909 * (LONGLONG)5;
@@ -418,7 +422,7 @@ namespace Hooks
     HOOK_FUNCTION(NTSTATUS, NTAPI, NtQueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency);
     HOOKFUNC NTSTATUS NTAPI MyNtQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency)
     {
-        debuglog(LCF_TIMEFUNC | LCF_FREQUENT, __FUNCTION__ " called.\n");
+        ENTER();
 
         if (lpPerformanceCount)
         {

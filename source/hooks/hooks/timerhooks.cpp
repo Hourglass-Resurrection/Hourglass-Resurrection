@@ -3,6 +3,7 @@
 
 #include "../wintasee.h"
 #include "../msgqueue.h"
+#include <algorithm>
 #include <vector>
 #include <map>
 #include <set>
@@ -209,7 +210,7 @@ namespace Hooks
     {
         EnterCriticalSection(&s_pendingSetTimerCS);
 
-        uElapse = max(USER_TIMER_MINIMUM, min(USER_TIMER_MAXIMUM, uElapse));
+        uElapse = std::max(static_cast<DWORD>(USER_TIMER_MINIMUM), std::min(static_cast<DWORD>(USER_TIMER_MAXIMUM), uElapse));
         DWORD targetTime = detTimer.GetTicks() + uElapse;
 
         SetTimerData data = { hWnd, nIDEvent, targetTime, lpTimerFunc, false };
