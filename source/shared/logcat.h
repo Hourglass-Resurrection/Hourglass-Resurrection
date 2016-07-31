@@ -24,9 +24,7 @@ enum class LogCategory
 	GDI,
 	SDL,
 	DINPUT,
-	KEYBOARD,
-	MOUSE,
-	JOYPAD,
+	WINPUT,
     XINPUT,
 	DSOUND,
 	WSOUND, // non-directsound sound output, like wavout

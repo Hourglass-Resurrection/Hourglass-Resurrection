@@ -124,19 +124,15 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
     case LogCategory::D3D:
         return "[D3D]";
     case LogCategory::OGL:
-        return "[OpenGL]";
+        return "[OpenGL:TODO:Stop wrapping D3D!]";
     case LogCategory::GDI:
         return "[GDI]";
     case LogCategory::SDL:
         return "[SDL:TODO:Remove!]";
     case LogCategory::DINPUT:
         return "[DInput]";
-    case LogCategory::KEYBOARD:
-        return "[Keyboard]";
-    case LogCategory::MOUSE:
-        return "[Mouse]";
-    case LogCategory::JOYPAD:
-        return "[Joypad]";
+    case LogCategory::WINPUT:
+        return "[WinInput]";
     case LogCategory::XINPUT:
         return "[XInput]";
     case LogCategory::DSOUND:

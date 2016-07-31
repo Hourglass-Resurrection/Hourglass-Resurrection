@@ -2963,7 +2963,7 @@ DWORD CalculateModuleSize(LPVOID hModule, HANDLE hProcess)
 	while(VirtualQueryEx(hProcess, (char*)hModule+size+0x1000, &mbi, sizeof(mbi))
 	&& (DWORD)mbi.AllocationBase == (DWORD)hModule)
 		size += mbi.RegionSize;
-	return std::max(size, static_cast<DWORD>(0x10000));
+	return std::max<DWORD>(size, 0x10000);
 }
 
 void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)

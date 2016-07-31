@@ -3,6 +3,9 @@
 
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #include <array>
 
 #include "logcat.h"
@@ -164,7 +167,11 @@ namespace IPC
         template<class T>
         PrintMessage& operator<<(const T& value)
         {
-            constexpr LPCSTR format = (sizeof(T) <= 4) ? "0x%lX" : "0x%I64X";
+            CHAR format[16];
+            /*
+             * Build format string based on size of T.
+             */
+            snprintf(format, ARRAYSIZE(format), "0x0%d%s%%X", sizeof(T) * 2, sizeof(T) > 4 ? "I64X" : "l");
             m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
@@ -178,7 +185,13 @@ namespace IPC
         }
         PrintMessage& operator<<(const float& value)
         {
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%g", value);
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%g", value);
+            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            return *this;
+        }
+        PrintMessage& operator<<(const double& value)
+        {
+            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%g", value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }

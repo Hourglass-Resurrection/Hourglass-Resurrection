@@ -376,7 +376,7 @@ namespace Hooks
             // update our pointer to the original winproc instead.
             LONG rv = MyGetWindowLongA(hWnd, nIndex);
             LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
-            LOG() << "rv = " << rv;
+            LEAVE(rv);
             hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
             SetWindowLongA(hWnd, GWL_WNDPROC, (LONG)MyWndProcA);
             return rv;
@@ -392,7 +392,7 @@ namespace Hooks
             }
         }
         LONG rv = SetWindowLongA(hWnd, nIndex, dwNewLong);
-        LOG() << "rv = " << rv;
+        LEAVE(rv);
         return rv;
     }
     HOOK_FUNCTION(LONG, WINAPI, SetWindowLongW, HWND hWnd, int nIndex, LONG dwNewLong);
@@ -406,7 +406,7 @@ namespace Hooks
             // update our pointer to the original winproc instead.
             LONG rv = MyGetWindowLongW(hWnd, nIndex);
             LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
-            LOG() << "rv = " << rv;
+            LEAVE(rv);
             hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
             SetWindowLongW(hWnd, GWL_WNDPROC, (LONG)MyWndProcW);
             return rv;
@@ -422,7 +422,7 @@ namespace Hooks
             }
         }
         LONG rv = SetWindowLongW(hWnd, nIndex, dwNewLong);
-        LOG() << "rv = " << rv;
+        LEAVE(rv);
         return rv;
     }
 

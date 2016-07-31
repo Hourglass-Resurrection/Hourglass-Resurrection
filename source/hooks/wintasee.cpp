@@ -960,19 +960,20 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 
 	// using gamehwnd isn't reliable enough
+    using Log = DebugLog<LogCategory::WINPUT>;
 	std::map<HWND, WNDPROC>::iterator iter;
 	bool sentToAny = false;
 	for(iter = Hooks::hwndToOrigHandler.begin(); iter != Hooks::hwndToOrigHandler.end();)
 	{
 		HWND hwnd = iter->first;
 		iter++;
-		DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
-		if(IsWindow(hwnd)
-		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
-		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
-		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
-		 || (!sentToAny && iter == Hooks::hwndToOrigHandler.end()))
-		 )
+        DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
+        if (IsWindow(hwnd)
+            && ((hwnd == gamehwnd && (style&WS_VISIBLE))
+                || ((style & (WS_VISIBLE | WS_CAPTION)) == (WS_VISIBLE | WS_CAPTION))
+                || ((style & (WS_VISIBLE | WS_POPUP)) == (WS_VISIBLE | WS_POPUP))
+                || (!sentToAny && iter == Hooks::hwndToOrigHandler.end()))
+            )
 		{
 			sentToAny = true;
 
@@ -988,7 +989,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				int prev = previnput.keys[i];
 				if(cur && !prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "DOWN: 0x%X\n", i);
+					LOG() << "DOWN: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, WM_KEYDOWN, i, 0);
 #else
@@ -1003,7 +1004,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 					for(int res = 0; res < results; res++)
 					{
 						int c = outbuf[res];
-						debuglog(LCF_KEYBOARD|LCF_FREQUENT, "CHAR: %c (0x%X)\n", (char)c, c);
+						LOG() << "CHAR: " << c;
 #ifdef EMULATE_MESSAGE_QUEUES
 						PostMessageInternal(hwnd, WM_CHAR, c, 0);
 #else
@@ -1014,7 +1015,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				}
 				else if(!cur && prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "UP: 0x%X\n", i);
+                    LOG() << "UP: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, WM_KEYUP, i, 0);
 #else
@@ -1042,8 +1043,9 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			LPARAM coords = (curinput.mouse.coords.y << 16) | (curinput.mouse.coords.x); // Not sure it's good when coords are negative...
 
 			// Send the MOUSEMOVE message if needed.
-			if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0)){
-				debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE MOVE\n");
+            if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0))
+            {
+				LOG() << "MOUSE MOVE";
 				//debugprintf("My MOUSE message is 0x%X with wParam = %d and lParam = %d\n",WM_MOUSEMOVE, flag, coords);
 				//debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(coords), GET_Y_LPARAM(coords));
 #ifdef EMULATE_MESSAGE_QUEUES
@@ -1057,12 +1059,13 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			WORD mouseButtonsUp[3] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
 			WORD mouseButtonsDown[3] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
 
-			for (int i = 0; i < 3; i++){
+            for (int i = 0; i < 3; i++)
+            {
 				int cur = curinput.mouse.di.rgbButtons[i];
 				int prev = previnput.mouse.di.rgbButtons[i];
 				if(cur && !prev)
 				{
-					debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
+					LOG() << "MOUSE BUTTON DOWN: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
 #else
@@ -1071,7 +1074,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 				}
 				else if(!cur && prev)
 				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
+					LOG() << "MOUSE BUTTON UP: " << i;
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
 #else
@@ -1091,7 +1094,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 	Hooks::g_midFrameAsyncKeyRequests = 0;
 
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " returned. (%d -> %d)\n", localFrameCount, framecount);
+	DEBUG_LOG() << "returned. (" << localFrameCount << " -> " << framecount << ")";
 }
 
 
@@ -1192,7 +1195,8 @@ struct MyClassFactory : IClassFactory
 
 	STDMETHOD(CreateInstance)(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 	{
-		debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        using Log = DebugLog<LogCategory::MODULE>;
+		ENTER(riid.Data1);
 		HRESULT rv = m_cf->CreateInstance(pUnkOuter, riid, ppvObject);
 		if(SUCCEEDED(rv))
 			HookCOMInterface(riid, ppvObject, true);
@@ -1216,10 +1220,11 @@ private:
 
 void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 {
+    using Log = DebugLog<LogCategory::HOOK>;
 	if(!ppvOut)
 		return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+	ENTER(riid.Data1);
 
 	switch(riid.Data1)
 	{
@@ -1234,17 +1239,20 @@ void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+                LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
+                      << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
+                      << riid.Data4[4] << riid.Data4[5] << riid.Data4[6] << riid.Data4[7];
 			break;
 	}
 }
 
 void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
 {
+    using Log = DebugLog<LogCategory::HOOK>;
 	if(!ppvOut)
 		return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+	ENTER(riid.Data1);
 
 	switch(riid.Data1)
 	{
@@ -1259,7 +1267,9 @@ void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool unc
 			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+                LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
+                      << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
+                      << riid.Data4[4] << riid.Data4[5] << riid.Data4[6] << riid.Data4[7];
 			break;
 	}
 }
@@ -1413,7 +1423,7 @@ bool IsWindows7()     { return tasflags.osVersionMajor == 6 && tasflags.osVersio
 // PostDllMain is the code we run after DllMain to finish up initialization without restrictions.
 DWORD WINAPI PostDllMain(LPVOID lpParam)
 {
-    DebugLog<>(DebugLog<>()) << __FUNCTION__ "(lpParam=" << lpParam << ") called.";
+    DEBUG_LOG() << " (lpParam=" << lpParam << ") called.";
 	dllInitializationDone = true;
 
 	detTimer.OnSystemTimerRecalibrated();
@@ -1440,7 +1450,7 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 		if(!((DWORD)g_hklOverride & 0xFFFF0000))
 			(DWORD&)g_hklOverride |= ((DWORD)g_hklOverride << 16);
 	}
-	debugprintf("keyboardLayout = %s, hkl = %08X -> %08X", keyboardLayoutName, loadLayoutRv, g_hklOverride);
+	DEBUG_LOG() << "keyboardLayout = " << keyboardLayoutName << ", hkl = " << loadLayoutRv << " -> " << g_hklOverride;
 	curtls.callingClientLoadLibrary = FALSE;
 
 	if(tasflags.appLocale)
@@ -1454,11 +1464,11 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 		// didn't find it, somehow
 		Hooks::watchForCLLApiNum = false;
 		Hooks::cllApiNum = (IsWindows7() ? 65 : 66);
-		debugprintf("using ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", Hooks::cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "using ClientLoadLibrary ApiNumber = " << Hooks::cllApiNum << ". OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 	}
 	else
 	{
-		debugprintf("found ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", Hooks::cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "found ClientLoadLibrary ApiNumber = " << Hooks::cllApiNum << ". OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 	}
 	curtls.callingClientLoadLibrary = FALSE;
 
@@ -1467,7 +1477,7 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 	curtls.isFirstThread = true;
 
 	cmdprintf("POSTDLLMAINDONE: 0");
-	debugprintf(__FUNCTION__ " returned.\n");
+	DEBUG_LOG() << "returned.";
 
 	return 0;
 }
@@ -1487,7 +1497,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		tasflags.timescale = 1;
 		tasflags.timescaleDivisor = 1;
 
-		debugprintf("DllMain started, injection must have worked.\n");
+		DEBUG_LOG() << "DllMain started, injection must have worked.";
 		hCurrentProcess = GetCurrentProcess();
 		DisableThreadLibraryCalls(hModule);
 
@@ -1592,7 +1602,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			//		SetCPGlobal(LocaleToCodePage(tasflags.appLocale));
 		}
 
-		debugprintf("version = %d, movie version = %d, OS = %d.%d.\n", VERSION, tasflags.movieVersion, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        DEBUG_LOG() << "version = " << VERSION << ", movie version = " << tasflags.movieVersion << ", OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 
 		// in case PostDllMain doesn't get called right away (although we really need it to...)
 		if(tasflags.osVersionMajor <= 6)
@@ -1619,7 +1629,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		break;
 	}
 
-	debugprintf("DllMain returned. (fdwReason = 0x%X)\n", fdwReason);
+    DEBUG_LOG() << "DllMain returned. (fdwReason = " << fdwReason << ")";
 
     return TRUE;
 }

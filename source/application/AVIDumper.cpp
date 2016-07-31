@@ -258,7 +258,7 @@ tryMoreSuggestions:
 		int usedInSize = 0;
 		while(inSize + startOffset)
 		{
-			int curInSize = std::min(inSize, (int)sizeof(inWorkBuffer) - startOffset);
+			int curInSize = std::min<int>(inSize, sizeof(inWorkBuffer) - startOffset);
 			memcpy(inWorkBuffer + startOffset, inBuffer + usedInSize, curInSize);
 			usedInSize += curInSize;
 			inSize -= curInSize;

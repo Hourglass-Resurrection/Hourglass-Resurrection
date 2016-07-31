@@ -62,7 +62,7 @@ namespace Hooks
             case 8: {
                 int numEntries = 256;
                 if (bmi.bmiHeader.biClrUsed)
-                    numEntries = std::min(static_cast<const DWORD>(256), bmi.bmiHeader.biClrUsed);
+                    numEntries = std::min<DWORD>(256, bmi.bmiHeader.biClrUsed);
                 for (int i = 0; i < numEntries; i++)
                 {
                     activePalette[i].peBlue = bmi.bmiColors[i].rgbBlue;
@@ -532,7 +532,7 @@ namespace Hooks
         {
             rv = GetDeviceCaps(hdc, index);
         }
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         return rv;
     }
 

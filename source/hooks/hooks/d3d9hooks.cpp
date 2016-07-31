@@ -218,7 +218,7 @@ namespace Hooks
                 Lock(pThis, desc, pSurface, false);
 #ifdef _DEBUG
                 DWORD time2 = timeGetTime();
-                debugprintf("AVI: pre-copying pixel data took %d ticks\n", (int)(time2 - time1));
+                DEBUG_LOG() << "AVI: pre-copying pixel data took " << (time2 - time1) << "ticks";
 #endif
                 FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
                 pSurface->UnlockRect();

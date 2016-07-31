@@ -40,7 +40,7 @@ namespace Hooks
         ENTER();
         // TODO: disabling this makes the DirectMusic timer somewhat saveable... what drives that timer??
         HANDLE rv = CreateEventA(lpEventAttributes, bManualReset, bInitialState, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         //verbosedebugprintf("%d %d %s\n", bManualReset, bInitialState, lpName);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
@@ -54,7 +54,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -68,7 +68,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenEventA(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -80,7 +80,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenEventW(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -107,7 +107,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -119,7 +119,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenMutexA(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -131,7 +131,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateMutexW(lpMutexWttributes, bInitialOwner, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -143,7 +143,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenMutexW(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -230,7 +230,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateSemaphoreA(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -242,7 +242,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateSemaphoreW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -254,7 +254,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenSemaphoreA(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -266,7 +266,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenSemaphoreW(dwDesiredAccess, bInheritHandle, lpName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -278,7 +278,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateWaitableTimerA(lpTimerAttributes, bManualReset, lpTimerName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -290,7 +290,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = CreateWaitableTimerW(lpTimerAttributes, bManualReset, lpTimerName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -302,7 +302,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenWaitableTimerA(dwDesiredAccess, bInheritHandle, lpTimerName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -314,7 +314,7 @@ namespace Hooks
     {
         ENTER();
         HANDLE rv = OpenWaitableTimerW(dwDesiredAccess, bInheritHandle, lpTimerName);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         EnterCriticalSection(&s_handleCS);
         std::set<HANDLE>& handles = s_threadIdHandles[GetCurrentThreadId()];
         handles.insert(rv);
@@ -326,7 +326,7 @@ namespace Hooks
     {
         ENTER();
         BOOL rv = SetWaitableTimer(hTimer, lpDueTime, lPeriod, pfnCompletionRoutine, lpArgToCompletionRoutine, fResume);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
         return rv;
     }
     HOOK_FUNCTION(BOOL, WINAPI, CancelWaitableTimer, HANDLE hTimer);
@@ -334,7 +334,16 @@ namespace Hooks
     {
         ENTER();
         BOOL rv = CancelWaitableTimer(hTimer);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
+        return rv;
+    }
+
+    HOOK_FUNCTION(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
+    HOOKFUNC DWORD WINAPI MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData)
+    {
+        ENTER(pfnAPC, hThread, dwData);
+        DWORD rv = QueueUserAPC(pfnAPC, hThread, dwData);
+        LEAVE(rv);
         return rv;
     }
 
@@ -370,6 +379,7 @@ namespace Hooks
             MAKE_INTERCEPT(0, KERNEL32, ResetEvent),
             MAKE_INTERCEPT(/*1*/0, KERNEL32, DuplicateHandle),
             MAKE_INTERCEPT(/*1*/0, KERNEL32, CloseHandle),
+            MAKE_INTERCEPT(1, KERNEL32, QueueUserAPC),
         };
         ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
     }

@@ -220,7 +220,7 @@ namespace Hooks
                 Lock(pThis, desc, pSurface, pSourceRect, false);
 #ifdef _DEBUG
                 DWORD time2 = timeGetTime();
-                debugprintf("AVI: pre-copying pixel data took %d ticks\n", (int)(time2 - time1));
+                LOG() << "AVI: pre-copying pixel data took " << (time2 - time1) << " ticks";
 #endif
                 FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
                 pSurface->UnlockRect();
@@ -347,8 +347,8 @@ namespace Hooks
 
             if (pSourceRect)
             {
-                desc.dwWidth = std::min(desc.dwWidth, (DWORD)(pSourceRect->right - pSourceRect->left));
-                desc.dwHeight = std::min(desc.dwHeight, (DWORD)(pSourceRect->bottom - pSourceRect->top));
+                desc.dwWidth = std::min<DWORD>(desc.dwWidth, (pSourceRect->right - pSourceRect->left));
+                desc.dwHeight = std::min<DWORD>(desc.dwHeight, (pSourceRect->bottom - pSourceRect->top));
             }
 
             if (getBackBuffer)

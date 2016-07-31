@@ -3,11 +3,10 @@
 
 #pragma once
 
+#include "global.h"
+
 #include "shared/ipc.h"
 #include "ipc.h"
-
-int debugprintf(const char* fmt, ...);
-int cmdprintf(const char* fmt, ...);
 
 #define CONCATENATE(arg1, arg2) CONCATENATE1(arg1, arg2)
 #define CONCATENATE1(arg1, arg2) CONCATENATE2(arg1, arg2)
@@ -47,6 +46,7 @@ int cmdprintf(const char* fmt, ...);
  * The final << after the FMT_ARGS() isn't missing, FMT_ARGS() may evaluate to nothing.
  */
 #define ENTER(...) Log() << __func__ << "(" << FMT_ARGS(__VA_ARGS__) ") called."
+#define LEAVE(...) Log() << __func__ << " returned (" << FMT_ARGS(__VA_ARGS__) ")."
 #define LOG() Log() << __func__ << ": "
 
 #define DEBUG_LOG() DebugLog<>() << __func__ << ": "

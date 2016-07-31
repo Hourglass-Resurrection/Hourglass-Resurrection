@@ -135,7 +135,7 @@ BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer
 	pVTable[entry] = (size_t)replace;
 	VirtualProtect(&pVTable[entry], sizeof(size_t), dwOldProt, &dwOldProt);
 	FlushInstructionCache(GetCurrentProcess(), NULL, NULL); 
-	debugprintf("HOOKING: %s: %d, 0x%X -> 0x%X\n", debugname, entry, (DWORD)oldfuncPointer, (DWORD)replace);
+    LOG() << "HOOKING: " << debugname << ": " << entry << ", " << oldfuncPointer << " -> " << replace;
 	return TRUE;
 }
 

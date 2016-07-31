@@ -445,6 +445,58 @@ namespace Hooks
         return rv;
     }
 
+    struct _tiddata {
+        unsigned long   _tid;       /* thread ID */
+        uintptr_t _thandle;         /* thread handle */
+        int     _terrno;            /* errno value */
+        unsigned long   _tdoserrno; /* _doserrno value */
+        unsigned int    _fpds;      /* Floating Point data segment */
+        unsigned long   _holdrand;  /* rand() seed value */
+                                    //There's more than this in a full _tiddata struct, but this is probably everything we're interested in
+    };
+
+    typedef struct _tiddata * _ptiddata;
+    BOOL FlsRecursing = FALSE;
+    std::map<DWORD, DWORD *> fseeds;
+    HOOK_FUNCTION(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
+    HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
+        BOOL rv = FlsSetValue(dwFlsIndex, lpFlsData);
+        if ((!FlsRecursing) && (lpFlsData != NULL)) {
+            FlsRecursing = TRUE;
+            if (fseeds.find(dwFlsIndex) == fseeds.end()) {
+                _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
+                LOG() << "FlsSetValue(" << dwFlsIndex << ",lpFlsData), set _tiddata structure at " << ptd;
+                cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d", &(ptd->_holdrand), dwFlsIndex);
+                fseeds[dwFlsIndex] = &(ptd->_holdrand);
+            }
+            FlsRecursing = FALSE;
+        }
+        return rv;
+    }
+    //BOOL TlsRecursing = FALSE;
+    //std::map<DWORD, DWORD *> tseeds;
+    //HOOK_FUNCTION(BOOL, WINAPI, TlsSetValue, DWORD dwTlsIndex, LPVOID lpTlsValue);
+    //HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
+    //    BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
+    //    if ((!TlsRecursing) && (lpTlsValue != NULL)) {
+    //        TlsRecursing = TRUE;
+    //        if (tseeds.find(dwTlsIndex) == tseeds.end()) {
+    //            _ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
+    //            LOG() << "TlsSetValue(" << dwTlsIndex << ",lpTlsValue), set _tiddata structure at " << ptd;
+    //            cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d", &(ptd->_holdrand), dwTlsIndex);
+    //            tseeds[dwTlsIndex] = &(ptd->_holdrand);
+    //        }
+    //        TlsRecursing = FALSE;
+    //    }
+    //    return rv;
+    //}
+
+    // not really hooked, I just needed their trampolines
+    //HOOK_FUNCTION(LPVOID, WINAPI, TlsGetValue, DWORD dwTlsIndex);
+    //HOOKFUNC LPVOID WINAPI MyTlsGetValue(DWORD dwTlsIndex) IMPOSSIBLE_IMPL
+    HOOK_FUNCTION(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
+    HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
+
     void ThreadHandleToExitHandle(HANDLE& hHandle)
     {
         std::map<HANDLE, DWORD>::iterator found = threadWrappersOriginalHandleToId.find(hHandle);
@@ -468,6 +520,11 @@ namespace Hooks
             MAKE_INTERCEPT(1, KERNEL32, TerminateThread),
             MAKE_INTERCEPT(1, KERNEL32, GetExitCodeThread),
             MAKE_INTERCEPT(1, NTDLL, NtSetInformationThread),
+
+            MAKE_INTERCEPT(0, KERNEL32, FlsGetValue), // get trampoline only
+            //MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
+            MAKE_INTERCEPT(1, KERNEL32, FlsSetValue),
+            //MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
         };
         ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
     }

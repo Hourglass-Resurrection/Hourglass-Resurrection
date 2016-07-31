@@ -192,8 +192,9 @@ namespace Hooks
 	    static ULONG (STDMETHODCALLTYPE *Release)(DIRECTDRAWSURFACEN* pThis);
 	    static ULONG STDMETHODCALLTYPE MyRelease(DIRECTDRAWSURFACEN* pThis)
 	    {
+            ENTER(pThis);
 		    ULONG rv = Release(pThis);
-		    ddrawdebugprintf(__FUNCTION__ "(0x%X) called, refcount -> %d.\n", pThis, rv);
+		    LOG() << "refcount -> " << rv;
 		    //cmdprintf("SHORTTRACE: 3,50");
 		    // note: pThis is invalid to dereference now, if rv==0
 		    if((void*)b_bltsaved == (void*)pThis)
@@ -319,9 +320,9 @@ namespace Hooks
 		    if(destRect)
 			    LOG() << "destRect: left=" << destRect->left << ", top=" << destRect->top
                       << ", right=" << destRect->right << ", bottom=" << destRect->bottom;
-		    if(srcRect)
+            if (srcRect)
                 LOG() << "srcRect: left=" << srcRect->left << ", top=" << srcRect->top
-                      << ", right=" << srcRect->right << ", bottom=" << srcRect->bottom
+                      << ", right=" << srcRect->right << ", bottom=" << srcRect->bottom;
 
 		    flags |= DDBLT_WAIT;
 		    flags &= ~DDBLT_DONOTWAIT;
@@ -617,7 +618,7 @@ namespace Hooks
 		    LOG() << "ddckCKSrcBlt = " << ddsd.ddckCKSrcBlt;
 		    LOG() << "ddpfPixelFormat.dwRGBBitCount = " << ddsd.ddpfPixelFormat.dwRGBBitCount;
 		    LOG() << "ddsCaps = " << ddsd.ddsCaps.dwCaps;
-		    LOG() << "rv = " << rv;
+		    LEAVE(rv);
 
 		    //if(fakeDisplayValid)
 		    //{
@@ -812,7 +813,7 @@ namespace Hooks
 
 		    // normal case
 		    HRESULT rv = GetDC(pThis, lphDC);
-            LOG() << "returned " << rv << ", got " << *lphDC;
+            LOG() << "GetDC returned " << rv << ", got " << *lphDC;
 		
 		    if(FAILED(rv))
 		    {
@@ -887,7 +888,7 @@ namespace Hooks
 	    {
             ENTER(flags);
 		    HRESULT rv = GetFlipStatus(pThis, flags);
-		    LOG() << "rv = " << rv;
+		    LEAVE(rv);
 		    return rv;
 	    }
 
@@ -916,7 +917,7 @@ namespace Hooks
                 LOG() << "dwColorSpaceLowValue = " << pKey->dwColorSpaceLowValue
                       << " dwColorSpaceHighValue = " << pKey->dwColorSpaceHighValue;
             }
-            LOG() << "rv = " << rv;
+            LEAVE(rv);
 		    return rv;
 	    }
 
@@ -934,13 +935,13 @@ namespace Hooks
 			    if(*ppsurf)
 			    {
 				    HRESULT rv = DD_OK;
-				    LOG() << "returned " << rv << ", got " << *ppsurf;
+				    LEAVE(rv, *ppsurf);
 				    return rv;
 			    }
 		    }
 
 		    HRESULT rv = GetAttachedSurface(pThis, lpddscaps, ppsurf);
-		    LOG() << "returned " << rv << ", got " << *ppsurf;
+            LEAVE(rv, *ppsurf);
 		    return rv;
 	    }
 
@@ -1135,7 +1136,8 @@ namespace Hooks
 		    ddsdesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
 		    DIRECTDRAWSURFACEN* pSysMemSurface = NULL;
 		    CreateSysMemSurfaceB(pSysMemSurface, pSource, ownerInfo, ddsdesc);
-		    ddrawdebugprintf("created avi system memory surface (%dx%d) = 0x%X\n", ddsdesc.dwWidth, ddsdesc.dwHeight, pSysMemSurface);
+            LOG() << "created avi system memory surface (" << ddsdesc.dwWidth << "x"
+                  << ddsdesc.dwHeight << ") = " << pSysMemSurface;
 		    return pSysMemSurface;
 	    }
 
@@ -1469,7 +1471,6 @@ namespace Hooks
 		    }
 
 		    memcpy(&ddsd, lpddsd, sizeof(DDSURFACEDESCN));
-		    LOG() << "returned " << hr;
 		    LOG() << "dwFlags = " << ddsd.dwFlags;
 		    LOG() << "dwWidth = " << ddsd.dwWidth << " dwHeight = " << ddsd.dwHeight;
 		    LOG() << "lPitch = " << ddsd.lPitch;
@@ -1480,7 +1481,7 @@ namespace Hooks
 		    LOG() << "ddckCKSrcBlt = " << ddsd.ddckCKSrcBlt;
 		    LOG() << "ddpfPixelFormat = " << ddsd.ddpfPixelFormat;
 		    LOG() << "ddsCaps = " << ddsd.ddsCaps.dwCaps;
-
+            LEAVE(hr);
 		    return hr;
 	    }
         STDMETHOD(DuplicateSurface)( DIRECTDRAWSURFACEN* a, DIRECTDRAWSURFACEN* FAR * b)
@@ -1521,8 +1522,7 @@ namespace Hooks
 			    lpddsd->dwHeight = fakeDisplayHeight;
 			    if(fakePixelFormatBPP) lpddsd->ddpfPixelFormat.dwRGBBitCount = fakePixelFormatBPP; // FIXME leaking info to game that might potentially cause desync... but it seems to help avoid graphics issues
 		    }
-		    LOG() << "returned (hr=" << rv << ", " << lpddsd->dwWidth << "x" << lpddsd->dwHeight
-                  << ", " << lpddsd->ddpfPixelFormat.dwRGBBitCount << "bpp";
+		    LEAVE(rv, lpddsd->dwWidth, lpddsd->dwHeight, lpddsd->ddpfPixelFormat.dwRGBBitCount);
 		    return rv;
 	    }
         STDMETHOD(GetFourCCCodes)( LPDWORD a, LPDWORD b)
@@ -1643,7 +1643,7 @@ namespace Hooks
 		    }
 		    HRESULT rv = m_dd->SetDisplayMode(width,height,bpp,refresh,flags);
 		    FakeBroadcastDisplayChange(width,height,bpp);
-		    LOG() << "returned = " << rv;
+		    LEAVE(rv);
 		    return rv;
 	    }
         STDMETHOD(WaitForVerticalBlank)(DWORD a, HANDLE b)
@@ -1753,7 +1753,7 @@ namespace Hooks
 	    }
 	    HRESULT rv = m_dd->SetDisplayMode(width,height,bpp);
 	    FakeBroadcastDisplayChange(width,height,bpp);
-        LOG() << "returned " << rv;
+        LEAVE(rv);
 	    return rv;
     }
 

@@ -36,6 +36,8 @@ namespace Hooks
         DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions
     );
 
+    HOOK_FUNCTION_DECLARE(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
+
     void ApplySyncIntercepts();
 
     void SyncDllMainInit();

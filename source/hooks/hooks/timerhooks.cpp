@@ -8,6 +8,8 @@
 #include <map>
 #include <set>
 
+using Log = DebugLog<LogCategory::TIMERS>;
+
 namespace Hooks
 {
     void TickMultiMediaTimers(DWORD time = 0); // extern? (I mean, move to header)
@@ -109,7 +111,8 @@ namespace Hooks
                 {
                     SetTimerData data = triggeredTimers[i];
 
-                    debuglog(LCF_TIMERS, "timer triggered: 0x%X, 0x%X, %d, 0x%X\n", data.hWnd, data.nIDEvent, data.targetTime, data.lpTimerFunc);
+                    LOG() << "timer triggered: hWnd=" << data.hWnd << " nIDEvent=" << data.nIDEvent
+                          << " targetTime=" << data.targetTime << " lpTimerFunc=" << data.lpTimerFunc;
 
                     if (data.lpTimerFunc)
                     {
@@ -210,7 +213,7 @@ namespace Hooks
     {
         EnterCriticalSection(&s_pendingSetTimerCS);
 
-        uElapse = std::max(static_cast<DWORD>(USER_TIMER_MINIMUM), std::min(static_cast<DWORD>(USER_TIMER_MAXIMUM), uElapse));
+        uElapse = std::max<DWORD>(USER_TIMER_MINIMUM, std::min<DWORD>(USER_TIMER_MAXIMUM, uElapse));
         DWORD targetTime = detTimer.GetTicks() + uElapse;
 
         SetTimerData data = { hWnd, nIDEvent, targetTime, lpTimerFunc, false };
@@ -444,7 +447,7 @@ namespace Hooks
         {
             if (info->killRequest)
             {
-                debuglog(LCF_TIMERS, __FUNCTION__ ": killing...\n");
+                LOG() << "killing " << info->uid << "...";
                 TimerThreadInfo* next = info->next;
                 info->prev->next = next;
                 if (info->next)
@@ -460,17 +463,17 @@ namespace Hooks
                 {
                     if (info->event & TIME_CALLBACK_EVENT_SET)
                     {
-                        debuglog(LCF_TIMERS, __FUNCTION__ ": setting 0x%X\n", info->callback);
+                        LOG() << "setting " << info->callback;
                         SetEvent((HANDLE)info->callback);
                     }
                     else if (info->event & TIME_CALLBACK_EVENT_PULSE)
                     {
-                        debuglog(LCF_TIMERS, __FUNCTION__ ": pulsing 0x%X\n", info->callback);
+                        LOG() << "pulsing " << info->callback;
                         PulseEvent((HANDLE)info->callback);
                     }
                     else
                     {
-                        debuglog(LCF_TIMERS, __FUNCTION__ ": calling 0x%X\n", info->callback);
+                        LOG() << "calling 0x%X\n" << info->callback;
                         info->callback(info->uid, 0, info->user, 0, 0);
                     }
 
@@ -491,7 +494,7 @@ namespace Hooks
 
                     if (!(info->event & TIME_PERIODIC))
                     {
-                        debuglog(LCF_TIMERS, __FUNCTION__ ": one-shot finished, killrequest=true.\n");
+                        LOG() << "one-shot finished, killrequest=true.";
                         info->killRequest = true;
                     }
 
@@ -507,10 +510,10 @@ namespace Hooks
     {
         if (tasflags.timersMode == 0)
         {
-            debuglog(LCF_TIMERS, __FUNCTION__ " called (and suppressed).\n");
+            LOG() << "called (and suppressed).";
             return 11 * ++timerUID;
         }
-        debuglog(LCF_TIMERS, __FUNCTION__ "(%d, %d, 0x%X, 0x%X, 0x%X) called.\n", uDelay, uResolution, (DWORD)lpTimeProc, (DWORD)dwUser, fuEvent);
+        ENTER(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
         if (tasflags.timersMode == 2)
             return timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
         TimerThreadInfo* threadInfo = new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
@@ -527,7 +530,7 @@ namespace Hooks
         //	delete threadInfo;
         //	return NULL;
         //}
-        debuglog(LCF_TIMERS, __FUNCTION__ " created TimerThreadInfo with uid 0x%X.\n", threadInfo->uid);
+        LOG() << "created TimerThreadInfo with uid " << threadInfo->uid;
         return threadInfo->uid;
     }
     static MMRESULT filterKillTimerResult(MMRESULT res)
@@ -541,7 +544,7 @@ namespace Hooks
     {
         if (tasflags.timersMode == 2)
             return filterKillTimerResult(timeKillEvent(uTimerID));
-        debuglog(LCF_TIMERS, __FUNCTION__ "(0x%X) called.\n", uTimerID);
+        ENTER(uTimerID);
         TimerThreadInfo* info = ttiHead;
         do { info = info->next; } while (info && info->uid != uTimerID);
         //do{ info = info->next; debugprintf("0x%X\n", info); }
@@ -557,7 +560,7 @@ namespace Hooks
     HOOK_FUNCTION(UINT_PTR, WINAPI, SetTimer, HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
     HOOKFUNC UINT_PTR WINAPI MySetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc)
     {
-        debuglog(LCF_TIMERS, __FUNCTION__ "(0x%X, 0x%X, %d, 0x%X) called.\n", hWnd, nIDEvent, uElapse, lpTimerFunc);
+        ENTER(hWnd, nIDEvent, uElapse, lpTimerFunc);
         if (tasflags.timersMode == 2)
             return SetTimer(hWnd, nIDEvent, uElapse, lpTimerFunc);
         UINT_PTR rv = AddSetTimerTimer(hWnd, nIDEvent, uElapse, lpTimerFunc);
@@ -566,7 +569,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, KillTimer, HWND hWnd, UINT_PTR nIDEvent);
     HOOKFUNC BOOL WINAPI MyKillTimer(HWND hWnd, UINT_PTR nIDEvent)
     {
-        debuglog(LCF_TIMERS, __FUNCTION__ "(0x%X, 0x%X) called.\n", hWnd, nIDEvent);
+        ENTER(hWnd, nIDEvent);
         if (tasflags.timersMode == 2)
             return KillTimer(hWnd, nIDEvent);
 
@@ -598,21 +601,14 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, QueueUserAPC, PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);
-    HOOKFUNC DWORD WINAPI MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData)
-    {
-        DWORD rv = QueueUserAPC(pfnAPC, hThread, dwData);
-        debuglog(LCF_SYNCOBJ | LCF_DESYNC | LCF_UNTESTED | LCF_TODO, __FUNCTION__ " returned %d.\n", rv);
-        return rv;
-    }
-
     HOOK_FUNCTION(BOOL, WINAPI, CreateTimerQueueTimer,
         PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
         PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
     HOOKFUNC BOOL WINAPI MyCreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
         PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags)
     {
-        debuglog(LCF_TIMERS | LCF_TODO | LCF_DESYNC, __FUNCTION__ " called.\n");
+        ENTER();
+        DEBUG_LOG() << "Not yet implemented!";
         BOOL rv = CreateTimerQueueTimer(phNewTimer, TimerQueue, Callback,
             Parameter, DueTime, Period, Flags);
         return rv;
@@ -633,7 +629,6 @@ namespace Hooks
             MAKE_INTERCEPT(1, USER32, KillTimer),
             MAKE_INTERCEPT(1, KERNEL32, CreateTimerQueueTimer),
             //MAKE_INTERCEPT(1, KERNEL32, CreateTimerQueue ),
-            MAKE_INTERCEPT(1, KERNEL32, QueueUserAPC),
         };
         ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
     }

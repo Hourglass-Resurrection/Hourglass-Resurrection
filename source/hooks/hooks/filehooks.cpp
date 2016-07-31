@@ -3,6 +3,9 @@
 
 #include "../global.h"
 #include "shared/ipc.h"
+#include "../print.h"
+
+using Log = DebugLog<LogCategory::FILEIO>;
 
 namespace Hooks
 {
@@ -24,7 +27,7 @@ namespace Hooks
         HANDLE hTemplateFile
     )
     {
-        debugprintf(__FUNCTION__ "(0x%X) called: %s\n", dwDesiredAccess, lpFileName);
+        ENTER(dwDesiredAccess, lpFileName);
         return CreateFileA(
             lpFileName,
             dwDesiredAccess,
@@ -54,7 +57,7 @@ namespace Hooks
         HANDLE hTemplateFile
     )
     {
-        debugprintf(__FUNCTION__ "(0x%X) called: %S\n", dwDesiredAccess, lpFileName);
+        ENTER(dwDesiredAccess, lpFileName);
         return CreateFileW(
             lpFileName,
             dwDesiredAccess,
@@ -70,7 +73,7 @@ namespace Hooks
         LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle);
     HOOKFUNC HFILE WINAPI MyOpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
     {
-        debugprintf(__FUNCTION__ "(0x%X) called: %s\n", uStyle, lpFileName);
+        ENTER(uStyle, lpFileName);
         return OpenFile(lpFileName, lpReOpenBuff, uStyle);
     }
 
