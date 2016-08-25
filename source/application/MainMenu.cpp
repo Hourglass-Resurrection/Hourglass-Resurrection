@@ -383,10 +383,6 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
 	// Debug Log Submenu
 	i = 0;
-	HelperFuncInsertMenuByID(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==0)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DISABLED, "", "Disabled", 0);
-	if(localTASflags.debugPrintMode==1 || IsDebuggerPresent())
-		HelperFuncInsertMenuByID(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==1)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_DEBUGGER, "", "Send to Debugger", 0);
-	HelperFuncInsertMenuByID(DebugLogging, i++, Flags | ((localTASflags.debugPrintMode==2)?MF_CHECKED:MF_UNCHECKED), ID_DEBUGLOG_LOGFILE, "", "Write to Log File", 0);
 	//InsertMenu(DebugLogging, i++, MF_SEPARATOR, NULL, NULL);
 	//HelperFuncInsertMenu(DebugLogging, i++, Flags | MF_POPUP, DebugLoggingInclude, "", "&Print Categories", 0);
 	//HelperFuncInsertMenu(DebugLogging, i++, Flags | MF_POPUP, DebugLoggingTrace, "", "&Trace Categories", 0);

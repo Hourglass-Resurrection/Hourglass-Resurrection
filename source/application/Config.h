@@ -65,7 +65,6 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern int storeGuardedPagesInSavestates;
 	//extern int appLocale;
 	extern int tempAppLocale;
-	//extern int debugPrintMode;
 	/*extern LogCategoryFlag includeLogFlags;
 	extern LogCategoryFlag traceLogFlags;
 	extern LogCategoryFlag excludeLogFlags;*/

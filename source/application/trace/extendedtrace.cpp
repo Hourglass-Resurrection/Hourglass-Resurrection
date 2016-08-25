@@ -122,7 +122,7 @@ void LoadDbghelpDll()
 #define OutputDebugStringFormat	::AfxTrace
 #else
 // Implement Win32 TRACE(...)
-int debugprintf(const char * fmt, ...);
+int debugprintf(LPCWSTR fmt, ...);
 #define OutputDebugStringFormat debugprintf
 #endif // OutputDebugStringFormat
 
@@ -238,7 +238,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name)
 		pSymGetModuleInfo( hProcess, dwBaseAddress, &im );
 
 		OutputDebugStringFormat(
-			"LoadModuleSymbols(0x%X, %s) = {BaseOfImage=0x%X, NumSyms=%d, SymType=0x%X, ModuleName=%s, ImageName=%s}\n",
+			L"LoadModuleSymbols(0x%X, %S) = {BaseOfImage=0x%X, NumSyms=%d, SymType=0x%X, ModuleName=%S, ImageName=%S}\n",
 			(int)hProcess, (const char*)name, (int)im.BaseOfImage, (int)im.NumSyms, (int)im.SymType, (const char*)im.ModuleName, (const char*)im.ImageName
 		);
 	}
@@ -290,7 +290,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE file, DWORD base )
 		pSymGetModuleInfo( hProcess, dwBaseAddress, &im );
 
 		OutputDebugStringFormat(
-			"LoadModuleSymbols(0x%X, %s, 0x%X, 0x%X) = {BaseOfImage=0x%X, NumSyms=%d, SymType=0x%X, ModuleName=%s, ImageName=%s}\n",
+			L"LoadModuleSymbols(0x%X, %S, 0x%X, 0x%X) = {BaseOfImage=0x%X, NumSyms=%d, SymType=0x%X, ModuleName=%S, ImageName=%S}\n",
 			(int)hProcess, name, (DWORD)file, (DWORD)base, (int)im.BaseOfImage, (int)im.NumSyms, (int)im.SymType, (const char*)im.ModuleName, (const char*)im.ImageName
 		);
 	}
@@ -329,7 +329,7 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
 
    // Get the search path for the symbol files
 	InitSymbolPath( lpszSymbolPath, lpszInitialSymbolPath );
-	debugprintf("SYMBOL PATH: %s\n", lpszSymbolPath);
+	debugprintf(L"SYMBOL PATH: %S\n", lpszSymbolPath);
  //   symOptions = SymGetOptions();
 	//symOptions |= SYMOPT_LOAD_LINES; 
 	//symOptions &= ~SYMOPT_UNDNAME;
@@ -869,7 +869,7 @@ BOOL GetSourceInfoFromAddress( UINT address, LPTSTR lpszSourceInfo, HANDLE hProc
 void SrcLinkTrace( LPCTSTR lpszMessage, LPCTSTR lpszFileName, ULONG nLineNumber )
 {
 	OutputDebugStringFormat( 
-			_T("%s(%d) : %s"), 
+			L"%S(%d) : %S", 
 			lpszFileName, 
 			nLineNumber, 
 			lpszMessage );
@@ -903,7 +903,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 
 	if ( !GetThreadContext( hThread, &context ) )
 	{
-      OutputDebugStringFormat( _T("Call stack info(thread=0x%X) failed.\n") );
+      OutputDebugStringFormat( L"Call stack info(thread=0x%X) failed.\n" );
 	   return;
 	}
 	
@@ -915,7 +915,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 	callStack.AddrStack.Mode   = AddrModeFlat;
 	callStack.AddrFrame.Mode   = AddrModeFlat;
 
-   OutputDebugStringFormat( _T("Call stack info(thread=0x%X) : %s\n"), 
+   OutputDebugStringFormat( L"Call stack info(thread=0x%X) : %S\n", 
          hThread,
          lpszMessage );
 
@@ -956,7 +956,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 		GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, symInfo, hProcess );
 		GetSourceInfoFromAddress( callStack.AddrPC.Offset, srcInfo, hProcess );
 
-		OutputDebugStringFormat( _T("     %s : %s\n"), srcInfo, symInfo );
+		OutputDebugStringFormat( L"     %S : %S\n", srcInfo, symInfo );
 	}
 }
 
@@ -984,7 +984,7 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
 
 	if ( !GetThreadContext( hThread, &context ) )
 	{
-	   OutputDebugStringFormat( _T("Function info(thread=0x%X) failed.\n") );
+	   OutputDebugStringFormat( L"Function info(thread=0x%X) failed.\n" );
 		return;
 	}
 	
@@ -1013,10 +1013,10 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
 	if ( bResult && callStack.AddrFrame.Offset != 0) 
 	{
 	   GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, lpszFnInfo, hProcess );
-	   OutputDebugStringFormat( _T("Function info(thread=0x%X) : %s\n"), hThread, lpszFnInfo );
+	   OutputDebugStringFormat( L"Function info(thread=0x%X) : %S\n", hThread, lpszFnInfo );
 	}
 	else
-	   OutputDebugStringFormat( _T("Function info(thread=0x%X) failed.\n") );
+	   OutputDebugStringFormat( L"Function info(thread=0x%X) failed.\n" );
 }
 
 #endif //_DEBUG && WIN32

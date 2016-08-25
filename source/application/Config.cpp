@@ -11,40 +11,40 @@ namespace Config{
 
 	//#include "../shared/ipc.h"
 // Globalized the TAS-flags struct, should reduce memory usage some.
-	TasFlags localTASflags =
-	{
-		true, //playback
-		60, //framerate
-		8, //keylimit
-		0, //forceSoftware
-		0, //windowActivateFlags
-		1, //threadMode
-		0, //threadStackSize
-		1, //timersMode
-		1, //messageSyncMode
-		1, //waitSyncMode
-		0, //aviMode
-		EMUMODE_EMULATESOUND, //emuMode | (((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))&&fastforward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((threadMode==0||threadMode==4||threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0),
-		1, //forceWindowed
-		false, //fastforward
-		0, //forceSurfaceMemory
-		44100, //audioFrequency
-		16, //audioBitsPerSecond
-		2, //audioChannels
-		0, //stateLoaded
-		FFMODE_FRONTSKIP | FFMODE_BACKSKIP | FFMODE_RAMSKIP | FFMODE_SLEEPSKIP, //fastForwardFlags,// | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0),
-		6000, // initialTime
-		2, //debugPrintMode
-		1, //timescale
-		1, //timescaleDivisor
-		false, //frameAdvanceHeld
-		0, //allowLoadInstalledDlls
-		0, //allowLoadUxtheme
-		1, //storeVideoMemoryInSavestates
-		0, //appLocale ? appLocale : tempAppLocale
-		VERSION, //movie.version,
-		0, //osvi.dwMajorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
-		0, //osvi.dwMinorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
+    TasFlags localTASflags =
+    {
+        true, //playback
+        60, //framerate
+        8, //keylimit
+        0, //forceSoftware
+        0, //windowActivateFlags
+        1, //threadMode
+        0, //threadStackSize
+        1, //timersMode
+        1, //messageSyncMode
+        1, //waitSyncMode
+        0, //aviMode
+        EMUMODE_EMULATESOUND, //emuMode | (((recoveringStale||(fastForwardFlags&FFMODE_SOUNDSKIP))&&fastforward) ? EMUMODE_NOPLAYBUFFERS : 0) | ((threadMode==0||threadMode==4||threadMode==5) ? EMUMODE_VIRTUALDIRECTSOUND : 0),
+        1, //forceWindowed
+        false, //fastforward
+        0, //forceSurfaceMemory
+        44100, //audioFrequency
+        16, //audioBitsPerSecond
+        2, //audioChannels
+        0, //stateLoaded
+        FFMODE_FRONTSKIP | FFMODE_BACKSKIP | FFMODE_RAMSKIP | FFMODE_SLEEPSKIP, //fastForwardFlags,// | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0),
+        6000, // initialTime
+        1, //timescale
+        1, //timescaleDivisor
+        false, //frameAdvanceHeld
+        0, //allowLoadInstalledDlls
+        0, //allowLoadUxtheme
+        1, //storeVideoMemoryInSavestates
+        0, //appLocale ? appLocale : tempAppLocale
+        VERSION, //movie.version,
+        0, //osvi.dwMajorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
+        0, //osvi.dwMinorVersion, // This will be filled in before the struct is used by anything else, look for the call to "DiscoverOS"
+        {{{ true }}},
 		//LCF_NONE|LCF_NONE, //includeLogFlags|traceLogFlags,
 		//LCF_ERROR, //excludeLogFlags
 	};
@@ -90,7 +90,6 @@ namespace Config{
 	int storeGuardedPagesInSavestates = 1;
 	//int appLocale;
 	int tempAppLocale = 0;
-	//int debugPrintMode;
 	/*LogCategoryFlag includeLogFlags = LCF_ERROR;
 	LogCategoryFlag traceLogFlags = LCF_NONE;
 	LogCategoryFlag excludeLogFlags = LCF_NONE|LCF_FREQUENT;*/
@@ -129,7 +128,6 @@ namespace Config{
 		SetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
 		SetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		SetPrivateProfileIntA("Debug", "Debug Logging Mode", localTASflags.debugPrintMode, Conf_File);
 		SetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
 		SetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
@@ -184,7 +182,7 @@ namespace Config{
 		if(GetSaveFileName(&ofn))
 		{
 			Save_Config(Name);
-			debugprintf("config saved in \"%s\".\n", Name);
+			debugprintf(L"config saved in \"%S\".\n", Name);
 			return 1;
 		}
 		else return 0;
@@ -214,7 +212,6 @@ namespace Config{
 		inputFocusFlags = GetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
 		hotkeysFocusFlags = GetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		localTASflags.debugPrintMode = GetPrivateProfileIntA("Debug", "Debug Logging Mode", localTASflags.debugPrintMode, Conf_File);
 		traceEnabled = 0!=GetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
 		crcVerifyEnabled = 0!=GetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
@@ -245,7 +242,7 @@ namespace Config{
 		if(first)
 			first = false;
 		else
-			debugprintf("loaded config from \"%s\".\n", Conf_File);
+			debugprintf(L"loaded config from \"%S\".\n", Conf_File);
 
 		return 1;
 	}

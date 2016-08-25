@@ -19,14 +19,12 @@ void InitDebugCriticalSection()
 	InitializeCriticalSection(&g_debugPrintCS);
 }
 
-int debugprintf(const char * fmt, ...)
+int debugprintf(LPCWSTR fmt, ...)
 {
-	if(Config::localTASflags.debugPrintMode == 0)
-		return 0;
-	char str[4096];
+	WCHAR str[4096];
 	va_list args;
 	va_start (args, fmt);
-	int rv = vsprintf (str, fmt, args);
+	int rv = vswprintf (str, fmt, args);
 	va_end (args);
 #ifdef ANONYMIZE_PRINT_NUMS
 	{
@@ -55,15 +53,19 @@ int debugprintf(const char * fmt, ...)
 		}
 	}
 #endif
-	OutputDebugString(str);
-	if(Config::localTASflags.debugPrintMode == 1)
-		return rv;
+	OutputDebugStringW(str);
 	EnterCriticalSection(&g_debugPrintCS);
-	if(!debuglogfile)
-		debuglogfile = fopen("hourglasslog.txt", "w");
+    if (!debuglogfile)
+    {
+        debuglogfile = fopen("hourglasslog.txt", "w");
+        if (debuglogfile)
+        {
+            fwide(debuglogfile, 1);
+        }
+    }
 	if(debuglogfile)
 	{
-		fputs(str, debuglogfile);
+		fputws(str, debuglogfile);
 		fflush(debuglogfile);
 	}
 	LeaveCriticalSection(&g_debugPrintCS);
@@ -80,5 +82,5 @@ void PrintLastError(LPTSTR lpszFunction, DWORD dw)
 		NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&lpMsgBuf, 0, NULL );
 
-	debugprintf("%s failed, error %d: %s", lpszFunction, dw, lpMsgBuf);
+	debugprintf(L"%S failed, error %d: %S", lpszFunction, dw, lpMsgBuf);
 }

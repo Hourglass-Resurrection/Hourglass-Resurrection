@@ -709,9 +709,9 @@ void HandleShutdown()
 	ExitProcess(SUCCESSFUL_EXITCODE); // but if it doesn't then maybe this will?
 	// old version, left here in case TerminateProcess and ExitProcess somehow noop
 	//// just send anything so the WaitForDebugEvent call returns
-	OutputDebugStringA("ok");
+	OutputDebugStringW(L"ok");
 	//// it might ask more than once
-	while(true) { OutputDebugStringA("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+	while(true) { OutputDebugStringW(L"ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 
@@ -1495,9 +1495,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		tasflags.debugPrintMode = 2;
+        /*
+         * HACK until new DLL injection is done.
+         * TODO: Remove.
+         * -- Warepire
+         */
+        IPC::SendIPCBufferAddress();
 		tasflags.timescale = 1;
 		tasflags.timescaleDivisor = 1;
+        tasflags.log_categories = { true };
 
 		DEBUG_LOG() << "DllMain started, injection must have worked.";
 		hCurrentProcess = GetCurrentProcess();

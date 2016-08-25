@@ -7,6 +7,7 @@
 #include <Windows.h>
 
 #include <array>
+#include <string>
 
 #include "logcat.h"
 #include <mmsystem.h>
@@ -34,7 +35,6 @@ struct TasFlags
 	int stateLoaded;
 	int fastForwardFlags;
 	int initialTime;
-	int debugPrintMode;
 	int timescale, timescaleDivisor;
 	int frameAdvanceHeld;
 	int allowLoadInstalledDlls, allowLoadUxtheme;
@@ -42,7 +42,7 @@ struct TasFlags
 	int appLocale;
 	unsigned int movieVersion;
 	int osVersionMajor, osVersionMinor;
-    std::array<bool, static_cast<size_t>(LogCategory::NUM_LOG_CATEGORIES)> log_categories;
+    std::array<bool, static_cast<std::underlying_type<LogCategory>::type>(LogCategory::NUM_LOG_CATEGORIES)> log_categories;
 #ifdef _USRDLL
 	char reserved [256]; // just-in-case overwrite guard
 #endif
@@ -145,7 +145,8 @@ namespace IPC
           * TODO: Remove some of these commands
           * -- Warepire
           */
-        CMD_DEBUG_MESSAGE = 0x0000000000000002,
+        CMD_DUMMY_ENTRY_MIN_OPCODE = 0x0000000000000001,
+        CMD_DEBUG_MESSAGE,
         CMD_DEBUG_MESSAGE_REPLY,
         CMD_FRAME_BOUNDARY,
         CMD_FRAME_BOUNDARY_REPLY,
@@ -349,7 +350,7 @@ namespace IPC
             /*
              * Build format string based on size of T.
              */
-            swprintf(format, ARRAYSIZE(format), L"0x0%d%s%%X", sizeof(T) * 2, sizeof(T) > 4 ? L"I64X" : L"l");
+            swprintf(format, ARRAYSIZE(format), L"0x%%0%d%sX", sizeof(T) * 2, sizeof(T) > 4 ? L"I64X" : L"l");
             m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
@@ -381,13 +382,13 @@ namespace IPC
         }
         DebugMessage& operator<<(LPCSTR str)
         {
-            m_pos = swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%S", str);
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%S", str);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
         DebugMessage& operator<<(LPCWSTR str)
         {
-            m_pos = swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", str);
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", str);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }

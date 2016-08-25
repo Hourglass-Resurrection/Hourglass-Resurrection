@@ -66,13 +66,13 @@ namespace Hooks
 
 /*constexpr*/ const char* LogCategoryToString(LogCategory category);
 
-template<LogCategory category = LogCategory::ANY/*, const str* function = __func__*/>
+template<LogCategory category = LogCategory::ANY>
 class DebugLog
 {
 public:
     DebugLog() : m_category(category)
     {
-        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        if (tasflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(m_category)] != true)
         {
             return;
         }
@@ -93,29 +93,23 @@ public:
     DebugLog(const DebugLog<category>&) = delete;
     ~DebugLog()
     {
-        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        if (tasflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(m_category)] != true)
         {
             return;
         }
-        if (tasflags.debugPrintMode != 0)
-        {
-            m_print_message << "\n";
-            IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &m_print_message, sizeof(m_print_message));
-        }
+        m_print_message << "\n";
+        IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &m_print_message, sizeof(m_print_message));
     }
     DebugLog& operator=(const DebugLog&) = delete;
 
     template<class T>
     DebugLog& operator<<(const T& value)
     {
-        if (tasflags.log_categories[static_cast<size_t>(m_category)] != true)
+        if (tasflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(m_category)] != true)
         {
             return *this;
         }
-        if (tasflags.debugPrintMode != 0)
-        {
-            m_print_message << value;
-        }
+        m_print_message << value;
         return *this;
     }
 private:
@@ -135,10 +129,7 @@ public:
     VerboseLog& operator<<(const T& value)
     {
 #ifdef VERBOSE_DEBUG
-        if (tasflags.debugPrintMode != 0)
-        {
-            m_print_message << value;
-        }
+        m_print_message << value;
 #endif
         return *this;
     }
