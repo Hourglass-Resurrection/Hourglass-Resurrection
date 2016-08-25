@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "global.h"
-
 #include "shared/ipc.h"
 #include "ipc.h"
 
@@ -54,6 +52,17 @@
 #define VERBOSE_LOG() VerboseLog() << __func__ << ": "
 
 #include "shared/logcat.h"
+
+/*
+ * TODO: Some dumb forward declares because code is badly structured
+ * -- Warepire
+ */
+namespace Hooks
+{
+    int getCurrentThreadstamp();
+    int getCurrentFramestamp();
+    int getCurrentTimestamp();
+}
 
 /*constexpr*/ const char* LogCategoryToString(LogCategory category);
 

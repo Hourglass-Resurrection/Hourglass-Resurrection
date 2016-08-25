@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include "print.h"
-#include "global.h"
+//#include "global.h"
 #include "intercept.h"
 #include "shared/asm.h"
 #include "shared/ipc.h"
@@ -158,7 +158,7 @@ struct lessicmp
 {
    bool operator() (const std::string& a, const std::string& b) const
    {
-      return(stricmp(a.c_str(), b.c_str()) < 0);
+      return(_stricmp(a.c_str(), b.c_str()) < 0);
    }
 };
 std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> pendingInterceptAPICalls;

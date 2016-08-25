@@ -588,7 +588,7 @@ void SaveOrLoad(int slot, bool save)
 		Hooks::BackupVideoMemoryOfAllD3D8Surfaces();
 		Hooks::BackupVideoMemoryOfAllD3D9Surfaces();
 	}
-	Hooks::StopAllSounds();
+	Hooks::DirectSound::StopAllSounds();
 	if(save)
 	{
         IPC::SendIPCMessage(IPC::Command::CMD_SAVE_STATE, &slot, sizeof(&slot));
@@ -606,11 +606,11 @@ void SaveOrLoad(int slot, bool save)
 		Hooks::RestoreVideoMemoryOfAllD3D9Surfaces();
 		RedrawScreen();
 	}
-	Hooks::ResumePlayingSounds();
+	Hooks::DirectSound::ResumePlayingSounds();
 	pauseHandlerContiguousCallCount = 0;
 	if(pauseHandlerSuspendedSound)
 	{
-		Hooks::PostResumeSound();
+		Hooks::DirectSound::PostResumeSound();
 		pauseHandlerSuspendedSound = false;
 	}
 	tls.callerisuntrusted--;
@@ -620,7 +620,7 @@ void SaveOrLoad(int slot, bool save)
 void GetFrameInput()
 {
     VERBOSE_LOG() << "called.";
-	Hooks::ProcessFrameInput();
+	Hooks::WinInput::ProcessFrameInput();
 }
 
 // pausehelper
@@ -642,13 +642,13 @@ void HandlePausedEvents()
 			if(pauseHandlerContiguousCallCount > 30)
 			{
 				VERBOSE_LOG() << "suspended sound for pause";
-				Hooks::PreSuspendSound();
+				Hooks::DirectSound::PreSuspendSound();
 				pauseHandlerSuspendedSound = true;
 			}
 			else if(pauseHandlerContiguousCallCount == 1)
 			{
 				if(!tasflags.fastForward)
-					Hooks::ForceAlignSound(false);
+					Hooks::DirectSound::ForceAlignSound(false);
 			}
 		}
 	}
@@ -701,8 +701,8 @@ void HandlePausedEvents()
 
 void HandleShutdown()
 {
-	Hooks::PreSuspendSound();
-	Hooks::BackDoorStopAll();
+	Hooks::DirectSound::PreSuspendSound();
+	Hooks::DirectSound::BackDoorStopAll();
 	fflush(NULL);
 	// ExitProcess doesn't work for me. sets wrong exit code or completely fails to exit.
 	TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); // but this does work.
@@ -844,7 +844,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 		float logicalfps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (totalRanTicks - measureTickCount); // this shows the logical (timer) frames-per-second instead of actual FPS
 		measureTickCount = totalRanTicks;
 
-		cmdprintf("FPS: %g %g", fps, logicalfps);
+        IPC::FPSInfo fps_info(fps, logicalfps);
+        IPC::SendIPCMessage(IPC::Command::CMD_FPS_UPDATE, &fps_info, sizeof(fps_info));
 		measureFrameTime = time;
 		measureFrameCount = totalRanFrames-totalSleepFrames;
 		lastSentFPS = (int)fps;
@@ -893,7 +894,8 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 	{
 		UpdateInfoForDebugger();
 
-		cmdprintf("FRAME: %d %p %d", totalRanFrames, captureInfo, captureInfoType);
+        IPC::FrameBoundaryInfo frame_boundary_info(totalRanFrames, captureInfo, captureInfoType);
+        IPC::SendIPCMessage(IPC::Command::CMD_FRAME_BOUNDARY, &frame_boundary_info, sizeof(frame_boundary_info));
 
 		ranCommand = false;
 
@@ -922,7 +924,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 	pauseHandlerContiguousCallCount = 0;
 
-	Hooks::DoFrameBoundarySoundChecks();
+	Hooks::DirectSound::DoFrameBoundarySoundChecks();
 
 
 	if(framecount > 1)
@@ -981,7 +983,7 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 			HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
 
 			BYTE keyboardState[256];
-			Hooks::MyGetKeyboardState(keyboardState);
+			Hooks::WinInput::MyGetKeyboardState(keyboardState);
 
 			for(int i = 0; i < 256; i++)
 			{
@@ -1236,8 +1238,8 @@ void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectSound::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectInput::HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
                 LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
                       << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
@@ -1264,8 +1266,8 @@ void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool unc
 			&& !Hooks::HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !Hooks::HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
+			&& !Hooks::DirectSound::HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+			&& !Hooks::DirectInput::HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
 			&& !Hooks::HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
                 LOG() << "unknown riid: " << riid.Data1 << "-" << riid.Data2 << "-" << riid.Data3
                       << "-" << riid.Data4[0] << riid.Data4[1] << riid.Data4[2] << riid.Data4[3]
@@ -1562,7 +1564,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooks::ApplyThreadIntercepts();
         Hooks::ApplyMessageIntercepts();
         Hooks::ApplyWindowIntercepts();
-        Hooks::ApplyInputIntercepts();
+        Hooks::DirectInput::ApplyDirectInputIntercepts();
+        Hooks::WinInput::ApplyWinInputIntercepts();
         Hooks::ApplyGDIIntercepts();
         Hooks::ApplyDDrawIntercepts();
         Hooks::ApplyD3DIntercepts();
@@ -1570,7 +1573,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooks::ApplyD3D9Intercepts();
         Hooks::ApplyOGLIntercepts();
         Hooks::ApplySDLIntercepts();
-        Hooks::ApplySoundIntercepts();
+        Hooks::DirectSound::ApplyDirectSoundIntercepts();
+        Hooks::WinSound::ApplyWinSoundIntercepts();
         Hooks::ApplyWaitIntercepts();
         Hooks::ApplySyncIntercepts();
         Hooks::ApplyFileIntercepts();

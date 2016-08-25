@@ -68,7 +68,7 @@ void NonDeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 	lastEnterTime = Hooks::timeGetTime();
 
 	GetTicks();
-	Hooks::AdvanceTimeAndMixAll(ticks - lastEnterTicks);
+	Hooks::DirectSound::AdvanceTimeAndMixAll(ticks - lastEnterTicks);
 	lastEnterTicks = ticks;
 }
 
@@ -495,7 +495,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 
 	// must happen after any calls to SleepAndAccumulateOutput in this function,
 	// or AVIs will get skipping audio in games that sleep
-	Hooks::AdvanceTimeAndMixAll(newTicks);
+	Hooks::DirectSound::AdvanceTimeAndMixAll(newTicks);
 
 	BOOL skip = tasflags.fastForward;
 	if(skip)

@@ -37,7 +37,7 @@ DEFINE_LOCAL_GUID(IID_IKsControl, 0x28F54685, 0x06FD, 0x11D2, 0xB2, 0x7A, 0x00, 
 
 void MixFromToInternal(DWORD pos1, DWORD pos2, DWORD outPos1, DWORD outPos2, bool pos2IsLastSample,
     DWORD outSamplesPerSec, WORD myBitsPerSample, WORD outBitsPerSample, WORD myChannels, WORD outChannels, WORD myBlockSize, WORD outBlockSize,
-    unsigned char* buffer, unsigned char* contiguousMixOutBuf, Hooks::CachedVolumeAndPan& volumes);
+    unsigned char* buffer, unsigned char* contiguousMixOutBuf, Hooks::DirectSound::CachedVolumeAndPan& volumes);
 
 namespace Hooks
 {
@@ -3017,29 +3017,43 @@ namespace Hooks
         InitializeCriticalSection(&s_myMixingOutputBufferCS);
     }
 
-    void ApplySoundIntercepts()
+    namespace DirectSound
     {
-	    static const InterceptDescriptor intercepts [] = 
-	    {
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundCreate),
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundCreate8),
-		    MAKE_INTERCEPT(1, WINMM, waveOutWrite),
-		    MAKE_INTERCEPT(1, WINMM, waveOutGetPosition),
-		    MAKE_INTERCEPT(1, WINMM, waveOutReset),
-		    MAKE_INTERCEPT(1, WINMM, waveOutOpen),
-		    MAKE_INTERCEPT(1, KERNEL32, Beep),
-		    MAKE_INTERCEPT(1, USER32, MessageBeep),
-		    MAKE_INTERCEPT(1, WINMM, PlaySoundA),
-		    MAKE_INTERCEPT(1, WINMM, PlaySoundW),
-		    MAKE_INTERCEPT(1, WINMM, mciSendCommandA),
-		    MAKE_INTERCEPT(1, WINMM, mciSendCommandW),
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundEnumerateA),
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundEnumerateW),
-		    //MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureCreate),
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureEnumerateA),
-		    MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureEnumerateW),
-		    //MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureCreate8),
-	    };
-	    ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        void ApplyDirectSoundIntercepts()
+        {
+            static const InterceptDescriptor intercepts[] =
+            {
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundCreate),
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundCreate8),
+
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundEnumerateA),
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundEnumerateW),
+                //MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureCreate),
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureEnumerateA),
+                MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureEnumerateW),
+                //MAKE_INTERCEPT(1, DSOUND, DirectSoundCaptureCreate8),
+            };
+            ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        }
+    }
+    namespace WinSound
+    {
+        void ApplyWinSoundIntercepts()
+        {
+            static const InterceptDescriptor intercepts[] =
+            {
+                MAKE_INTERCEPT(1, WINMM, waveOutWrite),
+                MAKE_INTERCEPT(1, WINMM, waveOutGetPosition),
+                MAKE_INTERCEPT(1, WINMM, waveOutReset),
+                MAKE_INTERCEPT(1, WINMM, waveOutOpen),
+                MAKE_INTERCEPT(1, KERNEL32, Beep),
+                MAKE_INTERCEPT(1, USER32, MessageBeep),
+                MAKE_INTERCEPT(1, WINMM, PlaySoundA),
+                MAKE_INTERCEPT(1, WINMM, PlaySoundW),
+                MAKE_INTERCEPT(1, WINMM, mciSendCommandA),
+                MAKE_INTERCEPT(1, WINMM, mciSendCommandW),
+            };
+            ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        }
     }
 }

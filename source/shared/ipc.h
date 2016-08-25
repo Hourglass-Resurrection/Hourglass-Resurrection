@@ -149,6 +149,8 @@ namespace IPC
         CMD_DEBUG_MESSAGE_REPLY,
         CMD_FRAME_BOUNDARY,
         CMD_FRAME_BOUNDARY_REPLY,
+        CMD_FPS_UPDATE,
+        CMD_FPS_UPDATE_REPLY,
         CMD_SAVE_STATE,
         CMD_SAVE_STATE_REPLY,
         CMD_LOAD_STATE,
@@ -206,6 +208,54 @@ namespace IPC
         Command command;
         DWORD command_data_size;
         LPCVOID command_data;
+    };
+
+    class FPSInfo
+    {
+    public:
+        FPSInfo(FLOAT fps, FLOAT logical_fps)
+        {
+            m_fps = fps;
+            m_logical_fps = logical_fps;
+        }
+        FLOAT GetFPS() const
+        {
+            return m_fps;
+        }
+        FLOAT GetLogicalFPS() const
+        {
+            return m_logical_fps;
+        }
+    private:
+        FLOAT m_fps;
+        FLOAT m_logical_fps;
+    };
+
+    class FrameBoundaryInfo
+    {
+    public:
+        FrameBoundaryInfo(DWORD total_ran_frames, LPCVOID capture_info, DWORD capture_info_type)
+        {
+            m_total_ran_frames = total_ran_frames;
+            m_capture_info = capture_info;
+            m_capture_info_type = capture_info_type;
+        }
+        DWORD GetTotalRanFrames() const
+        {
+            return m_total_ran_frames;
+        }
+        LPCVOID GetCaptureInfo() const
+        {
+            return m_capture_info;
+        }
+        DWORD GetCaptureInfoType() const
+        {
+            return m_capture_info_type;
+        }
+    private:
+        DWORD m_total_ran_frames;
+        LPCVOID m_capture_info;
+        DWORD m_capture_info_type;
     };
 
     class StackTrace

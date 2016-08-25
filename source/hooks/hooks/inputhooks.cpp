@@ -547,7 +547,7 @@ namespace Hooks
                         case DIK_LSHIFT:  VK = VK_LSHIFT; break;
                         }
 
-                        keys[DIK] = (BYTE)(MyGetKeyState(VK) & 0xFF);
+                        keys[DIK] = (BYTE)(::Hooks::WinInput::MyGetKeyState(VK) & 0xFF);
 
                         if (keys[DIK] & 0x80)
                             LOG() << "PRESSED: DIK " << DIK << " -> VK " << VK;
@@ -1592,28 +1592,41 @@ namespace Hooks
         }
     }
 
-    void ApplyInputIntercepts()
+    namespace DirectInput
     {
-	    static const InterceptDescriptor intercepts [] = 
-	    {
-		    MAKE_INTERCEPT(1, DINPUT, DirectInputCreateA),
-		    MAKE_INTERCEPT(1, DINPUT, DirectInputCreateW),
-		    MAKE_INTERCEPT(1, DINPUT, DirectInputCreateEx),
-		    MAKE_INTERCEPT(1, DINPUT8, DirectInput8Create),
-		    MAKE_INTERCEPT(1, USER32, GetAsyncKeyState),
-		    MAKE_INTERCEPT(1, USER32, GetKeyState),
-		    MAKE_INTERCEPT(1, USER32, GetKeyboardState),
-		    MAKE_INTERCEPT(1, USER32, GetLastInputInfo),
-		    MAKE_INTERCEPT(1, WINMM, joyReleaseCapture),
-		    MAKE_INTERCEPT(1, WINMM, joySetCapture),
-		    MAKE_INTERCEPT(1, WINMM, joyGetPosEx),
-		    MAKE_INTERCEPT(1, WINMM, joyGetPos),
-		    MAKE_INTERCEPT(1, WINMM, joyGetNumDevs),
-		    MAKE_INTERCEPT(1, WINMM, joyGetDevCapsA),
-		    MAKE_INTERCEPT(1, WINMM, joyGetDevCapsW),
-		    MAKE_INTERCEPT(1, USER32, GetCursorPos),
-		    MAKE_INTERCEPT(1, USER32, GetCursorInfo),
-	    };
-	    ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        void ApplyDirectInputIntercepts()
+        {
+            static const InterceptDescriptor intercepts[] =
+            {
+                MAKE_INTERCEPT(1, DINPUT, DirectInputCreateA),
+                MAKE_INTERCEPT(1, DINPUT, DirectInputCreateW),
+                MAKE_INTERCEPT(1, DINPUT, DirectInputCreateEx),
+                MAKE_INTERCEPT(1, DINPUT8, DirectInput8Create),
+            };
+            ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        }
+    }
+    namespace WinInput
+    {
+        void ApplyWinInputIntercepts()
+        {
+            static const InterceptDescriptor intercepts[] =
+            {
+                MAKE_INTERCEPT(1, USER32, GetAsyncKeyState),
+                MAKE_INTERCEPT(1, USER32, GetKeyState),
+                MAKE_INTERCEPT(1, USER32, GetKeyboardState),
+                MAKE_INTERCEPT(1, USER32, GetLastInputInfo),
+                MAKE_INTERCEPT(1, WINMM, joyReleaseCapture),
+                MAKE_INTERCEPT(1, WINMM, joySetCapture),
+                MAKE_INTERCEPT(1, WINMM, joyGetPosEx),
+                MAKE_INTERCEPT(1, WINMM, joyGetPos),
+                MAKE_INTERCEPT(1, WINMM, joyGetNumDevs),
+                MAKE_INTERCEPT(1, WINMM, joyGetDevCapsA),
+                MAKE_INTERCEPT(1, WINMM, joyGetDevCapsW),
+                MAKE_INTERCEPT(1, USER32, GetCursorPos),
+                MAKE_INTERCEPT(1, USER32, GetCursorInfo),
+            };
+            ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        }
     }
 }

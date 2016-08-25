@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <cstdio>
 #include "print.h"
-#include "global.h"
+//#include "global.h"
 
 #include "shared/ipc.h"
 #include "ipc.h"

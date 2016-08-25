@@ -13,8 +13,6 @@ using Log = DebugLog<LogCategory::MODULE>;
 
 namespace Hooks
 {
-    bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
-
     //static char currentModuleFilename [MAX_PATH+1] = {0};
     //static char dlltempDir [MAX_PATH+1] = {0};
     //
@@ -519,7 +517,7 @@ namespace Hooks
 
         HRESULT rv = E_FAIL;
 
-        if (TrySoundCoCreateInstance(riid, ppv))
+        if (DirectSound::TrySoundCoCreateInstance(riid, ppv))
         {
             rv = S_OK;
         }
@@ -582,7 +580,7 @@ namespace Hooks
     //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
         for (DWORD i = 0; i < dwCount; i++)
         {
-            if (TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
+            if (DirectSound::TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
             {
                 pResults[i].hr = S_OK;
                 HRESULT rv = S_OK;
