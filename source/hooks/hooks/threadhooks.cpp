@@ -2,6 +2,7 @@
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <map>
+#include <string>
 
 #include "../wintasee.h"
 #include "../tls.h"
@@ -469,7 +470,8 @@ namespace Hooks
             if (fseeds.find(dwFlsIndex) == fseeds.end()) {
                 _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
                 LOG() << "FlsSetValue(" << dwFlsIndex << ",lpFlsData), set _tiddata structure at " << ptd;
-                cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d", &(ptd->_holdrand), dwFlsIndex);
+                IPC::AutoWatch auto_watch(&(ptd->_holdrand), 'd', 'u', (std::string("AutoRandSeed_Fiber_") + std::to_string(dwFlsIndex)).c_str());
+                IPC::SendIPCMessage(IPC::Command::CMD_WATCH_ADDRESS, &auto_watch, sizeof(auto_watch));
                 fseeds[dwFlsIndex] = &(ptd->_holdrand);
             }
             FlsRecursing = FALSE;
@@ -486,7 +488,8 @@ namespace Hooks
     //        if (tseeds.find(dwTlsIndex) == tseeds.end()) {
     //            _ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
     //            LOG() << "TlsSetValue(" << dwTlsIndex << ",lpTlsValue), set _tiddata structure at " << ptd;
-    //            cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d", &(ptd->_holdrand), dwTlsIndex);
+    //            IPC::AutoWatch auto_watch(&(ptd->_holdrand), 'd', 'u', (std::string("AutoRandSeed_Thread_") + std::to_string(dwTlsIndex)).c_str());
+    //            IPC::SendIPCMessage(IPC::Command::CMD_WATCH_ADDRESS, &auto_watch, sizeof(auto_watch));
     //            tseeds[dwTlsIndex] = &(ptd->_holdrand);
     //        }
     //        TlsRecursing = FALSE;

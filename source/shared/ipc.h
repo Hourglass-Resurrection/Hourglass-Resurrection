@@ -183,6 +183,10 @@ namespace IPC
         CMD_HWND_REPLY,
         CMD_POST_DLL_MAIN_DONE,
         CMD_POST_DLL_MAIN_DONE_REPLY,
+        CMD_WATCH_ADDRESS,
+        CMD_WATCH_ADDRESS_REPLY,
+        CMD_UNWATCH_ADDRESS,
+        CMD_UNWATCH_ADDRESS_REPLY,
         CMD_KILL_ME,
         CMD_KILL_ME_REPLY,
         CMD_SUSPEND_ALL_THREADS,
@@ -193,6 +197,8 @@ namespace IPC
         CMD_SUGGEST_THREAD_NAME_REPLY,
         CMD_DENIED_THREAD,
         CMD_DENIED_THREAD_REPLY,
+        CMD_STACK_TRACE,
+        CMD_STACK_TRACE_REPLY,
     };
 
     struct CommandFrame
@@ -200,6 +206,27 @@ namespace IPC
         Command command;
         DWORD command_data_size;
         LPCVOID command_data;
+    };
+
+    class StackTrace
+    {
+    public:
+        StackTrace(int min_depth, int max_depth)
+        {
+            m_min_depth = min_depth;
+            m_max_depth = max_depth;
+        }
+        int GetMinDepth() const
+        {
+            return m_min_depth;
+        }
+        int GetMaxDepth() const
+        {
+            return m_max_depth;
+        }
+    private:
+        int m_min_depth;
+        int m_max_depth;
     };
 
     class SuggestThreadName
@@ -215,6 +242,42 @@ namespace IPC
         }
     private:
         CHAR m_thread_name[256];
+    };
+
+    class AutoWatch
+    {
+    public:
+        AutoWatch(LPCVOID address, CHAR size, CHAR type, LPCSTR comment)
+        {
+            m_address = reinterpret_cast<UINT>(address);
+            m_size = size;
+            m_type = type;
+            strncpy(m_comment, comment, ARRAYSIZE(m_comment));
+        }
+        UINT GetAddress() const
+        {
+            return m_address;
+        }
+        CHAR GetSize() const
+        {
+            return m_size;
+        }
+        CHAR GetType() const
+        {
+            return m_type;
+        }
+        LPCSTR GetComment() const
+        {
+            return m_comment;
+        }
+    private:
+        /*
+         * For now, just a dumb copy-paste from the AddressWatcher struct + comment field
+         */
+        unsigned int m_address;
+        char m_size;
+        char m_type;
+        char m_comment[256];
     };
 
     class DebugMessage

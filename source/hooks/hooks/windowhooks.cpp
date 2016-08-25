@@ -618,14 +618,16 @@ namespace Hooks
     HOOKFUNC int WINAPI MyMessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
     {
         ENTER(lpCaption, lpText);
-        cmdprintf("SHORTTRACE: 3,50");
+        IPC::StackTrace stack_trace(3, 50);
+        IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
     HOOKFUNC int WINAPI MyMessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
     {
         ENTER(lpCaption, lpText);
-        cmdprintf("SHORTTRACE: 3,50");
+        IPC::StackTrace stack_trace(3, 50);
+        IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
     HOOK_FUNCTION(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
