@@ -623,7 +623,7 @@ namespace Hooks
                 if (IsWindow(window))
                     gamehwnd = window;
                 if (m_type == GUID_SysMouse) {
-                    cmdprintf("MOUSEREG: %d", window);
+                    IPC::SendIPCMessage(IPC::Command::CMD_MOUSE_REG, &window, sizeof(&window));
                 }
                 //return rvfilter(m_device->SetCooperativeLevel(window, level));
                 return DI_OK;
@@ -1005,7 +1005,7 @@ namespace Hooks
                 HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
                 if (SUCCEEDED(hr))
                 {
-                    debugprintf("Hooking input device with GUID: %Xl, %Xh, %Xh, %s.\n", rguid.Data1, rguid.Data2, rguid.Data3, rguid.Data4);
+                    LOG() << "Hooking input device with GUID: " << rguid.Data1 << ", " << rguid.Data2 << ", " << rguid.Data3 << ", " << rguid.Data4;
                     // Return our own keyboard device that checks for injected keypresses
                     // (at least if rguid == GUID_SysKeyboard that's what it'll do)
                     HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, rguid);

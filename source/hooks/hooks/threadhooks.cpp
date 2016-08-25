@@ -155,7 +155,7 @@ namespace Hooks
         {
             const char* threadTypeName = tls.curThreadCreateName;
             LOG() << "thread creation denied. name=" << (threadTypeName ? threadTypeName : "unknown_thread");
-            cmdprintf("DENIEDTHREAD: %Iu", lpStartAddress);
+            IPC::SendIPCMessage(IPC::Command::CMD_DENIED_THREAD, &lpStartAddress, sizeof(&lpStartAddress));
 
             // FIXME: it's a terrible hack to choose between these two methods depending on whether we have a thread name,
             // but it gets herocore working with threads disabled, and I can't think of a better solution at the moment.
@@ -175,8 +175,9 @@ namespace Hooks
                 char name[64];
                 if (!threadTypeName)
                 {
-                    cmdprintf("GIVEMEANAME: %d", 0);
-                    threadTypeName = (const char*)commandSlot;
+                    IPC::SuggestThreadName suggested_name;
+                    IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                    threadTypeName = suggested_name.GetThreadName();
                 }
                 sprintf(name, "%u_FAKE_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
                 SetThreadName(*lpThreadId, name);
@@ -196,9 +197,9 @@ namespace Hooks
             const char* threadTypeName = tls.curThreadCreateName;
             if (!threadTypeName)
             {
-                cmdprintf("GIVEMEANAME: %d", 0);
-                //threadTypeName = "unknown";
-                threadTypeName = (const char*)commandSlot;
+                IPC::SuggestThreadName suggested_name;
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
             SetThreadName(*lpThreadId, name);
@@ -280,8 +281,9 @@ namespace Hooks
                     const char* threadTypeName = tls.curThreadCreateName;
                     if (!threadTypeName)
                     {
-                        cmdprintf("GIVEMEANAME: %d", 0);
-                        threadTypeName = (const char*)commandSlot;
+                        IPC::SuggestThreadName suggested_name;
+                        IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                        threadTypeName = suggested_name.GetThreadName();
                     }
                     sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
                     SetThreadName(twi->threadId, name);
@@ -337,8 +339,9 @@ namespace Hooks
             const char* threadTypeName = tls.curThreadCreateName;
             if (!threadTypeName)
             {
-                cmdprintf("GIVEMEANAME: %d", 0);
-                threadTypeName = (const char*)commandSlot;
+                IPC::SuggestThreadName suggested_name;
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
             SetThreadName(twi->threadId, name);

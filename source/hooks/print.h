@@ -91,7 +91,7 @@ public:
         if (tasflags.debugPrintMode != 0)
         {
             m_print_message << "\n";
-            IPC::SendIPCMessage(IPC::Command::CMD_PRINT_MESSAGE, &m_print_message, sizeof(m_print_message));
+            IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &m_print_message, sizeof(m_print_message));
         }
     }
     DebugLog& operator=(const DebugLog&) = delete;
@@ -110,7 +110,7 @@ public:
         return *this;
     }
 private:
-    IPC::PrintMessage m_print_message;
+    IPC::DebugMessage m_print_message;
     LogCategory m_category;
 };
 
@@ -135,6 +135,6 @@ public:
     }
 private:
 #ifdef VERBOSE_DEBUG
-    IPC::PrintMessage m_print_message;
+    IPC::DebugMessage m_print_message;
 #endif
 };

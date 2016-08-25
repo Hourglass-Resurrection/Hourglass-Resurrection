@@ -591,12 +591,12 @@ void SaveOrLoad(int slot, bool save)
 	Hooks::StopAllSounds();
 	if(save)
 	{
-		cmdprintf("SAVE: %d", slot);
+        IPC::SendIPCMessage(IPC::Command::CMD_SAVE_STATE, &slot, sizeof(&slot));
 		save = !tasflags.stateLoaded; // otherwise "save" will be wrong after loading
 	}
 	else
 	{
-		cmdprintf("LOAD: %d", slot);
+        IPC::SendIPCMessage(IPC::Command::CMD_LOAD_STATE, &slot, sizeof(&slot));
 		// note: any code placed here will never run! execution continues in the above branch.
 	}
 	if(tasflags.stateLoaded > 0 && tasflags.storeVideoMemoryInSavestates)
@@ -1476,7 +1476,7 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 
 	curtls.isFirstThread = true;
 
-	cmdprintf("POSTDLLMAINDONE: 0");
+    IPC::SendIPCMessage(IPC::Command::CMD_POST_DLL_MAIN_DONE, nullptr, 0);
 	DEBUG_LOG() << "returned.";
 
 	return 0;
@@ -1510,33 +1510,33 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		Hooks::SoundDllMainInit();
 		Hooks::ModuleDllMainInit();
 
-		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
-		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
+        IPC::SendIPCMessage(IPC::Command::CMD_DLL_VERSION, &VERSION, sizeof(VERSION));
 
-		// tell it where to put commands
-		cmdprintf("HERESMYCARD: %Iu", commandSlot);
+        // tell it where to put commands
+        IPC::SendIPCMessage(IPC::Command::CMD_COMMAND_BUF, commandSlot, sizeof(&commandSlot[0]));
 
-		// tell it where to read/write full inputs status
-		cmdprintf("INPUTSBUF: %Iu", &curinput);
+        // tell it where to read/write full inputs status
+        IPC::SendIPCMessage(IPC::Command::CMD_INPUT_BUF, &curinput, sizeof(&curinput));
 
-		// tell it where to write dll load/unload info
-		cmdprintf("DLLLOADINFOBUF: %Iu", &Hooks::dllLoadInfos); // must happen before we call Apply*Intercepts functions
+        // tell it where to write dll load/unload info
+        // must happen before we call Apply*Intercepts functions
+        IPC::SendIPCMessage(IPC::Command::CMD_DLL_LOAD_INFO_BUF, &Hooks::dllLoadInfos, sizeof(&Hooks::dllLoadInfos));
 
-		// tell it where to write trusted address range info
-		cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
+        // tell it where to write trusted address range info
+        IPC::SendIPCMessage(IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF, &trustedRangeInfos, sizeof(&trustedRangeInfos));
 
-		// tell it where to write other flags (current only movie playback flag)
-		cmdprintf("TASFLAGSBUF: %Iu", &tasflags);
+        // tell it where to write other flags (current only movie playback flag)
+        IPC::SendIPCMessage(IPC::Command::CMD_TAS_FLAGS_BUF, &tasflags, sizeof(&tasflags));
 
-		// tell it where we put sound capture information
-		cmdprintf("SOUNDINFO: %Iu", &Hooks::lastFrameSoundInfo);
+        // tell it where we put sound capture information
+        IPC::SendIPCMessage(IPC::Command::CMD_SOUND_INFO, &Hooks::lastFrameSoundInfo, sizeof(&Hooks::lastFrameSoundInfo));
 
-		// tell it where we put other information (statistics for the debugger, etc)
-		cmdprintf("GENERALINFO: %Iu", &infoForDebugger);
-		cmdprintf("PALETTEENTRIES: %Iu", &activePalette);
+        // tell it where we put other information (statistics for the debugger, etc)
+        IPC::SendIPCMessage(IPC::Command::CMD_GENERAL_INFO, &infoForDebugger, sizeof(&infoForDebugger));
+        IPC::SendIPCMessage(IPC::Command::CMD_PALETTE_ENTRIES, &activePalette, sizeof(&activePalette));
 
 		// for the external viewport (a test/debugging thing that's probably currently disabled)
-		cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
+		//cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
 
 
 		//cmdprintf("GETDLLLIST: %Iu", dllLeaveAloneList);
@@ -1577,7 +1577,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooks::ApplyRegistryIntercepts();
         Hooks::ApplyXinputIntercepts();
 
-		cmdprintf("GIMMEDLLLOADINFOS: 0");
+        IPC::SendIPCMessage(IPC::Command::CMD_GIMME_DLL_LOAD_INFOS, nullptr, 0);
 		Hooks::UpdateLoadedOrUnloadedDllHooks();
 
 		notramps = false;
@@ -1586,7 +1586,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		// let it replace it with one stored in a movie if it wants,
 		// then load the possibly-new keyboard layout
 		::GetKeyboardLayoutNameA(keyboardLayoutName);
-		cmdprintf("KEYBLAYOUT: %Iu", keyboardLayoutName);
+        IPC::SendIPCMessage(IPC::Command::CMD_KEYBOARD_LAYOUT_NAME, keyboardLayoutName, sizeof(&keyboardLayoutName[0]));
 		// moved to PostDllMain since it was causing a loader lock problem
 		//LoadKeyboardLayout(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
 

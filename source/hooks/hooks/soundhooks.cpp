@@ -2898,7 +2898,8 @@ namespace Hooks
                 MyDirectSoundBuffer<IDirectSoundBuffer8>::BackDoorStopAll();
             }
 
-            cmdprintf("SUSPENDALL: "); // suspend all other threads in this process
+            // suspend all other threads in this process
+            IPC::SendIPCMessage(IPC::Command::CMD_SUSPEND_ALL_THREADS, nullptr, 0);
             lockdown = false; // now it's safe to reenable DirectSoundBuffer operations
         }
 
@@ -2907,7 +2908,7 @@ namespace Hooks
             {
                 ENTER();
                 lockdown = true;
-                cmdprintf("RESUMEALL: ");
+                IPC::SendIPCMessage(IPC::Command::CMD_RESUME_ALL_THREADS, nullptr, 0);
 
                 //if(tasflags.emuMode & EMUMODE_EMULATESOUND)
                 //{

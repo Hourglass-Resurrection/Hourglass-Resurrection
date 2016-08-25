@@ -1069,9 +1069,9 @@ namespace Hooks
         if (error != GL_NO_ERROR && error != oglError)
         {
             LOG() << "OpenGL Error: " << error;
-#ifdef _DEBUG
-            cmdprintf("SHORTTRACE: 3,120");
-#endif
+//#ifdef _DEBUG
+//            cmdprintf("SHORTTRACE: 3,120");
+//#endif
         }
         if (oglError == GL_NO_ERROR || error == GL_NO_ERROR)
             oglError = error;

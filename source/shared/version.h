@@ -10,5 +10,5 @@
 // This versioning is for release-builds only, it is not encouraged to use interim builds for TASing as they may contain unfinished features
 // and other works in progress that can severly hamper the functionality of the program.
 
-#define VERSION 1
-#define MINORVERSION 0
+static const DWORD VERSION = 1;
+static const DWORD MINORVERSION = 0;

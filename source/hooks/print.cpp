@@ -61,9 +61,9 @@ int cmdprintf(const char* fmt, ...)
     int rv = vsnprintf(str, ARRAYSIZE(str) - 1, fmt, args);
     va_end(args);
 
-    IPC::PrintMessage msg;
+    IPC::DebugMessage msg;
     msg << str;
-    IPC::SendIPCMessage(IPC::Command::CMD_PRINT_MESSAGE, &msg, sizeof(msg));
+    IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &msg, sizeof(msg));
     return rv;
 }
 
@@ -94,7 +94,7 @@ int logprintf_internal(LogCategoryFlag cat, const char* fmt, ...)
     int rv = vsnprintf(str + headerlen, (ARRAYSIZE(str) - 1) - headerlen, fmt, args);
     va_end(args);
 
-    IPC::PrintMessage msg;
+    IPC::DebugMessage msg;
     msg << str;
     IPC::SendIPCMessage(IPC::Command::CMD_PRINT_MESSAGE, &msg, sizeof(msg));
     return rv;

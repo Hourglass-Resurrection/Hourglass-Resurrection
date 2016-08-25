@@ -87,7 +87,7 @@ namespace Hooks
             LOG() << "oldProc[" << hwnd << "] = " << reinterpret_cast<DWORD>(oldProc);
             hwndToOrigHandler[hwnd] = oldProc;
             SetWindowLongA(hwnd, GWL_WNDPROC, (LONG)MyWndProcA);
-            cmdprintf("HWND: %d", hwnd);
+            IPC::SendIPCMessage(IPC::Command::CMD_HWND, &hwnd, sizeof(&hwnd));
 
             if (tasflags.windowActivateFlags & 2)
             {

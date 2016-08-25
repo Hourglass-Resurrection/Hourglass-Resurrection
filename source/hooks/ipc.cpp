@@ -12,7 +12,7 @@ namespace IPCInternal
 
 namespace IPC
 {
-    void SendIPCMessage(Command cmd, LPVOID data, DWORD data_size)
+    void SendIPCMessage(Command cmd, LPCVOID data, DWORD data_size)
     {
         while (InterlockedBitTestAndSet(&IPCInternal::ipc_lock, 0)) {}
         IPCInternal::cmd_frame = { cmd, data_size, data, };

@@ -1851,7 +1851,9 @@ namespace Hooks
 			    g_gammaRampEnabled = true;
 			    if(g_gammaRamp.red[255] == 65535 && g_gammaRamp.green[255] == 65535 && g_gammaRamp.blue[255] == 65535)
 				    g_gammaRampEnabled = false; // optimization
-			    cmdprintf("GAMMARAMPDATA: %Iu", g_gammaRampEnabled ? &g_gammaRamp : 0);
+                IPC::SendIPCMessage(IPC::Command::CMD_GAMMA_RAMP_BUF,
+                                    g_gammaRampEnabled ? &g_gammaRamp : nullptr,
+                                    g_gammaRampEnabled ? sizeof(&g_gammaRamp) : 0);
 			    rv = DD_OK;
 		    }
 		    else

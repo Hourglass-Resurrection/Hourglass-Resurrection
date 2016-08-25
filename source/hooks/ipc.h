@@ -6,5 +6,5 @@
 
 namespace IPC
 {
-    void SendIPCMessage(Command cmd, LPVOID data, DWORD data_size);
+    void SendIPCMessage(Command cmd, LPCVOID data, DWORD data_size);
 }

@@ -589,7 +589,7 @@ namespace Hooks
 			    {
 				    // user clicked on the game winddow's close (X) button.
 				    // they probably expect that to stop the game, so let's ask the debugger to kill us.
-				    cmdprintf("KILLME: 0");
+                    IPC::SendIPCMessage(IPC::Command::CMD_KILL_ME, nullptr, 0);
 			    }
 		    }
 		    break;

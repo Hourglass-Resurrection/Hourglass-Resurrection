@@ -141,80 +141,145 @@ namespace IPC
          * Ignore command values 0 and 1 to be able to distinguish between a command and a
          * zeroed out command frame.
          */
-        CMD_PRINT_MESSAGE = 0x0000000000000002,
-        CMD_PRINT_MESSAGE_REPLY,
+         /*
+          * TODO: Remove some of these commands
+          * -- Warepire
+          */
+        CMD_DEBUG_MESSAGE = 0x0000000000000002,
+        CMD_DEBUG_MESSAGE_REPLY,
+        CMD_FRAME_BOUNDARY,
+        CMD_FRAME_BOUNDARY_REPLY,
+        CMD_SAVE_STATE,
+        CMD_SAVE_STATE_REPLY,
+        CMD_LOAD_STATE,
+        CMD_LOAD_STATE_REPLY,
+        CMD_DLL_VERSION,
+        CMD_DLL_VERSION_REPLY,
+        CMD_COMMAND_BUF,
+        CMD_COMMAND_BUF_REPLY,
+        CMD_INPUT_BUF,
+        CMD_INPUT_BUF_REPLY,
+        CMD_DLL_LOAD_INFO_BUF,
+        CMD_DLL_LOAD_INFO_BUF_REPLY,
+        CMD_TRUSTED_RANGE_INFO_BUF,
+        CMD_TRUSTED_RANGE_INFO_BUF_REPLY,
+        CMD_TAS_FLAGS_BUF,
+        CMD_TAS_FLAGS_BUF_REPLY,
+        CMD_SOUND_INFO,
+        CMD_SOUND_INFO_REPLY,
+        CMD_GENERAL_INFO,
+        CMD_GENERAL_INFO_REPLY,
+        CMD_PALETTE_ENTRIES,
+        CMD_PALETTE_ENTRIES_REPLY,
+        CMD_GIMME_DLL_LOAD_INFOS,
+        CMD_GIMME_DLL_LOAD_INFOS_REPLY,
+        CMD_KEYBOARD_LAYOUT_NAME,
+        CMD_KEYBOARD_LAYOUT_NAME_REPLY,
+        CMD_GAMMA_RAMP_BUF,
+        CMD_GAMMA_RAMP_BUF_REPLY,
+        CMD_MOUSE_REG,
+        CMD_MOUSE_REG_REPLY,
+        CMD_HWND,
+        CMD_HWND_REPLY,
+        CMD_POST_DLL_MAIN_DONE,
+        CMD_POST_DLL_MAIN_DONE_REPLY,
+        CMD_KILL_ME,
+        CMD_KILL_ME_REPLY,
+        CMD_SUSPEND_ALL_THREADS,
+        CMD_SUSPEND_ALL_THREADS_REPLY,
+        CMD_RESUME_ALL_THREADS,
+        CMD_RESUME_ALL_THREADS_REPLY,
+        CMD_SUGGEST_THREAD_NAME,
+        CMD_SUGGEST_THREAD_NAME_REPLY,
+        CMD_DENIED_THREAD,
+        CMD_DENIED_THREAD_REPLY,
     };
 
     struct CommandFrame
     {
         Command command;
         DWORD command_data_size;
-        LPVOID command_data;
+        LPCVOID command_data;
     };
 
-    class PrintMessage
+    class SuggestThreadName
     {
     public:
-        PrintMessage() :
+        LPCSTR GetThreadName() const
+        {
+            return m_thread_name;
+        }
+        void SetThreadName(LPCSTR thread_name)
+        {
+            strncpy(m_thread_name, thread_name, ARRAYSIZE(m_thread_name));
+        }
+    private:
+        CHAR m_thread_name[256];
+    };
+
+    class DebugMessage
+    {
+    public:
+        DebugMessage() :
             m_pos(0)
         {
-            m_message[0] = '\0';
+            m_message[0] = L'\0';
         }
-        LPCSTR GetMessage() const
+        LPCWSTR GetMessage() const
         {
             return m_message;
         }
         template<class T>
-        PrintMessage& operator<<(const T& value)
+        DebugMessage& operator<<(const T& value)
         {
-            CHAR format[16];
+            WCHAR format[16];
             /*
              * Build format string based on size of T.
              */
-            snprintf(format, ARRAYSIZE(format), "0x0%d%s%%X", sizeof(T) * 2, sizeof(T) > 4 ? "I64X" : "l");
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
+            swprintf(format, ARRAYSIZE(format), L"0x0%d%s%%X", sizeof(T) * 2, sizeof(T) > 4 ? L"I64X" : L"l");
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
         template<class T>
-        PrintMessage& operator<<(T* value)
+        DebugMessage& operator<<(T* value)
         {
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%p", value);
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"0x%p", value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
-        PrintMessage& operator<<(const float& value)
+        DebugMessage& operator<<(const float& value)
         {
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%g", value);
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%g", value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
-        PrintMessage& operator<<(const double& value)
+        DebugMessage& operator<<(const double& value)
         {
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%g", value);
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%g", value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
-        PrintMessage& operator<<(const bool& value)
+        DebugMessage& operator<<(const bool& value)
         {
-            m_pos += snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "0x%s", value ? "true" : "false");
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"0x%s", value ? L"true" : L"false");
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
-        PrintMessage& operator<<(LPCSTR str)
+        DebugMessage& operator<<(LPCSTR str)
         {
-            m_pos = snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%s", str);
+            m_pos = swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%S", str);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
-        PrintMessage& operator<<(LPCWSTR str)
+        DebugMessage& operator<<(LPCWSTR str)
         {
-            m_pos = snprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, "%S", str);
+            m_pos = swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", str);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
     private:
-        CHAR m_message[4096];
+        WCHAR m_message[4096];
         size_t m_pos;
     };
 }
