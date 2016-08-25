@@ -709,9 +709,9 @@ void HandleShutdown()
 	ExitProcess(SUCCESSFUL_EXITCODE); // but if it doesn't then maybe this will?
 	// old version, left here in case TerminateProcess and ExitProcess somehow noop
 	//// just send anything so the WaitForDebugEvent call returns
-	cmdprintf("ok");
+	OutputDebugStringA("ok");
 	//// it might ask more than once
-	while(true) { cmdprintf("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+	while(true) { OutputDebugStringA("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 
