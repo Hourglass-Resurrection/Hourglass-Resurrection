@@ -177,7 +177,7 @@ namespace Hooks
                 if (!threadTypeName)
                 {
                     IPC::SuggestThreadName suggested_name;
-                    IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                    IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
                     threadTypeName = suggested_name.GetThreadName();
                 }
                 sprintf(name, "%u_FAKE_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
@@ -199,7 +199,7 @@ namespace Hooks
             if (!threadTypeName)
             {
                 IPC::SuggestThreadName suggested_name;
-                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
                 threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
@@ -283,7 +283,7 @@ namespace Hooks
                     if (!threadTypeName)
                     {
                         IPC::SuggestThreadName suggested_name;
-                        IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                        IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
                         threadTypeName = suggested_name.GetThreadName();
                     }
                     sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
@@ -341,7 +341,7 @@ namespace Hooks
             if (!threadTypeName)
             {
                 IPC::SuggestThreadName suggested_name;
-                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(&suggested_name));
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
                 threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());

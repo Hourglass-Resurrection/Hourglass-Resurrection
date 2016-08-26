@@ -1543,7 +1543,7 @@ void HandleAviSplitRequests()
 	}
 }
 
-void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, int frameCaptureInfoType)
+void ProcessCaptureFrameInfo(LPCVOID frameCaptureInfoRemoteAddr, int frameCaptureInfoType)
 {
 	//if(frameCaptureInfoType != CAPTUREINFO_TYPE_NONE && frameCaptureInfoType != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
 	//	if(aviSoundStream && (aviMode & 1) && aviCompressedStream && aviFrameCount < 30)

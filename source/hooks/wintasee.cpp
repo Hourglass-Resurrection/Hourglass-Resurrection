@@ -225,7 +225,14 @@ __declspec(noinline) bool IsNearStackTop(DWORD address)
 {
 	DWORD top = (DWORD)&top;
 	DWORD under = address - top;
-	return under < 0x1000;
+    /*
+     * TODO: Arbitrary limit of what is near a stack top.
+     * Expect random breakage if a function in a chain that ends up
+     * calling this allocates "too much" on the stack.
+     * Stack walks should be done in Hourglass instead, using dbghelp.
+     * -- Warepire
+     */
+	return under < 0x10000;
 }
 bool IsNear(DWORD address, DWORD address2)
 {
@@ -1518,34 +1525,43 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		Hooks::SoundDllMainInit();
 		Hooks::ModuleDllMainInit();
 
-        IPC::SendIPCMessage(IPC::Command::CMD_DLL_VERSION, &VERSION, sizeof(VERSION));
+        {
+            IPC::SendIPCMessage(IPC::Command::CMD_DLL_VERSION, &VERSION, sizeof(VERSION));
 
-        // tell it where to put commands
-        IPC::SendIPCMessage(IPC::Command::CMD_COMMAND_BUF, commandSlot, sizeof(&commandSlot[0]));
+            // tell it where to put commands
+            const char* command_slot_pointer = commandSlot;
+            IPC::SendIPCMessage(IPC::Command::CMD_COMMAND_BUF, &command_slot_pointer, sizeof(command_slot_pointer));
 
-        // tell it where to read/write full inputs status
-        IPC::SendIPCMessage(IPC::Command::CMD_INPUT_BUF, &curinput, sizeof(&curinput));
+            // tell it where to read/write full inputs status
+            const CurrentInput* current_input_pointer = &curinput;
+            IPC::SendIPCMessage(IPC::Command::CMD_INPUT_BUF, &current_input_pointer, sizeof(current_input_pointer));
 
-        // tell it where to write dll load/unload info
-        // must happen before we call Apply*Intercepts functions
-        IPC::SendIPCMessage(IPC::Command::CMD_DLL_LOAD_INFO_BUF, &Hooks::dllLoadInfos, sizeof(&Hooks::dllLoadInfos));
+            // tell it where to write dll load/unload info
+            // must happen before we call Apply*Intercepts functions
+            const DllLoadInfos* dll_load_infos_pointer = &Hooks::dllLoadInfos;
+            IPC::SendIPCMessage(IPC::Command::CMD_DLL_LOAD_INFO_BUF, &dll_load_infos_pointer, sizeof(dll_load_infos_pointer));
 
-        // tell it where to write trusted address range info
-        IPC::SendIPCMessage(IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF, &trustedRangeInfos, sizeof(&trustedRangeInfos));
+            // tell it where to write trusted address range info
+            const TrustedRangeInfos* trusted_range_infos_pointer = &trustedRangeInfos;
+            IPC::SendIPCMessage(IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF, &trusted_range_infos_pointer, sizeof(trusted_range_infos_pointer));
 
-        // tell it where to write other flags (current only movie playback flag)
-        IPC::SendIPCMessage(IPC::Command::CMD_TAS_FLAGS_BUF, &tasflags, sizeof(&tasflags));
+            // tell it where to write other flags (current only movie playback flag)
+            const TasFlags* tas_flags_pointer = &tasflags;
+            IPC::SendIPCMessage(IPC::Command::CMD_TAS_FLAGS_BUF, &tas_flags_pointer, sizeof(tas_flags_pointer));
 
-        // tell it where we put sound capture information
-        IPC::SendIPCMessage(IPC::Command::CMD_SOUND_INFO, &Hooks::lastFrameSoundInfo, sizeof(&Hooks::lastFrameSoundInfo));
+            // tell it where we put sound capture information
+            const LastFrameSoundInfo* last_frame_sound_info_pointer = &Hooks::lastFrameSoundInfo;
+            IPC::SendIPCMessage(IPC::Command::CMD_SOUND_INFO, &last_frame_sound_info_pointer, sizeof(last_frame_sound_info_pointer));
 
-        // tell it where we put other information (statistics for the debugger, etc)
-        IPC::SendIPCMessage(IPC::Command::CMD_GENERAL_INFO, &infoForDebugger, sizeof(&infoForDebugger));
-        IPC::SendIPCMessage(IPC::Command::CMD_PALETTE_ENTRIES, &activePalette, sizeof(&activePalette));
+            // tell it where we put other information (statistics for the debugger, etc)
+            const InfoForDebugger* info_for_debugger_pointer = &infoForDebugger;
+            const PALETTEENTRY* active_palette_pointer = activePalette;
+            IPC::SendIPCMessage(IPC::Command::CMD_GENERAL_INFO, &info_for_debugger_pointer, sizeof(info_for_debugger_pointer));
+            IPC::SendIPCMessage(IPC::Command::CMD_PALETTE_ENTRIES, &active_palette_pointer, sizeof(active_palette_pointer));
 
-		// for the external viewport (a test/debugging thing that's probably currently disabled)
-		//cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
-
+            // for the external viewport (a test/debugging thing that's probably currently disabled)
+            //cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
+        }
 
 		//cmdprintf("GETDLLLIST: %Iu", dllLeaveAloneList);
 
@@ -1596,7 +1612,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		// let it replace it with one stored in a movie if it wants,
 		// then load the possibly-new keyboard layout
 		::GetKeyboardLayoutNameA(keyboardLayoutName);
-        IPC::SendIPCMessage(IPC::Command::CMD_KEYBOARD_LAYOUT_NAME, keyboardLayoutName, sizeof(&keyboardLayoutName[0]));
+        {
+            /*
+             * TODO: Leaks the keyboardLayoutName value for direct edit.
+             *       Mainly because keyboardLayoutName in it's current form should be improved.
+             * -- Warepire
+             */
+            const char* keyboard_layout_name_pointer = keyboardLayoutName;
+            IPC::SendIPCMessage(IPC::Command::CMD_KEYBOARD_LAYOUT_NAME, &keyboard_layout_name_pointer, sizeof(keyboard_layout_name_pointer));
+        }
 		// moved to PostDllMain since it was causing a loader lock problem
 		//LoadKeyboardLayout(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
 

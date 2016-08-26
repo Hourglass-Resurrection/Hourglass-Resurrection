@@ -66,7 +66,6 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NOMINMAX;_DEBUG;_WINDOWS;_USRDLL;WINTASDLL_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500;WINVER=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -77,6 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>

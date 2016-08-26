@@ -47,6 +47,7 @@ using namespace Config;
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <type_traits>
 #include <aclapi.h>
 #include <assert.h>
 
@@ -828,12 +829,12 @@ int gameThreadIdIndex = 0;
 /** TODO why */
 static void* remoteCommandSlot = 0;
 
-/** Shortcut to set where remoteCommandSlot points.
- * @param pointerAsInt the int64 value of a pointer.
+/* 
+ * Shortcut to set where remoteCommandSlot points.
  */
-void ReceiveCommandSlotPointer(__int64 pointerAsInt)
+void ReceiveCommandSlotPointer(LPVOID command_slot_pointer)
 {
-	remoteCommandSlot = (void*)pointerAsInt;
+	remoteCommandSlot = command_slot_pointer;
 }
 
 void SendCommand();
@@ -843,12 +844,12 @@ void ClearCommand();
 /** TODO why */
 static void* remoteInputs = 0;
 
-/** Shortcut to set where remoteInputs points.
- * @param pointerAsInt the int64 value of a pointer.
+/*
+ * Shortcut to set where remoteInputs points.
  */
-void ReceiveInputsPointer(__int64 pointerAsInt)
+void ReceiveInputsPointer(LPVOID remote_inputs_pointer)
 {
-	remoteInputs = (void*)pointerAsInt;
+	remoteInputs = remote_inputs_pointer;
 }
 
 /** TODO why */
@@ -860,9 +861,9 @@ void SendTASFlags();
  *      It thus upates the local TAS flags.
  * @param pointerAsInt the int64 value of a pointer.
  */
-void ReceiveTASFlagsPointer(__int64 pointerAsInt)
+void ReceiveTASFlagsPointer(LPVOID tas_flags_pointer)
 {
-	remoteTASflags = (void*)pointerAsInt;
+	remoteTASflags = tas_flags_pointer;
 	SendTASFlags();
 }
 
@@ -872,46 +873,46 @@ static void* remoteDllLoadInfos = 0;
 DllLoadInfos dllLoadInfos = {};
 bool dllLoadInfosSent = false;
 
-void ReceiveDllLoadInfosPointer(__int64 pointerAsInt)
+void ReceiveDllLoadInfosPointer(LPVOID dll_load_info_pointer)
 {
-	remoteDllLoadInfos = (void*)pointerAsInt;
+	remoteDllLoadInfos = dll_load_info_pointer;
 	dllLoadInfos.numInfos = 0;
 }
 
 
 static void* remoteTrustedRangeInfos = 0;
 
-void ReceiveTrustedRangeInfosPointer(__int64 pointerAsInt, HANDLE hProcess)
+void ReceiveTrustedRangeInfosPointer(LPVOID trusted_range_infos_pointer, HANDLE process)
 {
-	remoteTrustedRangeInfos = (void*)pointerAsInt;
+	remoteTrustedRangeInfos = trusted_range_infos_pointer;
 	void SendTrustedRangeInfos(HANDLE hProcess);
-	SendTrustedRangeInfos(hProcess);
+	SendTrustedRangeInfos(process);
 }
 
 
 static void* remoteGeneralInfoFromDll = 0;
 
-void ReceiveGeneralInfoPointer(__int64 pointerAsInt)
+void ReceiveGeneralInfoPointer(LPVOID general_info_pointer)
 {
-	remoteGeneralInfoFromDll = (void*)pointerAsInt;
+    remoteGeneralInfoFromDll = general_info_pointer;
 }
 
-void ReceiveSoundCaptureInfoPointer(__int64 pointerAsInt)
+void ReceiveSoundCaptureInfoPointer(LPVOID sound_capture_info_pointer)
 {
-	SetLastFrameSoundInfo((void*)pointerAsInt);
+	SetLastFrameSoundInfo(sound_capture_info_pointer);
 }
 
 //Since GammaRamp is only used for AVI capture there is really no need to 
-void ReceiveGammaRampData(__int64 pointerAsInt, HANDLE hProcess)
+void ReceiveGammaRampData(LPVOID gamma_ramp_pointer, HANDLE process)
 {
-	SetGammaRamp((void*)pointerAsInt, hProcess);
+	SetGammaRamp(gamma_ramp_pointer, process);
 }
 
 
 
-void ReceivePaletteEntriesPointer(__int64 pointerAsInt)
+void ReceivePaletteEntriesPointer(LPVOID palette_entries_pointer)
 {
-	SetPaletteEntriesPointer((void*)pointerAsInt);
+	SetPaletteEntriesPointer(palette_entries_pointer);
 }
 
 //void ReceiveExtHWndBuf(__int64 pointerAsInt)
@@ -920,12 +921,12 @@ void ReceivePaletteEntriesPointer(__int64 pointerAsInt)
 //	WriteProcessMemory(hGameProcess, (void*)pointerAsInt, &hExternalWnd, sizeof(HWND), &bytesWritten);
 //}
 
-void ReceiveKeyboardLayout(__int64 pointerAsInt, HANDLE hProcess)
+void ReceiveKeyboardLayout(LPVOID keyboard_layout_pointer, HANDLE hProcess)
 {
 	char name [KL_NAMELENGTH] = {0};
 	SIZE_T bytesWritten = 0;
 	// get the active layout
-	ReadProcessMemory(hProcess, (void*)pointerAsInt, name, KL_NAMELENGTH, &bytesWritten);
+	ReadProcessMemory(hProcess, keyboard_layout_pointer, name, KL_NAMELENGTH, &bytesWritten);
 	name[KL_NAMELENGTH-1] = 0;
 	// replace the active layout with one stored in the movie, or vice-versa
 	if(localTASflags.playback && *movie.keyboardLayoutName)
@@ -934,29 +935,22 @@ void ReceiveKeyboardLayout(__int64 pointerAsInt, HANDLE hProcess)
 		strcpy(movie.keyboardLayoutName, name);
 	// set the possibly-new layout
 	// NOTE: maybe move that under the if? Only needs to be called if name was updated.
-	WriteProcessMemory(hProcess, (void*)pointerAsInt, name, KL_NAMELENGTH, &bytesWritten);
+	WriteProcessMemory(hProcess, keyboard_layout_pointer, name, KL_NAMELENGTH, &bytesWritten);
 }
 
 
-static bool gotSrcDllVersion = false;
-void CheckSrcDllVersion(int version)
+void CheckSrcDllVersion(DWORD version)
 {
-	if((DWORD)version != (DWORD)VERSION)
+	if(version != VERSION)
 	{
 		const char* str;
-		if((DWORD)version > (DWORD)VERSION)
+		if(version > VERSION)
 			str = "Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		else
 			str = "Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		debugprintf(L"%S\n", str);
 		CustomMessageBox(str, "Version Problem", MB_OK | MB_ICONWARNING);
 	}
-	gotSrcDllVersion = true;
-}
-void ProcessDllVersion(const char* version)
-{
-	if(!gotSrcDllVersion)
-		CheckSrcDllVersion(0);
 }
 
 
@@ -965,16 +959,9 @@ void ProcessDllVersion(const char* version)
 static char localCommandSlot_COPY [256];
 #endif
 
-void SuggestThreadName(DWORD threadId, HANDLE hProcess)
+void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& thread_name)
 {
-#ifdef _DEBUG
-	// TEMP
-	strcpy(localCommandSlot_COPY, localCommandSlot);
-#endif
-	strcpy(localCommandSlot, "unknown");
-	SendCommand(); // FIXME: sometimes this can happen when requestedCommandReenter is true!
-	requestedCommandReenter = false;
-
+    thread_name.SetThreadName("unknown");
 	// print the callstack of the exception thread
 	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(threadId);
 	if(found != hGameThreads.end())
@@ -2495,86 +2482,96 @@ void SleepFrameBoundary(const char* frameInfo, int threadId)
 		ProcessCaptureSoundInfo();
 }
 
-void FrameBoundary(const char* frameInfo, int threadId)
+void FrameBoundary(IPC::FrameBoundaryInfo& frame_info, int threadId)
 {
-	int frameCount;
-	void* frameCaptureInfoRemoteAddr;
-	int frameCaptureInfoType;
-	sscanf(frameInfo, " %d %p %d", &frameCount, &frameCaptureInfoRemoteAddr, &frameCaptureInfoType);
+    if (!requestedCommandReenter)
+    {
+        // if it's actually a new frame instead of just paused
+        s_lastFrameCount = frame_info.GetTotalRanFrames();
+        int frameCountUpdateFreq = localTASflags.framerate / 2;
+        if (localTASflags.fastForward && !(localTASflags.aviMode & 1))
+            frameCountUpdateFreq = localTASflags.framerate * 8;
+        UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), frameCountUpdateFreq);
 
-	if(!requestedCommandReenter)
-	{
-		// if it's actually a new frame instead of just paused
+        // temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
+        if (frame_info.GetTotalRanFrames() == 1)
+        {
+            InvalidateRect(hWnd, NULL, TRUE);
+        }
+        HandleAviSplitRequests();
 
-		s_lastFrameCount = frameCount;
-		int frameCountUpdateFreq = localTASflags.framerate/2;
-		if(localTASflags.fastForward && !(localTASflags.aviMode & 1))
-			frameCountUpdateFreq = localTASflags.framerate*8;
-		UpdateFrameCountDisplay(frameCount, frameCountUpdateFreq);
+        if (frame_info.GetCaptureInfoType() != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
+        {
+            // handle AVI recording
+            if (localTASflags.aviMode & 1)
+            {
+                ProcessCaptureFrameInfo(frame_info.GetCaptureInfo(), frame_info.GetCaptureInfoType());
+            }
+            if (localTASflags.aviMode & 2)
+            {
+                ProcessCaptureSoundInfo();
+            }
+        }
 
-		// temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
-		if(frameCount == 1)
-			InvalidateRect(hWnd, NULL, TRUE);
+        // update ram search/watch windows
+        Update_RAM_Search();
 
-		HandleAviSplitRequests();
+        // handle skipping lag frames if that option is enabled
+        temporaryUnpause = (frame_info.GetCaptureInfoType() == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
+    }
+    else
+    {
+        temporaryUnpause = false;
+    }
 
-		if(frameCaptureInfoType != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
-		{
-			// handle AVI recording
-			if(localTASflags.aviMode & 1)
-				ProcessCaptureFrameInfo(frameCaptureInfoRemoteAddr, frameCaptureInfoType);
-			if(localTASflags.aviMode & 2)
-				ProcessCaptureSoundInfo();
-		}
+    if (requestedCommandReenter && !cannotSuspendForCommand)
+    {
+        ResumeAllExcept(threadId);
+    }
 
-		// update ram search/watch windows
-		Update_RAM_Search();
+    // handle hotkeys
+    do
+    {
+        requestedCommandReenter = false;
+        cannotSuspendForCommand = false;
+        RefreshSavestates(frame_info.GetTotalRanFrames());
+        if (!requestedCommandReenter)
+        {
+            CheckHotkeys(frame_info.GetTotalRanFrames(), true);
+        }
+        CheckDialogChanges(frame_info.GetTotalRanFrames());
+        if (paused)
+        {
+            UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), 1);
+            if (!requestedCommandReenter)
+            {
+                Sleep(5);
+            }
+            if (!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
+            {
+                HandleRemotePauseEvents();
+            }
+        }
+    } while (paused && !(temporaryUnpause || requestedCommandReenter));
 
-		// handle skipping lag frames if that option is enabled
-		temporaryUnpause = (frameCaptureInfoType == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
-	}
-	else
-	{
-		temporaryUnpause = false;
-	}
+    if (requestedCommandReenter && !cannotSuspendForCommand)
+    {
+        SuspendAllExcept(threadId);
+    }
 
-	if(requestedCommandReenter && !cannotSuspendForCommand)
-		ResumeAllExcept(threadId);
-
-	// handle hotkeys
-	do
-	{
-		requestedCommandReenter = false;
-		cannotSuspendForCommand = false;
-		RefreshSavestates(frameCount);
-		if(!requestedCommandReenter)
-			CheckHotkeys(frameCount, true);
-		CheckDialogChanges(frameCount);
-		if(paused)
-		{
-			UpdateFrameCountDisplay(frameCount, 1);
-			if(!requestedCommandReenter)
-				Sleep(5);
-			if(!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
-				HandleRemotePauseEvents();
-		}
-
-	} while(paused && !(temporaryUnpause || requestedCommandReenter));
-
-	if(requestedCommandReenter && !cannotSuspendForCommand)
-		SuspendAllExcept(threadId);
-
-	// handle movie playback / recording
-	if(!requestedCommandReenter)
-	{
- 		if(!localTASflags.playback)
-			RecordLocalInputs();
-		//else
-		//	MultitrackHack();
-		InjectCurrentMovieFrame();
-		if(!(frameCount & (frameCount-1)))
-			DoPow2Logic(frameCount);
-	}
+    // handle movie playback / recording
+    if (!requestedCommandReenter)
+    {
+        if (!localTASflags.playback)
+        {
+            RecordLocalInputs();
+        }
+        InjectCurrentMovieFrame();
+        if (!(frame_info.GetTotalRanFrames() & (frame_info.GetTotalRanFrames() - 1)))
+        {
+            DoPow2Logic(frame_info.GetTotalRanFrames());
+        }
+    }
 }
 
 static int s_firstTimerDesyncWarnedFrame = 0x7FFFFFFF;
@@ -2694,24 +2691,20 @@ void ResumeAllExcept(int ignoreThreadID)
 	}
 }
 
-void ReceiveFrameRate(const char* fpsAsString)
+void ReceiveFrameRate(IPC::FPSInfo& fps_info)
 {
-	float fps = 0;
-	float logicalfps = 0;
-	sscanf(fpsAsString, "%g %g", &fps, &logicalfps);
-	char str [256];
-	sprintf(str, "Current FPS: %.1f / %.1f", fps, logicalfps);
+    char str[128];
+	sprintf(str, "Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
 	const char* pStr = str;
 	if(strlen(str) > 24)
 		pStr += 8; // omit "Current" if the string is getting too long
 	SetWindowText(GetDlgItem(hWnd, IDC_STATIC_CURRENTFPS), pStr);
 
-	goingsuperfast = (fps >= 300);
+	goingsuperfast = (fps_info.GetFPS() >= 300.0f);
 }
 
-void ReceiveHWND(DWORD hwndAsInt)
+void ReceiveHWND(HWND hwnd)
 {
-	HWND hwnd = (HWND)hwndAsInt;
 	{
 		AutoCritSect cs(&g_gameHWndsCS);
 		gameHWnds.insert(hwnd);
@@ -3664,7 +3657,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		savestates[i].stale = savestates[i].valid;
 
 	s_firstTimerDesyncWarnedFrame = 0x7FFFFFFF;
-	gotSrcDllVersion = false;
+	//gotSrcDllVersion = false;
 
 	//g_gammaRampEnabled = false;
 	dllLoadInfos.numInfos = 0;
@@ -3765,196 +3758,19 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						const char* pstr = str;
 
 #define MessagePrefixMatch(pre) (!strncmp(pstr, pre": ", sizeof(pre": ")-1) ? pstr += sizeof(pre": ")-1 : false)
-
-                        if (MessagePrefixMatch("FRAME"))
+                        if (MessagePrefixMatch("IPCBUFFER"))
                         {
-                            FrameBoundary(pstr, de.dwThreadId);
-
-#ifdef _DEBUG
-                            if (s_lastFrameCount <= 1 && !requestedCommandReenter)
-                            {
-                                debugprintf(L"On Frame %d: \n", s_lastFrameCount);
-                                // print the callstack of all threads
-
-                                int numThreads = gameThreadIdList.size();
-                                for (int i = 0; i < numThreads; i++)
-                                {
-                                    DWORD threadId = gameThreadIdList[i];
-                                    ThreadInfo& info = hGameThreads[threadId];
-                                    HANDLE hThread = info.handle;
-                                    char msg[16 + 72];
-                                    sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
-                                    THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
-                                }
-
-                                //std::map<DWORD,ThreadInfo>::iterator iter;
-                                //for(iter = hGameThreads.begin(); iter != hGameThreads.end(); iter++)
-                                //{
-                                //	HANDLE hThread = iter->second;
-                                //	//THREADSTACKTRACE(hThread);
-                                //	char msg [16+72];
-                                //	sprintf(msg, "(id=0x%X) (name=%s)", iter->first, iter->second.name);
-                                //	THREADSTACKTRACEMSG(hThread, msg, (iter->second).hProcess);
-                                //}
-                            }
-#endif
-
-                        }
-                        else if (MessagePrefixMatch("SLEEPFRAME"))
-                        {
-                            SleepFrameBoundary(pstr, de.dwThreadId);
-#if 0
-                            // print the callstack of the thread
-                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                            if (found != hGameThreads.end())
-                            {
-                                HANDLE hThread = found->second;
-                                //THREADSTACKTRACE(hThread);
-                                char msg[16 + 72];
-                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-                                THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-                    }
-#endif
-            }
-                        else if (MessagePrefixMatch("MSG"))
-                            debugprintf(L"%S", pstr);
-                        else if (MessagePrefixMatch("LOG"))
-                        {
-                            int logFlags = 0;
-                            if (const char* cEquals = strstr(pstr + 17, "c=")) {
-                                logFlags = strtol(cEquals + 2, 0, 16);
-                            }
-                            //if(includeLogFlags & logFlags)
-                            //{
-                            debugprintf(L"%S", pstr);
-                            //}
-                            //if(traceLogFlags & logFlags)
-                            //{
-                            //	int minDepth = 3, maxDepth = 64;
-                            //	// print the callstack of the thread
-                            //	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                            //	if(found != hGameThreads.end())
-                            //	{
-                            //		HANDLE hThread = found->second;
-                            //		char msg [16+72];
-                            //		sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-                            //		StackTraceOfDepth(hThread, msg, minDepth, maxDepth, /*(found->second).hProcess*/hGameProcess);
-                            //	}
-                            //}
-                        }
-                        else if (MessagePrefixMatch("IPCBUFFER"))
                             ipc_address_in_process = reinterpret_cast<LPVOID>(strtol(pstr, nullptr, 16));
+                        }
 						else if(MessagePrefixMatch("PAUSEEXCEPTIONPRINTING"))
 							exceptionPrintingPaused++;
 						else if(MessagePrefixMatch("RESUMEEXCEPTIONPRINTING"))
 							exceptionPrintingPaused--;
-						else if(MessagePrefixMatch("SAVE"))
-							SaveGameStatePhase2(atoi(pstr));
-						else if(MessagePrefixMatch("LOAD"))
-							LoadGameStatePhase2(atoi(pstr));
-						else if(MessagePrefixMatch("SUSPENDALL"))
-							SuspendAllExcept(de.dwThreadId);
-						else if(MessagePrefixMatch("RESUMEALL"))
-							ResumeAllExcept(de.dwThreadId);
-						else if(MessagePrefixMatch("FPS"))
-							ReceiveFrameRate(pstr);
-						else if(MessagePrefixMatch("HWND"))
-							ReceiveHWND(atoi(pstr));
 						else if(MessagePrefixMatch("MOUSEREG"))
 						{
 							//inputC.InitDIMouse((HWND)(atoi(pstr)), true);
 							inputC.InitDIMouse(hWnd, true);
 						}
-						else if(MessagePrefixMatch("WATCH")) 
-						{
-							AddressWatcher auto_watch = {};
-							char comment[256];
-							sscanf(pstr,"%08X,%c,%c,%255s",&(auto_watch.Address),&(auto_watch.Size),&(auto_watch.Type),comment);
-							auto_watch.WrongEndian=false;
-							if(IsHardwareAddressValid(auto_watch.Address))
-								InsertWatch(auto_watch,comment);							
-						}
-						else if(MessagePrefixMatch("UNWATCH")) 
-						{
-							AddressWatcher auto_unwatch = {};
-							sscanf(pstr,"%08X, %c, %c",&(auto_unwatch.Address),&(auto_unwatch.Size),&(auto_unwatch.Type));
-							auto_unwatch.WrongEndian=false;
-							RemoveWatch(auto_unwatch);							
-						}
-						else if(MessagePrefixMatch("SHORTTRACE"))
-						{
-							int minDepth = 0, maxDepth = -1;
-							sscanf(pstr, "%d, %d", &minDepth, &maxDepth);
-							// print the callstack of the thread
-							std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-							if(found != hGameThreads.end())
-							{
-								HANDLE hThread = found->second;
-								char msg [16+72];
-								sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-								StackTraceOfDepth(hThread, msg, minDepth, maxDepth, /*(found->second).hProcess*/hGameProcess);
-							}
-						}
-						//else if(MessagePrefixMatch("NOLOAD"))
-						//	AddToNoLoadList(pstr);
-						//else if(MessagePrefixMatch("CLEARNOLOAD"))
-						//	ClearNoLoadList();
-						else if(MessagePrefixMatch("GIVEMEANAME"))
-						{
-							SuggestThreadName(de.dwThreadId, hProcess);
-							// print the callstack of the thread
-							std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-							if(found != hGameThreads.end())
-							{
-								HANDLE hThread = found->second;
-								//THREADSTACKTRACE(hThread);
-								char msg [16+72];
-								sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-								THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-							}
-						}
-						else if(MessagePrefixMatch("HERESMYCARD"))
-							ReceiveCommandSlotPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("DLLLOADINFOBUF")) //GETDLLLIST
-							ReceiveDllLoadInfosPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("GIMMEDLLLOADINFOS"))
-							AddAndSendDllInfo(NULL, true, hProcess);
-						else if(MessagePrefixMatch("TRUSTEDRANGEINFOBUF"))
-							ReceiveTrustedRangeInfosPointer(_atoi64(pstr), hProcess);
-						else if(MessagePrefixMatch("INPUTSBUF"))
-							ReceiveInputsPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("TASFLAGSBUF"))
-							ReceiveTASFlagsPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("GENERALINFO"))
-							ReceiveGeneralInfoPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("SOUNDINFO"))
-							ReceiveSoundCaptureInfoPointer(_atoi64(pstr));
-						//else if(MessagePrefixMatch("EXTHWNDBUF"))
-						//	ReceiveExtHWndBuf(_atoi64(pstr));
-						else if(MessagePrefixMatch("GAMMARAMPDATA"))
-							ReceiveGammaRampData(_atoi64(pstr), hProcess);
-						else if(MessagePrefixMatch("PALETTEENTRIES"))
-							ReceivePaletteEntriesPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("KEYBLAYOUT"))
-							ReceiveKeyboardLayout(_atoi64(pstr), hProcess);
-						else if(MessagePrefixMatch("DENIEDTHREAD"))
-							usedThreadMode = localTASflags.threadMode;
-						else if(MessagePrefixMatch("POSTDLLMAINDONE"))
-						{
-							postDllMainDone = true;
-							if(mainThreadWaitingForPostDllMain)
-							{
-								debugprintf(L"resuming main thread...\n");
-								ResumeThread(processInfo.hThread);
-								mainThreadWaitingForPostDllMain = false;
-							}
-						}
-						else if(MessagePrefixMatch("SRCDLLVERSION"))
-							CheckSrcDllVersion(atoi(pstr));
-						else if(MessagePrefixMatch("DLLVERSION"))
-							ProcessDllVersion(pstr);
-						else if(MessagePrefixMatch("KILLME"))
-							terminateRequest = true;
 						else if(MessagePrefixMatch("DEBUGPAUSE"))
 						{
 							debugprintf(L"DEBUGPAUSE: %S",pstr);
@@ -4039,7 +3855,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                     else if (ipc_address_in_process != nullptr)
                     {
                         IPC::CommandFrame ipc_frame;
-                        TasFlags& tas = Config::localTASflags;
                         SIZE_T read_bytes;
                         /*
                          * HACK: Workaround for limitation in extendedtrace.
@@ -4066,9 +3881,159 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     case IPC::Command::CMD_DEBUG_MESSAGE:
                                         debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
                                         break;
-                                    default: break;
+                                    case IPC::Command::CMD_DLL_VERSION:
+                                        CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_COMMAND_BUF:
+                                        ReceiveCommandSlotPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_INPUT_BUF:
+                                        ReceiveInputsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
+                                        ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
+                                        ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_TAS_FLAGS_BUF:
+                                        ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_SOUND_INFO:
+                                        ReceiveSoundCaptureInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_GENERAL_INFO:
+                                        ReceiveGeneralInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_PALETTE_ENTRIES:
+                                        ReceivePaletteEntriesPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_GIMME_DLL_LOAD_INFOS:
+                                        AddAndSendDllInfo(NULL, true, hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_KEYBOARD_LAYOUT_NAME:
+                                        ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_SUGGEST_THREAD_NAME:
+                                        SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
+                                        {
+                                            DWORD bytes_written;
+                                            WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.command_data), buf.data(), ipc_frame.command_data_size, &bytes_written);
+                                            // print the callstack of the thread
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            if (found != hGameThreads.end())
+                                            {
+                                                HANDLE hThread = found->second;
+                                                //THREADSTACKTRACE(hThread);
+                                                char msg[16 + 72];
+                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_POST_DLL_MAIN_DONE:
+                                        postDllMainDone = true;
+                                        if (mainThreadWaitingForPostDllMain)
+                                        {
+                                            debugprintf(L"resuming main thread...\n");
+                                            ResumeThread(processInfo.hThread);
+                                            mainThreadWaitingForPostDllMain = false;
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_KILL_ME:
+                                        terminateRequest = true;
+                                        break;
+                                    case IPC::Command::CMD_FPS_UPDATE:
+                                        ReceiveFrameRate(*reinterpret_cast<IPC::FPSInfo*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_DENIED_THREAD:
+                                        usedThreadMode = localTASflags.threadMode;
+                                        break;
+                                    case IPC::Command::CMD_GAMMA_RAMP_BUF:
+                                        ReceiveGammaRampData(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_STACK_TRACE:
+                                        {
+                                            // print the callstack of the thread
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
+                                            if (found != hGameThreads.end())
+                                            {
+                                                HANDLE hThread = found->second;
+                                                char msg[16 + 72];
+                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
+                                            }
+                                        }
+                                    case IPC::Command::CMD_SAVE_STATE:
+                                        SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_LOAD_STATE:
+                                        LoadGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_SUSPEND_ALL_THREADS:
+                                        SuspendAllExcept(de.dwThreadId);
+                                        break;
+                                    case IPC::Command::CMD_RESUME_ALL_THREADS:
+                                        ResumeAllExcept(de.dwThreadId);
+                                        break;
+                                    case IPC::Command::CMD_HWND:
+                                        ReceiveHWND(*reinterpret_cast<HWND*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_WATCH_ADDRESS:
+                                        {
+                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+                                            AddressWatcher watch = { auto_watch->GetAddress(),
+                                                                     auto_watch->GetSize(),
+                                                                     auto_watch->GetType() };
+                                            watch.WrongEndian = false;
+                                            if (IsHardwareAddressValid(watch.Address))
+                                            {
+                                                InsertWatch(watch, auto_watch->GetComment());
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_UNWATCH_ADDRESS:
+                                        {
+                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+                                            AddressWatcher watch = { auto_watch->GetAddress(),
+                                                                     auto_watch->GetSize(),
+                                                                     auto_watch->GetType() };
+                                            watch.WrongEndian = false;
+                                            RemoveWatch(watch);
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_FRAME_BOUNDARY:
+                                        {
+                                            FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
+#ifdef _DEBUG
+                                            if (s_lastFrameCount <= 1 && !requestedCommandReenter)
+                                            {
+                                                debugprintf(L"On Frame %d: \n", s_lastFrameCount);
+                                                // print the callstack of all threads
+
+                                                int numThreads = gameThreadIdList.size();
+                                                for (int i = 0; i < numThreads; i++)
+                                                {
+                                                    DWORD threadId = gameThreadIdList[i];
+                                                    ThreadInfo& info = hGameThreads[threadId];
+                                                    HANDLE hThread = info.handle;
+                                                    char msg[16 + 72];
+                                                    sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
+                                                    THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
+                                                }
+                                            }
+#endif
+                                        }
+                                        break;
+                                    default:
+                                        break;
                                     }
-                                    break;
+                                    
+                                    ipc_frame.command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.command) + 1);
+                                    DWORD bytes_written;
+                                    WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
+                                    //break;
                                 }
                             }
                         }

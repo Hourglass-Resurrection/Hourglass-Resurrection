@@ -77,7 +77,7 @@ bool VerifyWatchNotAlreadyAdded(const AddressWatcher& watch, int skipIndex=-1)
 }
 
 
-bool InsertWatch(const AddressWatcher& Watch, char *Comment)
+bool InsertWatch(const AddressWatcher& Watch, LPCSTR Comment)
 {
 	if(!VerifyWatchNotAlreadyAdded(Watch))
 		return false;

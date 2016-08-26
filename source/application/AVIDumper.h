@@ -1,6 +1,6 @@
 #pragma once
 
-void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, int frameCaptureInfoType);
+void ProcessCaptureFrameInfo(LPCVOID frameCaptureInfoRemoteAddr, int frameCaptureInfoType);
 void ProcessCaptureSoundInfo();
 
 // Must be called once and ONCE only, recommended to make the call from the initialization code of the whole program!

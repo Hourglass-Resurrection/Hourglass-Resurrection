@@ -53,7 +53,10 @@ int debugprintf(LPCWSTR fmt, ...)
 		}
 	}
 #endif
-	OutputDebugStringW(str);
+    if (IsDebuggerPresent())
+    {
+        OutputDebugStringW(str);
+    }
 	EnterCriticalSection(&g_debugPrintCS);
     if (!debuglogfile)
     {
