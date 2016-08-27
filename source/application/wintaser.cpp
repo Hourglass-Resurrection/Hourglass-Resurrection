@@ -3923,6 +3923,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                 StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
                                             }
                                         }
+                                        break;
                                     case IPC::Command::CMD_SAVE_STATE:
                                         SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
                                         break;
