@@ -17,15 +17,15 @@
  */
 #define FMT_ARGS_0(...)
 #define FMT_ARGS_1(arg, ...) #arg << " = " << arg <<
-#define FMT_ARGS_2(arg, ...) #arg << " = " << arg << FMT_ARGS_1(__VA_ARGS__)
-#define FMT_ARGS_3(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_2(__VA_ARGS__),)
-#define FMT_ARGS_4(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_3(__VA_ARGS__),)
-#define FMT_ARGS_5(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_4(__VA_ARGS__),)
-#define FMT_ARGS_6(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_5(__VA_ARGS__),)
-#define FMT_ARGS_7(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_6(__VA_ARGS__),)
-#define FMT_ARGS_8(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_7(__VA_ARGS__),)
-#define FMT_ARGS_9(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_8(__VA_ARGS__),)
-#define FMT_ARGS_10(arg, ...) #arg << " = " << arg << CONCATENATE(FMT_ARGS_9(__VA_ARGS__),)
+#define FMT_ARGS_2(arg, ...) #arg << " = " << arg << ", " << FMT_ARGS_1(__VA_ARGS__)
+#define FMT_ARGS_3(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_2(__VA_ARGS__),)
+#define FMT_ARGS_4(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_3(__VA_ARGS__),)
+#define FMT_ARGS_5(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_4(__VA_ARGS__),)
+#define FMT_ARGS_6(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_5(__VA_ARGS__),)
+#define FMT_ARGS_7(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_6(__VA_ARGS__),)
+#define FMT_ARGS_8(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_7(__VA_ARGS__),)
+#define FMT_ARGS_9(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_8(__VA_ARGS__),)
+#define FMT_ARGS_10(arg, ...) #arg << " = " << arg << ", " << CONCATENATE(FMT_ARGS_9(__VA_ARGS__),)
 
 /*
  * Using the MSVC preprocessor comma erasure for

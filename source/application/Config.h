@@ -60,7 +60,6 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern int aviFrameCount;
 	extern int aviSoundFrameCount;
 	extern bool traceEnabled;
-	extern bool crcVerifyEnabled;
 	//extern int storeVideoMemoryInSavestates;
 	extern int storeGuardedPagesInSavestates;
 	//extern int appLocale;

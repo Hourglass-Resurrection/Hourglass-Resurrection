@@ -85,7 +85,6 @@ namespace Config{
 	int aviFrameCount;
 	int aviSoundFrameCount;
 	bool traceEnabled = true;
-	bool crcVerifyEnabled = true;
 	//int storeVideoMemoryInSavestates;
 	int storeGuardedPagesInSavestates = 1;
 	//int appLocale;
@@ -129,7 +128,6 @@ namespace Config{
 		SetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
 		SetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
-		SetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
 		wsprintf(Str_Tmp, "%d", AutoRWLoad);
 		WritePrivateProfileString("Watches", "AutoLoadWatches", Str_Tmp, Conf_File);
@@ -213,7 +211,6 @@ namespace Config{
 		hotkeysFocusFlags = GetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
 		traceEnabled = 0!=GetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
-		crcVerifyEnabled = 0!=GetPrivateProfileIntA("General", "Verify CRCs", crcVerifyEnabled, Conf_File);
 
 		if (RWSaveWindowPos)
 		{
