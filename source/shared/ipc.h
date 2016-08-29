@@ -376,7 +376,7 @@ namespace IPC
         }
         DebugMessage& operator<<(const bool& value)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"0x%s", value ? L"true" : L"false");
+            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", value ? L"true" : L"false");
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
         }
