@@ -1,6 +1,8 @@
 Hourglass Resurrection
 ======================
 
+Automated builds: [Configuration:Debug](https://ci.appveyor.com/api/projects/Warepire/hourglass-resurrection/artifacts/Hourglass-Resurrection-master.zip?branch=master&job=Configuration%3A+Debug) | [Configuration:Release](https://ci.appveyor.com/api/projects/Warepire/hourglass-resurrection/artifacts/Hourglass-Resurrection-master.zip?branch=master&job=Configuration%3A+Release)
+
 Goal
 ----
 This project aims to improve Hourglass, the Windows TASing framework, which was created and maintained by Nitsuja and a few others like upthorn and Lex until 2011. Original project: http://code.google.com/p/hourglass-win32/
