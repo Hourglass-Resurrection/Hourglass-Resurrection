@@ -1,0 +1,18 @@
+version: '{build}'
+branches:
+  only:
+  - master
+skip_tags: true
+configuration:
+- Debug
+- Release
+build:
+  project: Hourglass-Resurrection.sln
+  verbosity: minimal
+after_build:
+- cmd: >-
+    IF "%APPVEYOR_PULL_REQUEST_NUMBER%"=="" (SET PACKAGE="%APPVEYOR_PROJECT_NAME%-master") ELSE (SET PACKAGE="%APPVEYOR_PROJECT_NAME%-PR-%APPVEYOR_PULL_REQUEST_NUMBER%")
+
+    7z a %PACKAGE%.zip %APPVEYOR_BUILD_FOLDER%\build\%CONFIGURATION%\*
+artifacts:
+- path: '*zip'
