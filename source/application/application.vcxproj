@@ -156,6 +156,7 @@
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
+    <ClCompile Include="DbgHelp.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
     <ClInclude Include="CustomDLGs.h" />
+    <ClInclude Include="DbgHelp.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
     <ClInclude Include="GUI\DlgBase.h" />
