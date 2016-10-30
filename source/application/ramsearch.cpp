@@ -57,6 +57,7 @@
 #include "shared/winutil.h"
 #include <assert.h>
 #include <commctrl.h>
+#include <algorithm>
 #include <list>
 #include <vector>
 #include <math.h>
@@ -409,7 +410,7 @@ bool RSVal::print(char* output, char sizeTypeID, char typeID)
 bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 {
 	int inputLen = strlen(input)+1;
-	inputLen = min(inputLen, 32);
+	inputLen = std::min(inputLen, 32);
 	char* temp = (char*)_alloca(inputLen);
 	strncpy(temp, input, inputLen);
 	temp[inputLen-1] = 0;

@@ -7,7 +7,11 @@
 // than do the lower-level APIs.
 // there's little reason not to take advantage of that.
 
+#include <algorithm>
+
 #include "../wintasee.h"
+
+using Log = DebugLog<LogCategory::SDL>;
 
 namespace Hooks
 {
@@ -39,7 +43,7 @@ namespace Hooks
             desc.ddpfPixelFormat.dwGBitMask = screen->format->Gmask;
             desc.ddpfPixelFormat.dwBBitMask = screen->format->Bmask;
             if (desc.ddpfPixelFormat.dwRGBBitCount == 8 && screen->format->palette)
-                memcpy(&activePalette[0], &screen->format->palette->entries[0], min(256, screen->format->palette->entryCount));
+                memcpy(&activePalette[0], &screen->format->palette->entries[0], std::min(256, screen->format->palette->entryCount));
 
             FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
 
@@ -50,7 +54,7 @@ namespace Hooks
     HOOK_FUNCTION(int, SDLCALL, SDL_Flip, SDL_Surface* screen);
     HOOKFUNC int SDLCALL MySDL_Flip(SDL_Surface* screen)
     {
-        debuglog(LCF_SDL | LCF_FRAME, __FUNCTION__ " called.\n");
+        ENTER();
         used_sdl_flip = true;
         usingSDLOrDD = true;
         int prevFrameCount = framecount;
@@ -66,9 +70,9 @@ namespace Hooks
     HOOK_FUNCTION(void, SDLCALL, SDL_UpdateRect, SDL_Surface* screen, int x, int y, int w, int h);
     HOOKFUNC void SDLCALL MySDL_UpdateRect(SDL_Surface* screen, int x, int y, int w, int h)
     {
+        ENTER(screen, x, y, w, h);
         usingSDLOrDD = true;
         bool isEntireScreen = !x && !y && !w && !h;
-        debuglog(LCF_SDL | (isEntireScreen ? LCF_FRAME : 0), __FUNCTION__ "(0x%X, %d,%d,%d,%d) called.\n", screen, x, y, w, h);
         if (!ShouldSkipDrawing(isEntireScreen, /*!isEntireScreen*/false)) // eversion crashes sometimes if the second param is true
             SDL_UpdateRect(screen, x, y, w, h);
         // used_sdl_flip check needed for eversion, not needed for ?
@@ -78,7 +82,7 @@ namespace Hooks
     HOOK_FUNCTION(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects);
     HOOKFUNC void SDLCALL MySDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_Rect* rects)
     {
-        debuglog(LCF_SDL | LCF_FRAME, __FUNCTION__ "(0x%X, %d, 0x%X) called.\n", screen, numrects, rects);
+        ENTER(screen, numrects, rects);
         usingSDLOrDD = true;
         if (!ShouldSkipDrawing(true, true))
             SDL_UpdateRects(screen, numrects, rects);
@@ -89,7 +93,7 @@ namespace Hooks
     HOOK_FUNCTION(void, SDLCALL, SDL_GL_SwapBuffers);
     HOOKFUNC void SDLCALL MySDL_GL_SwapBuffers()
     {
-        debuglog(LCF_SDL | LCF_OGL | LCF_FRAME, __FUNCTION__ " called.\n");
+        ENTER();
         usingSDLOrDD = true;
         bool alreadyDidBoundary = false;
         //if(!ShouldSkipDrawing(true, false))
@@ -104,7 +108,7 @@ namespace Hooks
     HOOK_FUNCTION(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags);
     HOOKFUNC SDL_Surface* SDLCALL MySDL_SetVideoMode(int width, int height, int bpp, unsigned int flags)
     {
-        debuglog(LCF_SDL | LCF_UNTESTED, __FUNCTION__ "(%d,%d,%d,0x%X) called.\n", width, height, bpp, flags);
+        ENTER(width, height, bpp, flags);
         static const int SDL_FULLSCREEN = 0x80000000;
         static const int SDL_HWACCEL = 0x00000100;
         if (tasflags.forceWindowed)
@@ -118,13 +122,13 @@ namespace Hooks
     HOOK_FUNCTION(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface);
     HOOKFUNC int SDLCALL MySDL_LockSurface(SDL_Surface *surface)
     {
-        debuglog(LCF_SDL | LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", surface);
+        ENTER(surface);
         return SDL_LockSurface(surface);
     }
     HOOK_FUNCTION(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface);
     HOOKFUNC void SDLCALL MySDL_UnlockSurface(SDL_Surface *surface)
     {
-        debuglog(LCF_SDL | LCF_FREQUENT, __FUNCTION__ "(0x%X) called.\n", surface);
+        ENTER(surface);
         SDL_UnlockSurface(surface);
     }
 

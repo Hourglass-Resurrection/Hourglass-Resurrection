@@ -7,6 +7,8 @@
 #include <map>
 #include <vector>
 
+using Log = DebugLog<LogCategory::MESSAGES>;
+
 namespace Hooks
 {
     static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPARAM lParam);
@@ -447,7 +449,8 @@ namespace Hooks
 	    case WM_TIMER:
 		    if(tasflags.timersMode == 2)
 		    {
-			    debuglog(LCF_MESSAGES|LCF_FREQUENT|LCF_TIMEFUNC|LCF_DESYNC, "asynchronous 0x%X (%s), 0x%X, 0x%X\n", message, GetWindowsMessageName(message), wParam, lParam);
+                LOG() << "asynchronous " << message << "(" << GetWindowsMessageName(message) << "),"
+                      << wParam << ", " << lParam;
 			    return MAF_PASSTHROUGH | MAF_RETURN_OS;
 		    }
 		    return MAF_INTERCEPT | MAF_RETURN_0; // already handled via inverted message send
@@ -469,7 +472,8 @@ namespace Hooks
 			    return MAF_PASSTHROUGH | MAF_RETURN_OS; // hack to fix F2 command in Eternal Daughter
 		    break;
 	    default:
-		    debuglog(LCF_MESSAGES|LCF_FREQUENT|LCF_TODO, "CONSIDER: 0x%X (%s), 0x%X, 0x%X\n", message, GetWindowsMessageName(message), wParam, lParam);
+            LOG() << "CONSIDER: " << message << "(" << GetWindowsMessageName(message) << "),"
+                  << wParam << ", " << lParam;
 		    //cmdprintf("SHORTTRACE: 3,50");
 		    break;
 	    case WM_NULL:
@@ -585,7 +589,7 @@ namespace Hooks
 			    {
 				    // user clicked on the game winddow's close (X) button.
 				    // they probably expect that to stop the game, so let's ask the debugger to kill us.
-				    cmdprintf("KILLME: 0");
+                    IPC::SendIPCMessage(IPC::Command::CMD_KILL_ME, nullptr, 0);
 			    }
 		    }
 		    break;
@@ -655,7 +659,8 @@ namespace Hooks
 		    if(!(maf & (MAF_INTERCEPT|MAF_BYPASSGAME)))
 		    {
 			    maf |= MAF_BYPASSGAME; // so bypass the game and pass it straight back to the OS
-			    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ " bypassing due to indefproc: 0x%X, 0x%X (%s), 0x%X, 0x%X\n", hWnd, message, GetWindowsMessageName(message), wParam, lParam);
+                LOG() << "bypassing due to indefproc: " << hWnd << ", " << message << "("
+                      << GetWindowsMessageName(message) << "), " << wParam << ", " << lParam;
 		    }
 	    }
 
@@ -668,23 +673,27 @@ namespace Hooks
 		    if(!origProc) // if there's no game WndProc to call
 		    {
 			    maf |= MAF_BYPASSGAME; // we're forced to bypass the game
-			    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ " bypassing due to no origProc: 0x%X, 0x%X (%s), 0x%X, 0x%X\n", hWnd, message, GetWindowsMessageName(message), wParam, lParam);
+                LOG() << "bypassing due to no origProc: " << hWnd << ", " << message << "("
+                      << GetWindowsMessageName(message) << "), " << wParam << ", " << lParam;
 		    }
 	    }
 
 	    LRESULT rv = 0;
 	    if(maf & MAF_INTERCEPT)
 	    {
-		    debuglog(LCF_MESSAGES|LCF_FREQUENT, "denied WndProc: 0x%X, 0x%X (%s), 0x%X, 0x%X\n", hWnd, message, GetWindowsMessageName(message), wParam, lParam);
+            LOG() << "denied WndProc:  " << hWnd << ", " << message << "("
+                  << GetWindowsMessageName(message) << "), " << wParam << ", " << lParam;
 	    }
 	    else if(maf & MAF_BYPASSGAME)
 	    {
-		    debuglog(LCF_MESSAGES|LCF_FREQUENT, "DefWndProc: 0x%X, 0x%X (%s), 0x%X, 0x%X\n", hWnd, message, GetWindowsMessageName(message), wParam, lParam);
+            LOG() << "DefWndProc:  " << hWnd << ", " << message << "("
+                  << GetWindowsMessageName(message) << "), " << wParam << ", " << lParam;
 		    rv = (ascii?MyDefWindowProcA:MyDefWindowProcW)(hWnd, message, wParam, lParam);
 	    }
 	    else // MAF_PASSTHROUGH
 	    {
-		    debuglog(LCF_MESSAGES|LCF_FREQUENT/*|LCF_DESYNC*/ /*|LCF_TODO*/, "WndProc: 0x%X, 0x%X (%s), 0x%X, 0x%X\n", hWnd, message, GetWindowsMessageName(message), wParam, lParam);
+            LOG() << "WndProc:  " << hWnd << ", " << message << "("
+                  << GetWindowsMessageName(message) << "), " << wParam << ", " << lParam;
 		    //cmdprintf("SHORTTRACE: 3,50");
 
 		    //rv = origProc(hWnd, message, wParam, lParam); // usually works, but according to MSDN origProc could be "a special internal value meaningful only to CallWindowProc" in some cases
@@ -735,7 +744,7 @@ namespace Hooks
 	    LRESULT rv;
 	    if(nCode < 0) // negative supposedly means calling the hook is required... never seen that happen but I'll trust msdn for now
 	    {
-		    debuglog(LCF_MESSAGES|LCF_HOOK|LCF_UNTESTED, __FUNCTION__"(0x%X, 0x%X, 0x%X, 0x%X) called.\n", hhk, nCode, wParam, lParam);
+		    ENTER(hhk, nCode, wParam, lParam);
 		    rv = CallNextHookEx(hhk, nCode, wParam, lParam);
 	    }
 	    else
@@ -928,17 +937,19 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SendNotifyMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MySendNotifyMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+		    LOG() << "message " << Msg << "(" << GetWindowsMessageName(Msg)
+                  << ") denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message " << Msg << "(" << GetWindowsMessageName(Msg)
+                  << ") denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -975,17 +986,17 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SendNotifyMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MySendNotifyMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1023,19 +1034,19 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageTimeoutA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult);
     HOOKFUNC LRESULT WINAPI MySendMessageTimeoutA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, %d) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
+        ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    if(lpdwResult)
 			    *lpdwResult = 1;
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    if(lpdwResult)
 			    *lpdwResult = 1;
 		    return 1;
@@ -1076,19 +1087,19 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageTimeoutW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult);
     HOOKFUNC LRESULT WINAPI MySendMessageTimeoutW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, UINT fuFlags, UINT uTimeout, PDWORD_PTR lpdwResult)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, %d) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, fuFlags, uTimeout);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    if(lpdwResult)
 			    *lpdwResult = 1;
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    if(lpdwResult)
 			    *lpdwResult = 1;
 		    return 1;
@@ -1129,17 +1140,17 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageCallbackA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData);
     HOOKFUNC LRESULT WINAPI MySendMessageCallbackA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, 0x%X) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
 	    if(hWnd == HWND_BROADCAST)
@@ -1189,17 +1200,17 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageCallbackW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData);
     HOOKFUNC LRESULT WINAPI MySendMessageCallbackW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, SENDASYNCPROC lpResultCallBack, ULONG_PTR dwData)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X, 0x%X, 0x%X) called. (untested)\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam, lpResultCallBack, dwData);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
 	    if(hWnd == HWND_BROADCAST)
@@ -1251,17 +1262,17 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC LRESULT WINAPI MySendMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1287,17 +1298,17 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, SendMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC LRESULT WINAPI MySendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
     //	if((Msg >= toggleWhitelistMessage(WM_KEYFIRST) && Msg <= toggleWhitelistMessage(WM_KEYLAST))
     //	|| (Msg >= toggleWhitelistMessage(WM_MOUSEFIRST) && Msg <= toggleWhitelistMessage(WM_MOUSELAST)))
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1323,16 +1334,16 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, PostMessageW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MyPostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+		    LOG() << "message denied because it's in a reserved range.";
 		    //cmdprintf("SHORTTRACE: 3,50");
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1374,7 +1385,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, PostMessageA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MyPostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 
     //#pragma message("FIXMEEE")
     //	debugprintf(__FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
@@ -1382,12 +1393,12 @@ namespace Hooks
 
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1435,21 +1446,21 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, PostThreadMessageA, DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MyPostThreadMessageA(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 	    //cmdprintf("SHORTTRACE: 3,50");
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X (%s)) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
 	    if(!tls_IsPrimaryThread() && tasflags.messageSyncMode < 2 && idThread != GetCurrentThreadId())
 	    {
-		    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X (%s), 0x%X) denied because we're not in the main thread.\n", Msg, GetWindowsMessageName(Msg), idThread);
+            LOG() << "message denied because we're not in the main thread.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1476,21 +1487,21 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, PostThreadMessageW, DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC BOOL WINAPI MyPostThreadMessageW(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(idThread, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 	    //cmdprintf("SHORTTRACE: 3,50");
 	    if(isMessageWhitelisted(Msg))
 	    {
-		    debuglog(LCF_MESSAGES|LCF_TODO, __FUNCTION__ "(0x%X (%s)) denied because it's in a reserved range.\n", Msg, GetWindowsMessageName(Msg));
+            LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
 	    if(tls.callerisuntrusted)
 	    {
-		    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X (%s), 0x%X) denied because the caller is untrusted.\n", Msg, GetWindowsMessageName(Msg), idThread);
+		    LOG() << "message denied because the caller is untrusted.";
 		    return 1;
 	    }
 	    if(!tls_IsPrimaryThread() && tasflags.messageSyncMode < 2 && idThread != GetCurrentThreadId())
 	    {
-		    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(0x%X (%s), 0x%X) denied because we're not in the main thread.\n", Msg, GetWindowsMessageName(Msg), idThread);
+            LOG() << "message denied because we're not in the main thread.";
 		    return 1;
 	    }
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1518,7 +1529,7 @@ namespace Hooks
     HOOK_FUNCTION(VOID, WINAPI, PostQuitMessage, int nExitCode);
     HOOKFUNC VOID WINAPI MyPostQuitMessage(int nExitCode)
     {
-	    debuglog(LCF_PROCESS|LCF_ERROR, __FUNCTION__"(%d) called.", nExitCode);
+	    ENTER(nExitCode);
 	    MyPostMessageA(NULL, WM_QUIT, nExitCode, 0);
     }
 
@@ -1531,7 +1542,7 @@ namespace Hooks
     {
 	    MSG& msg = *const_cast<MSG*>(lpMsg);
 
-	    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", (DWORD)msg.hwnd, (DWORD)msg.message, GetWindowsMessageName(msg.message), msg.wParam, msg.lParam);
+	    ENTER(msg.hwnd, msg.message, GetWindowsMessageName(msg.message), msg.wParam, msg.lParam);
 	
 	    if(!gamehwnd)
 		    gamehwnd = msg.hwnd;
@@ -1564,7 +1575,10 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, DispatchMessageA, CONST MSG *lpMsg);
     HOOKFUNC LRESULT WINAPI MyDispatchMessageA(CONST MSG *lpMsg)
     {
-	    if(lpMsg) debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", (DWORD)lpMsg->hwnd, (DWORD)lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+        if (lpMsg)
+        {
+            ENTER(lpMsg->hwnd, lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+        }
 	    //if(lpMsg && (lpMsg->message >= WM_KEYFIRST && lpMsg->message <= WM_KEYLAST))
 	    //	return 1;
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1581,7 +1595,10 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, DispatchMessageW, CONST MSG *lpMsg);
     HOOKFUNC LRESULT WINAPI MyDispatchMessageW(CONST MSG *lpMsg)
     {
-	    if(lpMsg) debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", (DWORD)lpMsg->hwnd, (DWORD)lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+        if (lpMsg)
+        {
+            ENTER(lpMsg->hwnd, lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+        }
 	    //if(lpMsg && (lpMsg->message >= WM_KEYFIRST && lpMsg->message <= WM_KEYLAST))
 	    //	return 1;
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1600,8 +1617,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, GetMessageA, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
     HOOKFUNC BOOL WINAPI MyGetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
     {
-    //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-	    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+	    ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
     #ifdef EMULATE_MESSAGE_QUEUES
 	    if(!lpMsg)
 		    return -1;
@@ -1669,7 +1685,9 @@ namespace Hooks
 				    tls.callerisuntrusted--;
 			    }
 		    }
-		    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": got message (0x%X, 0x%X (%s), 0x%X, 0x%X), rv=0x%X.\n", lpMsg->hwnd, lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam, rv);
+            LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
+                  << GetWindowsMessageName(lpMsg->message) << "), " << lpMsg->wParam << ", "
+                  << lpMsg->lParam << ", rv = " << rv;
 		    //if(tasflags.threadMode == 3)
 		    //	cmdprintf("WAITED: %u", 0);
 		    //if(!rv || (CanMessageReachGame(lpMsg)))
@@ -1685,10 +1703,12 @@ namespace Hooks
 		    {
 			    if(rv)
 			    {
-				    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": got message (0x%X, 0x%X (%s), 0x%X, 0x%X), but handling it internally.\n", lpMsg->hwnd, lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+                    LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
+                          << GetWindowsMessageName(lpMsg->message) << "), " << lpMsg->wParam << ", "
+                          << lpMsg->lParam << ", but handling it internally.";
 				    FinalizeWndProcMessage(lpMsg);
 				    MyWndProcA(lpMsg->hwnd, lpMsg->message, lpMsg->wParam, lpMsg->lParam);
-				    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": continuing to wait.\n");
+				    LOG() << "continuing to wait";
 			    }
 			    else if(!wMsgFilterMin)
 			    {
@@ -1705,8 +1725,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, GetMessageW, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
     HOOKFUNC BOOL WINAPI MyGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
     {
-    //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-	    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+	    ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
     #ifdef EMULATE_MESSAGE_QUEUES
 	    if(!lpMsg)
 		    return -1;
@@ -1788,10 +1807,12 @@ namespace Hooks
 		    }
 		    else
 		    {
-			    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": got message (0x%X, 0x%X (%s), 0x%X, 0x%X), but handling it internally.\n", lpMsg->hwnd, lpMsg->message, GetWindowsMessageName(lpMsg->message), lpMsg->wParam, lpMsg->lParam);
+                LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
+                      << GetWindowsMessageName(lpMsg->message) << "), " << lpMsg->wParam << ", "
+                      << lpMsg->lParam << ", but handling it internally.";
 			    FinalizeWndProcMessage(lpMsg);
 			    MyWndProcW(lpMsg->hwnd, lpMsg->message, lpMsg->wParam, lpMsg->lParam);
-			    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": continuing to wait.\n");
+			    LOG() << "continuing to wait.";
 		    }
 	    }
     //	if(tasflags.threadMode == 3)
@@ -1807,9 +1828,8 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, PeekMessageA, LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg);
     HOOKFUNC BOOL WINAPI MyPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
     {
-    //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
     ////	FrameBoundary();
-	    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+	    ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	    if(!lpMsg)
 		    return FALSE;
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1863,8 +1883,10 @@ namespace Hooks
 
 		    if(!rv || (CanMessageReachGame(lpMsg)))
 		    {
-			    if(rv)
-				    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ " got 0x%X (%s), 0x%X (%d), 0x%X (%d).\n", lpMsg ? lpMsg->message : 0, GetWindowsMessageName(lpMsg ? lpMsg->message : 0), lpMsg ? lpMsg->wParam : 0, lpMsg ? lpMsg->wParam : 0, lpMsg ? lpMsg->lParam : 0, lpMsg ? lpMsg->lParam : 0);
+                if (rv)
+                    LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
+                          << GetWindowsMessageName(lpMsg->message) << "), " << lpMsg->wParam << ", "
+                          << lpMsg->lParam;
 			    else if(tasflags.messageSyncMode != 0)
 				    detTimer.GetTicks(TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
 			    //if(!inPauseHandler)
@@ -1883,8 +1905,11 @@ namespace Hooks
 			    if((wRemoveMsg & PM_REMOVE) || PeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, PM_REMOVE|PM_NOYIELD))
 				    MyWndProcA(lpMsg->hwnd, lpMsg->message, lpMsg->wParam, lpMsg->lParam);
 			    else
-				    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_ERROR, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) failed?\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-			    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": possibly continuing to wait. (got 0x%X (%s), removed 0x%X (%s))\n", prevmsg, GetWindowsMessageName(prevmsg), lpMsg ? lpMsg->message : 0, GetWindowsMessageName(lpMsg ? lpMsg->message : 0));
+				    LOG() << "failed?";
+                LOG() << "possibly continuing to wait. (got " << prevmsg << " ("
+                      << GetWindowsMessageName(prevmsg) << "), removed "
+                      << (lpMsg ? lpMsg->message : 0) << " ("
+                      << GetWindowsMessageName(lpMsg ? lpMsg->message : 0) << "))";
 			    //verbosedebugprintf(__FUNCTION__"(0x%X, (0x%X -> 0x%X), 0x%X, 0x%X) looped.\n", hWnd, prevmsg, lpMsg ? lpMsg->message : 0, wMsgFilterMin, wMsgFilterMax);
 		    }
 	    }
@@ -1902,7 +1927,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
     {
     //	VERBOSE_ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-	    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) called.\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+	    ENTER(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	    if(!lpMsg)
 		    return FALSE;
     #ifdef EMULATE_MESSAGE_QUEUES
@@ -1958,7 +1983,9 @@ namespace Hooks
 		    if(!rv || (CanMessageReachGame(lpMsg)))
 		    {
 			    if(rv)
-				    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ " got 0x%X (%s), 0x%X (%d), 0x%X (%d).\n", lpMsg ? lpMsg->message : 0, GetWindowsMessageName(lpMsg ? lpMsg->message : 0), lpMsg ? lpMsg->wParam : 0, lpMsg ? lpMsg->wParam : 0, lpMsg ? lpMsg->lParam : 0, lpMsg ? lpMsg->lParam : 0);
+                    LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
+                          << GetWindowsMessageName(lpMsg->message) << "), " << lpMsg->wParam << ", "
+                          << lpMsg->lParam;
 			    else if(tasflags.messageSyncMode != 0)
 				    detTimer.GetTicks(TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
 			    //if(!inPauseHandler)
@@ -1977,8 +2004,11 @@ namespace Hooks
 			    if((wRemoveMsg & PM_REMOVE) || PeekMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, PM_REMOVE|PM_NOYIELD))
 				    MyWndProcW(lpMsg->hwnd, lpMsg->message, lpMsg->wParam, lpMsg->lParam);
 			    else
-				    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_ERROR, __FUNCTION__ "(0x%X, 0x%X, 0x%X, 0x%X, 0x%X) failed?\n", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-			    debuglog(LCF_MESSAGES|LCF_WAIT|LCF_FREQUENT, __FUNCTION__ ": continuing to wait. (0x%X (%s) -> 0x%X (%s))\n", prevmsg, GetWindowsMessageName(prevmsg), lpMsg ? lpMsg->message : 0, GetWindowsMessageName(lpMsg ? lpMsg->message : 0));
+                    LOG() << "failed?";
+                LOG() << "possibly continuing to wait. (got " << prevmsg << " ("
+                      << GetWindowsMessageName(prevmsg) << "), removed "
+                      << (lpMsg ? lpMsg->message : 0) << " ("
+                      << GetWindowsMessageName(lpMsg ? lpMsg->message : 0) << "))";
 			    //verbosedebugprintf(__FUNCTION__"(0x%X, (0x%X -> 0x%X), 0x%X, 0x%X) looped.\n", hWnd, prevmsg, lpMsg ? lpMsg->message : 0, wMsgFilterMin, wMsgFilterMax);
 		    }
 	    }
@@ -1995,7 +2025,7 @@ namespace Hooks
     HOOK_FUNCTION(DWORD, WINAPI, GetQueueStatus, UINT flags);
     HOOKFUNC DWORD WINAPI MyGetQueueStatus(UINT flags)
     {
-	    debuglog(LCF_MESSAGES, __FUNCTION__ "(0x%X) called.\n", flags);
+	    ENTER(flags);
     #ifdef EMULATE_MESSAGE_QUEUES
 	    MessageQueue& mq = tls.messageQueue;
 	    DWORD rv = ((DWORD)(mq.queueStatus & flags) << 16) | (mq.queueStatusAtLastGet & mq.queueStatus & flags);
@@ -2011,43 +2041,23 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, GetInputState);
     HOOKFUNC BOOL WINAPI MyGetInputState()
     {
+        ENTER();
     #ifdef EMULATE_MESSAGE_QUEUES
 	    DWORD state = MyGetQueueStatus(QS_KEY|QS_MOUSEBUTTON|QS_HOTKEY);
 	    return ((state >> 16) & ~state) ? 1 : 0;
     #else
     //	BOOL rv = GetInputState(); // maybe this is ok? not sure.
 	    BOOL rv = 0;
-	    debuglog(LCF_KEYBOARD|LCF_TODO|LCF_FREQUENT, __FUNCTION__ " called. returned %d\n", rv);
+	    LEAVE(rv);
 	    return rv;
     #endif
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     HOOK_FUNCTION(LRESULT, WINAPI, DefWindowProcA, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC LRESULT WINAPI MyDefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 	    tls.callerisuntrusted++;
 	    LRESULT rv = DefWindowProcA(hWnd, Msg, wParam, lParam);
 	    tls.callerisuntrusted--;
@@ -2056,7 +2066,7 @@ namespace Hooks
     HOOK_FUNCTION(LRESULT, WINAPI, DefWindowProcW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC LRESULT WINAPI MyDefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
-	    debuglog(LCF_MESSAGES|LCF_FREQUENT, __FUNCTION__ "(0x%X, 0x%X (%s), 0x%X, 0x%X) called.\n", hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
+	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
 	    tls.callerisuntrusted++;
 	    LRESULT rv = DefWindowProcW(hWnd, Msg, wParam, lParam);
 	    tls.callerisuntrusted--;
@@ -2067,17 +2077,19 @@ namespace Hooks
     HOOK_FUNCTION(UINT, WINAPI, RegisterWindowMessageA, LPCSTR lpString);
     HOOKFUNC UINT WINAPI MyRegisterWindowMessageA(LPCSTR lpString)
     {
+        ENTER(lpString);
     //cmdprintf("SHORTTRACE: 3,50");
 	    UINT rv = RegisterWindowMessageA(lpString);
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(\"%s\") called. returned 0x%X, reserved=%d\n", lpString, rv, isMessageWhitelisted(rv));
+	    LEAVE(rv, isMessageWhitelisted(rv));
 	    return rv;
     }
     HOOK_FUNCTION(UINT, WINAPI, RegisterWindowMessageW, LPCWSTR lpString);
     HOOKFUNC UINT WINAPI MyRegisterWindowMessageW(LPCWSTR lpString)
     {
+        ENTER(lpString);
     //cmdprintf("SHORTTRACE: 3,50");
 	    UINT rv = RegisterWindowMessageW(lpString);
-	    debuglog(LCF_MESSAGES|LCF_UNTESTED, __FUNCTION__ "(\"%S\") called. returned 0x%X, reserved=%d\n", lpString, rv, isMessageWhitelisted(rv));
+	    LEAVE(rv, isMessageWhitelisted(rv));
 	    return rv;
     }
 
@@ -2086,7 +2098,7 @@ namespace Hooks
     HOOKFUNC LONG WINAPI MyGetMessageTime()
     {
 	    //return GetMessageTime();
-	    debuglog(LCF_MESSAGES|LCF_TIMEFUNC|LCF_TIMEGET, __FUNCTION__ " called.\n");
+	    ENTER();
     #ifdef EMULATE_MESSAGE_QUEUES
 	    MessageQueue& mq = tls.messageQueue;
 	    return mq.lastGot.time;
@@ -2099,7 +2111,7 @@ namespace Hooks
     HOOKFUNC DWORD WINAPI MyGetMessagePos()
     {
 	    //return GetMessagePos();
-	    debuglog(LCF_MESSAGES|LCF_MOUSE|LCF_UNTESTED, __FUNCTION__ " called.\n");
+	    ENTER();
     #ifdef EMULATE_MESSAGE_QUEUES
 	    MessageQueue& mq = tls.messageQueue;
 	    return (mq.lastGot.pt.x & 0xFFFF) | ((mq.lastGot.pt.y & 0xFFFF) << 16);

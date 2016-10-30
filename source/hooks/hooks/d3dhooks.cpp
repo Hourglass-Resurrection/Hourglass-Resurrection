@@ -25,6 +25,8 @@ DEFINE_LOCAL_GUID(IID_IDirect3DRefDevice, 0x50936643, 0x13e9, 0x11d1, 0x89, 0xaa
 DEFINE_LOCAL_GUID(IID_IDirect3DNullDevice, 0x8767df22, 0xbacc, 0x11d1, 0x89, 0x69, 0x00, 0xa0, 0xc9, 0x06, 0x29, 0xa8);
 DEFINE_LOCAL_GUID(IID_IDirect3DTnLHalDevice, 0xf5049e78, 0x4861, 0x11d2, 0xa4, 0x07, 0x00, 0xa0, 0xc9, 0x06, 0x29, 0xa8);
 
+using Log = DebugLog<LogCategory::D3D>;
+
 namespace Hooks
 {
     template<typename IDirect3DN> struct IDirect3DTraits {};
@@ -58,7 +60,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DN* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DN* pThis, REFIID riid, void** ppvObj)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X (0x%X?), 0x%X) called.\n", pThis, riid.Data1, MyDirect3D<IDirect3DN>::curGuid.Data1, ppvObj);
+            ENTER(pThis, riid.Data1, MyDirect3D<IDirect3DN>::curGuid.Data1, ppvObj);
             //if(!ppvObj) { return E_POINTER; }
             //if(riid == IID_IUnknown) { *ppvObj = (IUnknown*)pThis; pThis->AddRef(); return S_OK; }
             //if(IDirect3DTraits<IDirect3DN>::NUMBER == 1 && riid == IID_IDirect3D
@@ -74,13 +76,18 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateDevice)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device);
         static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X?) called.\n", rguid.Data1, MyDirect3D<IDirect3DN>::deviceGuid);
+            ENTER(rguid.Data1, MyDirect3D<IDirect3DN>::deviceGuid);
             //HRESULT hr = CreateDevice(pThis, IID_IDirect3DRampDevice, surf, device); // this forces to use a software device
     //		FixSurface(surf);
             HRESULT hr = CreateDevice(pThis, rguid, surf, device);
             if (SUCCEEDED(hr))
+            {
                 HookCOMInterface(MyDirect3D<IDirect3DN>::deviceGuid, (LPVOID*)device);
-            else ddrawdebugprintf("CreateDevice failed with hr = 0x%X.\n", hr);
+            }
+            else
+            {
+                LOG() << "CreateDevice failed with hr = " << hr;
+            }
             //cmdprintf("DEBUGPAUSE: B");
             //return -1;
             return hr;
@@ -89,7 +96,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *CreateDevice3)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument);
         static HRESULT STDMETHODCALLTYPE MyCreateDevice3(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument)
         {
-            d3ddebugprintf(__FUNCTION__ " called.\n");
+            ENTER();
             //		FixSurface(surf);
             HRESULT hr = CreateDevice3(pThis, rguid, surf, device, stupidPointlessArgument);
             if (SUCCEEDED(hr))
@@ -176,7 +183,7 @@ namespace Hooks
         static ULONG(STDMETHODCALLTYPE *Release)(IDirect3DDeviceN* pThis);
         static ULONG STDMETHODCALLTYPE MyRelease(IDirect3DDeviceN* pThis)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             ULONG rv = Release(pThis);
             return rv;
         }
@@ -184,7 +191,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj);
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             HRESULT rv = QueryInterface(pThis, riid, ppvObj);
             if (SUCCEEDED(rv))
                 HookCOMInterface(riid, ppvObj);
@@ -194,7 +201,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e);
         static HRESULT STDMETHODCALLTYPE MyDrawPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawPrimitive(pThis, a, b, c, d, e);
@@ -204,7 +211,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawIndexedPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g);
         static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawIndexedPrimitive(pThis, a, b, c, d, e, f, g);
@@ -214,7 +221,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e);
         static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawPrimitiveStrided(pThis, a, b, c, d, e);
@@ -224,7 +231,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawIndexedPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g);
         static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawIndexedPrimitiveStrided(pThis, a, b, c, d, e, f, g);
@@ -234,7 +241,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e);
         static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawPrimitiveVB(pThis, a, b, c, d, e);
@@ -244,7 +251,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *DrawIndexedPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g);
         static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = DrawIndexedPrimitiveVB(pThis, a, b, c, d, e, f, g);
@@ -254,7 +261,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Begin)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c);
         static HRESULT STDMETHODCALLTYPE MyBegin(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = Begin(pThis, a, b, c);
@@ -264,7 +271,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *BeginIndexed)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e);
         static HRESULT STDMETHODCALLTYPE MyBeginIndexed(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = BeginIndexed(pThis, a, b, c, d, e);
@@ -274,7 +281,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Vertex)(IDirect3DDeviceN* pThis, LPVOID a);
         static HRESULT STDMETHODCALLTYPE MyVertex(IDirect3DDeviceN* pThis, LPVOID a)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = Vertex(pThis, a);
@@ -284,7 +291,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Index)(IDirect3DDeviceN* pThis, WORD a);
         static HRESULT STDMETHODCALLTYPE MyIndex(IDirect3DDeviceN* pThis, WORD a)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = Index(pThis, a);
@@ -294,7 +301,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *End)(IDirect3DDeviceN* pThis, DWORD a);
         static HRESULT STDMETHODCALLTYPE MyEnd(IDirect3DDeviceN* pThis, DWORD a)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = End(pThis, a);
@@ -304,7 +311,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *BeginScene)(IDirect3DDeviceN* pThis);
         static HRESULT STDMETHODCALLTYPE MyBeginScene(IDirect3DDeviceN* pThis)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             HRESULT rv = BeginScene(pThis);
             return rv;
         }
@@ -312,7 +319,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *EndScene)(IDirect3DDeviceN* pThis);
         static HRESULT STDMETHODCALLTYPE MyEndScene(IDirect3DDeviceN* pThis)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             HRESULT rv = EndScene(pThis);
 
             return rv;
@@ -321,7 +328,7 @@ namespace Hooks
         static HRESULT(STDMETHODCALLTYPE *Clear)(IDirect3DDeviceN* pThis, DWORD a, LPD3DRECT b, DWORD c, D3DCOLOR d, D3DVALUE e, DWORD f);
         static HRESULT STDMETHODCALLTYPE MyClear(IDirect3DDeviceN* pThis, DWORD a, LPD3DRECT b, DWORD c, D3DCOLOR d, D3DVALUE e, DWORD f)
         {
-            d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+            ENTER(pThis);
             if (ShouldSkipDrawing(false, true))
                 return D3D_OK;
             HRESULT rv = Clear(pThis, a, b, c, d, e, f);
@@ -426,7 +433,7 @@ namespace Hooks
             UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
     HOOKFUNC HRESULT WINAPI MyDirect3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
     {
-        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
+        ENTER(SDKVersion);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreate(SDKVersion, lplpd3d, pUnkOuter);
@@ -442,7 +449,7 @@ namespace Hooks
         UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
     HOOKFUNC HRESULT WINAPI MyDirect3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
     {
-        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
+        ENTER(SDKVersion);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreate7(SDKVersion, lplpd3d, pUnkOuter);
@@ -459,7 +466,7 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
     {
         // maybe unnecessary?
-        d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
+        ENTER(lpGUID->Data1, lpd3ddevice);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreateDevice(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
@@ -473,7 +480,7 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
     {
         // maybe unnecessary?
-        d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
+        ENTER(lpGUID->Data1, lpd3ddevice);
         ThreadLocalStuff& curtls = tls;
         curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreateDevice7(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);

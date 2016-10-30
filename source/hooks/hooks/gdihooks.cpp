@@ -11,6 +11,8 @@
 
 #include "../locale.h"
 
+using Log = DebugLog<LogCategory::GDI>;
+
 namespace Hooks
 {
     // TODO: declare these in headers like openglhooks.h?
@@ -60,7 +62,7 @@ namespace Hooks
             case 8: {
                 int numEntries = 256;
                 if (bmi.bmiHeader.biClrUsed)
-                    numEntries = min(256, bmi.bmiHeader.biClrUsed);
+                    numEntries = std::min<DWORD>(256, bmi.bmiHeader.biClrUsed);
                 for (int i = 0; i < numEntries; i++)
                 {
                     activePalette[i].peBlue = bmi.bmiColors[i].rgbBlue;
@@ -91,7 +93,8 @@ namespace Hooks
         }
         else
         {
-            debuglog(LCF_GDI | LCF_ERROR, __FUNCTION__": unhandled bit count %d with biCompression=%d\n", bmi.bmiHeader.biBitCount, bmi.bmiHeader.biCompression);
+            LOG() << "unhandled bit count " << bmi.bmiHeader.biBitCount
+                  << " with biCompression=" << bmi.bmiHeader.biCompression;
             FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
         }
     }
@@ -254,7 +257,7 @@ namespace Hooks
             }
         }
 
-        debuglog(LCF_GDI | (isFrameBoundary ? LCF_FRAME : LCF_FREQUENT), __FUNCTION__ " called.\n");
+        ENTER();
 
 
         BOOL rv = TRUE;
@@ -319,7 +322,7 @@ namespace Hooks
             }
         }
 
-        debuglog(LCF_GDI | (isFrameBoundary ? LCF_FRAME : LCF_FREQUENT), __FUNCTION__ "(0x%X,%d,%d,%d,%d,0x%X,%d,%d,0x%X) called.\n", hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+        ENTER(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
 
 
 
@@ -458,7 +461,7 @@ namespace Hooks
     HOOK_FUNCTION(int, WINAPI, ChoosePixelFormat, HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd);
     HOOKFUNC int WINAPI MyChoosePixelFormat(HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd)
     {
-        debuglog(LCF_GDI, __FUNCTION__ " called.\n");
+        ENTER();
         int rv = ChoosePixelFormat(hdc, pfd);
         return rv;
     }
@@ -466,7 +469,7 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SetPixelFormat, HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd);
     HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
     {
-        debuglog(LCF_UNTESTED | LCF_GDI, __FUNCTION__ " called.\n");
+        ENTER();
         BOOL rv;
         if (!tasflags.forceWindowed)
         {
@@ -481,7 +484,7 @@ namespace Hooks
     HOOK_FUNCTION(COLORREF, WINAPI, GetPixel, HDC hdc, int xx, int yy);
     HOOKFUNC COLORREF WINAPI MyGetPixel(HDC hdc, int xx, int yy)
     {
-        debuglog(LCF_TODO | LCF_UNTESTED | LCF_DESYNC | LCF_GDI, __FUNCTION__ " called.\n");
+        ENTER();
         COLORREF rv = GetPixel(hdc, xx, yy);
         //debugprintf("XXX: 0x%08X", rv);
         return rv;
@@ -490,7 +493,7 @@ namespace Hooks
     HOOK_FUNCTION(int, WINAPI, GetDeviceCaps, HDC hdc, int index);
     HOOKFUNC int WINAPI MyGetDeviceCaps(HDC hdc, int index)
     {
-        //	debuglog(LCF_TODO|LCF_UNTESTED|LCF_DESYNC|LCF_GDI, __FUNCTION__ "(%d) called.\n", index);
+        ENTER(index);
         int rv;
         bool got = false;
         if (fakeDisplayValid)
@@ -529,8 +532,7 @@ namespace Hooks
         {
             rv = GetDeviceCaps(hdc, index);
         }
-        debuglog((got ? 0 : (LCF_TODO | LCF_UNTESTED | LCF_DESYNC)) | LCF_GDI, __FUNCTION__ "(%d) called, returned %d (0x%X).\n", index, rv, rv);
-        //debuglog(LCF_GDI, __FUNCTION__ "(%d) returned %d (0x%X).\n", index, rv, rv);
+        LEAVE(rv);
         return rv;
     }
 
@@ -573,7 +575,7 @@ namespace Hooks
     HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectA, CONST LOGFONTA *lplf);
     HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
     {
-        debuglog(LCF_GDI, __FUNCTION__ " called (quality=%d, charset=%d, lfFaceName=%s).\n", lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
+        ENTER(lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
 
         if (lplf->lfQuality != NONANTIALIASED_QUALITY)
             ((LOGFONTA*)lplf)->lfQuality = ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
@@ -610,7 +612,7 @@ namespace Hooks
     HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectW, CONST LOGFONTW *lplf);
     HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
     {
-        debuglog(LCF_GDI, __FUNCTION__ " called (quality=%d, charset=%d, lfFaceName=%S).\n", lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
+        ENTER(lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
         if (lplf->lfQuality != NONANTIALIASED_QUALITY)
             ((LOGFONTW*)lplf)->lfQuality = ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
 
