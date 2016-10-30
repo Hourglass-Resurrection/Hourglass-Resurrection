@@ -75,15 +75,16 @@ int debugprintf(LPCWSTR fmt, ...)
 	return rv;
 }
 
-void PrintLastError(LPCTSTR lpszFunction, DWORD dw)
+void PrintLastError(LPCWSTR lpszFunction, DWORD dw)
 {
 	if(!dw)
 		return;
 
 	LPVOID lpMsgBuf;
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL );
+		(LPWSTR)&lpMsgBuf, 0, NULL );
 
-	debugprintf(L"%S failed, error %d: %S", lpszFunction, dw, lpMsgBuf);
+	debugprintf(L"%s failed, error %d: %s", lpszFunction, dw, lpMsgBuf);
+    LocalFree(lpMsgBuf);
 }

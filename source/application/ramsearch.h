@@ -56,8 +56,8 @@ struct RSVal
 	union { int i; long long ll; float f; double d; struct {int i1; int i2;} i32s; } v;
 	enum Type { t_i, t_ll, t_f, t_d, } t;
 
-	bool print(char* output, char sizeTypeID, char typeID);
-	bool scan(const char* input, char sizeTypeID, char typeID);
+	bool print(LPWSTR output, WCHAR sizeTypeID, WCHAR typeID);
+	bool scan(LPCWSTR input, WCHAR sizeTypeID, WCHAR typeID);
 };
 
 extern int ResultCount;

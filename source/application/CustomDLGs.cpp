@@ -5,21 +5,25 @@
 extern HWND hWnd;
 
 // A normal MessageBox, but the parent has a default value now.
-int NormalMessageBox(LPCSTR lpText, LPCSTR lpCaption, UINT uType, HWND parent)
+int NormalMessageBox(LPCWSTR text, LPCWSTR caption, UINT type, HWND parent)
 {
-	if(!parent)
-		parent = hWnd;
-	return MessageBox(parent, lpText, lpCaption, uType);
+    if (parent == nullptr)
+    {
+        parent = hWnd;
+    }
+    return MessageBoxW(parent, text, caption, type);
 }
 
 // like MessageBox but gives us focus for the message and restores focus afterward
-int CustomMessageBox(LPCSTR lpText, LPCSTR lpCaption, UINT uType, HWND parent)
+int CustomMessageBox(LPCWSTR text, LPCWSTR caption, UINT type, HWND parent)
 {
-	if(!parent)
-		parent = hWnd;
-	HWND prevwnd = GetForegroundWindow();
-	SetForegroundWindow(parent);
-	int rv = MessageBox(parent, lpText, lpCaption, uType);
-	SetForegroundWindow(prevwnd);
-	return rv;
+    if (parent == nullptr)
+    {
+        parent = hWnd;
+    }
+    HWND prevwnd = GetForegroundWindow();
+    SetForegroundWindow(parent);
+    int rv = MessageBoxW(parent, text, caption, type);
+    SetForegroundWindow(prevwnd);
+    return rv;
 }

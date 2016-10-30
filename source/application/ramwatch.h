@@ -10,7 +10,7 @@ void OpenRWRecentFile(int memwRFileNumber);
 extern bool AutoRWLoad;
 extern bool RWSaveWindowPos;
 #define MAX_RECENT_WATCHES 5
-extern char rw_recent_files[MAX_RECENT_WATCHES][1024];
+extern WCHAR rw_recent_files[MAX_RECENT_WATCHES][1024];
 extern bool AskSave();
 extern int ramw_x;
 extern int ramw_y;
@@ -22,7 +22,7 @@ struct AddressWatcher
 	unsigned int Address; // hardware address
 	char Size;
 	char Type;
-	char* comment; // NULL means no comment, non-NULL means allocated comment
+	LPWSTR comment; // NULL means no comment, non-NULL means allocated comment
 	bool WrongEndian;
 	RSVal CurValue;
 };
@@ -32,7 +32,7 @@ extern int WatchCount; // number of valid items in rswatches
 
 extern char Watch_Dir[1024];
 
-bool InsertWatch(const AddressWatcher& Watch, LPCSTR Comment);
+bool InsertWatch(const AddressWatcher& Watch, LPCWSTR Comment);
 void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
 bool InsertWatch(const AddressWatcher& Watch, HWND parent=NULL); // asks user for comment
 void Update_RAM_Watch();

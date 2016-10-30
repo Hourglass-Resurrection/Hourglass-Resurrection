@@ -1,13 +1,14 @@
 /*  Copyright (C) 2011 nitsuja and contributors
-	Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
+    Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // main EXE cpp
-// TODO: split up this file.
+//
+// TODO: split up this file. at least the AVI recording part can be separated.
 
-#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
 // Windows Header Files:
-#include <windows.h>
+#include <Windows.h>
 #pragma comment(lib,"Version.lib") // Needed for the new Windows version detection
 
 #include <mmsystem.h>
@@ -16,7 +17,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
-#include <tchar.h>
+#include <wchar.h>
 #include <string.h>
 #include <psapi.h>
 #include <strsafe.h>
@@ -56,7 +57,7 @@ using namespace Config;
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
 
-#include "AVIDumping/AVIDumper.h"
+#include "AVIDumping\AVIDumper.h"
 
 #include "external/ddraw.h"
 #include "shared/logcat.h"
@@ -70,6 +71,7 @@ using namespace Config;
 #include "ExeFileOperations.h"
 #include "Utils/File.h"
 
+#include "DbgHelp/DbgHelp.h"
 
 #pragma warning(disable:4995)
 
@@ -77,12 +79,9 @@ using namespace Config;
 #define CONTEXT_ALL (CONTEXT_FULL | CONTEXT_FLOATING_POINT | CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS)
 #endif
 
-#define stricmp _stricmp
-#define unlink _unlink
-
 HINSTANCE hInst;
-TCHAR szTitle[MAX_LOADSTRING];
-TCHAR szWindowClass[MAX_LOADSTRING];
+WCHAR title[MAX_LOADSTRING];
+WCHAR window_class[MAX_LOADSTRING];
 
 BOOL InitInstance(HINSTANCE, int);
 BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -209,37 +208,40 @@ static const int s_safeSleepPerIter = 10;
  */
 void DetectWindowsVersion(int *major, int *minor)
 {
-	debugprintf(L"Detecting Windows version...\n");
-	char filename[MAX_PATH+1];
-	UINT value = GetWindowsDirectory(filename, MAX_PATH);
-	if(value != 0)
+    debugprintf(L"Detecting Windows version...\n");
+    WCHAR filename[MAX_PATH + 1];
+    UINT value = GetWindowsDirectoryW(filename, MAX_PATH);
+    if (value != 0)
 	{
 		// Fix for Windows installations in root dirs, GetWindowsDirectory does not include the final slash EXCEPT for when Windows is installed in root.
-		if(filename[value-1] == '\\') filename[value-1] = '\0'; 
+        if (filename[value - 1] == L'\\')
+        {
+            filename[value - 1] = L'\0';
+        }
 
-		strcat(filename, "\\System32\\kernel32.dll");
-		debugprintf(L"Using file '%S' for the detection.\n", filename);
+        wcscat(filename, L"\\System32\\kernel32.dll");
+        debugprintf(L"Using file '%s' for the detection.\n", filename);
 
-		UINT size = 0;
+        UINT size = 0;
 
 		// Despite being a pointer this must NOT be deleted by us, it will be taken care of properly by the destructors of the other structures when we delete verInfo.
-		VS_FIXEDFILEINFO *buffer = NULL;
-		DWORD infoSize = GetFileVersionInfoSize(filename, NULL);
+		VS_FIXEDFILEINFO *buffer = nullptr;
+		DWORD info_size = GetFileVersionInfoSizeW(filename, nullptr);
 
-		if(infoSize != 0)
+        if (info_size != 0)
 		{
-			BYTE *verInfo = new BYTE[(unsigned int)infoSize];
+			BYTE *ver_info = new BYTE[info_size];
 
 			// On some Windows versions the return value of GetFileVersionInfo is not to be trusted.
 			// It may return TRUE even if the function failed, but it always sets the right error code.
 			// So instead of catching the return value of the function, we query GetLastError for the function's return status.
-			GetFileVersionInfo(filename, NULL, infoSize, verInfo);
-			if(GetLastError() == ERROR_SUCCESS)
+            GetFileVersionInfoW(filename, 0, info_size, ver_info);
+            if (GetLastError() == ERROR_SUCCESS)
 			{
-				BOOL parseSuccess = VerQueryValueA(verInfo, "\\", (LPVOID*)&buffer, &size);
-				if (parseSuccess != FALSE && size > 0)
+				BOOL parse_success = VerQueryValueW(ver_info, L"\\", reinterpret_cast<LPVOID*>(&buffer), &size);
+                if (parse_success != FALSE && size > 0)
 				{
-					if (buffer->dwSignature == 0xFEEF04BD)
+                    if (buffer->dwSignature == 0xFEEF04BD)
 					{
 						/* 
 						   kernel32.dll versions and their Windows counter parts:
@@ -250,26 +252,26 @@ void DetectWindowsVersion(int *major, int *minor)
 						   6.3 = Win8.1
 						   Now don't these remind a lot of the actual windows versions?
 						*/
-						*major = HIWORD(buffer->dwFileVersionMS);
-						*minor = LOWORD(buffer->dwFileVersionMS);
+                        *major = HIWORD(buffer->dwFileVersionMS);
+                        *minor = LOWORD(buffer->dwFileVersionMS);
 
-						delete [] verInfo; // We no longer need to hold on to this.
+                        delete[] ver_info; // We no longer need to hold on to this.
 						
-						debugprintf(L"Detection succeeded, detected version %d.%d\n", *major, *minor);
-						return;
+                        debugprintf(L"Detection succeeded, detected version %d.%d\n", *major, *minor);
+                        return;
 					}
 				}
 			}
-			delete [] verInfo; // Destroy this if we failed, we cannot have a memory leak now can we?
+			delete [] ver_info; // Destroy this if we failed, we cannot have a memory leak now can we?
 		}
 	}
-	debugprintf(L"Failed to determinate Windows version, using old unsafe method...\n");
+    debugprintf(L"Failed to determinate Windows version, using old unsafe method...\n");
 
-	OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
-	GetVersionEx(&osvi);
-	*major = osvi.dwMajorVersion;
-	*minor = osvi.dwMinorVersion;
-	return;
+    OSVERSIONINFOW osvi = { sizeof(OSVERSIONINFOW) };
+    GetVersionExW(&osvi);
+    *major = osvi.dwMajorVersion;
+    *minor = osvi.dwMinorVersion;
+    return;
 }
 
 //OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
@@ -299,31 +301,33 @@ bool HotkeyHWndIsHotkeys = true;
 
 InputCapture inputC; // TODO, put the declaration somewhere else ?
 
-/** Checks the path to ensure it is usable for the program.
+/** Normalizes the path to ensure it is usable for the program.
  *
- * Note: it requires both buffers given to be at least MAX_PATH characters in size.
- *       It is allowed for both arguments to point at the same buffer.
- * @param *output char pointer to where the normalized path will be written.
- * @param *path char pointer to where the path to normalize is stored
- * @return *output the same char pointer in parameter, containing the normalized path
+ * @param path const widechar string with path to normalize
+ * @return normalized path as a widechar string.
  */
-char* NormalizePath(char* output, const char* path)
+std::wstring NormalizePath(const std::wstring& path)
 {
-	extern bool started;
-	if(/*movie.version >= 60 || */!started){
-		while(*path == ' ')
-			path++;
-	}
-	DWORD len = 0;
-	if(/*!(movie.version >= 40 && movie.version < 53) || */!started)
-		len = GetFullPathNameA(path, MAX_PATH, output, NULL);
-	if(len && len < MAX_PATH)
-		GetLongPathNameA(output, output, MAX_PATH); // GetFullPathName won't always convert short filenames to long filenames
-	else if(path != output)
-		strcpy(output, path);
-	return output;
-}
+    extern bool started;
+    if (path.empty() || started)
+    {
+        return path;
+    }
 
+    DWORD len = 0;
+    WCHAR normalized_path[MAX_PATH + 1];
+    if (!started)
+    {
+        len = GetFullPathNameW(path.c_str(), MAX_PATH, normalized_path, nullptr);
+        if (len == 0)
+            PrintLastError(L"GetFullPathName", GetLastError());
+    }
+    if (len != 0 && len < MAX_PATH)
+    {
+        GetLongPathNameW(normalized_path, normalized_path, MAX_PATH); // GetFullPathName won't always convert short filenames to long filenames
+    }
+    return normalized_path;
+}
 
 // Following code needs functions from C header files
 #define BUFSIZE 512
@@ -337,43 +341,46 @@ char* NormalizePath(char* output, const char* path)
  * @param *pszFilename TCHAR string with the path to translate.
  * @return bool true in case of success, false elsewhere.
  */
-static bool TranslateDeviceName(TCHAR* pszFilename)
+static std::wstring TranslateDeviceName(const std::wstring& filename)
 {
-	// Translate path with device name to drive letters.
-	TCHAR szTemp[BUFSIZE];
-	szTemp[0] = '\0';
+    // Translate path with device name to drive letters.
+    WCHAR temp_str[BUFSIZE];
+    memset(temp_str, L'\0', sizeof(temp_str));
 
-	if(GetLogicalDriveStrings(BUFSIZE-1, szTemp)) 
-	{
-		// szTemp contains list of valid drives in the system.
-		TCHAR szName[MAX_PATH];
-		TCHAR szDrive[3] = TEXT(" :");
-		BOOL bFound = FALSE;
-		TCHAR* p = szTemp;
+    if (GetLogicalDriveStringsW(BUFSIZE - 1, temp_str) != 0)
+    {
+        // temp_str contains list of valid drives in the system.
+        WCHAR name[MAX_PATH];
+        WCHAR drive[3] = L" :";
+        bool found = false;
+        WCHAR* p = temp_str;
 
-		// Try every valid device name until one matches the path, in that case the path is translated
-		do {
-			*szDrive = *p;
-			if(QueryDosDevice(szDrive, szName, MAX_PATH))
-			{
-				UINT uNameLen = (UINT)_tcslen(szName);
-				if(uNameLen < MAX_PATH) 
-				{
-					bFound = !_tcsnicmp(pszFilename, szName, uNameLen);
-					if(bFound) 
-					{
-						TCHAR szTempFile[MAX_PATH];
-						StringCchPrintf(szTempFile, MAX_PATH, TEXT("%s%s"), szDrive, pszFilename+uNameLen);
-						StringCchCopyN(pszFilename, MAX_PATH+1, szTempFile, _tcslen(szTempFile));
-					}
-				}
-			}
-			while(*p++);
-		} while(!bFound && *p);
-		NormalizePath(pszFilename, pszFilename);
-		return true;
-	}
-	return false;
+        // Try every valid device name until one matches the path, in that case the path is translated
+        do {
+            *drive = *p;
+            if (QueryDosDeviceW(drive, name, MAX_PATH) != 0)
+            {
+                size_t name_len = wcslen(name);
+                if (name_len < MAX_PATH)
+                {
+                    found = (_wcsnicmp(filename.c_str(), name, name_len) == 0);
+                    if (found)
+                    {
+                        WCHAR temp_file[MAX_PATH];
+                        int len = swprintf(temp_file, MAX_PATH, L"%s%s", drive, filename.c_str() + name_len);
+                        if (len > sizeof(temp_file))
+                        {
+                            return L"";
+                        }
+                        wcsncpy(temp_str, temp_file, len);
+                        break;
+                    }
+                }
+            } while (*p++);
+        } while (!found && *p);
+        return NormalizePath(temp_str);
+    }
+    return L"";
 }
 
 /** Retrieve the path of the executable that generated the given process.
@@ -385,11 +392,14 @@ static bool TranslateDeviceName(TCHAR* pszFilename)
  * @param hProcess HANDLE to a process.
  * @param filename char* where the path will be stored.
  */
-bool GetFileNameFromProcessHandle(HANDLE hProcess, char* filename)
+std::wstring GetFileNameFromProcessHandle(HANDLE hProcess)
 {
-	if(GetProcessImageFileNameA(hProcess, filename, MAX_PATH))
-		return TranslateDeviceName(filename);
-	return false;
+    WCHAR filename[MAX_PATH + 1];
+    if (GetProcessImageFileNameW(hProcess, filename, MAX_PATH) != 0)
+    {
+        return TranslateDeviceName(filename);
+    }
+    return L"";
 }
 /** Retrieve the path of the executable that generated the given file handle.
  * TODO why?
@@ -397,25 +407,32 @@ bool GetFileNameFromProcessHandle(HANDLE hProcess, char* filename)
  * @param hFile HANDLE to a file.
  * @param pszFilename TCHAR* where the path will be stored.
  */
-bool GetFileNameFromFileHandle(HANDLE hFile, TCHAR* pszFilename) 
+std::wstring GetFileNameFromFileHandle(HANDLE file) 
 {
-	// Creates a mapping of a given file, then tries to relate the mapping
-	// to a possibly existing other mapping of the same file.
-	// In case of success, the path we got is translated to be usable.
-	bool bSuccess = false;
-	if(HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 1, NULL)) 
-	{
-		if(void* pMem = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 1))
-		{
-			if(GetMappedFileName(GetCurrentProcess(), pMem, pszFilename, MAX_PATH)) 
-				bSuccess = TranslateDeviceName(pszFilename);
-			UnmapViewOfFile(pMem);
-		}
-		CloseHandle(hFileMap);
-	}
-	if(!bSuccess)
-		strcpy(pszFilename, "(unknown)");
-	return bSuccess;
+    // Creates a mapping of a given file, then tries to relate the mapping
+    // to a possibly existing other mapping of the same file.
+    // In case of success, the path we got is translated to be usable.
+    bool success = false;
+    WCHAR filename[MAX_PATH + 1];
+    HANDLE mapped_file = CreateFileMappingW(file, NULL, PAGE_READONLY, 0, 1, NULL);
+    if (mapped_file != nullptr)
+    {
+        LPVOID mem = MapViewOfFile(mapped_file, FILE_MAP_READ, 0, 0, 1);
+        if (mem != nullptr)
+        {
+            if (GetMappedFileNameW(GetCurrentProcess(), mem, filename, MAX_PATH) != 0)
+            {
+                success = true;
+            }
+            UnmapViewOfFile(mem);
+        }
+        CloseHandle(mapped_file);
+    }
+    if (!success)
+    {
+        return L"";
+    }
+    return TranslateDeviceName(filename);
 }
 
 /** Get the thread suspend count.
@@ -450,7 +467,7 @@ void SetThreadSuspendCount(HANDLE hThread, int count)
 
 
 //std::map<LPVOID,HANDLE> dllBaseToHandle;
-std::map<LPVOID,std::string> dllBaseToFilename;
+std::map<LPVOID, std::wstring> dll_base_to_filename;
 
 static int lastFrameAdvanceKeyUnheldTime = timeGetTime();
 static int lastFrameAdvanceTime = timeGetTime();
@@ -546,12 +563,8 @@ LogCategoryFlag excludeLogFlags = LCF_NONE
 
 
 
-//char moviefilename [MAX_PATH+1];
-//char exefilename [MAX_PATH+1];
-//char commandline [160];
-//char thisprocessPath [MAX_PATH+1];
-char injectedDllPath [MAX_PATH+1];
-char subexefilename [MAX_PATH+1];
+std::wstring injected_dll_path;
+std::wstring sub_exe_filename;
 
 
 
@@ -568,7 +581,7 @@ static int recoveringStaleSlot = 0;
 static int recoveringStaleFrame = 0;
 
 
-static char localCommandSlot [256];
+static char localCommandSlot[256];
 
 
 
@@ -578,12 +591,14 @@ void UpdateFrameCountDisplay(int frameCount, int frequency);
 /** Refresh the rerecord count displayed */
 void UpdateRerecordCountDisplay()
 {
-	char str [256];
-	sprintf(str, "%u", movie.rerecordCount);
-	char str2 [256];
-	GetWindowText(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), str2, 256);
-	if(strcmp(str,str2))
-		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), str);
+    WCHAR rr_count[256];
+    swprintf(rr_count, L"%u", movie.rerecordCount);
+    WCHAR old_rr_count[256];
+    GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), old_rr_count, 256);
+    if (wcscmp(rr_count, old_rr_count))
+    {
+        SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), rr_count);
+    }
 }
 
 /** Calculates the size taken by the given file. 
@@ -592,23 +607,31 @@ void UpdateRerecordCountDisplay()
  * @return size integer with the number of bytes of given file, 
  *			    or 0 if the file has not been found.
  */
-int CalcFilesize(const char* path)
+LONGLONG CalcFilesize(const std::wstring& path)
 {
-	FILE* file = fopen(path, "rb");
-	if(!file)
-		return 0;
-	fseek(file, 0, SEEK_END);
-	int size = ftell(file);
-	fclose(file);
-	return size;
+    BOOL rv;
+    LARGE_INTEGER file_size;
+    HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+    {
+        return 0;
+    }
+    memset(&file_size, 0, sizeof(file_size));
+    rv = GetFileSizeEx(file, &file_size);
+    CloseHandle(file);
+    if (rv == FALSE)
+    {
+        return 0;
+    }
+    return file_size.QuadPart;
 }
 /** Calculats the size of the currently used .exe game.
  * @return size integer with the number of bytes of given file, 
  *			    or 0 if the file has not been found.
  */
-int CalcExeFilesize()
+LONGLONG CalcExeFilesize()
 {
-	return CalcFilesize(exefilename);
+	return CalcFilesize(exe_filename.c_str());
 }
 
 
@@ -622,19 +645,23 @@ int CalcExeFilesize()
  * @param path char* with the filepath
  * @return path char* with the filename alone
  */
-const char* GetFilenameWithoutPath(const char* path)
+std::wstring GetFilenameWithoutPath(const std::wstring& path)
 {
-	const char* slash = max(strrchr(path, '\\'), strrchr(path, '/'));
-	return slash ? slash+1 : path;
+    size_t last = path.find_last_of(L"\\/");
+    if (last == std::wstring::npos)
+    {
+        return path;
+    }
+    return path.substr(last + 1);
 }
 
 /** Get the name of the .exe file without the rest of the path.
  * @see GetExeFilenameWithoutPath() FIXME why is this here? Maybe it was supposed to be @see GetGilenameWithoutPath?
  * @return path char* with the filename alone
  */
-const char* GetExeFilenameWithoutPath()
+std::wstring GetExeFilenameWithoutPath()
 {
-	return GetFilenameWithoutPath(exefilename);
+	return GetFilenameWithoutPath(exe_filename);
 }
 
 /** TODO clarifying.
@@ -643,7 +670,7 @@ const char* GetExeFilenameWithoutPath()
  */
 struct SharedDataHandle
 {
-	unsigned char*const dataPtr;
+    LPBYTE const dataPtr;
 	int userdata; // used in functions as "I checked this place already"
 
 	void AddRef() { refCount++; }
@@ -656,7 +683,7 @@ struct SharedDataHandle
 		}
 	}
 	int GetRefCount() { return refCount; }
-	SharedDataHandle(unsigned char* data) : refCount(1), dataPtr(data), userdata(0) {}
+	SharedDataHandle(LPBYTE data) : refCount(1), dataPtr(data), userdata(0) {}
 private:
 	int refCount;
 	SharedDataHandle(const SharedDataHandle& c);
@@ -684,7 +711,7 @@ struct SaveState
 	struct MemoryRegion
 	{
 		MEMORY_BASIC_INFORMATION info;
-		unsigned char* data; // NOTE: BYTE* data perhaps? Would make it cleaner imo.
+		LPBYTE data;
 		SharedDataHandle* dataHandle;
 	};
 	std::vector<MemoryRegion> memory;
@@ -788,7 +815,7 @@ struct ThreadInfo
 	HANDLE hProcess;
 	//DWORD waitingCount;
 	//DWORD hopelessness;
-	char name [64];
+    char name[64];
 
 	operator HANDLE() { return handle; }
 	ThreadInfo& operator= (const HANDLE& h) { 
@@ -893,7 +920,7 @@ static void* remoteGeneralInfoFromDll = 0;
 
 void ReceiveGeneralInfoPointer(LPVOID general_info_pointer)
 {
-	remoteGeneralInfoFromDll = general_info_pointer;
+    remoteGeneralInfoFromDll = general_info_pointer;
 }
 
 void ReceiveSoundCaptureInfoPointer(LPVOID sound_capture_info_pointer)
@@ -942,25 +969,25 @@ void CheckSrcDllVersion(DWORD version)
 {
 	if(version != VERSION)
 	{
-		const char* str;
+		LPCWSTR str;
 		if(version > VERSION)
-			str = "Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+			str = L"Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		else
-			str = "Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
-		debugprintf(L"%S\n", str);
-		CustomMessageBox(str, "Version Problem", MB_OK | MB_ICONWARNING);
+			str = L"Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+		debugprintf(L"%s\n", str);
+		CustomMessageBox(str, L"Version Problem", MB_OK | MB_ICONWARNING);
 	}
 }
 
 
 #ifdef _DEBUG
 // TEMP
-static char localCommandSlot_COPY [256];
+static char localCommandSlot_COPY[256];
 #endif
 
 void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& thread_name)
 {
-	thread_name.SetThreadName("unknown");
+    thread_name.SetThreadName("unknown");
 	// print the callstack of the exception thread
 	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(threadId);
 	if(found != hGameThreads.end())
@@ -994,7 +1021,7 @@ void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& 
 //}
 
 
-void SaveMovie(char* filename)
+void SaveMovie(const std::wstring& filename)
 {
 	// Update some variables, this should be harmless... (mostly)...
 	// May however become really harmful if SaveMovie is called during the LoadMovie scenario!
@@ -1006,13 +1033,13 @@ void SaveMovie(char* filename)
 	{
 		movie.fps = localTASflags.framerate;
 		movie.it = localTASflags.initialTime;
-		CalcFileMD5Cached(exefilename, movie.fmd5);
+		CalcFileMD5Cached(exe_filename.c_str(), movie.fmd5);
 		movie.fsize = CalcExeFilesize();
-		strcpy(movie.commandline, commandline);
+		wcscpy(movie.commandline, command_line.c_str());
 		movie.headerBuilt = true;
 	}
 
-	if(SaveMovieToFile(movie, filename))
+	if(SaveMovieToFile(movie, filename.c_str()))
 	{
 		unsavedMovieData = false;
 	}
@@ -1021,36 +1048,36 @@ void SaveMovie(char* filename)
 
 // returns 1 on success, 0 on failure, -1 on cancel
 // TODO: Dependency on parameter can probably be removed.
-int LoadMovie(char* filename)
+int LoadMovie(const std::wstring& filename)
 {
 	// NOTE: if ( !LoadMovieFromFile(movie, filename) ) return 0; Maybe do it like that? Cleaner.
-	bool rv = LoadMovieFromFile(movie, filename);
+	bool rv = LoadMovieFromFile(movie, filename.c_str());
 	if(rv == false) return 0; // Check if LoadMovieFromFile failed, if it did we don't need to continue.
 
 	if(localTASflags.playback)
 	{
 		if(movie.frames.size() == 0)
 		{
-			CustomMessageBox("This movie file doesn't contain any frames, playback is not possible.", "Error!", (MB_OK | MB_ICONERROR));
+			CustomMessageBox(L"This movie file doesn't contain any frames, playback is not possible.", L"Error!", (MB_OK | MB_ICONERROR));
 			return 0; // Even if opening the movie was successful, it cannot be played back, so it "failed".
 		}
 		if(movie.version != VERSION)
 		{
-			char str [1024];
-			sprintf(str,
-			"This movie was recorded using a different main version of Hourglass Resurrection.\n"
-			"\n"
-			"Movie's version: %u\n"
-			"Program version: %u\n"
-			"\n"
-			"This may lead to the movie desyncing.\n"
-			"If it would desync you might want to use the movies main version of Hourglass Resurrection.\n"
-			"\n"
-			"Do you want to try playing back the movie anyway?\n"
-			"(Click \"Yes\" to continue, \"No\" to abort)\n",
+            WCHAR str[1024];
+			swprintf(str,
+			L"This movie was recorded using a different main version of Hourglass Resurrection.\n"
+			L"\n"
+			L"Movie's version: %u\n"
+			L"Program version: %u\n"
+			L"\n"
+			L"This may lead to the movie desyncing.\n"
+			L"If it would desync you might want to use the movies main version of Hourglass Resurrection.\n"
+			L"\n"
+			L"Do you want to try playing back the movie anyway?\n"
+			L"(Click \"Yes\" to continue, \"No\" to abort)\n",
 			movie.version, (unsigned int)VERSION);
 
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
 			if(result == IDNO)
 			{
 				return -1;
@@ -1058,18 +1085,18 @@ int LoadMovie(char* filename)
 			movie.version = VERSION;
 		}
 		unsigned int temp_md5[4];
-		CalcFileMD5Cached(exefilename, temp_md5);
+		CalcFileMD5Cached(exe_filename.c_str(), temp_md5);
 		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
 		{
-			char str[1024];
-			sprintf(str, "This movie was probably recorded using a different exe.\n\n"
-						 "Movie's exe's md5: %X%X%X%X, size: %d\n"
-						 "Current exe's md5: %X%X%X%X, size: %d\n\n"
-						 "Playing the movie with current exe may lead to the movie desyncing.\n"
-						 "Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was probably recorded using a different exe.\n\n"
+						 L"Movie's exe's md5: %X%X%X%X, size: %d\n"
+						 L"Current exe's md5: %X%X%X%X, size: %lld\n\n"
+						 L"Playing the movie with current exe may lead to the movie desyncing.\n"
+						 L"Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
 						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], static_cast<int>(movie.fsize), 
 						 temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(result == IDNO)
 			{
 				return -1;
@@ -1077,53 +1104,53 @@ int LoadMovie(char* filename)
 		}
 		if(movie.fps != localTASflags.framerate)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different fps.\n\n"
-						 "Movie's fps: %d\nCurrent fps: %d\n\n"
-						 "Playing the movie with current fps may lead to the movie desyncing.\n"
-						 "Do you want to use the movies fps instead?\n"
-						 "(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different fps.\n\n"
+						 L"Movie's fps: %d\nCurrent fps: %d\n\n"
+						 L"Playing the movie with current fps may lead to the movie desyncing.\n"
+						 L"Do you want to use the movies fps instead?\n"
+						 L"(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
 						 static_cast<int>(movie.fps), localTASflags.framerate);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
 				localTASflags.framerate = movie.fps;
 				// Also update the window text.
-				char fpstext[256];
-				sprintf(fpstext, "%d", localTASflags.framerate);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
+				WCHAR fpstext[256];
+				swprintf(fpstext, L"%d", localTASflags.framerate);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
 			}
 		}
 		if(movie.it != localTASflags.initialTime)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different initial time.\n\n"
-						 "Movie's initial time: %d\n"
-						 "Current initial time: %d\n\n"
-						 "Playing the movie with current initial time may lead to the movie desyncing.\n"
-						 "Do you want to use the movies initial time instead?\n"
-						 "(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different initial time.\n\n"
+						 L"Movie's initial time: %d\n"
+						 L"Current initial time: %d\n\n"
+						 L"Playing the movie with current initial time may lead to the movie desyncing.\n"
+						 L"Do you want to use the movies initial time instead?\n"
+						 L"(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)",
 						 static_cast<int>(movie.it), localTASflags.initialTime);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
 				localTASflags.initialTime = movie.it;
 				// Also update the window text.
-				char ittext[256];
-				sprintf(ittext, "%d", localTASflags.initialTime);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
+				WCHAR ittext[256];
+				swprintf(ittext, L"%d", localTASflags.initialTime);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
 			}
 		}
-		if(strcmp(movie.commandline, commandline) != 0)
+		if(wcscmp(movie.commandline, command_line.c_str()) != 0)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, commandline);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, command_line.c_str());
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
-				strcpy(commandline, movie.commandline);
+				command_line = movie.commandline;
 				// Also update the window text.
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), command_line.c_str());
 			}
 		}
 	}
@@ -1131,7 +1158,7 @@ int LoadMovie(char* filename)
 	{
 		if(movie.frames.size() > 0)
 		{
-			int rv = CustomMessageBox("This movie file contains frame data.\nAre you sure you want to overwrite it?\n(Click \"Yes\" to overwrite movie, \"No\" to abort)", "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
+			int rv = CustomMessageBox(L"This movie file contains frame data.\nAre you sure you want to overwrite it?\n(Click \"Yes\" to overwrite movie, \"No\" to abort)", L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(rv == IDNO) return -1; // Abort
 		}
 	}
@@ -1160,11 +1187,11 @@ void SaveGameStatePhase2(int slot)
 	if(finished && !recoveringStale)
 	{
 		debugprintf(L"DESYNC WARNING: tried to save state while movie was \"Finished\"\n");
-		const char* str = "Warning: The movie is in \"Finished\" status.\n"
-			"This means that any input you entered after the movie became \"Finished\" was lost.\n"
-			"Any state saved now will contain a movie that immediately desyncs at that point.\n"
-			"Are you sure you really want to save the state now?\n";
-		int result = CustomMessageBox(str, "Desync Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING);
+		LPCWSTR str = L"Warning: The movie is in \"Finished\" status.\n"
+			L"This means that any input you entered after the movie became \"Finished\" was lost.\n"
+			L"Any state saved now will contain a movie that immediately desyncs at that point.\n"
+			L"Are you sure you really want to save the state now?\n";
+		int result = CustomMessageBox(str, L"Desync Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING);
 		if(result == IDNO)
 			return;
 	}
@@ -1211,7 +1238,7 @@ void SaveGameStatePhase2(int slot)
 	{
 		MEMORY_BASIC_INFORMATION mbi = {0};
 		SYSTEM_INFO si = {0};
-		GetSystemInfo(&si);
+ 		GetSystemInfo(&si);
 		// walk process addresses
 		void* lpMem = si.lpMinimumApplicationAddress;
 //		debugprintf("MEM: START\n");
@@ -1311,7 +1338,7 @@ void SaveGameStatePhase2(int slot)
 	// TEMP: save movie file (temp because should be incremental, not only on savestate)
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 
 	// done
@@ -1398,36 +1425,36 @@ static void RecoverStaleState(int slot)
 
 	// now that we have the information required,
 	// we'll ask the user if they really want to do it:
-	char str [2048];
+	WCHAR str [2048];
 	if(bestStateToUse <= -2)
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by playing the movie from the beginning?\n"
-			"Doing so will make all other savestates become stale (at least initially).\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by playing the movie from the beginning?\n"
+			L"Doing so will make all other savestates become stale (at least initially).\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, emulateFramesRemaining);
 	}
 	else if(bestStateToUse == -1)
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by continuing the movie from the current state?\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by continuing the movie from the current state?\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, emulateFramesRemaining);
 	}
 	else
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by continuing the movie from savestate %d?\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by continuing the movie from savestate %d?\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, bestStateToUse, emulateFramesRemaining);
 	}
-	int result = CustomMessageBox(str, "Stale Savestate", MB_YESNO | MB_ICONQUESTION);
+	int result = CustomMessageBox(str, L"Stale Savestate", MB_YESNO | MB_ICONQUESTION);
 	if(result == IDNO)
 		return;
 
@@ -1459,7 +1486,7 @@ static void RecoverStaleState(int slot)
 	if(bestStateToUse <= -2)
 	{
 		// need to restart
-		PostMessage(hWnd, WM_COMMAND, IDC_BUTTON_STOP, 42);
+		PostMessageW(hWnd, WM_COMMAND, IDC_BUTTON_STOP, 42);
 //			PostMessage(hWnd, WM_COMMAND, IDC_BUTTON_PLAY, 0);
 	}
 }
@@ -1700,11 +1727,11 @@ void LoadGameStatePhase2(int slot)
 			if(!warned)
 			{
 				warned = true;
-				char str [1024];
-				sprintf(str, "Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
-					"You should load a different savestate before continuing, or switch to read+write and reload it."
+				WCHAR str [1024];
+				swprintf(str, L"Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
+					L"You should load a different savestate before continuing, or switch to read+write and reload it."
 					, state.movie.currentFrame, static_cast<int>(movie.frames.size()));
-				CustomMessageBox(str, "Movie End Warning", MB_OK | MB_ICONWARNING);
+				CustomMessageBox(str, L"Movie End Warning", MB_OK | MB_ICONWARNING);
 			}
 		}
 		else
@@ -1721,10 +1748,10 @@ void LoadGameStatePhase2(int slot)
 					if(!warned)
 					{
 						warned = true;
-						char str [1024];
-						sprintf(str, "Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
-							"This can cause a desync. You should load a different savestate before continuing.", i);
-						CustomMessageBox(str, "Desync Warning", MB_OK | MB_ICONWARNING);
+						WCHAR str [1024];
+						swprintf(str, L"Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
+							L"This can cause a desync. You should load a different savestate before continuing.", i);
+						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
 				}
 			}
@@ -1739,7 +1766,7 @@ void LoadGameStatePhase2(int slot)
 
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 
 	// done... actually that wasn't so bad
@@ -1747,7 +1774,7 @@ void LoadGameStatePhase2(int slot)
 
 bool CreateAVIFile()
 {
-    std::string avi_file_name = Utils::File::GetFileNameSave(thisprocessPath, {
+    std::wstring avi_file_name = Utils::File::GetFileNameSave(this_process_path, {
         Utils::File::FileFilter::AVI,
         Utils::File::FileFilter::AllFiles
     });
@@ -1816,7 +1843,7 @@ void SaveGameStatePhase1(int slot)
 {
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "SAVE: %d", slot);
+	::sprintf(localCommandSlot, "SAVE: %d", slot);
 	SendCommand();
 	cannotSuspendForCommand = true;
 }
@@ -1824,7 +1851,7 @@ void LoadGameStatePhase1(int slot)
 {
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "LOAD: %d", slot);
+	::sprintf(localCommandSlot, "LOAD: %d", slot);
 	SendCommand();
 	cannotSuspendForCommand = true;
 }
@@ -1834,7 +1861,7 @@ void HandleRemotePauseEvents()
 		return;
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "HANDLEEVENTS: %d", 1);
+	::sprintf(localCommandSlot, "HANDLEEVENTS: %d", 1);
 	SendCommand();
 }
 
@@ -1846,13 +1873,13 @@ void SendTASFlags()
 	
 	//Some updates that have to be done here
 	localTASflags.emuMode = localTASflags.emuMode
-		| (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))      
-			 && localTASflags.fastForward)
-		   ? EMUMODE_NOPLAYBUFFERS : 0)
-		| ((localTASflags.threadMode==0 
-				|| localTASflags.threadMode==4
-				||localTASflags.threadMode==5)
-		   ? EMUMODE_VIRTUALDIRECTSOUND : 0);
+	    | (((recoveringStale||(localTASflags.fastForwardFlags&FFMODE_SOUNDSKIP))      
+	         && localTASflags.fastForward)
+           ? EMUMODE_NOPLAYBUFFERS : 0)
+        | ((localTASflags.threadMode==0 
+                || localTASflags.threadMode==4
+                ||localTASflags.threadMode==5)
+           ? EMUMODE_VIRTUALDIRECTSOUND : 0);
 	//localTASflags.fastForwardFlags = localTASflags.fastForwardFlags | (recoveringStale ? (FFMODE_FRONTSKIP|FFMODE_BACKSKIP) ? 0);
 	localTASflags.appLocale = localTASflags.appLocale ? localTASflags.appLocale : tempAppLocale;
 	//localTASflags.includeLogFlags = includeLogFlags | traceLogFlags;
@@ -2189,7 +2216,7 @@ void CheckHotkeys(int frameCount, bool frameSynced)
 
 
 // sends to UpdateLoadedOrUnloadedDllHooks
-void AddAndSendDllInfo(const char* filename, bool loaded, HANDLE hProcess)
+void AddAndSendDllInfo(LPCWSTR filename, bool loaded, HANDLE hProcess)
 {
 	if(!loaded)
 		return; // because UnInterceptUnloadingAPIs is disabled now
@@ -2202,12 +2229,12 @@ void AddAndSendDllInfo(const char* filename, bool loaded, HANDLE hProcess)
 
 		if(filename)
 		{
-			const char* slash = max(strrchr(filename, '\\'), strrchr(filename, '/'));
-			const char* dllname = slash ? slash+1 : filename;
+			LPCWSTR slash = std::max(wcsrchr(filename, L'\\'), wcsrchr(filename, L'/'));
+			LPCWSTR dllname = slash ? slash+1 : filename;
 			// insert at start, since dll consumes from end
 			memmove(&dllLoadInfos.infos[1], dllLoadInfos.infos, dllLoadInfos.numInfos*sizeof(*dllLoadInfos.infos));
 			DllLoadInfo& info = dllLoadInfos.infos[0];
-			strncpy(info.dllname, dllname, sizeof(info.dllname));
+			snprintf(info.dllname, sizeof(info.dllname), "%S", dllname);
 			info.dllname[sizeof(info.dllname)-1] = 0;
 			info.loaded = loaded;
 			dllLoadInfos.numInfos++;
@@ -2231,8 +2258,8 @@ void UpdateGeneralInfoDisplay()
 		SIZE_T bytesRead = 0;
 		if(ReadProcessMemory(hGameProcess, remoteGeneralInfoFromDll, &localGeneralInfoFromDll, sizeof(InfoForDebugger), &bytesRead))
 		{
-			char str [256];
-			char str2 [256];
+			WCHAR str [256];
+			WCHAR str2 [256];
 //#ifdef _DEBUG
 //			sprintf(str, "frame %d  " /*"tick %d  "*/ "delay %d  " "new %d",
 //				localGeneralInfoFromDll.frames,
@@ -2243,10 +2270,10 @@ void UpdateGeneralInfoDisplay()
 //			if(strcmp(str,str2))
 //				SetWindowText(GetDlgItem(hWnd, IDC_TIMEINFO_LABEL), str);
 //#endif
-			sprintf(str, "%d", localGeneralInfoFromDll.ticks);
-			GetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
-			if(strcmp(str,str2))
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
+			swprintf(str, L"%d", localGeneralInfoFromDll.ticks);
+			GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
+			if(wcscmp(str,str2))
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
 #if 0
 #if _DEBUG
 			static FILE* file = NULL;
@@ -2296,16 +2323,16 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 		{
 			if(frameCount != displayedFrameCount)
 			{
-				char str [256];
-				sprintf(str, "%d", frameCount);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_CURFRAME), str);
+				WCHAR str [256];
+				swprintf(str, L"%d", frameCount);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_CURFRAME), str);
 				displayedFrameCount = frameCount;
 			}
 			if(maxcount != displayedMaxFrameCount)
 			{
-				char str [256];
-				sprintf(str, "%d", maxcount);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_MAXFRAME), str);
+				WCHAR str [256];
+				swprintf(str, L"%d", maxcount);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_MAXFRAME), str);
 				displayedMaxFrameCount = maxcount;
 			}
 			{
@@ -2318,14 +2345,14 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 					int hours = frameCount / (60*60 * localTASflags.framerate);
 					int maxhours = maxcount / (60*60 * localTASflags.framerate);
 
-					char str [256];
-					sprintf(str, "%dh %dm %02.2fs   /   %dh %dm %02.2fs",
+					WCHAR str [256];
+					swprintf(str, L"%dh %dm %02.2fs   /   %dh %dm %02.2fs",
 						hours, minutes, seconds,  maxhours, maxminutes, maxseconds);
-					SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), str);
+					SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), str);
 				}
 				else
 				{
-					SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), "");
+					SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), L"");
 				}
 			}
 
@@ -2361,20 +2388,20 @@ void CheckDialogChanges(int frameCount)
 		displayed_started = started;
 		displayed_playback = (localTASflags.playback != 0);
 		displayed_finished = finished;
-		const char* str;
+		LPCWSTR str;
 		if(started)
 			if(localTASflags.playback)
 				if(finished)
-					str = "Current Status: Finished";
+					str = L"Current Status: Finished";
 				else
-					str = "Current Status: Playing";
+					str = L"Current Status: Playing";
 			else
-				str = "Current Status: Recording";
+				str = L"Current Status: Recording";
 		else
-			str = "Current Status: Inactive";
-		SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIESTATUS), str);
+			str = L"Current Status: Inactive";
+		SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIESTATUS), str);
 		InvalidateRect(GetDlgItem(hWnd, IDC_STATIC_FRAMESLASH), NULL, TRUE);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_CHECK_MOUSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_CHECK_GAMEPAD), !started);
 //		EnableWindow(GetDlgItem(hWnd, IDC_ALLOWHARDWAREACCEL), !started);
@@ -2389,9 +2416,9 @@ void CheckDialogChanges(int frameCount)
 			EnableWindow(GetDlgItem(hWnd, IDC_RADIO_THREAD_ALLOW), !started);
 		}
 		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_EXE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
 		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_MOVIE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_MOVIEBROWSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_GAMEBROWSE), !started);
 		mainMenuNeedsRebuilding = true;
@@ -2481,94 +2508,94 @@ void SleepFrameBoundary(const char* frameInfo, int threadId)
 
 void FrameBoundary(IPC::FrameBoundaryInfo& frame_info, int threadId)
 {
-	if (!requestedCommandReenter)
-	{
-		// if it's actually a new frame instead of just paused
-		s_lastFrameCount = frame_info.GetTotalRanFrames();
-		int frameCountUpdateFreq = localTASflags.framerate / 2;
-		if (localTASflags.fastForward && !(localTASflags.aviMode & 1))
-			frameCountUpdateFreq = localTASflags.framerate * 8;
-		UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), frameCountUpdateFreq);
+    if (!requestedCommandReenter)
+    {
+        // if it's actually a new frame instead of just paused
+        s_lastFrameCount = frame_info.GetTotalRanFrames();
+        int frameCountUpdateFreq = localTASflags.framerate / 2;
+        if (localTASflags.fastForward && !(localTASflags.aviMode & 1))
+            frameCountUpdateFreq = localTASflags.framerate * 8;
+        UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), frameCountUpdateFreq);
 
-		// temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
-		if (frame_info.GetTotalRanFrames() == 1)
-		{
-			InvalidateRect(hWnd, NULL, TRUE);
-		}
-		HandleAviSplitRequests();
+        // temp workaround for games that currently spray pixels onscreen when they boot up (cave story)
+        if (frame_info.GetTotalRanFrames() == 1)
+        {
+            InvalidateRect(hWnd, NULL, TRUE);
+        }
+        HandleAviSplitRequests();
 
-		if (frame_info.GetCaptureInfoType() != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
-		{
-			// handle AVI recording
-			if (localTASflags.aviMode & 1)
-			{
-				ProcessCaptureFrameInfo(frame_info.GetCaptureInfo(), frame_info.GetCaptureInfoType());
-			}
-			if (localTASflags.aviMode & 2)
-			{
-				ProcessCaptureSoundInfo();
-			}
-		}
+        if (frame_info.GetCaptureInfoType() != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
+        {
+            // handle AVI recording
+            if (localTASflags.aviMode & 1)
+            {
+                ProcessCaptureFrameInfo(frame_info.GetCaptureInfo(), frame_info.GetCaptureInfoType());
+            }
+            if (localTASflags.aviMode & 2)
+            {
+                ProcessCaptureSoundInfo();
+            }
+        }
 
-		// update ram search/watch windows
-		Update_RAM_Search();
+        // update ram search/watch windows
+        Update_RAM_Search();
 
-		// handle skipping lag frames if that option is enabled
-		temporaryUnpause = (frame_info.GetCaptureInfoType() == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
-	}
-	else
-	{
-		temporaryUnpause = false;
-	}
+        // handle skipping lag frames if that option is enabled
+        temporaryUnpause = (frame_info.GetCaptureInfoType() == CAPTUREINFO_TYPE_PREV) && advancePastNonVideoFrames;
+    }
+    else
+    {
+        temporaryUnpause = false;
+    }
 
-	if (requestedCommandReenter && !cannotSuspendForCommand)
-	{
-		ResumeAllExcept(threadId);
-	}
+    if (requestedCommandReenter && !cannotSuspendForCommand)
+    {
+        ResumeAllExcept(threadId);
+    }
 
-	// handle hotkeys
-	do
-	{
-		requestedCommandReenter = false;
-		cannotSuspendForCommand = false;
-		RefreshSavestates(frame_info.GetTotalRanFrames());
-		if (!requestedCommandReenter)
-		{
-			CheckHotkeys(frame_info.GetTotalRanFrames(), true);
-		}
-		CheckDialogChanges(frame_info.GetTotalRanFrames());
-		if (paused)
-		{
-			UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), 1);
-			if (!requestedCommandReenter)
-			{
-				Sleep(5);
-			}
-			if (!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
-			{
-				HandleRemotePauseEvents();
-			}
-		}
-	} while (paused && !(temporaryUnpause || requestedCommandReenter));
+    // handle hotkeys
+    do
+    {
+        requestedCommandReenter = false;
+        cannotSuspendForCommand = false;
+        RefreshSavestates(frame_info.GetTotalRanFrames());
+        if (!requestedCommandReenter)
+        {
+            CheckHotkeys(frame_info.GetTotalRanFrames(), true);
+        }
+        CheckDialogChanges(frame_info.GetTotalRanFrames());
+        if (paused)
+        {
+            UpdateFrameCountDisplay(frame_info.GetTotalRanFrames(), 1);
+            if (!requestedCommandReenter)
+            {
+                Sleep(5);
+            }
+            if (!temporaryUnpause && !requestedCommandReenter) // check to avoid breaking... everything
+            {
+                HandleRemotePauseEvents();
+            }
+        }
+    } while (paused && !(temporaryUnpause || requestedCommandReenter));
 
-	if (requestedCommandReenter && !cannotSuspendForCommand)
-	{
-		SuspendAllExcept(threadId);
-	}
+    if (requestedCommandReenter && !cannotSuspendForCommand)
+    {
+        SuspendAllExcept(threadId);
+    }
 
-	// handle movie playback / recording
-	if (!requestedCommandReenter)
-	{
-		if (!localTASflags.playback)
-		{
-			RecordLocalInputs();
-		}
-		InjectCurrentMovieFrame();
-		if (!(frame_info.GetTotalRanFrames() & (frame_info.GetTotalRanFrames() - 1)))
-		{
-			DoPow2Logic(frame_info.GetTotalRanFrames());
-		}
-	}
+    // handle movie playback / recording
+    if (!requestedCommandReenter)
+    {
+        if (!localTASflags.playback)
+        {
+            RecordLocalInputs();
+        }
+        InjectCurrentMovieFrame();
+        if (!(frame_info.GetTotalRanFrames() & (frame_info.GetTotalRanFrames() - 1)))
+        {
+            DoPow2Logic(frame_info.GetTotalRanFrames());
+        }
+    }
 }
 
 static int s_firstTimerDesyncWarnedFrame = 0x7FFFFFFF;
@@ -2593,10 +2620,10 @@ void DoPow2Logic(int frameCount)
 					if(localTASflags.playback && movieTime && s_firstTimerDesyncWarnedFrame >= frameCount)
 					{
 						s_firstTimerDesyncWarnedFrame = frameCount;
-						char str [256];
-						sprintf(str, "DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
-						debugprintf(L"%S\n", str);
-						CustomMessageBox(str, "Desync Warning", MB_OK | MB_ICONWARNING);
+						WCHAR str [256];
+						swprintf(str, L"DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
+						debugprintf(L"%s\n", str);
+						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
 					movie.desyncDetectionTimerValues[which] = localGeneralInfoFromDll.ticks;
 				}
@@ -2606,7 +2633,7 @@ void DoPow2Logic(int frameCount)
 
 }
 
-static char dllLeaveAloneList [256][MAX_PATH+1];
+static WCHAR dllLeaveAloneList [256][MAX_PATH+1];
 
 //void SupplyDllList(int writeAddressInt)
 //{
@@ -2690,12 +2717,12 @@ void ResumeAllExcept(int ignoreThreadID)
 
 void ReceiveFrameRate(IPC::FPSInfo& fps_info)
 {
-	char str[128];
-	sprintf(str, "Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
-	const char* pStr = str;
-	if(strlen(str) > 24)
+    WCHAR str[128];
+	swprintf(str, L"Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
+	LPCWSTR pStr = str;
+	if(wcslen(str) > 24)
 		pStr += 8; // omit "Current" if the string is getting too long
-	SetWindowText(GetDlgItem(hWnd, IDC_STATIC_CURRENTFPS), pStr);
+	SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_CURRENTFPS), pStr);
 
 	goingsuperfast = (fps_info.GetFPS() >= 300.0f);
 }
@@ -2796,96 +2823,83 @@ void PrintPrivileges(HANDLE hProcess)
 void PrintPrivileges(HANDLE hProcess) {}
 #endif
 
-static void AbsolutifyPath(char* buf)
+static std::wstring AbsolutifyPath(const std::wstring& path)
 {
-	SearchPath(NULL, buf, NULL, MAX_PATH, buf, NULL);
-	NormalizePath(buf, buf);
+    WCHAR buffer[MAX_PATH + 1];
+	SearchPathW(nullptr, path.c_str(), nullptr, MAX_PATH, buffer, nullptr);
+	return NormalizePath(buffer);
 }
 
-const char* ExceptionCodeToDescription(DWORD code)
+LPCWSTR ExceptionCodeToDescription(DWORD code)
 {
 	switch(code & (DWORD)0xCFFFFFFF)
 	{
 		// custom/nonstandard/undocumented exceptions
-		case /*DELPHI_RUNTIME_ERROR*/(DWORD)0x0EEDFADE: return "Delphi runtime error.";
-		case /*EXCEPTION_MSVC*/(DWORD)0xC06D7363: return "exception inserted by Visual C++, often used for SEH";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0524F54: return "EXCEPTION_COMPLUS (ROT)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434352: return "EXCEPTION_COMPLUS (CCR)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434F4D: return "EXCEPTION_COMPLUS (COM)";
-		case /*EXCEPTION_HIJACK*/(DWORD)0xC0434F4E: return "Resuming thread after garbage collection.";
-		case /*EXCEPTION_SOFTSO*/(DWORD)0xC053534F: return "Stack overflow in managed code.";
-		case /*EXCEPTION_EXX*/(DWORD)0xC0455858: return "SetupThread PInvoke failure.";
-		case (DWORD)0xC0440001: return "D runtime Win32 exception";
+		case /*DELPHI_RUNTIME_ERROR*/(DWORD)0x0EEDFADE: return L"Delphi runtime error.";
+		case /*EXCEPTION_MSVC*/(DWORD)0xC06D7363: return L"exception inserted by Visual C++, often used for SEH";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0524F54: return L"EXCEPTION_COMPLUS (ROT)";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434352: return L"EXCEPTION_COMPLUS (CCR)";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434F4D: return L"EXCEPTION_COMPLUS (COM)";
+		case /*EXCEPTION_HIJACK*/(DWORD)0xC0434F4E: return L"Resuming thread after garbage collection.";
+		case /*EXCEPTION_SOFTSO*/(DWORD)0xC053534F: return L"Stack overflow in managed code.";
+		case /*EXCEPTION_EXX*/(DWORD)0xC0455858: return L"SetupThread PInvoke failure.";
+		case (DWORD)0xC0440001: return L"D runtime Win32 exception";
 		default:
 			LPVOID lpMessageBuffer;
-			HMODULE Hand = LoadLibrary("NTDLL.DLL");
+			HMODULE Hand = LoadLibraryW(L"NTDLL.DLL");
    
-			FormatMessage(
+			FormatMessageW(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER |
 				FORMAT_MESSAGE_FROM_SYSTEM |
 				FORMAT_MESSAGE_FROM_HMODULE,
 				Hand,
 				code,
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPTSTR) &lpMessageBuffer,
+				(LPWSTR) &lpMessageBuffer,
 				0,
 				NULL );
 
 			FreeLibrary(Hand);
 
-			return (char*)lpMessageBuffer;
+            /*
+             * TODO: Memleak
+             * -- Warepire
+             */
+			return (LPWSTR)lpMessageBuffer;
 	}
 }
 
-static int CountSharedPrefixLength(const char* a, const char* b)
+static int CountSharedPrefixLength(const std::wstring& a, const std::wstring& b)
 {
 	int i = 0;
 	while(a[i] && tolower(a[i]) == tolower(b[i]))
 		i++;
 	return i;
 }
-static int CountBackslashes(const char* str)
+static int CountBackslashes(const std::wstring& str)
 {
-	int count = 0;
-	while((str = strchr(str, '\\'))!=0)
-		count++, str++;
-	return count;
+    return std::count(str.begin(), str.end(), L'\\');
 }
 
-static int IsPathTrusted(const char* path)
+static int IsPathTrusted(const std::wstring& path)
 {
 	// we want to return 0 for all system or installed dlls,
 	// 2 for our own dll, 1 for the game exe,
 	// and 1 for any dlls or exes around the game's directory
 
-	if(!_stricmp(path, injectedDllPath))
-		return 2;
+    if (!wcsicmp(path.c_str(), injected_dll_path.c_str()))
+    {
+        return 2;
+    }
 
-	int outCount = 2;
-	//if(movie.version >= 68)
-	//{
-		if(CountBackslashes(exefilename + CountSharedPrefixLength(exefilename, path)) < outCount)
-			return 1;
-		if(CountBackslashes(subexefilename + CountSharedPrefixLength(subexefilename, path)) < outCount)
-			return 1;
-	//}
-	/*else // old version, which accidentally trusts some paths it clearly shouldn't:
-	{
-		const char* end = path + strlen(path);
-		for(const char* newEnd = end; outCount && newEnd != path; newEnd--)
-		{
-			if(*newEnd == '\\')
-			{
-				end = newEnd + 1;
-				outCount--;
-			}
-		}
-		if(!_strnicmp(path, exefilename, end - path))
-			return 1;
-		if(!_strnicmp(path, subexefilename, end - path))
-			return 1;
-	}*/
-	if(strlen(path) >= 4 && !_strnicmp(path + strlen(path) - 4, ".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
+    int outCount = 2;
+
+	if(CountBackslashes(exe_filename.c_str() + CountSharedPrefixLength(exe_filename, path)) < outCount)
+		return 1;
+	if(CountBackslashes(sub_exe_filename.c_str() + CountSharedPrefixLength(sub_exe_filename, path)) < outCount)
+		return 1;
+
+    if(path.length() >= 4 && !wcsnicmp(path.c_str() + path.length() - 4, L".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
 		return 1;
 
 	return 0;
@@ -2895,7 +2909,7 @@ static int IsPathTrusted(const char* path)
 struct MyMODULEINFO
 {
 	MODULEINFO mi;
-	std::string path;
+	std::wstring path;
 };
 static std::vector<MyMODULEINFO> trustedModuleInfos;
 static MyMODULEINFO injectedDllModuleInfo;
@@ -2953,7 +2967,7 @@ DWORD CalculateModuleSize(LPVOID hModule, HANDLE hProcess)
 	return std::max<DWORD>(size, 0x10000);
 }
 
-void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)
+void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 {
 	int trusted = IsPathTrusted(path);
 	if(!trusted)
@@ -2984,16 +2998,16 @@ void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)
 			if((DWORD)mmi.mi.lpBaseOfDll >= (DWORD)mmi2.mi.lpBaseOfDll
 			&& (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage <= (DWORD)mmi2.mi.lpBaseOfDll+mmi2.mi.SizeOfImage)
 			{
-				debugprintf(L"apparently already TRUSTED MODULE 0x%08X - 0x%08X (%S)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
+				debugprintf(L"apparently already TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
 				return;
 			}
 		}
 		trustedModuleInfos.push_back(mmi);
 		SendTrustedRangeInfos(hProcess);
 	}
-	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%S)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
+	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
 }
-void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)
+void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 {
 	int trusted = IsPathTrusted(path);
 	if(!trusted)
@@ -3030,7 +3044,7 @@ struct CustomBreakpoint
 {
 	DWORD address;
 	DWORD threadId;
-	unsigned char origByte;
+	BYTE origByte;
 };
 static std::vector<CustomBreakpoint> customBreakpoints;
 
@@ -3061,7 +3075,7 @@ void AddBreakpoint(DWORD address, DWORD threadId, HANDLE hProcess)
 	SIZE_T unused = 0;
 	ReadProcessMemory(hProcess, (void*)address, &bp.origByte, 1, &unused);
 
-	unsigned char newByte = 0xCC;
+	static constexpr BYTE newByte = 0xCC;
 	WriteProcessMemory(hProcess, (void*)address, &newByte, 1, &unused);
 
 	VirtualProtectEx(hProcess, (void*)address, 1, dwOldProtect, &dwOldProtect);
@@ -3158,29 +3172,29 @@ bool AdjustPrivileges(HANDLE hGameHandle, bool bEnable)
 {
 	debugprintf("Attempting adjustment of the game's privileges to: %s\n", bEnable ? "extended" : "normal");
 
-	HANDLE hToken;
-	TOKEN_PRIVILEGES tp;
-	LUID luid;
+    HANDLE hToken;
+    TOKEN_PRIVILEGES tp;
+    LUID luid;
 
 	//HANDLE currentProcess = GetCurrentProcess();
 
 	BOOL opened = OpenProcessToken(hGameHandle, (TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY | TOKEN_READ), &hToken);
-	if (opened == FALSE)
+    if (opened == FALSE)
 	{
 		debugprintf("Failed to get the token for the game process...\n");
 		return false;
 	}
 
 	BOOL lookedUp = LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid);
-	if (lookedUp == FALSE)
+    if (lookedUp == FALSE)
 	{
 		debugprintf("Failed to look up the privileges...\n");
 		CloseHandle(hToken);
 		return false;
 	}
 
-	tp.PrivilegeCount = 1;
-	tp.Privileges[0].Luid = luid;
+    tp.PrivilegeCount = 1;
+    tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = bEnable ? SE_PRIVILEGE_ENABLED : 0;
 
 	BOOL adjusted = AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
@@ -3193,7 +3207,7 @@ bool AdjustPrivileges(HANDLE hGameHandle, bool bEnable)
 
 	debugprintf("Adjustment completed successfully.\n");
 	CloseHandle(hToken);
-	return true;
+    return true;
 }
 #endif
 
@@ -3238,7 +3252,7 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 		//for(iter = dllBaseToHandle.begin(); iter != dllBaseToHandle.end(); iter++)
 		//	CloseHandle(iter->second);
 //		dllBaseToHandle.clear();
-		dllBaseToFilename.clear();
+		dll_base_to_filename.clear();
 	}
 
 	//CloseThreadHandles(threadHandleToClose, hProcess);
@@ -3411,8 +3425,6 @@ void OnMovieStart()
 	//}
 }
 
-
-
 // debuggerthreadproc
 static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam) 
 {
@@ -3420,15 +3432,20 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 //restartgame:
 
+
 	STARTUPINFO startupInfo = { sizeof(STARTUPINFO) };
 	PROCESS_INFORMATION processInfo = {0};
+    HANDLE hInitialThread = INVALID_HANDLE_VALUE;
+
+    do {
 	allProcessInfos.clear();
 	customBreakpoints.clear();
 
-	s_lastFrameCount = 0;
+    
+    s_lastFrameCount = 0;
 	movie.currentFrame = 0;
 	{
-		int loadMovieResult = LoadMovie(moviefilename);
+		int loadMovieResult = LoadMovie(movie_filename);
 		if (loadMovieResult < 0 || (localTASflags.playback && loadMovieResult == 0))
 		{
 			// Replacing this goto with copy-pasted code.
@@ -3453,24 +3470,16 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	DeleteCriticalSection(&g_processMemCS);
 	InitializeCriticalSection(&g_processMemCS);
 
-	subexefilename[0] = 0;
-	AbsolutifyPath(exefilename);
-	char initialDirectory [MAX_PATH+1];
-	strcpy(initialDirectory, exefilename);
-	char* slash = max(strrchr(initialDirectory, '\\'), strrchr(initialDirectory, '/'));
-	if(slash)
-		*slash = 0;
+    sub_exe_filename.clear();
+    exe_filename = AbsolutifyPath(exe_filename);
+    std::wstring initial_directory = exe_filename.substr(0, exe_filename.find_last_of(L"\\/"));
 
-	char* cmdline = NULL;
-	/*if(movie.version >= 60 && movie.version <= 63)
-		cmdline = commandline;
-	else if(movie.version >= 64)
-	{*/
-		// TODO: Expand the size of allowed commandline
-		static char tempcmdline [ARRAYSIZE(commandline)+MAX_PATH+4];
-		sprintf(tempcmdline, "\"%s\" %s", exefilename, commandline);
-		cmdline = tempcmdline;
-	//}
+    std::vector<wchar_t> cmdline;
+    cmdline.push_back(L'\"');
+    cmdline.insert(cmdline.end(), exe_filename.begin(), exe_filename.end());
+    cmdline.push_back(L'\"');
+    cmdline.push_back(L' ');
+    cmdline.insert(cmdline.end(), command_line.begin(), command_line.end());
 
 	/*debugprintf("enabling full debug privileges...\n");
 	if(!EnableDebugPrivilege())
@@ -3478,10 +3487,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		debugprintf("failed to enable full debug privileges...\n");
 	}*/
 
-	debugprintf(L"creating process \"%S\"...\n", exefilename);
+	debugprintf(L"creating process \"%s\"...\n", exe_filename.c_str());
 	//debugprintf("initial directory = \"%s\"...\n", initialDirectory);
-	BOOL created = CreateProcess(exefilename, // application name
-		cmdline, // commandline arguments
+	BOOL created = CreateProcessW(exe_filename.c_str(), // application name
+		cmdline.data(), // commandline arguments
 		NULL, // process attributes (e.g. security descriptor)
 		NULL, // thread attributes (e.g. security descriptor)
 		FALSE, // inherit handles
@@ -3489,22 +3498,22 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		///*INHERIT_PARENT_AFFINITY*/0x00010000 | CREATE_SUSPENDED | DEBUG_ONLY_THIS_PROCESS, // creation flags
 		//0,//CREATE_SUSPENDED ,//| DEBUG_ONLY_THIS_PROCESS, // creation flags
 		NULL, // environment
-		initialDirectory, // initial directory
+		initial_directory.c_str(), // initial directory
 		&startupInfo,
 		&processInfo);
 
 	if(!created)
 	{
 		DWORD error = GetLastError();
-		PrintLastError("CreateProcess", error);
+		PrintLastError(L"CreateProcess", error);
 		if(error == ERROR_ELEVATION_REQUIRED)
 		{
-			char str [1024];
-			sprintf(str,
-				"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
-				"Hourglass doesn't have high enough privileges to launch the game.\n"
-				"Try closing Hourglass and then opening it with \"Run as administrator\".", exefilename);
-			CustomMessageBox(str, "Permission Denied", MB_OK|MB_ICONERROR);
+			WCHAR str [1024];
+			swprintf(str,
+				L"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
+				L"Hourglass doesn't have high enough privileges to launch the game.\n"
+				L"Try closing Hourglass and then opening it with \"Run as administrator\".", exe_filename.c_str());
+			CustomMessageBox(str, L"Permission Denied", MB_OK|MB_ICONERROR);
 		}
 	}
 
@@ -3580,7 +3589,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 			if(!SetProcessAffinityMask(hGameProcess, mask))
 			{
-				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+				PrintLastError(L"SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
 			}
 		}
 	}
@@ -3619,7 +3628,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 			if(!SetProcessAffinityMask(hGameProcess, mask))
 			{
-				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+				PrintLastError(L"SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
 			}
 		}
 		// Else: No Hyper-Threading to disable.
@@ -3650,13 +3659,11 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 	debugprintf(L"attempting injection...\n");
 
-	char* dllpath = injectedDllPath;
-	strcpy(dllpath, thisprocessPath);
-	strcat(dllpath, "\\hooks.dll");
+	injected_dll_path = this_process_path + L"\\hooks.dll";
 
 	if(!onlyHookChildProcesses)
 	{
-		InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, dllpath, runDllLast!=0);
+		InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 
 		debugprintf(L"done injection. starting game thread\n");
 	}
@@ -3683,7 +3690,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	CheckDialogChanges(0);
 	EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_STOP), true);
 	mainMenuNeedsRebuilding = true;
-	HANDLE hInitialThread = processInfo.hThread;
+	hInitialThread = processInfo.hThread;
 	ResumeThread(hInitialThread);
 
 	//BOOL firstBreak = TRUE;
@@ -3745,7 +3752,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			if(de.dwDebugEventCode != 8)
 				verbosedebugprintf("WaitForDebugEvent. received debug event: %X\n", de.dwDebugEventCode);
 
-			static LPVOID ipc_address_in_process = nullptr;
+            static LPVOID ipc_address_in_process = nullptr;
 
 			switch(de.dwDebugEventCode)
 			{
@@ -3760,15 +3767,15 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					{
 						SIZE_T bytesRead = 0;
 						if(!ReadProcessMemory(hProcess, dsi.lpDebugStringData, (LPVOID)str, len, &bytesRead))
-							sprintf(str, /*"SHORTTRACE: 0,50 "*/ "ERROR READING STRING of length %d\n", len);
+							::sprintf(str, /*"SHORTTRACE: 0,50 "*/ "ERROR READING STRING of length %d\n", len);
 
 						const char* pstr = str;
 
 #define MessagePrefixMatch(pre) (!strncmp(pstr, pre": ", sizeof(pre": ")-1) ? pstr += sizeof(pre": ")-1 : false)
-						if (MessagePrefixMatch("IPCBUFFER"))
-						{
-							ipc_address_in_process = reinterpret_cast<LPVOID>(strtol(pstr, nullptr, 16));
-						}
+                        if (MessagePrefixMatch("IPCBUFFER"))
+                        {
+                            ipc_address_in_process = reinterpret_cast<LPVOID>(strtol(pstr, nullptr, 16));
+                        }
 						else if(MessagePrefixMatch("PAUSEEXCEPTIONPRINTING"))
 							exceptionPrintingPaused++;
 						else if(MessagePrefixMatch("RESUMEEXCEPTIONPRINTING"))
@@ -3792,7 +3799,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 #undef MessagePrefixMatch
 					}
-					delete [] str; // destroying str since it's now a pointer, and we don't need it anymore.
+				    delete [] str; // destroying str since it's now a pointer, and we don't need it anymore.
 #pragma endregion
 				}
 				break;
@@ -3824,200 +3831,222 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							}
 						}
 					}
-					else if (ipc_address_in_process != nullptr)
-					{
-						IPC::CommandFrame ipc_frame;
-						SIZE_T read_bytes;
-						/*
-						 * HACK: Workaround for limitation in extendedtrace.
-						 * TODO: Write new wrapper for dbghelp.dll then check the break point came from SendIPCMessage
-						 * -- Warepire
-						 */
-						BOOL rv = ReadProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &read_bytes);
-						if (rv && read_bytes == sizeof(ipc_frame))
-						{
-							if (ipc_frame.m_command > IPC::Command::CMD_DUMMY_ENTRY_MIN_OPCODE &&
-								static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) % 2 == 0)
-							{
-								std::vector<BYTE> buf;
-								read_bytes = 0;
-								if (ipc_frame.m_command_data_size != 0)
-								{
-									buf.resize(ipc_frame.m_command_data_size);
-									rv = ReadProcessMemory(hGameProcess, ipc_frame.m_command_data, buf.data(), buf.capacity(), &read_bytes);
-								}
-								if (rv && read_bytes == ipc_frame.m_command_data_size)
-								{
-									switch (ipc_frame.m_command)
-									{
-									case IPC::Command::CMD_DEBUG_MESSAGE:
-										debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
-										break;
-									case IPC::Command::CMD_DLL_VERSION:
-										CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
-										break;
-									case IPC::Command::CMD_COMMAND_BUF:
-										ReceiveCommandSlotPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_INPUT_BUF:
-										ReceiveInputsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
-										ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
-										ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-										break;
-									case IPC::Command::CMD_TAS_FLAGS_BUF:
-										ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_SOUND_INFO:
-										ReceiveSoundCaptureInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_GENERAL_INFO:
-										ReceiveGeneralInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_PALETTE_ENTRIES:
-										ReceivePaletteEntriesPointer(*reinterpret_cast<LPVOID*>(buf.data()));
-										break;
-									case IPC::Command::CMD_GIMME_DLL_LOAD_INFOS:
-										AddAndSendDllInfo(NULL, true, hGameProcess);
-										break;
-									case IPC::Command::CMD_KEYBOARD_LAYOUT_NAME:
-										ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-										break;
-									case IPC::Command::CMD_SUGGEST_THREAD_NAME:
-										SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
-										{
-											DWORD bytes_written;
-											WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), ipc_frame.m_command_data_size, &bytes_written);
-											// print the callstack of the thread
-											std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-											if (found != hGameThreads.end())
-											{
-												HANDLE hThread = found->second;
-												//THREADSTACKTRACE(hThread);
-												char msg[16 + 72];
-												sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-												THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-											}
-										}
-										break;
-									case IPC::Command::CMD_POST_DLL_MAIN_DONE:
-										postDllMainDone = true;
-										if (mainThreadWaitingForPostDllMain)
-										{
-											debugprintf(L"resuming main thread...\n");
-											ResumeThread(processInfo.hThread);
-											mainThreadWaitingForPostDllMain = false;
-										}
-										break;
-									case IPC::Command::CMD_KILL_ME:
-										terminateRequest = true;
-										break;
-									case IPC::Command::CMD_FPS_UPDATE:
-										ReceiveFrameRate(*reinterpret_cast<IPC::FPSInfo*>(buf.data()));
-										break;
-									case IPC::Command::CMD_DENIED_THREAD:
-										usedThreadMode = localTASflags.threadMode;
-										break;
-									case IPC::Command::CMD_GAMMA_RAMP_BUF:
-										ReceiveGammaRampData(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-										break;
-									case IPC::Command::CMD_STACK_TRACE:
-										{
-											// print the callstack of the thread
-											std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-											IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
-											if (found != hGameThreads.end())
-											{
-												HANDLE hThread = found->second;
-												char msg[16 + 72];
-												sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
-												StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
-											}
-										}
-										break;
-									case IPC::Command::CMD_SAVE_STATE:
-										SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
-										break;
-									case IPC::Command::CMD_LOAD_STATE:
-										LoadGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
-										break;
-									case IPC::Command::CMD_SUSPEND_ALL_THREADS:
-										SuspendAllExcept(de.dwThreadId);
-										break;
-									case IPC::Command::CMD_RESUME_ALL_THREADS:
-										ResumeAllExcept(de.dwThreadId);
-										break;
-									case IPC::Command::CMD_HWND:
-										ReceiveHWND(*reinterpret_cast<HWND*>(buf.data()));
-										break;
-									case IPC::Command::CMD_WATCH_ADDRESS:
-										{
-											IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
-											AddressWatcher watch = { auto_watch->GetAddress(),
-																	 auto_watch->GetSize(),
-																	 auto_watch->GetType() };
-											watch.WrongEndian = false;
-											if (IsHardwareAddressValid(watch.Address))
-											{
-												InsertWatch(watch, auto_watch->GetComment());
-											}
-										}
-										break;
-									case IPC::Command::CMD_UNWATCH_ADDRESS:
-										{
-											IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
-											AddressWatcher watch = { auto_watch->GetAddress(),
-																	 auto_watch->GetSize(),
-																	 auto_watch->GetType() };
-											watch.WrongEndian = false;
-											RemoveWatch(watch);
-										}
-										break;
-									case IPC::Command::CMD_FRAME_BOUNDARY:
-										{
-											FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
+                    else if (ipc_address_in_process != nullptr)
+                    {
+                        IPC::CommandFrame ipc_frame;
+                        SIZE_T read_bytes;
+                        /*
+                         * HACK: Workaround for limitation in extendedtrace.
+                         * TODO: Write new wrapper for dbghelp.dll then check the break point came from SendIPCMessage
+                         * -- Warepire
+                         */
+                        BOOL rv = ReadProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &read_bytes);
+                        if (rv && read_bytes == sizeof(ipc_frame))
+                        {
+                            if (ipc_frame.m_command > IPC::Command::CMD_DUMMY_ENTRY_MIN_OPCODE &&
+                                static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) % 2 == 0)
+                            {
+                                std::vector<BYTE> buf;
+                                read_bytes = 0;
+                                if (ipc_frame.m_command_data_size != 0)
+                                {
+                                    buf.resize(ipc_frame.m_command_data_size);
+                                    rv = ReadProcessMemory(hGameProcess, ipc_frame.m_command_data, buf.data(), buf.capacity(), &read_bytes);
+                                }
+                                if (rv && read_bytes == ipc_frame.m_command_data_size)
+                                {
+                                    switch (ipc_frame.m_command)
+                                    {
+                                    case IPC::Command::CMD_DEBUG_MESSAGE:
+                                        debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
+                                        {
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            if (found != hGameThreads.end())
+                                            {
+                                                auto cb = [](IDbgHelpStackWalkCallback& data)
+                                                    { 
+                                                        debugprintf(L"STACK FRAME: %s : %s /%d\n", data.GetModuleName().c_str(), data.GetFunctionName().c_str(), data.GetParameterCount());
+                                                        return IDbgHelpStackWalkCallback::Action::CONTINUE;
+                                                    };
+                                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle, cb);
+                                                std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                                if (found != hGameThreads.end())
+                                                {
+                                                    HANDLE hThread = found->second;
+                                                    WCHAR msg[16 + 72];
+                                                    swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
+                                                    THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+                                                }
+
+                                                debugprintf(L"Hello!\n");
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_DLL_VERSION:
+                                        CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_COMMAND_BUF:
+                                        ReceiveCommandSlotPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_INPUT_BUF:
+                                        ReceiveInputsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
+                                        ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
+                                        ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_TAS_FLAGS_BUF:
+                                        ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_SOUND_INFO:
+                                        ReceiveSoundCaptureInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_GENERAL_INFO:
+                                        ReceiveGeneralInfoPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_PALETTE_ENTRIES:
+                                        ReceivePaletteEntriesPointer(*reinterpret_cast<LPVOID*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_GIMME_DLL_LOAD_INFOS:
+                                        AddAndSendDllInfo(NULL, true, hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_KEYBOARD_LAYOUT_NAME:
+                                        ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_SUGGEST_THREAD_NAME:
+                                        SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
+                                        {
+                                            DWORD bytes_written;
+                                            WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), ipc_frame.m_command_data_size, &bytes_written);
+                                            // print the callstack of the thread
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            if (found != hGameThreads.end())
+                                            {
+                                                HANDLE hThread = found->second;
+                                                //THREADSTACKTRACE(hThread);
+                                                WCHAR msg[16 + 72];
+                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
+                                                THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_POST_DLL_MAIN_DONE:
+                                        postDllMainDone = true;
+                                        if (mainThreadWaitingForPostDllMain)
+                                        {
+                                            debugprintf(L"resuming main thread...\n");
+                                            ResumeThread(processInfo.hThread);
+                                            mainThreadWaitingForPostDllMain = false;
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_KILL_ME:
+                                        terminateRequest = true;
+                                        break;
+                                    case IPC::Command::CMD_FPS_UPDATE:
+                                        ReceiveFrameRate(*reinterpret_cast<IPC::FPSInfo*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_DENIED_THREAD:
+                                        usedThreadMode = localTASflags.threadMode;
+                                        break;
+                                    case IPC::Command::CMD_GAMMA_RAMP_BUF:
+                                        ReceiveGammaRampData(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
+                                        break;
+                                    case IPC::Command::CMD_STACK_TRACE:
+                                        {
+                                            // print the callstack of the thread
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
+                                            if (found != hGameThreads.end())
+                                            {
+                                                HANDLE hThread = found->second;
+                                                WCHAR msg[16 + 72];
+                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
+                                                StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_SAVE_STATE:
+                                        SaveGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_LOAD_STATE:
+                                        LoadGameStatePhase2(*reinterpret_cast<int*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_SUSPEND_ALL_THREADS:
+                                        SuspendAllExcept(de.dwThreadId);
+                                        break;
+                                    case IPC::Command::CMD_RESUME_ALL_THREADS:
+                                        ResumeAllExcept(de.dwThreadId);
+                                        break;
+                                    case IPC::Command::CMD_HWND:
+                                        ReceiveHWND(*reinterpret_cast<HWND*>(buf.data()));
+                                        break;
+                                    case IPC::Command::CMD_WATCH_ADDRESS:
+                                        {
+                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+                                            AddressWatcher watch = { auto_watch->GetAddress(),
+                                                                     auto_watch->GetSize(),
+                                                                     auto_watch->GetType() };
+                                            watch.WrongEndian = false;
+                                            if (IsHardwareAddressValid(watch.Address))
+                                            {
+                                                InsertWatch(watch, auto_watch->GetComment());
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_UNWATCH_ADDRESS:
+                                        {
+                                            IPC::AutoWatch* auto_watch = reinterpret_cast<IPC::AutoWatch*>(buf.data());
+                                            AddressWatcher watch = { auto_watch->GetAddress(),
+                                                                     auto_watch->GetSize(),
+                                                                     auto_watch->GetType() };
+                                            watch.WrongEndian = false;
+                                            RemoveWatch(watch);
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_FRAME_BOUNDARY:
+                                        {
+                                            FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
 #ifdef _DEBUG
-											if (s_lastFrameCount <= 1 && !requestedCommandReenter)
-											{
-												debugprintf(L"On Frame %d: \n", s_lastFrameCount);
-												// print the callstack of all threads
+                                            if (s_lastFrameCount <= 1 && !requestedCommandReenter)
+                                            {
+                                                debugprintf(L"On Frame %d: \n", s_lastFrameCount);
+                                                // print the callstack of all threads
 
-												int numThreads = gameThreadIdList.size();
-												for (int i = 0; i < numThreads; i++)
-												{
-													DWORD threadId = gameThreadIdList[i];
-													ThreadInfo& info = hGameThreads[threadId];
-													HANDLE hThread = info.handle;
-													char msg[16 + 72];
-													sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
-													THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
-												}
-											}
+                                                int numThreads = gameThreadIdList.size();
+                                                for (int i = 0; i < numThreads; i++)
+                                                {
+                                                    DWORD threadId = gameThreadIdList[i];
+                                                    ThreadInfo& info = hGameThreads[threadId];
+                                                    HANDLE hThread = info.handle;
+                                                    WCHAR msg[16 + 72];
+                                                    swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
+                                                    THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
+                                                }
+                                            }
 #endif
-										}
-										break;
-									case IPC::Command::CMD_MOUSE_REG:
-										inputC.InitDIMouse(hWnd, true);
-										break;
-									default:
-										break;
-									}
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_MOUSE_REG:
+                                        inputC.InitDIMouse(hWnd, true);
+                                        break;
+                                    default:
+                                        break;
+                                    }
 
-									/*
-									 * Hacky...
-									 * -- Warepire
-									 */
-									ipc_frame.m_command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) + 1);
-									DWORD bytes_written;
-									WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
-									break;
-								}
-							}
-						}
-					}
+                                    /*
+                                     * Hacky...
+                                     * -- Warepire
+                                     */
+                                    ipc_frame.m_command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) + 1);
+                                    DWORD bytes_written;
+                                    WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
+                                    break;
+                                }
+                            }
+                        }
+                    }
 				}
 
 				//if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT)
@@ -4032,7 +4061,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				{
 				  if(de.u.Exception.ExceptionRecord.ExceptionCode != THREAD_NAME_EXCEPTION)
 				  {
-					bool couldBeSerious = !de.u.Exception.dwFirstChance || (
+				    bool couldBeSerious = !de.u.Exception.dwFirstChance || (
 					   (de.u.Exception.ExceptionRecord.ExceptionCode&0xCFFFFFFF) != /*EXCEPTION_MSVC*/0xC06D7363
 					&& (de.u.Exception.ExceptionRecord.ExceptionCode&0xCFFFFFFF) != 0xC0440001
 					);
@@ -4043,15 +4072,15 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					{
 						if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_ACCESS_VIOLATION) // 0xC0000005
 						{
-							debugprintf(L"exception 0x%X (at 0x%08X): attempt to %S memory at 0x%08X\n",
+							debugprintf(L"exception 0x%X (at 0x%08X): attempt to %s memory at 0x%08X\n",
 								de.u.Exception.ExceptionRecord.ExceptionCode,
 								de.u.Exception.ExceptionRecord.ExceptionAddress,
-								de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0 ? "read" : (de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 ? "write" : "hack"),
+								de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0 ? L"read" : (de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 ? L"write" : L"hack"),
 								de.u.Exception.ExceptionRecord.ExceptionInformation[1]);
 						}
 						else if(couldBeSerious)
 						{
-							debugprintf(L"exception 0x%X (at 0x%08X): %S\n",
+							debugprintf(L"exception 0x%X (at 0x%08X): %s\n",
 								de.u.Exception.ExceptionRecord.ExceptionCode,
 								de.u.Exception.ExceptionRecord.ExceptionAddress,
 								ExceptionCodeToDescription(de.u.Exception.ExceptionRecord.ExceptionCode));
@@ -4067,8 +4096,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							{
 								HANDLE hThread = found->second;
 								//THREADSTACKTRACE(hThread);
-								char msg [16+72];
-								sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+								WCHAR msg [16+72];
+								swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
 								THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
 								//THREADSTACKTRACEMSG(hThread, msg, (found->second).hProcess);
 							}
@@ -4086,8 +4115,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 									continue;
 								ThreadInfo& info = hGameThreads[threadId];
 								HANDLE hThread = info.handle;
-								char msg [16+72];
-								sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
+								WCHAR msg [16+72];
+								swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
 								THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
 							}
 
@@ -4298,22 +4327,22 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						//}
 
 						{
-							static const char* mainmsg = "The game crashed...\n";
-							static const char* waitskipmsg = "If this happens when fast-forwarding, try disabling \"Wait Skip\" in \"Misc > Fast-Forward Options\".\n";
-							static const char* multidisablemsg = "If this happens sometimes randomly, try switching Multithreading to \"Disable\" in \"Misc > Multithreading Mode\".\n";
-							static const char* dsounddisablemsg = "Or choose \"Sound > Disable DirectSound Creation\" if the game doesn't work without Multithreading on.\n";
-							static const char* dsounddisablemsg2 = "If this happens sometimes randomly, try choosing \"Sound > Disable DirectSound Creation\".\n";
-							char msg [8096];
-							sprintf(msg, "%s%s%s%s%s", mainmsg,
-								(localTASflags.fastForward && (localTASflags.fastForwardFlags & FFMODE_WAITSKIP)) ? waitskipmsg : "",
-								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2)) ? multidisablemsg : "",
-								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg : "",
-								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && (localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg2 : ""
+							static LPCWSTR mainmsg = L"The game crashed...\n";
+							static LPCWSTR waitskipmsg = L"If this happens when fast-forwarding, try disabling \"Wait Skip\" in \"Misc > Fast-Forward Options\".\n";
+							static LPCWSTR multidisablemsg = L"If this happens sometimes randomly, try switching Multithreading to \"Disable\" in \"Misc > Multithreading Mode\".\n";
+							static LPCWSTR dsounddisablemsg = L"Or choose \"Sound > Disable DirectSound Creation\" if the game doesn't work without Multithreading on.\n";
+							static LPCWSTR dsounddisablemsg2 = L"If this happens sometimes randomly, try choosing \"Sound > Disable DirectSound Creation\".\n";
+							WCHAR msg [8096];
+							swprintf(msg, L"%s%s%s%s%s", mainmsg,
+								(localTASflags.fastForward && (localTASflags.fastForwardFlags & FFMODE_WAITSKIP)) ? waitskipmsg : L"",
+								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2)) ? multidisablemsg : L"",
+								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg : L"",
+								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && (localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg2 : L""
 							);
-							debugprintf(L"%S", msg);
+							debugprintf(L"%s", msg);
 #ifndef _DEBUG
 							if(!skipDialog)
-								CustomMessageBox(msg, "CRASH", MB_OK|MB_ICONERROR);
+								CustomMessageBox(msg, L"CRASH", MB_OK|MB_ICONERROR);
 #endif
 							recoveringStale = false;
 						}
@@ -4322,7 +4351,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						{
 							if(unsavedMovieData)
 							{
-								SaveMovie(moviefilename);
+								SaveMovie(movie_filename);
 							}
 
 							goto done;
@@ -4346,14 +4375,13 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					//bool neverLoaded = dllBaseToFilename.find(de.u.LoadDll.lpBaseOfDll) == dllBaseToFilename.end();
 //					if(!dllBaseToHandle[de.u.LoadDll.lpBaseOfDll])
 //					debugprintf("LOAD_DLL_DEBUG_EVENT: 0x%X\n", de.u.LoadDll.lpBaseOfDll);
-					if(dllBaseToFilename[de.u.LoadDll.lpBaseOfDll].length() == 0)
+					if(dll_base_to_filename[de.u.LoadDll.lpBaseOfDll].length() == 0)
 					{
-						char filename [MAX_PATH+1];
-						GetFileNameFromFileHandle(de.u.LoadDll.hFile, filename);
-						debugprintf(L"LOADED DLL: %S\n", filename);
+						std::wstring filename = GetFileNameFromFileHandle(de.u.LoadDll.hFile);
+						debugprintf(L"LOADED DLL: %s\n", filename.c_str());
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
-						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename);
-						AddAndSendDllInfo(filename, true, hProcess);
+						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename.c_str());
+						AddAndSendDllInfo(filename.c_str(), true, hProcess);
 
 #if 0 // DLL LOAD CALLSTACK PRINTING
 
@@ -4370,9 +4398,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 #endif
 
 						//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = de.u.LoadDll.hFile;
-						dllBaseToFilename[de.u.LoadDll.lpBaseOfDll] = filename;
-						//if(neverLoaded)
-							LOADSYMBOLS2(hGameProcess, filename, de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
+						dll_base_to_filename[de.u.LoadDll.lpBaseOfDll] = filename;
+                        DbgHelp::LoadSymbols(de.dwProcessId, de.u.LoadDll.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
+                        LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
 
 						// apparently we have to close it here.
 						// waiting until UNLOAD_DLL_DEBUG_EVENT could make us close an invalid handle
@@ -4388,13 +4416,13 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					//char filename [MAX_PATH+1];
 					//HANDLE hFile = dllBaseToHandle[de.u.UnloadDll.lpBaseOfDll];
 					//GetFileNameFromFileHandle(hFile, filename);
-					const char* filename = dllBaseToFilename[de.u.UnloadDll.lpBaseOfDll].c_str();
-					debugprintf(L"UNLOADED DLL: %S\n", filename);
+					LPCWSTR filename = dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll].c_str();
+					debugprintf(L"UNLOADED DLL: %s\n", filename);
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
 					UnregisterModuleInfo(de.u.UnloadDll.lpBaseOfDll, hProcess, filename);
 					AddAndSendDllInfo(filename, false, hProcess);
 					//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = NULL;
-					dllBaseToFilename[de.u.UnloadDll.lpBaseOfDll] = "";
+					dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll] = L"";
 					//debugprintf("CLOSE HANDLE( THREAD:?): fhandle=0x%X\n", hFile);
 					//CloseHandle(hFile);
 #pragma endregion
@@ -4422,8 +4450,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				//debugprintf("thread status: id=0x%X, handle=0x%X, suspend=%d, wait=%d, name=%s\n", threadId, hThread, suspendCount, waitCount, threadInfo.name);
 				debugprintf(L"thread status: id=0x%X, handle=0x%X, suspend=%d, name=%S\n", threadId, hThread, suspendCount, threadInfo.name);
 				//THREADSTACKTRACE(hThread);
-				char msg [16+72];
-				sprintf(msg, "(id=0x%X) (name=%s)", threadId, threadInfo.name);
+				WCHAR msg [16+72];
+				swprintf(msg, L"(id=0x%X) (name=%S)", threadId, threadInfo.name);
 				THREADSTACKTRACEMSG(hThread, msg, /*threadInfo.hProcess*/hGameProcess);
 			}
 
@@ -4458,16 +4486,17 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			case CREATE_PROCESS_DEBUG_EVENT:
 				{
 #pragma region CREATE_PROCESS_DEBUG_EVENT
-					char filename [MAX_PATH+1];
+                    std::wstring filename = GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess);
 
 					// hFile is NULL sometimes...
-					if(/*(movie.version >= 0 && movie.version < 40) || */!GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess, filename))
-						GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile, filename);
+					if(filename == L"")
+						filename = GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile);
 
 //					debugprintf("CREATE_PROCESS_DEBUG_EVENT: 0x%X\n", de.u.CreateProcessInfo.lpBaseOfImage);
-					debugprintf(L"CREATED PROCESS: %S\n", filename);
-					strcpy(subexefilename, filename);
-					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename);
+					debugprintf(L"CREATED PROCESS: %s\n", filename.c_str());
+                    sub_exe_filename = filename;
+                    DbgHelp::AddProcess(de.u.CreateProcessInfo.hProcess, de.dwProcessId);
+					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename.c_str());
 					hGameThreads[de.dwThreadId] = de.u.CreateProcessInfo.hThread;
 					ASSERT(hGameThreads[de.dwThreadId].handle);
 					hGameThreads[de.dwThreadId].hProcess = de.u.CreateProcessInfo.hProcess;
@@ -4488,16 +4517,19 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 ////						SuspendThread(de.u.CreateProcessInfo.hThread);
 //					}
 
-					bool nullFile = !de.u.CreateProcessInfo.hFile/* && !(movie.version >= 0 && movie.version < 40)*/;
+					bool nullFile = !de.u.CreateProcessInfo.hFile;
 					if(nullFile)
-						de.u.CreateProcessInfo.hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+						de.u.CreateProcessInfo.hFile = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+                    DbgHelp::LoadSymbols(de.dwProcessId, de.u.CreateProcessInfo.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
 
 					if(de.dwProcessId == processInfo.dwProcessId)
 					{
 						// even if we don't have symbols for it,
 						// this still lets us see the exe name
 						// next to the addresses of functions it calls.
-						LOADSYMBOLS2(hGameProcess, filename, de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
+                        hGameProcess = de.u.CreateProcessInfo.hProcess;
+						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						//CloseHandle(de.u.CreateProcessInfo.hProcess);
 					}
 					else
@@ -4517,9 +4549,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						debugprintf(L"switched to child process, handle 0x%X, PID = %d.\n", hGameProcess, processInfo.dwProcessId);
 						PrintPrivileges(hGameProcess);
 						EXTENDEDTRACEINITIALIZEEX( NULL, hGameProcess );
-						LOADSYMBOLS2(hGameProcess, filename, de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
+						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						debugprintf(L"attempting injection...\n");
-						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, dllpath, runDllLast!=0);
+						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 						debugprintf(L"done injection. continuing...\n");
 					}
 
@@ -4544,7 +4576,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 					if(unsavedMovieData)
 					{
-						SaveMovie(moviefilename);
+						SaveMovie(movie_filename);
 					}
 
 					//UnregisterModuleInfo(de.u.ExitProcess.lpBaseOfImage, hProcess, filename);
@@ -4657,9 +4689,7 @@ done:
 //	}
 	hGameProcess = 0;
 
-// The only goto to this label in the first few lines of this function
-// had to be replaced with copy-pasted code to prevent errors.
-//earlyAbort:
+    } while (false);
 
 	DebuggerThreadFuncCleanup(hInitialThread, processInfo.hProcess);
 //	CloseHandle(processInfo.hProcess);
@@ -4684,7 +4714,7 @@ static DWORD WINAPI AfterDebugThreadExitThread(LPVOID lpParam)
 		savestates[i].Deallocate();
 
 	// and clear out some other memory
-	ClearAndDeallocateContainer(dllBaseToFilename);
+	ClearAndDeallocateContainer(dll_base_to_filename);
 	{
 		AutoCritSect cs(&g_gameHWndsCS);
 		ClearAndDeallocateContainer(gameHWnds);
@@ -4735,15 +4765,15 @@ rewait:
 		// while we're waiting here for it to finish.
 		MSG msg;
 		int count = 0;
-		while(count < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while(count < 4 && PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 			count++;
 		}
 	}
 	if(debuggerThread)
 	{
-		int result = CustomMessageBox("The game-controlling thread is taking longer than expected to exit.\nClick Cancel to terminate it immediately (this might cause problems),\nor click Retry to check again and wait a few more seconds if needed.", "Stopping Game", MB_RETRYCANCEL | MB_DEFBUTTON1 | MB_ICONWARNING);
+		int result = CustomMessageBox(L"The game-controlling thread is taking longer than expected to exit.\nClick Cancel to terminate it immediately (this might cause problems),\nor click Retry to check again and wait a few more seconds if needed.", L"Stopping Game", MB_RETRYCANCEL | MB_DEFBUTTON1 | MB_ICONWARNING);
 		if(result == IDRETRY)
 		{
 			if(maxWaitTime < 4000)
@@ -4782,15 +4812,15 @@ rewait:
 		// while we're waiting here for it to finish.
 		MSG msg;
 		int count = 0;
-		while(count < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while(count < 4 && PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 			count++;
 		}
 	}
 	if(thread)
 	{
-		int result = CustomMessageBox("A thread is taking longer than expected to exit.\nClick Cancel to terminate it immediately (this might cause problems),\nor click Retry to check again and wait a few more seconds if needed.", "Stopping", MB_RETRYCANCEL | MB_DEFBUTTON1 | MB_ICONWARNING);
+		int result = CustomMessageBox(L"A thread is taking longer than expected to exit.\nClick Cancel to terminate it immediately (this might cause problems),\nor click Retry to check again and wait a few more seconds if needed.", L"Stopping", MB_RETRYCANCEL | MB_DEFBUTTON1 | MB_ICONWARNING);
 		if(result == IDRETRY)
 		{
 			if(maxWaitTime < 4000)
@@ -4821,7 +4851,7 @@ void PrepareForExit()
 	}
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 	Save_Config();
 	TerminateDebuggerThread(6500);
@@ -4895,18 +4925,22 @@ DWORD GetErrorModeXP()
 
 //HACCEL hAccelTable = NULL;
 
-int APIENTRY _tWinMain(HINSTANCE hInstance,
-					 HINSTANCE hPrevInstance,
-					 LPTSTR    lpCmdLine,
-					 int       nCmdShow)
+int APIENTRY wWinMain(HINSTANCE hInstance,
+                      HINSTANCE hPrevInstance,
+                      LPTSTR    lpCmdLine,
+                      int       nCmdShow)
 {
-	GetCurrentDirectory(MAX_PATH, thisprocessPath);
+    {
+        WCHAR path[MAX_PATH + 1];
+        GetCurrentDirectoryW(MAX_PATH, path);
+        this_process_path = path;
+    }
 
 	// this is so we don't start the target with the debug heap,
 	// which would cause all sorts of complaining exceptions we'd have to ignore
 	// and would potentially change program behavior.
-	SetEnvironmentVariable("_NO_DEBUG_HEAP", "1");
-	SetEnvironmentVariable("__MSVCRT_HEAP_SELECT", "__GLOBAL_HEAP_SELECTED,3");
+	SetEnvironmentVariableW(L"_NO_DEBUG_HEAP", L"1");
+	SetEnvironmentVariableW(L"__MSVCRT_HEAP_SELECT", L"__GLOBAL_HEAP_SELECTED,3");
 
 	// disable annoying system error dialog boxes (including for any games we start).
 	// otherwise certain error cases that we handle
@@ -4925,7 +4959,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	InitDebugCriticalSection();
 	InitializeCriticalSection(&g_gameHWndsCS);
 
-	NormalizePath(thisprocessPath, thisprocessPath);
+	this_process_path = NormalizePath(this_process_path);
 
 	// DetectOS function call goes here!!
 	DetectWindowsVersion(&(localTASflags.osVersionMajor), &(localTASflags.osVersionMinor));
@@ -4941,6 +4975,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	InitRamSearch();
 
 	Load_Config();
+
+    DbgHelp::Init();
 
 	MSG msg;
 	if (!InitInstance (hInstance, nCmdShow)) // this calls our DlgProc with WM_SHOWWINDOW
@@ -4971,14 +5007,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 		//DWORD ret = MsgWaitForMultipleObjects(0, NULL, FALSE, started ? 1000 : 30, QS_ALLINPUT);
 
-		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			//if(!IsDialogMessage(hWnd, &msg))
 			//&& !TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) 
 			{
 				if(PreTranslateMessage(msg))
 					TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				DispatchMessageW(&msg);
 			}
 
 			if(msg.message == WM_QUIT)
@@ -5096,13 +5132,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // Store instance handle in our global variable
 
-	hWnd = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, (DLGPROC)DlgProc);
+	hWnd = CreateDialogParamW(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, (DLGPROC)DlgProc, 0);
 
 	if(!hWnd)
 		return FALSE;
 
-	SendMessage(hWnd, WM_SETICON, WPARAM(ICON_SMALL), LPARAM(LoadImage(hInst, MAKEINTRESOURCE(IDI_MYICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR)));
-	SendMessage(hWnd, WM_SETICON, WPARAM(ICON_BIG),   LPARAM(LoadImage(hInst, MAKEINTRESOURCE(IDI_MYICON), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR)));
+	SendMessageW(hWnd, WM_SETICON, WPARAM(ICON_SMALL), LPARAM(LoadImageW(hInst, MAKEINTRESOURCEW(IDI_MYICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR)));
+	SendMessageW(hWnd, WM_SETICON, WPARAM(ICON_BIG),   LPARAM(LoadImageW(hInst, MAKEINTRESOURCEW(IDI_MYICON), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR)));
 
 	//hExternalWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
 	//   CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
@@ -5127,29 +5163,29 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	bool writable = true;
 	bool exists = true;
 	bool exeexists = true;
-	FILE* moviefile = *moviefilename ? fopen(moviefilename, "r+b") : NULL;
+	FILE* moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"r+b") : NULL;
 	if(moviefile)
 		fclose(moviefile);
 	else
 	{
-		moviefile = *moviefilename ? fopen(moviefilename, "rb") : NULL;
+		moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"rb") : NULL;
 		if(moviefile)
 			fclose(moviefile);
 		else
 			exists = false;
 
-		moviefile = *moviefilename ? fopen(moviefilename, "ab") : NULL;
+		moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"ab") : NULL;
 		if(moviefile)
 		{
 			fclose(moviefile);
 			if(!exists)
-				unlink(moviefilename);
+				DeleteFileW(movie_filename.c_str());
 		}
 		else
 			writable = false;
 	}
 
-	FILE* exefile = *exefilename ? fopen(exefilename, "rb") : NULL;
+	FILE* exefile = !exe_filename.empty() ? _wfopen(exe_filename.c_str(), L"rb") : NULL;
 	if(exefile)
 		fclose(exefile);
 	else
@@ -5172,15 +5208,15 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	// preview data from movie
 	if(exists && !started)
 	{
-		LoadMovie(moviefilename);
+		LoadMovie(movie_filename);
 		
 		UpdateFrameCountDisplay(movie.currentFrame, 1);
 
-		char str [256];
-		sprintf(str, "%u", localTASflags.initialTime);
-		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
-		sprintf(str, "%d", localTASflags.framerate);
-		SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
+		WCHAR str [256];
+		swprintf(str, L"%u", localTASflags.initialTime);
+		SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
+		swprintf(str, L"%d", localTASflags.framerate);
+		SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 
 		tasFlagsDirty = true;
 	}
@@ -5195,7 +5231,7 @@ void BringGameWindowToForeground()
 	for(iter = gameHWnds.begin(); iter != gameHWnds.end();)
 	{
 		HWND gamehwnd = *iter;
-		DWORD style = (DWORD)GetWindowLong(gamehwnd, GWL_STYLE);
+		DWORD style = (DWORD)GetWindowLongW(gamehwnd, GWL_STYLE);
 		iter++;
 		if((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION) || iter == gameHWnds.end())
 		{
@@ -5400,90 +5436,83 @@ BOOL SetWindowTextAndScrollRight(HWND hEdit, LPCSTR lpString);
 	return false;
 }*/
 
-BOOL DirectoryExists(const char* path)
+BOOL DirectoryExists(LPCWSTR path)
 {
-	DWORD attr = GetFileAttributesA(path);
+	DWORD attr = GetFileAttributesW(path);
 	return (attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
-void SplitToValidPath(const char* initialPath, const char* defaultDir, char* filename, char* directory)
+void SplitToValidPath(LPCWSTR initialPath, LPCWSTR defaultDir, LPWSTR filename, LPWSTR directory)
 {
 	filename[0] = '\0';
 	directory[0] = '\0';
 
-	if(initialPath && strlen(initialPath) > MAX_PATH)
+	if(initialPath && wcslen(initialPath) > MAX_PATH)
 		return;
 
 	if(initialPath)
 	{
-		strcpy(filename, initialPath);
-		strcpy(directory, initialPath);
+		wcscpy(filename, initialPath);
+		wcscpy(directory, initialPath);
 	}
 
 	while(!DirectoryExists(directory))
 	{
-		char* slash = max(strrchr(directory, '\\'), strrchr(directory, '/'));
+		LPWSTR slash = std::max(wcsrchr(directory, L'\\'), wcsrchr(directory, L'/'));
 		if(slash)
 			*slash = '\0';
 		else
 		{
-			if(defaultDir && strlen(defaultDir) <= MAX_PATH)
-				strcpy(directory, defaultDir);
+			if(defaultDir && wcslen(defaultDir) <= MAX_PATH)
+				wcscpy(directory, defaultDir);
 			if(!DirectoryExists(directory))
 				*directory = '\0';
 			break;
 		}
 	}
 
-	if(!strncmp(filename, directory, strlen(directory)))
-		memmove(filename, filename+strlen(directory), 1+strlen(filename)-strlen(directory));
-	char* slash = max(strrchr(filename, '\\'), strrchr(filename, '/'));
+	if(!wcsncmp(filename, directory, wcslen(directory)))
+        memmove(filename, filename + wcslen(directory), (1 + wcslen(filename) - wcslen(directory)) * 2);
+	LPWSTR slash = std::max(wcsrchr(filename, '\\'), wcsrchr(filename, '/'));
 	if(slash++)
-		memmove(filename, slash, 1+strlen(slash));
+        memmove(filename, slash, (1 + wcslen(slash)) * 2);
 }
 
-BOOL SetWindowTextAndScrollRight(HWND hEdit, LPCSTR lpString)
+BOOL SetWindowTextAndScrollRight(HWND hEdit, LPCWSTR lpString)
 {
-	BOOL rv = SetWindowText(hEdit, lpString);
-	SendMessage(hEdit, EM_SETSEL, -2, -1);
+	BOOL rv = SetWindowTextW(hEdit, lpString);
+	SendMessageW(hEdit, EM_SETSEL, -2, -1);
 	return rv;
 }
 
 BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	BOOL rv = TRUE;  
-	switch(message)  
-	{  
-		case WM_INITDIALOG:
-			if(VERSION >= 0)
-			{
-				char title [256];
-				sprintf(title, "Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
+    BOOL rv = TRUE;  
+    switch(message)  
+    {  
+        case WM_INITDIALOG:
+        {
+            WCHAR title[256];
+			swprintf(title, L"Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
 #ifdef _DEBUG
-				strcat(title, " (debug build)");
+			wcscat(title, L" (debug build)");
 #endif
-				SetWindowTextA(hDlg, title);
-			}
-#ifdef _DEBUG
-			else
-			{
-				SetWindowTextA(hDlg, "Hourglass (debug)");
-			}
-#endif
-			break;
+			SetWindowTextW(hDlg, title);
+		}
+        break;
 
 		case WM_SHOWWINDOW:
-			{
-				char str [256];
-				sprintf(str, "%d", localTASflags.framerate);
-				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
+ 			{
+				WCHAR str [256];
+				swprintf(str, L"%d", localTASflags.framerate);
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 
 				localTASflags.initialTime = /*timeGetTime()*/6000;
-				sprintf(str, "%d", localTASflags.initialTime);
-				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_SYSTEMCLOCK), str);
+				swprintf(str, L"%d", localTASflags.initialTime);
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_SYSTEMCLOCK), str);
 
-				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_CURFRAME), "0");
-				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_MAXFRAME), "0");
-				SetWindowText(GetDlgItem(hDlg, IDC_STATIC_MOVIETIME), "");
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_CURFRAME), L"0");
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_MAXFRAME), L"0");
+				SetWindowTextW(GetDlgItem(hDlg, IDC_STATIC_MOVIETIME), L"");
 
 //				CheckDlgButton(hDlg, IDC_ALLOWHARDWAREACCEL, forceSoftware ? 0 : 1);
 //				CheckDlgButton(hDlg, IDC_ALLOWFULLSCREEN, forceWindowed ? 0 : 1);
@@ -5498,29 +5527,18 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				CheckDlgButton(hDlg, IDC_RADIO_THREAD_WRAP, localTASflags.threadMode == 1);
 				CheckDlgButton(hDlg, IDC_RADIO_THREAD_ALLOW, localTASflags.threadMode == 2);
 
-				char path [MAX_PATH+1];
-				if(exefilename[0] == '\0')
-				{
-					path[0] = 0;
-					//strcpy(path, thisprocessPath);
-					//path[MAX_PATH-23] = 0;
-					//strcat(path, "\\..\\game\\Doukutsu.exe");
-				}
-				else
-				{
-					strcpy(path, exefilename);
-				}
-				AbsolutifyPath(path);
+				std::wstring path = exe_filename;
+				path = AbsolutifyPath(path);
 				//char temp_moviefilename [MAX_PATH+1];
 				//strcpy(temp_moviefilename, moviefilename);
 				movienameCustomized = false;
 				// As they start blank, we have no interest in updating these if the filenames
 				// are empty. This prevents messages about file '' not existing.
-				if (path[0] != 0)
-					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path);
-				if (moviefilename[0] != 0)
-					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), moviefilename);
-				SetWindowText(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), commandline);
+				if (!path.empty())
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path.c_str());
+				if (!movie_filename.empty())
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), movie_filename.c_str());
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), command_line.c_str());
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));
 
@@ -5534,17 +5552,17 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			//EnableDisablePlayRecordButtons(hDlg); // disabled because it breaks being able to set fps or system clock on existing movie
 			break;
 
-		case WM_CLOSE:
-			SendMessage(hDlg, WM_COMMAND, ID_FILES_STOP, 0);
+        case WM_CLOSE:
+			SendMessageW(hDlg, WM_COMMAND, ID_FILES_STOP, 0);
 			PrepareForExit();
 			PostQuitMessage(0);
-			break;
+            break;
 
 		case WM_DESTROY:
 			hWnd = NULL;
 			PrepareForExit();
 			PostQuitMessage(0);
-			break;
+            break;
 
 
 		//case WM_LBUTTONUP: // auto-switch to game window on left click on unimportant place
@@ -6061,107 +6079,107 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}	break;
 
 
-				case ID_INCLUDE_LCF_NONE:
-					localTASflags.log_categories.fill(false);
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] = true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_ALL:
-					localTASflags.log_categories.fill(true);
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_ANY:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_HOOK:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::HOOK)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_TIME:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIME)] ^= true; 
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_DETTIMER:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DETTIMER)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_SYNC:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SYNC)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_DDRAW:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DDRAW)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_D3D:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::D3D)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_OGL:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::OGL)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_GDI:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::GDI)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_SDL:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SDL)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_DINPUT:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DINPUT)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_WINPUT:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINPUT)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_XINPUT:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::XINPUT)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_DSOUND:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DSOUND)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_WSOUND:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WSOUND)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_PROCESS:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::PROCESS)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_MODULE:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MODULE)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_MESSAGES:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MESSAGES)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_WINDOW:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINDOW)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_FILEIO:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::FILEIO)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_REGISTRY:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::REGISTRY)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_THREAD:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::THREAD)] ^= true;
-					tasFlagsDirty = true;
-					break;
-				case ID_INCLUDE_LCF_TIMERS:
-					localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIMERS)] ^= true;
-					tasFlagsDirty = true;
-					break;
+                case ID_INCLUDE_LCF_NONE:
+                    localTASflags.log_categories.fill(false);
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] = true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_ALL:
+                    localTASflags.log_categories.fill(true);
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_ANY:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::ANY)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_HOOK:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::HOOK)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_TIME:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIME)] ^= true; 
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_DETTIMER:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DETTIMER)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_SYNC:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SYNC)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_DDRAW:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DDRAW)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_D3D:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::D3D)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_OGL:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::OGL)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_GDI:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::GDI)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_SDL:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::SDL)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_DINPUT:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DINPUT)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_WINPUT:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINPUT)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_XINPUT:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::XINPUT)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_DSOUND:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::DSOUND)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_WSOUND:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WSOUND)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_PROCESS:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::PROCESS)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_MODULE:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MODULE)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_MESSAGES:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::MESSAGES)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_WINDOW:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::WINDOW)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_FILEIO:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::FILEIO)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_REGISTRY:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::REGISTRY)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_THREAD:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::THREAD)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
+                case ID_INCLUDE_LCF_TIMERS:
+                    localTASflags.log_categories[static_cast<std::underlying_type<LogCategory>::type>(LogCategory::TIMERS)] ^= true;
+                    tasFlagsDirty = true;
+                    break;
 
 				case ID_PERFORMANCE_TOGGLESAVEVIDMEM: localTASflags.storeVideoMemoryInSavestates = !localTASflags.storeVideoMemoryInSavestates; tasFlagsDirty = true; break;
 				case ID_PERFORMANCE_TOGGLESAVEGUARDED: storeGuardedPagesInSavestates = !storeGuardedPagesInSavestates; mainMenuNeedsRebuilding = true; break;
@@ -6257,7 +6275,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					if(!CreateAVIFile())
 					{
 						localTASflags.aviMode = 0;
-						CustomMessageBox("The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", "File creation error!", MB_OK | MB_ICONERROR);
+						CustomMessageBox(L"The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", L"File creation error!", MB_OK | MB_ICONERROR);
 					}
 					tasFlagsDirty = true;
 					break;
@@ -6268,7 +6286,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					if(!CreateAVIFile())
 					{
 						localTASflags.aviMode = 0;
-						CustomMessageBox("The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", "File creation error!", MB_OK | MB_ICONERROR);
+						CustomMessageBox(L"The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", L"File creation error!", MB_OK | MB_ICONERROR);
 					}
 					tasFlagsDirty = true;
 					break;
@@ -6279,7 +6297,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					if(!CreateAVIFile())
 					{
 						localTASflags.aviMode = 0;
-						CustomMessageBox("The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", "File creation error!", MB_OK | MB_ICONERROR);
+						CustomMessageBox(L"The file cannot be created here.\nProbable causes are that the location is write protected\nor the file name exceeds the maximum allowed characters by Windows (260 characters, with extension)\n", L"File creation error!", MB_OK | MB_ICONERROR);
 					}
 					tasFlagsDirty = true;
 					break;
@@ -6311,18 +6329,18 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						if(HIWORD(wParam) == EN_CHANGE)
 						{
-							char str [256];
+							WCHAR str [256];
 							if(started && !warnedAboutFrameRateChange)
 							{
 								GetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), str, 255);
-								if(localTASflags.framerate != strtol(str,0,0))
+								if(localTASflags.framerate != wcstol(str,0,0))
 								{
 									warnedAboutFrameRateChange = true;
-									int result = CustomMessageBox("If you are in the middle of recording or playing a movie,\nchanging the game's framerate might cause desync in some games.\nBe careful.", "Warning", MB_OKCANCEL | MB_ICONWARNING);
+									int result = CustomMessageBox(L"If you are in the middle of recording or playing a movie,\nchanging the game's framerate might cause desync in some games.\nBe careful.", L"Warning", MB_OKCANCEL | MB_ICONWARNING);
 									if(result == IDCANCEL)
 									{
-										sprintf(str, "%d", localTASflags.framerate);
-										SetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), str);
+										swprintf(str, L"%d", localTASflags.framerate);
+										SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), str);
 										warnedAboutFrameRateChange = false; // must be true above this to avoid infinite warnings
 										break;
 									}
@@ -6330,7 +6348,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							}
 
 							GetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), str, 255);
-							localTASflags.framerate = strtol(str,0,0);
+							localTASflags.framerate = wcstol(str,0,0);
 							tasFlagsDirty = true;
 						}
 					}
@@ -6344,9 +6362,9 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							if(!selfEdit)
 							{
 								selfEdit = true;
-								char str [256];
+								WCHAR str [256];
 								GetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str, 255);
-								localTASflags.initialTime = strtoul(str,0,0);
+								localTASflags.initialTime = wcstoul(str,0,0);
 								if(!*str) localTASflags.initialTime = /*timeGetTime()*/6000;
 								//char str2 [256];
 								//sprintf(str2, "%u", initialTime);
@@ -6369,7 +6387,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						CloseAVI();
 						if(unsavedMovieData)
 						{
-							SaveMovie(moviefilename);
+							SaveMovie(movie_filename);
 						}
 						Save_Config();
 						//CheckDlgButton(hDlg, IDC_AVIVIDEO, aviMode & 1);
@@ -6378,7 +6396,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						TerminateDebuggerThread(12000);
 						if(unsavedMovieData)
 						{
-							SaveMovie(moviefilename);
+							SaveMovie(movie_filename);
 						}
 						terminateRequest = false;
 						if(afterDebugThreadExit)
@@ -6398,13 +6416,17 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_RECORD), false);
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_PLAY), false);
 						movie = Movie();
-						SaveMovie(moviefilename); // Save the new movie.
+						SaveMovie(movie_filename); // Save the new movie.
 						localTASflags.playback = false;
 						nextLoadRecords = true;
 						localTASflags.fastForward = false;
 						started = true; CheckDialogChanges(-1); started = false;
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_STOP), false);
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        {
+                            WCHAR commandline[1024];
+                            GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                            command_line = commandline;
+                        }
 						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
@@ -6422,7 +6444,11 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						nextLoadRecords = false;
 						started = true; CheckDialogChanges(-1); started = false;
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_STOP), false);
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        {
+                            WCHAR commandline[1024];
+                            GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                            command_line = commandline;
+                        }
 						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
@@ -6438,7 +6464,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				case ID_FILES_OPENEXE:
 				case IDC_BUTTON_GAMEBROWSE:
                     {
-                        std::string exe_file_name = Utils::File::GetFileNameOpen(thisprocessPath, {
+                        std::wstring exe_file_name = Utils::File::GetFileNameOpen(this_process_path, {
                             Utils::File::FileFilter::Executable,
                             Utils::File::FileFilter::AllFiles
                         });
@@ -6469,18 +6495,18 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							tasFlagsDirty = true;
 						}
 
-                        std::string movie_file_name;
+                        std::wstring movie_file_name;
 
                         if (isSave)
                         {
-                            movie_file_name = Utils::File::GetFileNameOpen(thisprocessPath, {
+                            movie_file_name = Utils::File::GetFileNameOpen(this_process_path, {
                                 Utils::File::FileFilter::HourglassMovie,
                                 Utils::File::FileFilter::AllFiles
                             });
                         }
                         else
                         {
-                            movie_file_name = Utils::File::GetFileNameSave(thisprocessPath, {
+                            movie_file_name = Utils::File::GetFileNameSave(this_process_path, {
                                 Utils::File::FileFilter::HourglassMovie,
                                 Utils::File::FileFilter::AllFiles
                             });
@@ -6543,7 +6569,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         }
 
                         // Always start with the name of the movie currently recording.
-                        std::string movie_file_name = Utils::File::GetFileNameSave(moviefilename, {
+                        std::wstring movie_file_name = Utils::File::GetFileNameSave(movie_filename, {
                             Utils::File::FileFilter::HourglassMovie,
                             Utils::File::FileFilter::AllFiles
                         });
@@ -6552,7 +6578,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         {
                             // As SaveMovie actually modifies the contents of the passed string, we
                             // can't just pass the const .c_str() result
-                            char c_file_name[FILENAME_MAX];
+                            WCHAR c_file_name[FILENAME_MAX];
                             movie_file_name.copy(c_file_name, movie_file_name.length());
                             SaveMovie(c_file_name);
                         }
@@ -6573,41 +6599,46 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				case IDC_EDIT_COMMANDLINE:
 					if(HIWORD(wParam) == EN_CHANGE)
 					{
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        WCHAR commandline[1024];
+                        GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        command_line = commandline;
 					}
 					break;
 				case IDC_TEXT_EXE:
-					if(HIWORD(wParam) == EN_CHANGE || !movieFileExists || !*moviefilename)
+					if(HIWORD(wParam) == EN_CHANGE || !movieFileExists || movie_filename.empty())
 					{
 						static bool recursing = false;
 						if(recursing)
 							break;
 						recursing = true;
 
-						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_EXE), exefilename, MAX_PATH);
-						NormalizePath(exefilename, exefilename);
+                        {
+                            WCHAR buffer[MAX_PATH + 1];
+                            GetWindowTextW(GetDlgItem(hDlg, IDC_TEXT_EXE), buffer, MAX_PATH);
+                            exe_filename = NormalizePath(buffer);
+                        }
 						EnableDisablePlayRecordButtons(hDlg); // updates exeFileExists
 
 						if(!exeFileExists) // Extra check, do we need it?
 						{
-							char str[1024];
-							sprintf(str, "The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exefilename);
-							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+							WCHAR str[1024];
+							swprintf(str, L"The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exe_filename.c_str());
+							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
 						}
 
 						debugprintf(L"Attempting to determinate default thread stack size for the game...\n");
-						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exefilename);
+						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exe_filename.c_str());
 						if(localTASflags.threadStackSize != 0)
 						{
 							debugprintf(L"Detecting the default stack size succeeded, size is: %u bytes\n", localTASflags.threadStackSize);
 						}
 						else
 						{
-							char str[1024];
-							sprintf(str, "Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exefilename);
-							CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+							WCHAR str[1024];
+							swprintf(str, L"Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exe_filename.c_str());
+							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
 						}
@@ -6617,43 +6648,43 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						//if(file)
 						//{
 						//	fclose(file);
-							if((!movienameCustomized && HIWORD(wParam) == EN_CHANGE) || !movieFileExists || !*moviefilename)
+							if((!movienameCustomized && HIWORD(wParam) == EN_CHANGE) || !movieFileExists || movie_filename.empty())
 							{
 								// a little hack to help people out when first selecting an exe for recording,
 								// until perhaps there's a proper ini file for such defaults
 								int newFramerate;
 								BOOL newLagskip;
 								int newRunDllLast = 0;
-								const char* fname = GetExeFilenameWithoutPath();
-								if(!stricmp(fname, "Doukutsu.exe")
-								|| !stricmp(fname, "dxIka.exe")
-								|| !stricmp(fname, "nothing.exe")
-								|| !_strnicmp(fname, "iwbtgbeta", sizeof("iwbtgbeta")-1)
-								|| !stricmp(fname, "i_wanna_be_the_GB.exe")
+								std::wstring fname = GetExeFilenameWithoutPath();
+								if(!wcsicmp(fname.c_str(), L"Doukutsu.exe")
+								|| !wcsicmp(fname.c_str(), L"dxIka.exe")
+								|| !wcsicmp(fname.c_str(), L"nothing.exe")
+								|| !wcsnicmp(fname.c_str(), L"iwbtgbeta", wcslen(L"iwbtgbeta")-1)
+								|| !wcsicmp(fname.c_str(), L"i_wanna_be_the_GB.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = false;
 								}
-								else if(!stricmp(fname, "Lyle in Cube Sector.exe")
-								|| !stricmp(fname, "Eternal Daughter.exe")
-								|| !stricmp(fname, "Geoffrey The Fly.exe")
+								else if(!wcsicmp(fname.c_str(), L"Lyle in Cube Sector.exe")
+								|| !wcsicmp(fname.c_str(), L"Eternal Daughter.exe")
+								|| !wcsicmp(fname.c_str(), L"Geoffrey The Fly.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = true;
 								}
-								else if(!stricmp(fname, "herocore.exe"))
+								else if(!wcsicmp(fname.c_str(), L"herocore.exe"))
 								{
 									newFramerate = 40; newLagskip = false;
 								}
-								else if(!stricmp(fname, "iji.exe"))
+								else if(!wcsicmp(fname.c_str(), L"iji.exe"))
 								{
 									newFramerate = 30; newLagskip = false;
 								}
-								else if(!stricmp(fname, "lamulana.exe"))
+								else if(!wcsicmp(fname.c_str(), L"lamulana.exe"))
 								{
 									newFramerate = 60; newLagskip = true;
 								}
-								else if(!stricmp(fname, "NinjaSenki.exe"))
+								else if(!wcsicmp(fname.c_str(), L"NinjaSenki.exe"))
 								{
 									newFramerate = 60; newLagskip = false;
 
@@ -6665,7 +6696,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 										tasFlagsDirty = true;
 									}
 								}
-								else if(!stricmp(fname, "RotateGear.exe"))
+								else if(!wcsicmp(fname.c_str(), L"RotateGear.exe"))
 								{
 									newFramerate = 60; newLagskip = false; newRunDllLast = true;
 								}
@@ -6676,8 +6707,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								if(localTASflags.framerate != newFramerate && !movieFileExists)
 								{
 									tasFlagsDirty = true;
-									char str [32];
-									sprintf(str, "%d", newFramerate);
+									WCHAR str [32];
+									swprintf(str, L"%d", newFramerate);
 									SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 								}
 								if(newLagskip != advancePastNonVideoFrames && (!advancePastNonVideoFramesConfigured || !advancePastNonVideoFrames))
@@ -6692,31 +6723,31 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 									mainMenuNeedsRebuilding = true;
 								}
 							}
-							if(!movieFileExists || (moviefilename[0] == '\0') || !movienameCustomized) // set default movie name based on exe
+							if(!movieFileExists || movie_filename.empty() || !movienameCustomized) // set default movie name based on exe
 							{
 								bool setMovieFile = true;
 								if(movieFileExists)
 								{
-									const char* exefname = GetExeFilenameWithoutPath();
-									if(!strncmp(exefname, moviefilename, strlen(exefname)-4)) // Compare names, without the file extension.
+									std::wstring exefname = GetExeFilenameWithoutPath();
+									if(!wcsncmp(exefname.c_str(), movie_filename.c_str(), exefname.length()-4)) // Compare names, without the file extension.
 										setMovieFile = false; // exe didn't actually change
 								}
 
 								if(setMovieFile)
 								{
-									char filename [MAX_PATH+1];
-									strcpy(filename, exefilename);
-									char* slash = max(strrchr(filename, '\\'), strrchr(filename, '/'));
-									char* dot = strrchr(filename, '.');
+									WCHAR filename [MAX_PATH+1];
+									wcscpy(filename, exe_filename.c_str());
+									LPWSTR slash = std::max(wcsrchr(filename, '\\'), wcsrchr(filename, '/'));
+									LPWSTR dot = wcsrchr(filename, '.');
 									if(slash<dot)
 									{
-										char path [MAX_PATH+1];
-										strcpy(path, thisprocessPath);
-										strcat(path, "\\");
-										strcpy(dot, ".hgr");
-										const char* moviename = slash ? slash+1 : filename;
-										strcat(path, moviename);
-										if(0 != strcmp(path, moviefilename))
+										WCHAR path [MAX_PATH+1];
+										wcscpy(path, this_process_path.c_str());
+										wcscat(path, L"\\");
+										wcscpy(dot, L".hgr");
+										LPCWSTR moviename = slash ? slash+1 : filename;
+										wcscat(path, moviename);
+										if(0 != wcscmp(path, movie_filename.c_str()))
 										{
 											SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), path);
 											movienameCustomized = false;
@@ -6736,51 +6767,52 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						// TODO: We can probably skip this alltogether and just make the check in OPENMOVIE.
 						// Will require implementing ability to run games without recording movies.
 						// This should do for now.
-						char tmp_movie[MAX_PATH+1];
-						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_MOVIE), tmp_movie, MAX_PATH);
-						NormalizePath(tmp_movie, tmp_movie);
+                        std::wstring tmp_movie;
+                        {
+                            WCHAR buffer[MAX_PATH + 1];
+                            GetWindowTextW(GetDlgItem(hDlg, IDC_TEXT_MOVIE), buffer, MAX_PATH);
+                            tmp_movie = buffer;
+                        }
+						tmp_movie = NormalizePath(tmp_movie);
 						
 						// HACK... TODO: Fix this properly, by completing TODO above!
-						if(tmp_movie[0] == '\0') break; // No movie loaded, don't go forward with anything.
+						if(tmp_movie.empty()) break; // No movie loaded, don't go forward with anything.
 
 						EnableDisablePlayRecordButtons(hDlg);
 						movienameCustomized = tmp_movie[0] != '\0';
 
 						if(unsavedMovieData) // Check if we have some unsaved changes in an already loaded movie.
 						{
-							int result = CustomMessageBox("The currently opened movie contains unsaved data.\nDo you want to save it before opening the new movie?\n(Click \"Yes\" to save, \"No\" to proceed without saving)", "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+							int result = CustomMessageBox(L"The currently opened movie contains unsaved data.\nDo you want to save it before opening the new movie?\n(Click \"Yes\" to save, \"No\" to proceed without saving)", L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 							if(result == IDYES)
 							{
 								// TODO:
 								// IF SaveMovie fails here, it means that the movie file got deleted between the last save and the creation of the new movie
 								// Should we really handle that scenario?
-								SaveMovie(moviefilename);
+								SaveMovie(movie_filename);
 							}
 							unsavedMovieData = false;
 							movie.headerBuilt = false; // Otherwise we may retain the old header? // TODO: Find this out
 						}
 
-						if(moviefilename[0] != '\0') // We have currently locked the directory that we're saving the old movie to.
+						if(!movie_filename.empty()) // We have currently locked the directory that we're saving the old movie to.
 						{
 							UnlockDirectory(MOVIE);
 						}
 
-						char movieDirectory[MAX_PATH+1];
-						// TODO: max will call strrchr 3 times in total, perhaps that can be reduced to 2 times?
-						char* dirEnd = max(strrchr(tmp_movie, '\\'), strrchr(tmp_movie, '/'));
-						unsigned int strLen = dirEnd - tmp_movie + 1; // Pointers-as-values math, yay!
-						strncpy(movieDirectory, tmp_movie, (size_t)strLen);
-						movieDirectory[strLen] = '\0'; // properly null-terminate the string.
+						std::wstring movie_directory;
+						size_t slash = tmp_movie.find_last_of(L"\\/");
+                        movie_directory = tmp_movie.substr(0, slash);
 
 						// Attempt to lock the new directory.
-						if(LockDirectory(movieDirectory, MOVIE) == false)
+						if(LockDirectory(movie_directory.c_str(), MOVIE) == false)
 						{
-							moviefilename[0] = '\0'; // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
+							movie_filename.clear(); // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
 							break; // Break early so that we don't allow the movie to be loaded.
 						}
 
 						// If we got here we can finally transfer the new movie filename into the old movie filename.
-						strcpy(moviefilename, tmp_movie);
+                        movie_filename = tmp_movie;
 					}
 					break;
 				}
@@ -6796,24 +6828,24 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				int count = (int)DragQueryFile(hDrop, (UINT)-1, NULL, 0);
 				for(int i = 0; i < count; i++)
 				{
-					char filename [MAX_PATH+1];
+					WCHAR filename [MAX_PATH+1];
 					if(DragQueryFile(hDrop, i, filename, MAX_PATH))
 					{
 						//debugprintf("Got File: %s\n", filename);
 
-						char* slash = max(strrchr(filename, '\\'), strrchr(filename, '/'));
-						char* dot = strrchr(filename, '.');
+						LPWSTR slash = std::max(wcsrchr(filename, '\\'), wcsrchr(filename, '/'));
+						LPWSTR dot = wcsrchr(filename, '.');
 						if(slash<dot)
 						{
-							if(!stricmp(dot, ".exe")) // executable (game)
+							if(!wcsicmp(dot, L".exe")) // executable (game)
 							{
 								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), filename);
 							}
-							else if(!_strnicmp(dot, ".hgr", 4)) // windows TAS file (input movie)
+							else if(!wcsnicmp(dot, L".hgr", 4)) // windows TAS file (input movie)
 							{
 								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), filename);
 							}
-							else if(!stricmp(dot, ".cfg"))
+							else if(!wcsicmp(dot, L".cfg"))
 							{
 								Load_Config(filename);
 							}
@@ -6847,10 +6879,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			rv = 0;
 			break;
 
-		default:  
-			rv = FALSE;  
-			break;  
-	}  
+        default:  
+            rv = FALSE;  
+            break;  
+    }  
  
-	return rv;
+    return rv;
 }

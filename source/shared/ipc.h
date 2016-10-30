@@ -298,12 +298,12 @@ namespace IPC
     class AutoWatch
     {
     public:
-        AutoWatch(LPCVOID address, CHAR size, CHAR type, LPCSTR comment)
+        AutoWatch(LPCVOID address, CHAR size, CHAR type, LPCWSTR comment)
         {
             m_address = reinterpret_cast<UINT>(address);
             m_size = size;
             m_type = type;
-            strncpy(m_comment, comment, ARRAYSIZE(m_comment));
+            wcsncpy(m_comment, comment, ARRAYSIZE(m_comment));
         }
         UINT GetAddress() const
         {
@@ -317,7 +317,7 @@ namespace IPC
         {
             return m_type;
         }
-        LPCSTR GetComment() const
+        LPCWSTR GetComment() const
         {
             return m_comment;
         }
@@ -328,7 +328,7 @@ namespace IPC
         unsigned int m_address;
         char m_size;
         char m_type;
-        char m_comment[256];
+        WCHAR m_comment[256];
     };
 
     class DebugMessage

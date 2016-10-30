@@ -31,6 +31,7 @@
 #include "shared/msg.h"
 #include "extendedtrace.h"
 #include "../Config.h"
+#include "application\logging.h"
 
 //#pragma comment(lib, "imagehlp.lib")
 //#pragma comment(lib, "dbghelp.lib")
@@ -62,6 +63,7 @@ static BOOL(__stdcall *pSymGetSymFromAddr)(HANDLE, DWORD, PDWORD, PIMAGEHLP_SYMB
 static DWORD(__stdcall *pUnDecorateSymbolName)(PCSTR, PSTR, DWORD, DWORD) = NULL;
 static BOOL(__stdcall *pSymGetLineFromAddr)(HANDLE hProcess, DWORD, PDWORD, PIMAGEHLP_LINE) = NULL;
 static BOOL(__stdcall *pSymGetTypeInfo)(HANDLE, DWORD64, ULONG, IMAGEHLP_SYMBOL_TYPE_INFO, PVOID) = NULL;
+static BOOL(__stdcall *pSymRegisterCallback)(HANDLE, PSYMBOL_REGISTERED_CALLBACK, PVOID) = NULL;
 
 void LoadDbghelpDll()
 {
@@ -76,15 +78,15 @@ void LoadDbghelpDll()
 	// try to load dbghelp from current or parent directory
 	// since it's likely more up-to-date than the one in win32 directory
 	// (microsoft recommends distributing dbghelp.dll and using it instead of the os version)
-	char path [MAX_PATH+1+sizeof("dbghelp.dll")] = {0};
-	GetModuleFileNameA(NULL, path, MAX_PATH);
+	WCHAR path [MAX_PATH+1+sizeof("dbghelp.dll")] = {0};
+	GetModuleFileNameW(NULL, path, MAX_PATH);
 	HMODULE dll = NULL;
 	while(!dll)
 	{
-		char* slash = strrchr(path, '\\');
-		char* next = slash ? slash+1 : path;
-		strcpy(next, "dbghelp.dll");
-		dll = LoadLibrary(path);
+		LPWSTR slash = wcsrchr(path, L'\\');
+		LPWSTR next = slash ? slash+1 : path;
+		wcscpy(next, L"dbghelp.dll");
+		dll = LoadLibraryW(path);
 		if(!slash)
 			break;
 		*slash = 0;
@@ -109,10 +111,50 @@ void LoadDbghelpDll()
 	(FARPROC&)pUnDecorateSymbolName = GetProcAddress(dll, "UnDecorateSymbolName");
 	(FARPROC&)pSymGetLineFromAddr = GetProcAddress(dll, "SymGetLineFromAddr");
 	(FARPROC&)pSymGetTypeInfo = GetProcAddress(dll, "SymGetTypeInfo");
+    (FARPROC&)pSymRegisterCallback = GetProcAddress(dll, "SymRegisterCallback");
 }
 
 
 
+BOOL
+CALLBACK
+SymRegisterCallbackProc64(
+    __in HANDLE hProcess,
+    __in ULONG ActionCode,
+    __in_opt PVOID CallbackData,
+    __in_opt PVOID UserContext
+)
+{
+    UNREFERENCED_PARAMETER(hProcess);
+    UNREFERENCED_PARAMETER(UserContext);
+
+    PIMAGEHLP_CBA_EVENT evt;
+
+    // If SYMOPT_DEBUG is set, then the symbol handler will pass
+    // verbose information on its attempt to load symbols.
+    // This information be delivered as text strings.
+
+    switch (ActionCode)
+    {
+    case CBA_EVENT:
+        evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
+        debugprintf(L"%S", (PCSTR)evt->desc);
+        break;
+
+        // CBA_DEBUG_INFO is the old ActionCode for symbol spew.
+        // It still works, but we use CBA_EVENT in this example.
+    case CBA_DEBUG_INFO:
+        debugprintf(L"%S", (PCSTR)CallbackData);
+        break;
+
+    default:
+        // Return false to any ActionCode we don't handle
+        // or we could generate some undesirable behavior.
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 
 #define BUFFERSIZE   0x800
@@ -225,13 +267,15 @@ BOOL CALLBACK EnumSymProc(
 }
 
 
-void LoadModuleSymbols(HANDLE hProcess, PSTR name)
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name)
 {
 #ifdef ASSUME_SINGLE_HPROCESS
 	hProcess = s_hProcess;
 #endif
+    char module[MAX_PATH + 1];
+    sprintf(module, "%S", name);
 
-	DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, 0, name, 0, 0, 0 ) : NULL;
+	DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, 0, module, 0, 0, 0 ) : NULL;
 	IMAGEHLP_MODULE im = { sizeof(IMAGEHLP_MODULE) };
 	if(pSymGetModuleInfo)
 	{
@@ -278,12 +322,15 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name)
 	return;
 }
 
-void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE file, DWORD base )
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name, HANDLE file, DWORD base )
 {
 #ifdef ASSUME_SINGLE_HPROCESS
 	hProcess = s_hProcess;
 #endif
-	DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, file, name, 0, base, 0 ) : NULL;
+    char module[MAX_PATH + 1];
+    sprintf(module, "%S", name);
+
+	DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, file, module, 0, base, 0 ) : NULL;
 	IMAGEHLP_MODULE im = { sizeof(IMAGEHLP_MODULE) };
 	if(pSymGetModuleInfo)
 	{
@@ -322,6 +369,7 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
 	symOptions |= SYMOPT_CASE_INSENSITIVE;
 	symOptions |= SYMOPT_OMAP_FIND_NEAREST;
 	symOptions |= SYMOPT_ALLOW_ABSOLUTE_SYMBOLS;
+    symOptions |= SYMOPT_DEBUG;
 	//symOptions |= SYMOPT_UNDNAME;
 	//symOptions |= SYMOPT_NO_PROMPTS;
 	if(pSymSetOptions)
@@ -341,6 +389,8 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
 	if(!rv) // try without a search path?
 		rv = pSymInitialize( hProcess, NULL, FALSE);
 	
+    pSymRegisterCallback(hProcess, SymRegisterCallbackProc64, NULL);
+
 	return rv;
 }
 
@@ -675,19 +725,19 @@ BOOL GetFunctionInfoFromAddresses( ULONG fnAddress, ULONG stackAddress, LPTSTR l
 			|   UNDNAME_NO_ACCESS_SPECIFIERS 
 			);
 
-			strcpy(lpszSymbol, lpszUnDSymbol);
+			swprintf(lpszSymbol, L"%S", lpszUnDSymbol);
 		}
 		else
 		{
-			strcpy(lpszSymbol, pSym->Name);
+			swprintf(lpszSymbol, L"%S", pSym->Name);
 		}
 	}
 	else
 	{
-		strcpy(lpszSymbol, "? ");
+		swprintf(lpszSymbol, L"? ");
 	}
 
-	CHAR* pOutString = lpszSymbol + strlen(lpszSymbol);
+	LPWSTR pOutString = lpszSymbol + wcslen(lpszSymbol);
 
 	DWORD dwChildrenCount = 0;
 	BOOL hasTypeInfo = pSymGetTypeInfo && pSymGetTypeInfo( hProcess, pSym->ModBase, pSym->TypeIndex, TI_GET_CHILDRENCOUNT, &dwChildrenCount );
@@ -704,30 +754,30 @@ BOOL GetFunctionInfoFromAddresses( ULONG fnAddress, ULONG stackAddress, LPTSTR l
 	else
 	{
 		// sometimes we can guess the parameter count from the undecorated symbol name (if it's a C++ class method)
-		if(strchr(lpszSymbol, '('))
+		if(wcschr(lpszSymbol, L'('))
 		{
 			unsure = false;
-			if(strstr(lpszSymbol, "(void)") || strstr(lpszSymbol, "()"))
+			if(wcsstr(lpszSymbol, L"(void)") || wcsstr(lpszSymbol, L"()"))
 				skipArgList = true;
 			else
 			{
-				pOutString += sprintf(pOutString, " ");
+				pOutString += swprintf(pOutString, L" ");
 				int numCommas = 0;
-				char* lpszSymbol2 = lpszSymbol;
+				LPWSTR lpszSymbol2 = lpszSymbol;
 				while(*lpszSymbol2)
 				{
-					if(*lpszSymbol2 == ',')
+					if(*lpszSymbol2 == L',')
 						numCommas++;
 					lpszSymbol2++;
 				}
 				nargs = numCommas + 1;
-				if(strstr(lpszSymbol, "::")) // first might be the this pointer
+				if(wcsstr(lpszSymbol, L"::")) // first might be the this pointer
 					nargs++;
 			}
 		}
-		else if(!strcmp(lpszSymbol, "`string'"))
+		else if(!wcscmp(lpszSymbol, L"`string'"))
 		{
-			strcpy(lpszSymbol, "[entrypoint]");
+			wcscpy(lpszSymbol, L"[entrypoint]");
 			skipArgList = true;
 		}
 	}
@@ -735,10 +785,10 @@ BOOL GetFunctionInfoFromAddresses( ULONG fnAddress, ULONG stackAddress, LPTSTR l
 
 	if(!skipArgList && stackAddress)
 	{
-		bool isWndProcFunc = strstr(lpszSymbol, "WndProc") || strstr(lpszSymbol, "WinProc") || strstr(lpszSymbol, "WindowProc") || strstr(lpszSymbol, "DispatchClientMessage") || (strstr(lpszSymbol, "SendMessage") && !strstr(lpszSymbol, "SendMessageWorker"));
+		bool isWndProcFunc = wcsstr(lpszSymbol, L"WndProc") || wcsstr(lpszSymbol, L"WinProc") || wcsstr(lpszSymbol, L"WindowProc") || wcsstr(lpszSymbol, L"DispatchClientMessage") || (wcsstr(lpszSymbol, L"SendMessage") && !wcsstr(lpszSymbol, L"SendMessageWorker"));
 		bool nextMightBeMessage = isWndProcFunc;
 
-		pOutString += sprintf(pOutString, "(");
+		pOutString += swprintf(pOutString, L"(");
 		bool anyArgs = false;
 		for(int i = 0; i < nargs; i++)
 		{
@@ -795,21 +845,21 @@ BOOL GetFunctionInfoFromAddresses( ULONG fnAddress, ULONG stackAddress, LPTSTR l
 				}
 
 				if(anyArgs)
-					pOutString += sprintf(pOutString, ", ");
+					pOutString += swprintf(pOutString, L", ");
 
 				if(isString)
-					pOutString += sprintf(pOutString, "0x%X (\"%s\")", value, dataLong);
+					pOutString += swprintf(pOutString, L"0x%X (\"%S\")", value, dataLong);
 				else if(isWmCode)
-					pOutString += sprintf(pOutString, "0x%X (%s)", value, GetWindowsMessageName(value));
+					pOutString += swprintf(pOutString, L"0x%X (%S)", value, GetWindowsMessageName(value));
 				else if(isSmallInt || isMultipleOf100)
-					pOutString += sprintf(pOutString, "%d", (int)value);
+					pOutString += swprintf(pOutString, L"%d", (int)value);
 				else
-					pOutString += sprintf(pOutString, "0x%X", value);
+					pOutString += swprintf(pOutString, L"0x%X", value);
 
 				anyArgs = true;
 			}
 		}
-		pOutString += sprintf(pOutString, unsure ? ")?" : ")");
+		pOutString += swprintf(pOutString, unsure ? L")?" : L")");
 	}
 
 	GlobalFree( pSym );
@@ -915,7 +965,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 	callStack.AddrStack.Mode   = AddrModeFlat;
 	callStack.AddrFrame.Mode   = AddrModeFlat;
 
-   OutputDebugStringFormat( L"Call stack info(thread=0x%X) : %S\n", 
+   OutputDebugStringFormat( L"Call stack info(thread=0x%X) : %s\n", 
          hThread,
          lpszMessage );
 
@@ -956,7 +1006,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 		GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, symInfo, hProcess );
 		GetSourceInfoFromAddress( callStack.AddrPC.Offset, srcInfo, hProcess );
 
-		OutputDebugStringFormat( L"     %S : %S\n", srcInfo, symInfo );
+		OutputDebugStringFormat( L"     %s : %s\n", srcInfo, symInfo );
 	}
 }
 
@@ -1013,7 +1063,7 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
 	if ( bResult && callStack.AddrFrame.Offset != 0) 
 	{
 	   GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, lpszFnInfo, hProcess );
-	   OutputDebugStringFormat( L"Function info(thread=0x%X) : %S\n", hThread, lpszFnInfo );
+	   OutputDebugStringFormat( L"Function info(thread=0x%X) : %s\n", hThread, lpszFnInfo );
 	}
 	else
 	   OutputDebugStringFormat( L"Function info(thread=0x%X) failed.\n" );
