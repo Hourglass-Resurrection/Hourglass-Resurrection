@@ -8,143 +8,86 @@
 #include <Windows.h>
 
 #include <array>
+#include <memory>
 #include <vector>
 
-#include "external\dbghelp\cvconst.h"
-#include "external\dbghelp\dbghelp.h"
+/*
+ * Default location of the DIA SDK within VS2015 Community edition.
+ */
+#include <../../DIA SDK/include/dia2.h>
 
 #include "DbgHelp.h"
 
-/*
- * TODO: Remove, use a newer dbghelp.dll instead with .lib file
- */
-static BOOL(__stdcall *SymInitializePointer)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess) = nullptr;
-static BOOL(__stdcall *SymCleanupPointer)(HANDLE hProcess) = nullptr;
-static DWORD(__stdcall *pSymSetOptions)(DWORD) = nullptr;
-static DWORD(__stdcall *SymLoadModule64Pointer)(HANDLE hProcess, HANDLE hFile, PCSTR ImageName, PCSTR ModuleName, DWORD64 BaseOfDll, DWORD SizeOfDll) = nullptr;
-static BOOL(__stdcall *SymGetModuleInfo64Pointer)(HANDLE hProcess, DWORD64 qwAddr, PIMAGEHLP_MODULE64 ModuleInfo) = nullptr;
-static PVOID(__stdcall *pImageRvaToVa)(PIMAGE_NT_HEADERS, PVOID, ULONG, PIMAGE_SECTION_HEADER*) = nullptr;
-static BOOL(__stdcall *SymEnumSymbolsPointer)(HANDLE hProcess, ULONG64 BaseOfDll, PCSTR Mask, PSYM_ENUMERATESYMBOLS_CALLBACK EnumSymbolsCallback, PVOID UserContext) = nullptr;
-static BOOL(__stdcall *StackWalk64Pointer)(DWORD MachineType, HANDLE hProcess, HANDLE hThread, LPSTACKFRAME64 StackFrame, PVOID ContextRecord, PREAD_PROCESS_MEMORY_ROUTINE64 ReadMemoryRoutine, PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine, PGET_MODULE_BASE_ROUTINE64 GetModuleBaseRoutine, PTRANSLATE_ADDRESS_ROUTINE64 TranslateAddress) = nullptr;
-static PVOID(__stdcall *SymFunctionTableAccess64Pointer)(HANDLE hProcess, DWORD64 AddrBase) = nullptr;
-static DWORD64(__stdcall *SymGetModuleBase64Pointer)(HANDLE hProcess, DWORD64 Address) = nullptr;
-static BOOL(__stdcall *SymFromAddrPointer)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol) = nullptr;
-static DWORD(__stdcall *UnDecorateSymbolNamePointer)(PCSTR DecoratedName, PSTR UnDecoratedName, DWORD UndecoratedLength, DWORD Flags) = nullptr;
-static BOOL(__stdcall *pSymGetLineFromAddr)(HANDLE hProcess, DWORD, PDWORD, PIMAGEHLP_LINE) = nullptr;
-static BOOL(__stdcall *SymGetTypeInfoPointer)(HANDLE hProcess, DWORD64 ModBase, ULONG TypeId, IMAGEHLP_SYMBOL_TYPE_INFO GetType, PVOID pInfo) = nullptr;
-static BOOL(__stdcall *SymGetTypeInfoExPointer)(HANDLE hProcess, DWORD64 ModBase, PIMAGEHLP_GET_TYPE_INFO_PARAMS Params) = nullptr;
+namespace
+{
+    /*
+     * Custom unique_ptr deleter for COM objects.
+     * TODO: Put in some sort of utils header / namespace?
+     */
+    template<class T>
+    class COMObjectDeleter
+    {
+    public:
+        void operator()(T* ptr)
+        {
+            ptr->Release();
+        }
+    };
+}
+
+class DbgHelpPriv
+{
+public:
+    bool LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path);
+private:
+    std::map<DWORD64, std::unique_ptr<IDiaDataSource, COMObjectDeleter<IDiaDataSource>>> m_symbols;
+};
+
+bool DbgHelpPriv::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
+{
+    IDiaDataSource* data_source = nullptr;
+    bool rv = (CoCreateInstance(CLSID_DiaSource,
+                                nullptr,
+                                CLSCTX_INPROC_SERVER,
+                                __uuidof(IDiaDataSource),
+                                reinterpret_cast<LPVOID*>(&data_source)) == S_OK);
+    if (!rv)
+    {
+        return rv;
+    }
+
+    rv = data_source->loadDataForExe(exec.c_str(), search_path.c_str(), nullptr);
+    if (!rv)
+    {
+        return rv;
+    }
+
+    m_symbols.emplace(module_base, std::move(data_source));
+}
 
 DbgHelp::DbgHelp(HANDLE process) :
-    m_dbghelp_dll(nullptr),
     m_process(process)
 {
-    std::array<CHAR, 0x1000> buffer;
+    std::array<WCHAR, 0x1000> buffer;
     buffer.fill('\0');
-    std::string symbol_paths;
 
-    /*
-     * TODO: Remove, use a newer dbghelp.dll instead with .lib file
-     */
-    GetModuleFileNameA(NULL, buffer.data(), buffer.size());
-    std::string dll_path(buffer.data());
-    dll_path.erase(dll_path.rfind('\\') + 1);
-    symbol_paths.append(dll_path);
-    dll_path.append("dbghelp.dll");
-    m_dbghelp_dll = LoadLibraryA(dll_path.c_str());
-    if (m_dbghelp_dll == nullptr)
+    if (GetCurrentDirectoryW(buffer.size(), buffer.data()) != 0)
     {
-        throw std::exception("dbghelp.dll not found");
+        m_symbol_paths.append(L";").append(buffer.data());
     }
-    SymInitializePointer = reinterpret_cast<decltype(SymInitializePointer)>(GetProcAddress(m_dbghelp_dll, "SymInitialize"));
-    if (SymInitializePointer == nullptr)
+    if (GetEnvironmentVariableW(L"_NT_SYMBOL_PATH", buffer.data(), buffer.size()) != 0)
     {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymInitialize");
+        m_symbol_paths.append(L";").append(buffer.data());
     }
-    SymCleanupPointer = reinterpret_cast<decltype(SymCleanupPointer)>(GetProcAddress(m_dbghelp_dll, "SymCleanup"));
-    if (SymCleanupPointer == nullptr)
+    if (GetEnvironmentVariableW(L"_NT_ALTERNATIVE_SYMBOL_PATH", buffer.data(), buffer.size()) != 0)
     {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymCleanup");
+        m_symbol_paths.append(L";").append(buffer.data());
     }
-    SymFunctionTableAccess64Pointer = reinterpret_cast<decltype(SymFunctionTableAccess64Pointer)>(GetProcAddress(m_dbghelp_dll, "SymFunctionTableAccess64"));
-    if (SymFunctionTableAccess64Pointer == nullptr)
+    if (GetEnvironmentVariableW(L"SYSTEMROOT", buffer.data(), buffer.size()) != 0)
     {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymFunctionTableAccess64");
-    }
-    SymGetModuleBase64Pointer = reinterpret_cast<decltype(SymGetModuleBase64Pointer)>(GetProcAddress(m_dbghelp_dll, "SymGetModuleBase64"));
-    if (SymGetModuleBase64Pointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymGetModuleBase64");
-    }
-    SymGetModuleInfo64Pointer = reinterpret_cast<decltype(SymGetModuleInfo64Pointer)>(GetProcAddress(m_dbghelp_dll, "SymGetModuleInfo64"));
-    if (SymGetModuleInfo64Pointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymGetModuleInfo64");
-    }
-    SymLoadModule64Pointer = reinterpret_cast<decltype(SymLoadModule64Pointer)>(GetProcAddress(m_dbghelp_dll, "SymLoadModule64"));
-    if (SymLoadModule64Pointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymLoadModule64");
-    }
-    SymEnumSymbolsPointer = reinterpret_cast<decltype(SymEnumSymbolsPointer)>(GetProcAddress(m_dbghelp_dll, "SymEnumSymbols"));
-    if (SymEnumSymbolsPointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymEnumSymbols");
-    }
-    StackWalk64Pointer = reinterpret_cast<decltype(StackWalk64Pointer)>(GetProcAddress(m_dbghelp_dll, "StackWalk64"));
-    if (StackWalk64Pointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have StackWalk64");
-    }
-    SymFromAddrPointer = reinterpret_cast<decltype(SymFromAddrPointer)>(GetProcAddress(m_dbghelp_dll, "SymFromAddr"));
-    if (SymFromAddrPointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymFromAddr");
-    }
-    UnDecorateSymbolNamePointer = reinterpret_cast<decltype(UnDecorateSymbolNamePointer)>(GetProcAddress(m_dbghelp_dll, "UnDecorateSymbolName"));
-    if (UnDecorateSymbolNamePointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have UnDecorateSymbolName");
-    }
-    SymGetTypeInfoPointer = reinterpret_cast<decltype(SymGetTypeInfoPointer)>(GetProcAddress(m_dbghelp_dll, "SymGetTypeInfo"));
-    if (SymGetTypeInfoPointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymGetTypeInfo");
-    }
-    SymGetTypeInfoExPointer = reinterpret_cast<decltype(SymGetTypeInfoExPointer)>(GetProcAddress(m_dbghelp_dll, "SymGetTypeInfoEx"));
-    if (SymGetTypeInfoExPointer == nullptr)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll did not have SymGetTypeInfoEx");
-    }
-    buffer.fill('\0');
-    if (GetCurrentDirectoryA(buffer.size(), buffer.data()) != 0)
-    {
-        symbol_paths.append(";").append(buffer.data());
-    }
-    if (GetEnvironmentVariableA("_NT_SYMBOL_PATH", buffer.data(), buffer.size()) != 0)
-    {
-        symbol_paths.append(";").append(buffer.data());
-    }
-    if (GetEnvironmentVariableA("_NT_ALTERNATIVE_SYMBOL_PATH", buffer.data(), buffer.size()) != 0)
-    {
-        symbol_paths.append(";").append(buffer.data());
-    }
-    if (GetEnvironmentVariableA("SYSTEMROOT", buffer.data(), buffer.size()) != 0)
-    {
-        symbol_paths.append(";").append(buffer.data())
-                    .append(";").append(buffer.data()).append("\\system32")
-                    .append(";").append(buffer.data()).append("\\SysWOW64");
+        m_symbol_paths.append(L";").append(buffer.data())
+                      .append(L";").append(buffer.data()).append(L"\\system32")
+                      .append(L";").append(buffer.data()).append(L"\\SysWOW64");
     }
     /*
     * TODO: Enable when SymbolServer support is added. Needs symsrv.dll.
@@ -152,25 +95,18 @@ DbgHelp::DbgHelp(HANDLE process) :
     * -- Warepire
     */
     //symbol_paths.append(";").append("SRV*%SYSTEMDRIVE%\\websymbols*http://msdl.microsoft.com/download/symbols");
-    if (SymInitializePointer(m_process, symbol_paths.c_str(), FALSE) == FALSE)
-    {
-        FreeLibrary(m_dbghelp_dll);
-        throw std::exception("dbghelp.dll could not initialize symbol handling");
-    }
 }
+
 DbgHelp::~DbgHelp()
 {
-    SymCleanupPointer(m_process);
-    FreeLibrary(m_dbghelp_dll);
+
 }
 
 void DbgHelp::LoadSymbols(HANDLE module_file, LPCSTR module_name, DWORD64 module_base)
 {
-    DWORD64 base_address = SymLoadModule64Pointer(m_process, module_file, module_name, 0, module_base, 0);
-    if (base_address != 0)
+    if (m_private->LoadSymbols(module_base, module_name, m_symbol_paths))
     {
         m_loaded_modules.emplace(module_base, module_name);
-        SymEnumSymbolsPointer(m_process, base_address, NULL, DbgHelp::LoadSymbolsCallback, this);
     }
 }
 

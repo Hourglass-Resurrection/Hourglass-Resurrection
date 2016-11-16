@@ -10,10 +10,11 @@
 #include <Windows.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "external\dbghelp\dbghelp.h"
+class DbgHelpPriv;
 
 class DbgHelp
 {
@@ -42,8 +43,6 @@ public:
     std::vector<std::wstring> GetFullTrace(const std::vector<StacktraceInfo>& trace);
 
 private:
-    static BOOL CALLBACK LoadSymbolsCallback(PSYMBOL_INFO symbol_info, ULONG symbol_size, PVOID user_data);
-
     /*
      * Basic symbol information getters
      */
@@ -57,7 +56,6 @@ private:
     std::wstring GetTypeName(DWORD64 module_base, ULONG type_index);
     std::wstring GetSymbolName(DWORD64 module_base, ULONG type_index);
 
-    HMODULE m_dbghelp_dll;
     HANDLE m_process;
 
     /*
@@ -66,5 +64,7 @@ private:
      * can save the address and path of the module, and look it up during the stack trace.
      * -- Warepire
      */
+    std::unique_ptr<DbgHelpPriv> m_private;
+    std::wstring m_symbol_paths;
     std::map<DWORD64, std::string> m_loaded_modules;
 };
