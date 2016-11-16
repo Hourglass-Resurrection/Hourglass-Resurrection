@@ -7,6 +7,16 @@
 #include "logging.h"
 #include "shared/version.h"
 
+namespace
+{
+    BOOL SetPrivateProfileIntW(LPCWSTR app_name, LPCWSTR key_name, INT value, LPCWSTR filename)
+    {
+        WCHAR tmp_str[48];
+        swprintf(tmp_str, L"%d", value);
+        return WritePrivateProfileStringW(app_name, key_name, tmp_str, filename);
+    }
+}
+
 namespace Config{
 
 	//#include "../shared/ipc.h"
@@ -95,89 +105,96 @@ namespace Config{
 	int inputFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_OTHER|FOCUS_FLAG_TASER; // allowbackgroundinput;
 	int hotkeysFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_TASER; // allowbackgroundhotkeys;
 
-	char moviefilename [MAX_PATH+1];
-	char exefilename [MAX_PATH+1];
-	char commandline [160];
-	char thisprocessPath [MAX_PATH+1];
+    WCHAR moviefilename[MAX_PATH + 1];
+    WCHAR exefilename[MAX_PATH + 1];
+    WCHAR commandline[160];
+    WCHAR thisprocessPath[MAX_PATH + 1];
 
 	//const char* defaultConfigFilename = "hourglass.cfg";
 
 
-	int Save_Config(const char* filename)
+	int Save_Config(LPCWSTR filename)
 	{
-		char Str_Tmp [1024] = {0};
-		if(!filename)
-			filename = defaultConfigFilename;
-		char Conf_File[1024];
+        WCHAR Str_Tmp[1024] = { 0 };
+        if (filename == nullptr)
+        {
+            filename = defaultConfigFilename;
+        }
+        WCHAR Conf_File[1024];
 
-		if(*filename && filename[1] == ':')
-			strcpy(Conf_File, filename);
-		else
-			sprintf(Conf_File, "%s\\%s", thisprocessPath, filename);
+        if (*filename && filename[1] == ':')
+        {
+            wcscpy(Conf_File, filename);
+        }
+        else
+        {
+            swprintf(Conf_File, L"%s\\%s", thisprocessPath, filename);
+        }
 
-		WritePrivateProfileStringA("General", "Exe path", exefilename, Conf_File);
-		WritePrivateProfileStringA("General", "Movie path", moviefilename, Conf_File);
-		WritePrivateProfileStringA("General", "Command line", commandline, Conf_File);
+        WritePrivateProfileStringW(L"General", L"Exe path", exefilename, Conf_File);
+        WritePrivateProfileStringW(L"General", L"Movie path", moviefilename, Conf_File);
+        WritePrivateProfileStringW(L"General", L"Command line", commandline, Conf_File);
 
-		SetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
-		//SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
-		SetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
-		if(advancePastNonVideoFramesConfigured)
-			SetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
-		SetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
-		SetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
+        SetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
+        //SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
+        SetPrivateProfileIntW(L"Tools", L"Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
+        if (advancePastNonVideoFramesConfigured)
+        {
+            SetPrivateProfileIntW(L"Input", L"Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
+        }
+        SetPrivateProfileIntW(L"Input", L"Background Input Focus Flags", inputFocusFlags, Conf_File);;
+        SetPrivateProfileIntW(L"Input", L"Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		SetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
+        SetPrivateProfileIntW(L"Debug", L"Load Debug Tracing", traceEnabled, Conf_File);
 
-		wsprintf(Str_Tmp, "%d", AutoRWLoad);
-		WritePrivateProfileString("Watches", "AutoLoadWatches", Str_Tmp, Conf_File);
+        swprintf(Str_Tmp, L"%d", AutoRWLoad);
+        WritePrivateProfileStringW(L"Watches", L"AutoLoadWatches", Str_Tmp, Conf_File);
 
-		wsprintf(Str_Tmp, "%d", RWSaveWindowPos);
-		WritePrivateProfileString("Watches", "SaveWindowPosition", Str_Tmp, Conf_File);
+        swprintf(Str_Tmp, L"%d", RWSaveWindowPos);
+        WritePrivateProfileStringW(L"Watches", L"SaveWindowPosition", Str_Tmp, Conf_File);
 
-		if (RWSaveWindowPos)
-		{
-			SetPrivateProfileIntA("Watches", "Ramwatch_X", ramw_x, Conf_File);
-			SetPrivateProfileIntA("Watches", "Ramwatch_Y", ramw_y, Conf_File);
-		}
+        if (RWSaveWindowPos)
+        {
+            SetPrivateProfileIntW(L"Watches", L"Ramwatch_X", ramw_x, Conf_File);
+            SetPrivateProfileIntW(L"Watches", L"Ramwatch_Y", ramw_y, Conf_File);
+        }
 
-		for(int i = 0; i < MAX_RECENT_WATCHES; i++)
-		{
-			char str[256];
-			sprintf(str, "Recent Watch %d", i+1);
-			WritePrivateProfileStringA("Watches", str, &rw_recent_files[i][0], Conf_File);	
-		}
+        for (int i = 0; i < MAX_RECENT_WATCHES; i++)
+        {
+            swprintf(Str_Tmp, L"Recent Watch %d", i + 1);
+            WritePrivateProfileStringW(L"Watches", Str_Tmp, &rw_recent_files[i][0], Conf_File);
+        }
 
 		// TODO: save hotkeys!
 		//SaveHotkeys(Conf_File, true);
 		//SaveHotkeys(Conf_File, false);
 
-		return 1;
-	}
+        return 1;
+    }
 
 
-	int Save_As_Config(HWND hWnd, HINSTANCE hInst)
-	{
-		char Name[2048];
-		OPENFILENAME ofn;
+    int Save_As_Config(HWND hWnd, HINSTANCE hInst)
+    {
+		WCHAR Name[2048];
+		OPENFILENAMEW ofn;
 
-		SetCurrentDirectoryA(thisprocessPath);
+		SetCurrentDirectoryW(thisprocessPath);
 
-		strcpy(&Name[0], defaultConfigFilename);
-		memset(&ofn, 0, sizeof(OPENFILENAME));
+		wcscpy(&Name[0], defaultConfigFilename);
+		memset(&ofn, 0, sizeof(OPENFILENAMEW));
 
-		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.lStructSize = sizeof(OPENFILENAMEW);
 		ofn.hwndOwner = hWnd;
 		ofn.hInstance = hInst;
 		ofn.lpstrFile = Name;
 		ofn.nMaxFile = 2047;
-		ofn.lpstrFilter = "Config Files\0*.cfg\0All Files\0*.*\0\0";
+		ofn.lpstrFilter = L"Config Files\0*.cfg\0All Files\0*.*\0\0";
 		ofn.nFilterIndex = 1;
 		ofn.lpstrInitialDir = thisprocessPath;
-		ofn.lpstrDefExt = "cfg";
+		ofn.lpstrDefExt = L"cfg";
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
-		if(GetSaveFileName(&ofn))
+		if(GetSaveFileNameW(&ofn))
 		{
 			Save_Config(Name);
 			debugprintf(L"config saved in \"%S\".\n", Name);
@@ -187,42 +204,42 @@ namespace Config{
 	}
 
 
-	int Load_Config(const char* filename)
+	int Load_Config(LPCWSTR filename)
 	{
 		if(!filename)
 			filename = defaultConfigFilename;
-		char Conf_File[1024];
+		WCHAR Conf_File[1024];
 
 		if(*filename && filename[1] == ':')
-			strcpy(Conf_File, filename);
+			wcscpy(Conf_File, filename);
 		else
-			sprintf(Conf_File, "%s\\%s", thisprocessPath, filename);
+			swprintf(Conf_File, L"%s\\%s", thisprocessPath, filename);
 
-		GetPrivateProfileStringA("General", "Exe path", exefilename, exefilename, MAX_PATH, Conf_File);
-		GetPrivateProfileStringA("General", "Movie path", moviefilename, moviefilename, MAX_PATH, Conf_File);
-		GetPrivateProfileStringA("General", "Command line", commandline, commandline, ARRAYSIZE(commandline), Conf_File);
+		GetPrivateProfileStringW(L"General", L"Exe path", exefilename, exefilename, MAX_PATH, Conf_File);
+		GetPrivateProfileStringW(L"General", L"Movie path", moviefilename, moviefilename, MAX_PATH, Conf_File);
+		GetPrivateProfileStringW(L"General", L"Command line", commandline, commandline, ARRAYSIZE(commandline), Conf_File);
 
-		nextLoadRecords = 0!=GetPrivateProfileIntA("General", "Movie Read Only", nextLoadRecords, Conf_File);
+		nextLoadRecords = 0!=GetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
 		//localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
-		localTASflags.fastForwardFlags = GetPrivateProfileIntA("Tools", "Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
-		advancePastNonVideoFrames = GetPrivateProfileIntA("Input", "Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
-		advancePastNonVideoFramesConfigured = 0!=GetPrivateProfileIntA("Input", "Skip Lag Frames", 0, Conf_File);
-		inputFocusFlags = GetPrivateProfileIntA("Input", "Background Input Focus Flags", inputFocusFlags, Conf_File);
-		hotkeysFocusFlags = GetPrivateProfileIntA("Input", "Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
+		localTASflags.fastForwardFlags = GetPrivateProfileIntW(L"Tools", L"Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
+		advancePastNonVideoFrames = GetPrivateProfileIntW(L"Input", L"Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
+		advancePastNonVideoFramesConfigured = 0!=GetPrivateProfileIntW(L"Input", L"Skip Lag Frames", 0, Conf_File);
+		inputFocusFlags = GetPrivateProfileIntW(L"Input", L"Background Input Focus Flags", inputFocusFlags, Conf_File);
+		hotkeysFocusFlags = GetPrivateProfileIntW(L"Input", L"Background Hotkeys Focus Flags", hotkeysFocusFlags, Conf_File);
 
-		traceEnabled = 0!=GetPrivateProfileIntA("Debug", "Load Debug Tracing", traceEnabled, Conf_File);
+		traceEnabled = 0!=GetPrivateProfileIntW(L"Debug", L"Load Debug Tracing", traceEnabled, Conf_File);
 
 		if (RWSaveWindowPos)
 		{
-			ramw_x = GetPrivateProfileIntA ("Watches", "Ramwatch_X", 0, Conf_File);
-			ramw_y = GetPrivateProfileIntA ("Watches", "Ramwatch_Y", 0, Conf_File);
+            ramw_x = GetPrivateProfileIntW(L"Watches", L"Ramwatch_X", 0, Conf_File);
+            ramw_y = GetPrivateProfileIntW(L"Watches", L"Ramwatch_Y", 0, Conf_File);
 		}
 
 		for(int i = 0; i < MAX_RECENT_WATCHES; i++)
 		{
-			char str[256];
-			sprintf(str, "Recent Watch %d", i+1);
-			GetPrivateProfileStringA("Watches", str, "", &rw_recent_files[i][0], 1024, Conf_File);
+			WCHAR str[256];
+			swprintf(str, L"Recent Watch %d", i+1);
+			GetPrivateProfileStringW(L"Watches", str, L"", &rw_recent_files[i][0], 1024, Conf_File);
 		}
 
 		// TODO: Load hotkeys.
@@ -247,26 +264,26 @@ namespace Config{
 
 	int Load_As_Config(HWND hWnd, HINSTANCE hInst)
 	{
-		char Name[2048];
-		OPENFILENAME ofn;
+		WCHAR Name[2048];
+		OPENFILENAMEW ofn;
 
-		SetCurrentDirectoryA(thisprocessPath);
+		SetCurrentDirectoryW(thisprocessPath);
 
-		strcpy(&Name[0], defaultConfigFilename);
-		memset(&ofn, 0, sizeof(OPENFILENAME));
+		wcscpy(&Name[0], defaultConfigFilename);
+		memset(&ofn, 0, sizeof(OPENFILENAMEW));
 
-		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.lStructSize = sizeof(OPENFILENAMEW);
 		ofn.hwndOwner = hWnd;
 		ofn.hInstance = hInst;
 		ofn.lpstrFile = Name;
 		ofn.nMaxFile = 2047;
-		ofn.lpstrFilter = "Config Files\0*.cfg\0All Files\0*.*\0\0";
+		ofn.lpstrFilter = L"Config Files\0*.cfg\0All Files\0*.*\0\0";
 		ofn.nFilterIndex = 1;
 		ofn.lpstrInitialDir = thisprocessPath;
-		ofn.lpstrDefExt = "cfg";
+		ofn.lpstrDefExt = L"cfg";
 		ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
-		if(GetOpenFileName(&ofn))
+		if(GetOpenFileNameW(&ofn))
 		{
 			Load_Config(Name);
 			return 1;

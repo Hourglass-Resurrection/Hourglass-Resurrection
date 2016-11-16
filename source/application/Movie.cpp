@@ -21,8 +21,8 @@ Movie::Movie()
 	{
 		keyboardLayoutName[i] = 0;
 	}
-	author[0] = '\0';
-	commandline[0] = '\0';
+	author[0] = L'\0';
+	commandline[0] = L'\0';
 	headerBuilt = false;
 	fps = 0;
 	it = 0;
@@ -36,7 +36,7 @@ Movie::Movie()
 // NOTE: FPS and InitialTime used to have +1, we don't know why and we removed it as we made the values unsigned.
 // If problems arise, revert back to old behavior!
 #define MOVIE_TYPE_IDENTIFIER 0x02486752 // "\02HgR"
-/*static*/ bool SaveMovieToFile(Movie& movie, char* filename)
+/*static*/ bool SaveMovieToFile(Movie& movie, LPWSTR filename)
 {
 	//bool hadUnsaved = unsaved;
 	//unsaved = false;
@@ -44,7 +44,7 @@ Movie::Movie()
 	//if(movie.frames.size() == 0)
 	//	return true; // Technically we did "Save" the movie...
 
-	FILE* file = fopen(filename, "wb");
+	FILE* file = _wfopen(filename, L"wb");
 	if(!file) // File failed to open
 	{
 
@@ -52,27 +52,27 @@ Movie::Movie()
 		{
 			// If for some reason the file has been set to read-only in Windows since the last save,
 			// we attempt to save it to a new file just as a safety-measure... because people...
-			int dotLocation = (strrchr(filename, '.'))-filename+1; // Wohoo for using pointers as values!
-			char newFilename[MAX_PATH+1];
-			strncpy(newFilename, filename, dotLocation);
-			newFilename[dotLocation+1] = '\0'; // Make sure the string is null-terminated before we cat it.
-			strcat(newFilename, "new.hgr\0");
+			int dotLocation = (wcsrchr(filename, L'.'))-filename+1; // Wohoo for using pointers as values!
+			WCHAR newFilename[MAX_PATH+1];
+			wcsncpy(newFilename, filename, dotLocation);
+			newFilename[dotLocation+1] = L'\0'; // Make sure the string is null-terminated before we cat it.
+			wcscat(newFilename, L"new.hgr\0");
 
-			char str[1024];
-			sprintf(str, "Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
-			CustomMessageBox(str, "Warning!", MB_OK | MB_ICONWARNING);
+			WCHAR str[1024];
+			swprintf(str, L"Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
+			CustomMessageBox(str, L"Warning!", MB_OK | MB_ICONWARNING);
 
-			file = fopen(newFilename, "wb");
+			file = _wfopen(newFilename, L"wb");
 			
 			// Update to the new filename
-			strcpy(filename, newFilename);
+			wcscpy(filename, newFilename);
 		}
 
 		if (!file) // New file also failed OR first file failed for some other reason
 		{
-			char str[1024];
-			sprintf(str, "Saving movie data to \"%s\" failed.\nReason: %s", filename, strerror(errno));
-			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+			WCHAR str[1024];
+			swprintf(str, L"Saving movie data to \"%s\" failed.\nReason: %s", filename, strerror(errno));
+			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
 
@@ -103,12 +103,12 @@ Movie::Movie()
 	unsigned int rerecords = movie.rerecordCount;
 	fwrite(&rerecords, 4, 1, file);
 
-	const char* author = movie.author;
-	unsigned int authorLen = strlen(author);
+	LPCWSTR author = movie.author;
+	unsigned int authorLen = wcslen(author);
 	fwrite(&authorLen, 4, 1, file);
 	if (authorLen) // If the author-field contains something, write that too
 	{
-		fwrite(author, authorLen, 1, file);
+		fwrite(author, authorLen, 2, file);
 	}
 
 	const char* keyboardLayoutName = movie.keyboardLayoutName;
@@ -136,12 +136,12 @@ Movie::Movie()
 	// No commandline should need to be that long, but we should still apply a limitation of 8191-(MAX_PATH+1) instead of 160.
 	// CreateProcess has a limit of 32767 characters, which I find odd since Windows itself has a limit of 8191.
 	// -- Warepire
-	const char* commandline = movie.commandline;
-	unsigned int commandlineLen = strlen(commandline);
+	LPCWSTR commandline = movie.commandline;
+	unsigned int commandlineLen = wcslen(commandline);
 	fwrite(&commandlineLen, 4, 1, file);
 	if(commandlineLen) // If a commandline was entered, write that too.
 	{
-		fwrite(commandline, 1, commandlineLen, file);
+		fwrite(commandline, commandlineLen, 2, file);
 	}
 
 	// write remaining padding before movie data
@@ -170,17 +170,17 @@ Movie::Movie()
 // NOTE: FPS and InitialTime used to have -1, we don't know why and we removed it as we made the values unsigned.
 // If problems arise, revert back to old behavior!
 // returns 1 on success, 0 on failure, -1 on cancel
-/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, const char* filename/*, bool forPreview*/)
+/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, LPCWSTR filename/*, bool forPreview*/)
 {
 	//if(unsaved && forPreview)
 	//	return 0; // never replace movie data with a preview if we haven't saved it yet
 
-	FILE* file = fopen(filename, "rb");
+	FILE* file = _wfopen(filename, L"rb");
 	if(!file)
 	{
-		char str[1024];
-		sprintf(str, "The movie file '%s' could not be opened.\nReason: %s", filename, strerror(errno));
-		CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+		WCHAR str[1024];
+		swprintf(str, L"The movie file '%s' could not be opened.\nReason: %s", filename, strerror(errno));
+		CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 		return false;
 	}
 	
@@ -190,9 +190,9 @@ Movie::Movie()
 	if(identifier != MOVIE_TYPE_IDENTIFIER)
 	{
 		fclose(file);
-		char str[1024];
-		sprintf(str, "The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
-		CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+		WCHAR str[1024];
+		swprintf(str, L"The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
+		CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -204,19 +204,19 @@ Movie::Movie()
 
 	unsigned int authorLen;
 	fread(&authorLen, 4, 1, file);
-	char* author = NULL;
+	LPWSTR author = nullptr;
 	if(authorLen) // If this is non-zero, there is an author name in the movie.
 	{
 		if(authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
 		{
 			fclose(file);
-			char str[1024];
-			sprintf(str, "The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
-			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+			WCHAR str[1024];
+			swprintf(str, L"The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
-		author = new char[authorLen+1]; // Need room for the null-termination.
-		fread(author, authorLen, 1, file);
+		author = new WCHAR[authorLen+1]; // Need room for the null-termination.
+		fread(author, authorLen, 2, file);
 		author[authorLen] = '\0'; // Make sure the string is null-terminated.
 	}
 	
@@ -248,7 +248,7 @@ Movie::Movie()
 
 	unsigned int commandlineLen;
 	fread(&commandlineLen, 4, 1, file);
-	char* commandline = NULL;//= movie.commandline;
+	LPWSTR commandline = nullptr;//= movie.commandline;
 	if(commandlineLen) // There's a command line in the movie file.
 	{
 		if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
@@ -258,13 +258,13 @@ Movie::Movie()
 			{
 				delete[] author; // Prevent memory leak
 			}
-			char str[1024];
-			sprintf(str, "The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
-			CustomMessageBox(str, "Error!", MB_OK | MB_ICONERROR);
+			WCHAR str[1024];
+			swprintf(str, L"The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
-		commandline = new char[commandlineLen+1];
-		fread(commandline, commandlineLen, 1, file);
+		commandline = new WCHAR[commandlineLen+1];
+		fread(commandline, commandlineLen, 2, file);
 		commandline[commandlineLen] = '\0'; // Ensure proper null-termination.
 	}
 	//fread(cmdline, 1, 160, file);
@@ -297,13 +297,13 @@ Movie::Movie()
 		// We've gotten far enough, it's safe to put these values in the movie struct
 		if(author)
 		{
-			strcpy(movie.author, author);
+			wcscpy(movie.author, author);
 		}
 		memcpy(movie.desyncDetectionTimerValues, desyncDetectionTimerValues, (sizeof(int)*16));
 
 		if(commandline)
 		{
-			strcpy(movie.commandline, commandline);
+			wcscpy(movie.commandline, commandline);
 		}
 
 		// We now import the inputs into the movie.frames structure.

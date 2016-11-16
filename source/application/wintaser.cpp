@@ -8,7 +8,7 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
 // Windows Header Files:
-#include <windows.h>
+#include <Windows.h>
 #pragma comment(lib,"Version.lib") // Needed for the new Windows version detection
 
 #include <mmsystem.h>
@@ -57,7 +57,7 @@ using namespace Config;
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
 
-#include "AVIDumper.h"
+#include "AVIDumping\AVIDumper.h"
 
 #include "external/ddraw.h"
 #include "shared/logcat.h"
@@ -82,8 +82,8 @@ using namespace Config;
 #define unlink _unlink
 
 HINSTANCE hInst;
-TCHAR szTitle[MAX_LOADSTRING];
-TCHAR szWindowClass[MAX_LOADSTRING];
+WCHAR title[MAX_LOADSTRING];
+WCHAR window_class[MAX_LOADSTRING];
 
 BOOL InitInstance(HINSTANCE, int);
 BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -677,7 +677,7 @@ LPCWSTR GetExeFilenameWithoutPath()
  */
 struct SharedDataHandle
 {
-	unsigned char*const dataPtr;
+    LPBYTE const dataPtr;
 	int userdata; // used in functions as "I checked this place already"
 
 	void AddRef() { refCount++; }
@@ -690,7 +690,7 @@ struct SharedDataHandle
 		}
 	}
 	int GetRefCount() { return refCount; }
-	SharedDataHandle(unsigned char* data) : refCount(1), dataPtr(data), userdata(0) {}
+	SharedDataHandle(LPBYTE data) : refCount(1), dataPtr(data), userdata(0) {}
 private:
 	int refCount;
 	SharedDataHandle(const SharedDataHandle& c);
@@ -718,7 +718,7 @@ struct SaveState
 	struct MemoryRegion
 	{
 		MEMORY_BASIC_INFORMATION info;
-		unsigned char* data; // NOTE: BYTE* data perhaps? Would make it cleaner imo.
+		LPBYTE data;
 		SharedDataHandle* dataHandle;
 	};
 	std::vector<MemoryRegion> memory;
@@ -822,7 +822,7 @@ struct ThreadInfo
 	HANDLE hProcess;
 	//DWORD waitingCount;
 	//DWORD hopelessness;
-	char name [64];
+    char name[64];
 
 	operator HANDLE() { return handle; }
 	ThreadInfo& operator= (const HANDLE& h) { 
@@ -976,20 +976,20 @@ void CheckSrcDllVersion(DWORD version)
 {
 	if(version != VERSION)
 	{
-		const char* str;
+		LPCWSTR str;
 		if(version > VERSION)
-			str = "Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+			str = L"Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		else
-			str = "Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
-		debugprintf(L"%S\n", str);
-		CustomMessageBox(str, "Version Problem", MB_OK | MB_ICONWARNING);
+			str = L"Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
+		debugprintf(L"%s\n", str);
+		CustomMessageBox(str, L"Version Problem", MB_OK | MB_ICONWARNING);
 	}
 }
 
 
 #ifdef _DEBUG
 // TEMP
-static char localCommandSlot_COPY [256];
+static char localCommandSlot_COPY[256];
 #endif
 
 void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& thread_name)
@@ -1028,7 +1028,7 @@ void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& 
 //}
 
 
-void SaveMovie(char* filename)
+void SaveMovie(LPWSTR filename)
 {
 	// Update some variables, this should be harmless... (mostly)...
 	// May however become really harmful if SaveMovie is called during the LoadMovie scenario!
@@ -1042,7 +1042,7 @@ void SaveMovie(char* filename)
 		movie.it = localTASflags.initialTime;
 		CalcFileMD5Cached(exefilename, movie.fmd5);
 		movie.fsize = CalcExeFilesize();
-		strcpy(movie.commandline, commandline);
+		wcscpy(movie.commandline, commandline);
 		movie.headerBuilt = true;
 	}
 
@@ -1055,7 +1055,7 @@ void SaveMovie(char* filename)
 
 // returns 1 on success, 0 on failure, -1 on cancel
 // TODO: Dependency on parameter can probably be removed.
-int LoadMovie(char* filename)
+int LoadMovie(LPCWSTR filename)
 {
 	// NOTE: if ( !LoadMovieFromFile(movie, filename) ) return 0; Maybe do it like that? Cleaner.
 	bool rv = LoadMovieFromFile(movie, filename);
@@ -1065,26 +1065,26 @@ int LoadMovie(char* filename)
 	{
 		if(movie.frames.size() == 0)
 		{
-			CustomMessageBox("This movie file doesn't contain any frames, playback is not possible.", "Error!", (MB_OK | MB_ICONERROR));
+			CustomMessageBox(L"This movie file doesn't contain any frames, playback is not possible.", L"Error!", (MB_OK | MB_ICONERROR));
 			return 0; // Even if opening the movie was successful, it cannot be played back, so it "failed".
 		}
 		if(movie.version != VERSION)
 		{
-			char str [1024];
-			sprintf(str,
-			"This movie was recorded using a different main version of Hourglass Resurrection.\n"
-			"\n"
-			"Movie's version: %u\n"
-			"Program version: %u\n"
-			"\n"
-			"This may lead to the movie desyncing.\n"
-			"If it would desync you might want to use the movies main version of Hourglass Resurrection.\n"
-			"\n"
-			"Do you want to try playing back the movie anyway?\n"
-			"(Click \"Yes\" to continue, \"No\" to abort)\n",
+            WCHAR str[1024];
+			swprintf(str,
+			L"This movie was recorded using a different main version of Hourglass Resurrection.\n"
+			L"\n"
+			L"Movie's version: %u\n"
+			L"Program version: %u\n"
+			L"\n"
+			L"This may lead to the movie desyncing.\n"
+			L"If it would desync you might want to use the movies main version of Hourglass Resurrection.\n"
+			L"\n"
+			L"Do you want to try playing back the movie anyway?\n"
+			L"(Click \"Yes\" to continue, \"No\" to abort)\n",
 			movie.version, (unsigned int)VERSION);
 
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
 			if(result == IDNO)
 			{
 				return -1;
@@ -1095,15 +1095,15 @@ int LoadMovie(char* filename)
 		CalcFileMD5Cached(exefilename, temp_md5);
 		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
 		{
-			char str[1024];
-			sprintf(str, "This movie was probably recorded using a different exe.\n\n"
-						 "Movie's exe's md5: %X%X%X%X, size: %d\n"
-						 "Current exe's md5: %X%X%X%X, size: %d\n\n"
-						 "Playing the movie with current exe may lead to the movie desyncing.\n"
-						 "Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was probably recorded using a different exe.\n\n"
+						 L"Movie's exe's md5: %X%X%X%X, size: %d\n"
+						 L"Current exe's md5: %X%X%X%X, size: %d\n\n"
+						 L"Playing the movie with current exe may lead to the movie desyncing.\n"
+						 L"Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
 						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], static_cast<int>(movie.fsize), 
 						 temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(result == IDNO)
 			{
 				return -1;
@@ -1111,53 +1111,53 @@ int LoadMovie(char* filename)
 		}
 		if(movie.fps != localTASflags.framerate)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different fps.\n\n"
-						 "Movie's fps: %d\nCurrent fps: %d\n\n"
-						 "Playing the movie with current fps may lead to the movie desyncing.\n"
-						 "Do you want to use the movies fps instead?\n"
-						 "(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different fps.\n\n"
+						 L"Movie's fps: %d\nCurrent fps: %d\n\n"
+						 L"Playing the movie with current fps may lead to the movie desyncing.\n"
+						 L"Do you want to use the movies fps instead?\n"
+						 L"(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
 						 static_cast<int>(movie.fps), localTASflags.framerate);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
 				localTASflags.framerate = movie.fps;
 				// Also update the window text.
-				char fpstext[256];
-				sprintf(fpstext, "%d", localTASflags.framerate);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
+				WCHAR fpstext[256];
+				swprintf(fpstext, L"%d", localTASflags.framerate);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
 			}
 		}
 		if(movie.it != localTASflags.initialTime)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different initial time.\n\n"
-						 "Movie's initial time: %d\n"
-						 "Current initial time: %d\n\n"
-						 "Playing the movie with current initial time may lead to the movie desyncing.\n"
-						 "Do you want to use the movies initial time instead?\n"
-						 "(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)",
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different initial time.\n\n"
+						 L"Movie's initial time: %d\n"
+						 L"Current initial time: %d\n\n"
+						 L"Playing the movie with current initial time may lead to the movie desyncing.\n"
+						 L"Do you want to use the movies initial time instead?\n"
+						 L"(Click \"Yes\" to use the movies initial time, \"No\" to use current initial time)",
 						 static_cast<int>(movie.it), localTASflags.initialTime);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
 				localTASflags.initialTime = movie.it;
 				// Also update the window text.
-				char ittext[256];
-				sprintf(ittext, "%d", localTASflags.initialTime);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
+				WCHAR ittext[256];
+				swprintf(ittext, L"%d", localTASflags.initialTime);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
 			}
 		}
-		if(strcmp(movie.commandline, commandline) != 0)
+		if(wcscmp(movie.commandline, commandline) != 0)
 		{
-			char str[1024];
-			sprintf(str, "This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, commandline);
-			int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
+			WCHAR str[1024];
+			swprintf(str, L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, commandline);
+			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
-				strcpy(commandline, movie.commandline);
+				wcscpy(commandline, movie.commandline);
 				// Also update the window text.
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
 			}
 		}
 	}
@@ -1165,7 +1165,7 @@ int LoadMovie(char* filename)
 	{
 		if(movie.frames.size() > 0)
 		{
-			int rv = CustomMessageBox("This movie file contains frame data.\nAre you sure you want to overwrite it?\n(Click \"Yes\" to overwrite movie, \"No\" to abort)", "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
+			int rv = CustomMessageBox(L"This movie file contains frame data.\nAre you sure you want to overwrite it?\n(Click \"Yes\" to overwrite movie, \"No\" to abort)", L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(rv == IDNO) return -1; // Abort
 		}
 	}
@@ -1194,11 +1194,11 @@ void SaveGameStatePhase2(int slot)
 	if(finished && !recoveringStale)
 	{
 		debugprintf(L"DESYNC WARNING: tried to save state while movie was \"Finished\"\n");
-		const char* str = "Warning: The movie is in \"Finished\" status.\n"
-			"This means that any input you entered after the movie became \"Finished\" was lost.\n"
-			"Any state saved now will contain a movie that immediately desyncs at that point.\n"
-			"Are you sure you really want to save the state now?\n";
-		int result = CustomMessageBox(str, "Desync Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING);
+		LPCWSTR str = L"Warning: The movie is in \"Finished\" status.\n"
+			L"This means that any input you entered after the movie became \"Finished\" was lost.\n"
+			L"Any state saved now will contain a movie that immediately desyncs at that point.\n"
+			L"Are you sure you really want to save the state now?\n";
+		int result = CustomMessageBox(str, L"Desync Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING);
 		if(result == IDNO)
 			return;
 	}
@@ -1432,36 +1432,36 @@ static void RecoverStaleState(int slot)
 
 	// now that we have the information required,
 	// we'll ask the user if they really want to do it:
-	char str [2048];
+	WCHAR str [2048];
 	if(bestStateToUse <= -2)
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by playing the movie from the beginning?\n"
-			"Doing so will make all other savestates become stale (at least initially).\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by playing the movie from the beginning?\n"
+			L"Doing so will make all other savestates become stale (at least initially).\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, emulateFramesRemaining);
 	}
 	else if(bestStateToUse == -1)
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by continuing the movie from the current state?\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by continuing the movie from the current state?\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, emulateFramesRemaining);
 	}
 	else
 	{
-		sprintf(str,
-			"Warning: The savestate you are trying to load has gone stale.\n"
-			"The only way to recover it is by playing the movie file within it.\n"
-			"Attempt to recover the savestate by continuing the movie from savestate %d?\n"
-			"(It will emulate %d frames in fast-forward before automatically pausing.)"
+		swprintf(str,
+			L"Warning: The savestate you are trying to load has gone stale.\n"
+			L"The only way to recover it is by playing the movie file within it.\n"
+			L"Attempt to recover the savestate by continuing the movie from savestate %d?\n"
+			L"(It will emulate %d frames in fast-forward before automatically pausing.)"
 			, bestStateToUse, emulateFramesRemaining);
 	}
-	int result = CustomMessageBox(str, "Stale Savestate", MB_YESNO | MB_ICONQUESTION);
+	int result = CustomMessageBox(str, L"Stale Savestate", MB_YESNO | MB_ICONQUESTION);
 	if(result == IDNO)
 		return;
 
@@ -1493,7 +1493,7 @@ static void RecoverStaleState(int slot)
 	if(bestStateToUse <= -2)
 	{
 		// need to restart
-		PostMessage(hWnd, WM_COMMAND, IDC_BUTTON_STOP, 42);
+		PostMessageW(hWnd, WM_COMMAND, IDC_BUTTON_STOP, 42);
 //			PostMessage(hWnd, WM_COMMAND, IDC_BUTTON_PLAY, 0);
 	}
 }
@@ -1734,11 +1734,11 @@ void LoadGameStatePhase2(int slot)
 			if(!warned)
 			{
 				warned = true;
-				char str [1024];
-				sprintf(str, "Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
-					"You should load a different savestate before continuing, or switch to read+write and reload it."
+				WCHAR str [1024];
+				swprintf(str, L"Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
+					L"You should load a different savestate before continuing, or switch to read+write and reload it."
 					, state.movie.currentFrame, static_cast<int>(movie.frames.size()));
-				CustomMessageBox(str, "Movie End Warning", MB_OK | MB_ICONWARNING);
+				CustomMessageBox(str, L"Movie End Warning", MB_OK | MB_ICONWARNING);
 			}
 		}
 		else
@@ -1755,10 +1755,10 @@ void LoadGameStatePhase2(int slot)
 					if(!warned)
 					{
 						warned = true;
-						char str [1024];
-						sprintf(str, "Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
-							"This can cause a desync. You should load a different savestate before continuing.", i);
-						CustomMessageBox(str, "Desync Warning", MB_OK | MB_ICONWARNING);
+						WCHAR str [1024];
+						swprintf(str, L"Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
+							L"This can cause a desync. You should load a different savestate before continuing.", i);
+						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
 				}
 			}
@@ -1781,25 +1781,25 @@ void LoadGameStatePhase2(int slot)
 
 bool CreateAVIFile()
 {
-	char filename[MAX_PATH+1];
-	filename[0] = '\0'; // extra safety
-	char title[32];
+	WCHAR filename[MAX_PATH+1];
+	filename[0] = L'\0'; // extra safety
+	WCHAR title[32];
 	if(localTASflags.aviMode & 1)
-		strcpy(title, "Save AVI File");
+		wcscpy(title, L"Save AVI File");
 	else
-		strcpy(title, "Save AVI File (audio only)");
-	OPENFILENAME ofn = {sizeof(OPENFILENAME)};
+		wcscpy(title, L"Save AVI File (audio only)");
+	OPENFILENAMEW ofn = {sizeof(OPENFILENAMEW)};
 	ofn.hwndOwner = hWnd;
 	ofn.hInstance = hInst;
-	ofn.lpstrFilter = "AVI file\0*.avi\0All Files\0*.*\0\0";
+	ofn.lpstrFilter = L"AVI file\0*.avi\0All Files\0*.*\0\0";
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrInitialDir = thisprocessPath;
 	ofn.lpstrTitle = title;
 	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt = "avi";
-	if(!GetSaveFileName(&ofn))
+	ofn.lpstrDefExt = L"avi";
+	if(!GetSaveFileNameW(&ofn))
 		return false;
 
 	// Attempt to inform the AVI dumper about the path to dump to
@@ -2267,8 +2267,8 @@ void UpdateGeneralInfoDisplay()
 		SIZE_T bytesRead = 0;
 		if(ReadProcessMemory(hGameProcess, remoteGeneralInfoFromDll, &localGeneralInfoFromDll, sizeof(InfoForDebugger), &bytesRead))
 		{
-			char str [256];
-			char str2 [256];
+			WCHAR str [256];
+			WCHAR str2 [256];
 //#ifdef _DEBUG
 //			sprintf(str, "frame %d  " /*"tick %d  "*/ "delay %d  " "new %d",
 //				localGeneralInfoFromDll.frames,
@@ -2279,10 +2279,10 @@ void UpdateGeneralInfoDisplay()
 //			if(strcmp(str,str2))
 //				SetWindowText(GetDlgItem(hWnd, IDC_TIMEINFO_LABEL), str);
 //#endif
-			sprintf(str, "%d", localGeneralInfoFromDll.ticks);
-			GetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
-			if(strcmp(str,str2))
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
+			swprintf(str, L"%d", localGeneralInfoFromDll.ticks);
+			GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
+			if(wcscmp(str,str2))
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
 #if 0
 #if _DEBUG
 			static FILE* file = NULL;
@@ -2332,16 +2332,16 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 		{
 			if(frameCount != displayedFrameCount)
 			{
-				char str [256];
-				sprintf(str, "%d", frameCount);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_CURFRAME), str);
+				WCHAR str [256];
+				swprintf(str, L"%d", frameCount);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_CURFRAME), str);
 				displayedFrameCount = frameCount;
 			}
 			if(maxcount != displayedMaxFrameCount)
 			{
-				char str [256];
-				sprintf(str, "%d", maxcount);
-				SetWindowText(GetDlgItem(hWnd, IDC_EDIT_MAXFRAME), str);
+				WCHAR str [256];
+				swprintf(str, L"%d", maxcount);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_MAXFRAME), str);
 				displayedMaxFrameCount = maxcount;
 			}
 			{
@@ -2354,14 +2354,14 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 					int hours = frameCount / (60*60 * localTASflags.framerate);
 					int maxhours = maxcount / (60*60 * localTASflags.framerate);
 
-					char str [256];
-					sprintf(str, "%dh %dm %02.2fs   /   %dh %dm %02.2fs",
+					WCHAR str [256];
+					swprintf(str, L"%dh %dm %02.2fs   /   %dh %dm %02.2fs",
 						hours, minutes, seconds,  maxhours, maxminutes, maxseconds);
-					SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), str);
+					SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), str);
 				}
 				else
 				{
-					SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), "");
+					SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), L"");
 				}
 			}
 
@@ -2397,20 +2397,20 @@ void CheckDialogChanges(int frameCount)
 		displayed_started = started;
 		displayed_playback = (localTASflags.playback != 0);
 		displayed_finished = finished;
-		const char* str;
+		LPCWSTR str;
 		if(started)
 			if(localTASflags.playback)
 				if(finished)
-					str = "Current Status: Finished";
+					str = L"Current Status: Finished";
 				else
-					str = "Current Status: Playing";
+					str = L"Current Status: Playing";
 			else
-				str = "Current Status: Recording";
+				str = L"Current Status: Recording";
 		else
-			str = "Current Status: Inactive";
-		SetWindowText(GetDlgItem(hWnd, IDC_STATIC_MOVIESTATUS), str);
+			str = L"Current Status: Inactive";
+		SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIESTATUS), str);
 		InvalidateRect(GetDlgItem(hWnd, IDC_STATIC_FRAMESLASH), NULL, TRUE);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_CHECK_MOUSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_CHECK_GAMEPAD), !started);
 //		EnableWindow(GetDlgItem(hWnd, IDC_ALLOWHARDWAREACCEL), !started);
@@ -2425,9 +2425,9 @@ void CheckDialogChanges(int frameCount)
 			EnableWindow(GetDlgItem(hWnd, IDC_RADIO_THREAD_ALLOW), !started);
 		}
 		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_EXE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), EM_SETREADONLY, started, 0);
 		//SendMessage(GetDlgItem(hWnd, IDC_TEXT_MOVIE), EM_SETREADONLY, started, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
+		SendMessageW(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), EM_SETREADONLY, started, 0);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_MOVIEBROWSE), !started);
 		EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_GAMEBROWSE), !started);
 		mainMenuNeedsRebuilding = true;
@@ -2629,10 +2629,10 @@ void DoPow2Logic(int frameCount)
 					if(localTASflags.playback && movieTime && s_firstTimerDesyncWarnedFrame >= frameCount)
 					{
 						s_firstTimerDesyncWarnedFrame = frameCount;
-						char str [256];
-						sprintf(str, "DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
-						debugprintf(L"%S\n", str);
-						CustomMessageBox(str, "Desync Warning", MB_OK | MB_ICONWARNING);
+						WCHAR str [256];
+						swprintf(str, L"DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
+						debugprintf(L"%s\n", str);
+						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
 					movie.desyncDetectionTimerValues[which] = localGeneralInfoFromDll.ticks;
 				}
@@ -2642,7 +2642,7 @@ void DoPow2Logic(int frameCount)
 
 }
 
-static char dllLeaveAloneList [256][MAX_PATH+1];
+static WCHAR dllLeaveAloneList [256][MAX_PATH+1];
 
 //void SupplyDllList(int writeAddressInt)
 //{
@@ -2726,12 +2726,12 @@ void ResumeAllExcept(int ignoreThreadID)
 
 void ReceiveFrameRate(IPC::FPSInfo& fps_info)
 {
-    char str[128];
-	sprintf(str, "Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
-	const char* pStr = str;
-	if(strlen(str) > 24)
+    WCHAR str[128];
+	swprintf(str, L"Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
+	LPCWSTR pStr = str;
+	if(wcslen(str) > 24)
 		pStr += 8; // omit "Current" if the string is getting too long
-	SetWindowText(GetDlgItem(hWnd, IDC_STATIC_CURRENTFPS), pStr);
+	SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_CURRENTFPS), pStr);
 
 	goingsuperfast = (fps_info.GetFPS() >= 300.0f);
 }
@@ -2832,69 +2832,73 @@ void PrintPrivileges(HANDLE hProcess)
 void PrintPrivileges(HANDLE hProcess) {}
 #endif
 
-static void AbsolutifyPath(char* buf)
+static void AbsolutifyPath(LPWSTR buf)
 {
-	SearchPath(NULL, buf, NULL, MAX_PATH, buf, NULL);
-	NormalizePathA(buf, buf);
+	SearchPathW(nullptr, buf, nullptr, MAX_PATH, buf, nullptr);
+	NormalizePath(buf, buf);
 }
 
-const char* ExceptionCodeToDescription(DWORD code)
+LPCWSTR ExceptionCodeToDescription(DWORD code)
 {
 	switch(code & (DWORD)0xCFFFFFFF)
 	{
 		// custom/nonstandard/undocumented exceptions
-		case /*DELPHI_RUNTIME_ERROR*/(DWORD)0x0EEDFADE: return "Delphi runtime error.";
-		case /*EXCEPTION_MSVC*/(DWORD)0xC06D7363: return "exception inserted by Visual C++, often used for SEH";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0524F54: return "EXCEPTION_COMPLUS (ROT)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434352: return "EXCEPTION_COMPLUS (CCR)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434F4D: return "EXCEPTION_COMPLUS (COM)";
-		case /*EXCEPTION_HIJACK*/(DWORD)0xC0434F4E: return "Resuming thread after garbage collection.";
-		case /*EXCEPTION_SOFTSO*/(DWORD)0xC053534F: return "Stack overflow in managed code.";
-		case /*EXCEPTION_EXX*/(DWORD)0xC0455858: return "SetupThread PInvoke failure.";
-		case (DWORD)0xC0440001: return "D runtime Win32 exception";
+		case /*DELPHI_RUNTIME_ERROR*/(DWORD)0x0EEDFADE: return L"Delphi runtime error.";
+		case /*EXCEPTION_MSVC*/(DWORD)0xC06D7363: return L"exception inserted by Visual C++, often used for SEH";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0524F54: return L"EXCEPTION_COMPLUS (ROT)";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434352: return L"EXCEPTION_COMPLUS (CCR)";
+		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434F4D: return L"EXCEPTION_COMPLUS (COM)";
+		case /*EXCEPTION_HIJACK*/(DWORD)0xC0434F4E: return L"Resuming thread after garbage collection.";
+		case /*EXCEPTION_SOFTSO*/(DWORD)0xC053534F: return L"Stack overflow in managed code.";
+		case /*EXCEPTION_EXX*/(DWORD)0xC0455858: return L"SetupThread PInvoke failure.";
+		case (DWORD)0xC0440001: return L"D runtime Win32 exception";
 		default:
 			LPVOID lpMessageBuffer;
-			HMODULE Hand = LoadLibrary("NTDLL.DLL");
+			HMODULE Hand = LoadLibraryW(L"NTDLL.DLL");
    
-			FormatMessage(
+			FormatMessageW(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER |
 				FORMAT_MESSAGE_FROM_SYSTEM |
 				FORMAT_MESSAGE_FROM_HMODULE,
 				Hand,
 				code,
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPTSTR) &lpMessageBuffer,
+				(LPWSTR) &lpMessageBuffer,
 				0,
 				NULL );
 
 			FreeLibrary(Hand);
 
-			return (char*)lpMessageBuffer;
+            /*
+             * TODO: Memleak
+             * -- Warepire
+             */
+			return (LPWSTR)lpMessageBuffer;
 	}
 }
 
-static int CountSharedPrefixLength(const char* a, const char* b)
+static int CountSharedPrefixLength(LPCWSTR a, LPCWSTR b)
 {
 	int i = 0;
 	while(a[i] && tolower(a[i]) == tolower(b[i]))
 		i++;
 	return i;
 }
-static int CountBackslashes(const char* str)
+static int CountBackslashes(LPCWSTR str)
 {
 	int count = 0;
-	while((str = strchr(str, '\\'))!=0)
-		count++, str++;
+    while ((str = wcschr(str, L'\\')) != 0)
+        count++, str++;
 	return count;
 }
 
-static int IsPathTrusted(const char* path)
+static int IsPathTrusted(LPCWSTR path)
 {
 	// we want to return 0 for all system or installed dlls,
 	// 2 for our own dll, 1 for the game exe,
 	// and 1 for any dlls or exes around the game's directory
 
-	if(!_stricmp(path, injectedDllPath))
+	if(!wcsicmp(path, injectedDllPath))
 		return 2;
 
 	int outCount = 2;
@@ -2921,7 +2925,7 @@ static int IsPathTrusted(const char* path)
 		if(!_strnicmp(path, subexefilename, end - path))
 			return 1;
 	}*/
-	if(strlen(path) >= 4 && !_strnicmp(path + strlen(path) - 4, ".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
+	if(wcslen(path) >= 4 && !wcsnicmp(path + wcslen(path) - 4, L".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
 		return 1;
 
 	return 0;
@@ -2931,7 +2935,7 @@ static int IsPathTrusted(const char* path)
 struct MyMODULEINFO
 {
 	MODULEINFO mi;
-	std::string path;
+	std::wstring path;
 };
 static std::vector<MyMODULEINFO> trustedModuleInfos;
 static MyMODULEINFO injectedDllModuleInfo;
@@ -3029,7 +3033,7 @@ void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 	}
 	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%S)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
 }
-void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, const char* path)
+void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 {
 	int trusted = IsPathTrusted(path);
 	if(!trusted)
@@ -3066,7 +3070,7 @@ struct CustomBreakpoint
 {
 	DWORD address;
 	DWORD threadId;
-	unsigned char origByte;
+	BYTE origByte;
 };
 static std::vector<CustomBreakpoint> customBreakpoints;
 
@@ -3097,7 +3101,7 @@ void AddBreakpoint(DWORD address, DWORD threadId, HANDLE hProcess)
 	SIZE_T unused = 0;
 	ReadProcessMemory(hProcess, (void*)address, &bp.origByte, 1, &unused);
 
-	unsigned char newByte = 0xCC;
+	static constexpr BYTE newByte = 0xCC;
 	WriteProcessMemory(hProcess, (void*)address, &newByte, 1, &unused);
 
 	VirtualProtectEx(hProcess, (void*)address, 1, dwOldProtect, &dwOldProtect);
@@ -3274,7 +3278,7 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 		//for(iter = dllBaseToHandle.begin(); iter != dllBaseToHandle.end(); iter++)
 		//	CloseHandle(iter->second);
 //		dllBaseToHandle.clear();
-		dllBaseToFilename.clear();
+		dll_base_to_filename.clear();
 	}
 
 	//CloseThreadHandles(threadHandleToClose, hProcess);
@@ -3475,20 +3479,20 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 	subexefilename[0] = 0;
 	AbsolutifyPath(exefilename);
-	char initialDirectory [MAX_PATH+1];
-	strcpy(initialDirectory, exefilename);
-	char* slash = max(strrchr(initialDirectory, '\\'), strrchr(initialDirectory, '/'));
+	WCHAR initialDirectory [MAX_PATH+1];
+	wcscpy(initialDirectory, exefilename);
+	LPWSTR slash = std::max(wcsrchr(initialDirectory, L'\\'), wcsrchr(initialDirectory, L'/'));
 	if(slash)
 		*slash = 0;
 
-	char* cmdline = NULL;
+	LPWSTR cmdline = nullptr;
 	/*if(movie.version >= 60 && movie.version <= 63)
 		cmdline = commandline;
 	else if(movie.version >= 64)
 	{*/
 		// TODO: Expand the size of allowed commandline
-		static char tempcmdline [ARRAYSIZE(commandline)+MAX_PATH+4];
-		sprintf(tempcmdline, "\"%s\" %s", exefilename, commandline);
+		static WCHAR tempcmdline [ARRAYSIZE(commandline)+MAX_PATH+4];
+		swprintf(tempcmdline, L"\"%s\" %s", exefilename, commandline);
 		cmdline = tempcmdline;
 	//}
 
@@ -3498,9 +3502,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		debugprintf("failed to enable full debug privileges...\n");
 	}*/
 
-	debugprintf(L"creating process \"%S\"...\n", exefilename);
+	debugprintf(L"creating process \"%s\"...\n", exefilename);
 	//debugprintf("initial directory = \"%s\"...\n", initialDirectory);
-	BOOL created = CreateProcess(exefilename, // application name
+	BOOL created = CreateProcessW(exefilename, // application name
 		cmdline, // commandline arguments
 		NULL, // process attributes (e.g. security descriptor)
 		NULL, // thread attributes (e.g. security descriptor)
@@ -3516,15 +3520,15 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	if(!created)
 	{
 		DWORD error = GetLastError();
-		PrintLastError("CreateProcess", error);
+		PrintLastError(L"CreateProcess", error);
 		if(error == ERROR_ELEVATION_REQUIRED)
 		{
-			char str [1024];
-			sprintf(str,
-				"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
-				"Hourglass doesn't have high enough privileges to launch the game.\n"
-				"Try closing Hourglass and then opening it with \"Run as administrator\".", exefilename);
-			CustomMessageBox(str, "Permission Denied", MB_OK|MB_ICONERROR);
+			WCHAR str [1024];
+			swprintf(str,
+				L"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
+				L"Hourglass doesn't have high enough privileges to launch the game.\n"
+				L"Try closing Hourglass and then opening it with \"Run as administrator\".", exefilename);
+			CustomMessageBox(str, L"Permission Denied", MB_OK|MB_ICONERROR);
 		}
 	}
 
@@ -3600,7 +3604,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 			if(!SetProcessAffinityMask(hGameProcess, mask))
 			{
-				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+				PrintLastError(L"SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
 			}
 		}
 	}
@@ -3639,7 +3643,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 			if(!SetProcessAffinityMask(hGameProcess, mask))
 			{
-				PrintLastError("SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
+				PrintLastError(L"SetProcessAffinityMask", GetLastError()); // We failed, write the reason to the error log.
 			}
 		}
 		// Else: No Hyper-Threading to disable.
@@ -3929,8 +3933,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 HANDLE hThread = found->second;
                                                 //THREADSTACKTRACE(hThread);
-                                                char msg[16 + 72];
-                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                WCHAR msg[16 + 72];
+                                                swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
                                                 THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
                                             }
                                         }
@@ -3964,8 +3968,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             if (found != hGameThreads.end())
                                             {
                                                 HANDLE hThread = found->second;
-                                                char msg[16 + 72];
-                                                sprintf(msg, "(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                WCHAR msg[16 + 72];
+                                                swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
                                                 StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
                                             }
                                         }
@@ -4023,8 +4027,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                     DWORD threadId = gameThreadIdList[i];
                                                     ThreadInfo& info = hGameThreads[threadId];
                                                     HANDLE hThread = info.handle;
-                                                    char msg[16 + 72];
-                                                    sprintf(msg, "(id=0x%X) (name=%s)", threadId, info.name);
+                                                    WCHAR msg[16 + 72];
+                                                    swprintf(msg, L"(id=0x%X) (name=%s)", threadId, info.name);
                                                     THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
                                                 }
                                             }

@@ -1,12 +1,8 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 #include "shared/ipc.h"
-
-#define SetPrivateProfileIntA(lpAppName, lpKeyName, nValue, lpFileName) \
-	sprintf(Str_Tmp, "%d", nValue); \
-	WritePrivateProfileStringA(lpAppName, lpKeyName, Str_Tmp, lpFileName);
 
 #ifndef FOCUS_FLAGS_DEFINED
 #define FOCUS_FLAGS_DEFINED
@@ -70,19 +66,19 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern int inputFocusFlags;
 	extern int hotkeysFocusFlags;
 
-	extern char moviefilename [MAX_PATH+1];
-	extern char exefilename [MAX_PATH+1];
-	extern char commandline [160];
-	extern char thisprocessPath [MAX_PATH+1];
+    extern WCHAR moviefilename[MAX_PATH + 1];
+    extern WCHAR exefilename[MAX_PATH + 1];
+    extern WCHAR commandline[160];
+    extern WCHAR thisprocessPath[MAX_PATH + 1];
 
-	static const char* defaultConfigFilename = "hourglass.cfg";
+	static LPCWSTR defaultConfigFilename = L"hourglass.cfg";
     
     /* Saves the configuration.
      * If no filename is given, the default configuration file is used.
      * @see defaultConfigFilename
      * @param filename a char* with the path 
      */
-	int Save_Config(const char* filename=0);
+	int Save_Config(LPCWSTR filename = nullptr);
 
     /* Saves in the default config file the window and the program's instance.
      * @param hWnd HWND (Handles to a Window) data
@@ -95,7 +91,7 @@ namespace Config{ // A namespace is maybe not the best solution...
      * @see defaultConfigFilename
      * @param filename a char* with the path 
      */
-	int Load_Config(const char* filename=0);
+	int Load_Config(LPCWSTR filename = nullptr);
 
     /* Loads from the default config file the window and the program's instance.
      * @param hWnd HWND (Handles to a Window) data

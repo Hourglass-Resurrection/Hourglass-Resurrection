@@ -12,7 +12,7 @@ void ProcessCaptureSoundInfo();
 // Must be called once and ONCE only, recommended to make the call from the initialization code of the whole program!
 void InitAVICriticalSections();
 
-bool SetAVIFilename(char* filename);
+bool SetAVIFilename(LPWSTR filename);
 void SetLastFrameSoundInfo(void* soundInfoPointer);
 void SetGammaRamp(void* gammaRampPointer, HANDLE process);
 void SetPaletteEntriesPointer(void* pointer);

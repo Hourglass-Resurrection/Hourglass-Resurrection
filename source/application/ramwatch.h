@@ -10,7 +10,7 @@ void OpenRWRecentFile(int memwRFileNumber);
 extern bool AutoRWLoad;
 extern bool RWSaveWindowPos;
 #define MAX_RECENT_WATCHES 5
-extern char rw_recent_files[MAX_RECENT_WATCHES][1024];
+extern WCHAR rw_recent_files[MAX_RECENT_WATCHES][1024];
 extern bool AskSave();
 extern int ramw_x;
 extern int ramw_y;

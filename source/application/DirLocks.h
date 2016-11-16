@@ -5,7 +5,7 @@ enum LockTypes {
 	SSTATE,
 };
 
-bool LockDirectory(char* directory, LockTypes type);
+bool LockDirectory(LPCWSTR directory, LockTypes type);
 
 void UnlockAllDirectories();
 void UnlockDirectory(LockTypes type);

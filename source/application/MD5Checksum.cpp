@@ -1,5 +1,7 @@
 #include "MD5Checksum.h"
 
+#include <Windows.h>
+
 #include <string>
 #include <stdio.h>
 #include <map>
@@ -8,11 +10,11 @@
 
 MD5_CTX ctx;
 
-bool CalcFileMD5(const char* path, unsigned int* result)
+bool CalcFileMD5(LPCWSTR path, unsigned int* result)
 {
 	MD5_Init(&ctx);
 
-	FILE* file = fopen(path, "rb");
+	FILE* file = _wfopen(path, L"rb");
 	if(!file)
 		return false;
 	fseek(file, 0, SEEK_END);
@@ -31,11 +33,11 @@ bool CalcFileMD5(const char* path, unsigned int* result)
 }
 
 // TODO: Figure out a better key system.
-static std::map<std::string, unsigned int*> MD5Cache;
-bool CalcFileMD5Cached(const char* path, unsigned int* result)
+static std::map<std::wstring, unsigned int*> MD5Cache;
+bool CalcFileMD5Cached(LPCWSTR path, unsigned int* result)
 {
-	std::string key = path;
-	std::map<std::string, unsigned int*>::iterator found = MD5Cache.find(key);
+	std::wstring key = path;
+	std::map<std::wstring, unsigned int*>::iterator found = MD5Cache.find(key);
 	if(found == MD5Cache.end())
 	{
 		unsigned int* rv = new unsigned int[4];
@@ -58,7 +60,7 @@ bool CalcFileMD5Cached(const char* path, unsigned int* result)
 void ClearMD5Cache()
 {
 	// Since the unsigned int* is an array, we better delete it's contents too, or we'll have a leak.
-	std::map<std::string, unsigned int*>::iterator it;
+	std::map<std::wstring, unsigned int*>::iterator it;
 	for(it = MD5Cache.begin(); it != MD5Cache.end(); it++)
 	{
 		delete [] it->second;
