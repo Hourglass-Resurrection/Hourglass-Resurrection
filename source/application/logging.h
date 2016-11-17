@@ -4,4 +4,4 @@
 void InitDebugCriticalSection();
 
 int debugprintf(LPCWSTR fmt, ...);
-void PrintLastError(LPTSTR lpszFunction, DWORD dw);
+void PrintLastError(LPWSTR lpszFunction, DWORD dw);

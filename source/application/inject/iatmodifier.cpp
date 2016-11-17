@@ -40,15 +40,15 @@ void IATModifier::setImageBase(uintptr_t address)
 	importDescrTblAddr_ = (PIMAGE_IMPORT_DESCRIPTOR)(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress + (DWORD)address);	
 }
 
-void IATModifier::writeIAT(const std::string& dll, bool runFirst)
+void IATModifier::writeIAT(const std::wstring& dll, bool runFirst)
 {
-	vector<string> dlls;
+	vector<std::wstring> dlls;
 	dlls.push_back(dll);
 	writeIAT(dlls, runFirst);
 }
 
 // write one or more new import descriptors by allocating a new import descriptor table
-void IATModifier::writeIAT(const vector<string>& dlls, bool runFirst)
+void IATModifier::writeIAT(const vector<std::wstring>& dlls, bool runFirst)
 {
 	if (dlls.empty()) throw IATModifierException("DLL path list must not be empty");
 	if (importDescrTblAddr_ == NULL) throw IATModifierException("Import descriptor must not be NULL");

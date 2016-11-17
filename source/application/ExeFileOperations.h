@@ -1,3 +1,3 @@
 #pragma once
 
-unsigned int GetWin32ExeDefaultStackSize(char *exefile);
+unsigned int GetWin32ExeDefaultStackSize(LPCWSTR exefile);

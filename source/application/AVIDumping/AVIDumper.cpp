@@ -576,7 +576,7 @@ struct AviFrameQueue
 						if (FAILED(hr))
 						{ 
 							debugprintf(L"AVIStreamWrite failed! (0x%X)\n", hr);
-							NormalMessageBox("AVIStreamWrite failed! (Sorry... try restarting this program and/or choosing a different codec.)\n", "Error", MB_OK|MB_ICONERROR);
+							NormalMessageBox(L"AVIStreamWrite failed! (Sorry... try restarting this program and/or choosing a different codec.)\n", L"Error", MB_OK|MB_ICONERROR);
 							CloseAVI();
 							Config::localTASflags.aviMode = 0;
 							tasFlagsDirty = true;
@@ -588,7 +588,7 @@ struct AviFrameQueue
 					{
 						if (aviEmptyFrameCount == 0 && (Config::localTASflags.aviMode & 2) && aviFrameCount < 300 && !aviSplitCount)
 						{
-							CustomMessageBox("The video encoder you chose is outputting some null frames.\nThis may confuse video players into adding delays and letting the sound stream get out of sync.", "Warning", MB_OK | MB_ICONWARNING);
+							CustomMessageBox(L"The video encoder you chose is outputting some null frames.\nThis may confuse video players into adding delays and letting the sound stream get out of sync.", L"Warning", MB_OK | MB_ICONWARNING);
 						}
 
 						aviEmptyFrameCount++;;

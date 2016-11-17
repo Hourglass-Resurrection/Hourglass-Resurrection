@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include <stdio.h>
 
 // Gets the default stack size of a Win32 exe file using it's PE header.
@@ -8,10 +9,10 @@
 
 // Returns the stack size in bytes on success, and 0 if it failed.
 // TODO: Perhaps a bit overkill on the error checking?
-unsigned int GetWin32ExeDefaultStackSize(char *exefile)
+unsigned int GetWin32ExeDefaultStackSize(LPCWSTR exefile)
 {
 	// Open exe
-	FILE* exe = fopen(exefile, "rb");
+	FILE* exe = _wfopen(exefile, L"rb");
 	if(exe == NULL)
 	{
 		return 0;

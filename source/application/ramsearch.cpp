@@ -144,7 +144,7 @@ extern HWND hWnd;
 extern HANDLE hGameProcess;
 extern HINSTANCE hInst;
 extern CRITICAL_SECTION g_processMemCS;
-static char Str_Tmp_RS [1024];
+static WCHAR Str_Tmp_RS [1024];
 
 int disableRamSearchUpdate = false;
 
@@ -349,12 +349,12 @@ void CalculateItemIndices(int itemSize)
 	s_itemIndicesInvalid = FALSE;
 }
 
-bool RSVal::print(char* output, char sizeTypeID, char typeID)
+bool RSVal::print(LPWSTR output, WCHAR sizeTypeID, WCHAR typeID)
 {
 	switch(typeID)
 	{
 	case 'f': {
-		int len = sprintf(output, "%g", (double)*this); // don't use %f, too long
+		int len = swprintf(output, L"%g", (double)*this); // don't use %f, too long
 		// now, I want whole numbers to still show a .0 at the end so they look like floats.
 		// I'd check LOCALE_SDECIMAL, but sprintf doesn't seem to use the current locale's decimal separator setting anyway.
 		bool floaty = false;
@@ -367,52 +367,52 @@ bool RSVal::print(char* output, char sizeTypeID, char typeID)
 			}
 		}
 		if(!floaty)
-			strcpy(output+len, ".0");
+			wcscpy(output+len, L".0");
 	}	break;
 	case 's':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': output += sprintf(output, "%d", (char)((int)*this&0xff));
+			case 'b': output += swprintf(output, L"%d", (char)((int)*this&0xff));
 				if((unsigned int)(((int)*this&0xff)-32) < (unsigned int)(127-32))
-					sprintf(output, " ('%c')", (char)((int)*this&0xff));
+					swprintf(output, L" ('%c')", (char)((int)*this&0xff));
 				break;
-			case 'w': sprintf(output, "%d", (short)((int)*this&0xffff)); break;
-			case 'd': sprintf(output, "%d", (int)*this); break;
-			case 'l': sprintf(output, "%I64d", (long long)*this); break;
+			case 'w': swprintf(output, L"%d", (short)((int)*this&0xffff)); break;
+			case 'd': swprintf(output, L"%d", (int)*this); break;
+			case 'l': swprintf(output, L"%I64d", (long long)*this); break;
 		}
 		break;
 	case 'u':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': output += sprintf(output, "%u", (unsigned char)((int)*this&0xff));
+			case 'b': output += swprintf(output, L"%u", (unsigned char)((int)*this&0xff));
 				if((unsigned int)(((int)*this&0xff)-32) < (unsigned int)(127-32))
-					sprintf(output, " ('%c')", (unsigned char)((int)*this&0xff));
+					swprintf(output, L" ('%c')", (unsigned char)((int)*this&0xff));
 				break;
-			case 'w': sprintf(output, "%u", (unsigned short)((int)*this&0xffff)); break;
-			case 'd': sprintf(output, "%lu", (unsigned long)(int)*this); break;
-			case 'l': sprintf(output, "%I64u", (unsigned long long)(long long)*this); break;
+			case 'w': swprintf(output, L"%u", (unsigned short)((int)*this&0xffff)); break;
+			case 'd': swprintf(output, L"%lu", (unsigned long)(int)*this); break;
+			case 'l': swprintf(output, L"%I64u", (unsigned long long)(long long)*this); break;
 		}
 		break;
 	default:
 	case 'h':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': sprintf(output, "%02x", ((int)*this&0xff)); break;
-			case 'w': sprintf(output, "%04x", ((int)*this&0xffff)); break;
-			case 'd': sprintf(output, "%08x", (int)*this); break;
-			case 'l': sprintf(output, "%016I64x", (long long)*this); break;
+			case 'b': swprintf(output, L"%02x", ((int)*this&0xff)); break;
+			case 'w': swprintf(output, L"%04x", ((int)*this&0xffff)); break;
+			case 'd': swprintf(output, L"%08x", (int)*this); break;
+			case 'l': swprintf(output, L"%016I64x", (long long)*this); break;
 		}
 		break;
 	}
 	return true;
 }
 
-bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
+bool RSVal::scan(LPCWSTR input, WCHAR sizeTypeID, WCHAR typeID)
 {
-	int inputLen = strlen(input)+1;
+	int inputLen = wcslen(input)+1;
 	inputLen = std::min(inputLen, 32);
-	char* temp = (char*)_alloca(inputLen);
-	strncpy(temp, input, inputLen);
+	LPWSTR temp = (LPWSTR)_alloca(inputLen);
+	wcsncpy(temp, input, inputLen);
 	temp[inputLen-1] = 0;
 	for(int i = 0; temp[i]; i++)
 		if(toupper(temp[i]) == 'O')
@@ -423,7 +423,7 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 	bool readLongLong = (sizeTypeID == 'l');
 	bool negate = false;
 
-	char* strPtr = temp;
+	LPWSTR strPtr = temp;
 	while(strPtr[0] == '-')
 		strPtr++, negate = !negate;
 	if(strPtr[0] == '+')
@@ -435,11 +435,11 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 	if(strPtr[0] == '\'' && strPtr[1] && strPtr[2] == '\'')
 	{
 		if(readFloat) forceHex = true;
-		sprintf(strPtr, forceHex ? "%X" : "%u", (int)strPtr[1]);
+		swprintf(strPtr, forceHex ? L"%X" : L"%u", (int)strPtr[1]);
 	}
 	if(!forceHex && !readFloat)
 	{
-		const char* strSearchPtr = strPtr;
+		LPCWSTR strSearchPtr = strPtr;
 		while(*strSearchPtr)
 		{
 			int c = tolower(*strSearchPtr++);
@@ -461,7 +461,7 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 		if(!readLongLong)
 		{
 			float f = 0;
-			if(sscanf(strPtr, forceHex ? "%x" : "%f", &f) > 0)
+			if(swscanf(strPtr, forceHex ? L"%x" : L"%f", &f) > 0)
 				ok = true;
 			if(negate)
 				f = -f;
@@ -470,7 +470,7 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 		else
 		{
 			double f = 0;
-			if(sscanf(strPtr, forceHex ? "%I64x" : "%lf", &f) > 0)
+			if(swscanf(strPtr, forceHex ? L"%I64x" : L"%lf", &f) > 0)
 				ok = true;
 			if(negate)
 				f = -f;
@@ -482,8 +482,8 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 		if(!readLongLong)
 		{
 			int i = 0;
-			const char* formatString = forceHex ? "%x" : ((typeID=='s') ? "%d" : "%u");
-			if(sscanf(strPtr, formatString, &i) > 0)
+			LPCWSTR formatString = forceHex ? L"%x" : ((typeID=='s') ? L"%d" : L"%u");
+			if(swscanf(strPtr, formatString, &i) > 0)
 				ok = true;
 			if(negate)
 				i = -i;
@@ -492,8 +492,8 @@ bool RSVal::scan(const char* input, char sizeTypeID, char typeID)
 		else
 		{
 			long long i = 0;
-			const char* formatString = forceHex ? "%I64x" : ((typeID=='s') ? "%I64d" : "%I64u");
-			if(sscanf(strPtr, formatString, &i) > 0)
+			LPCWSTR formatString = forceHex ? L"%I64x" : ((typeID=='s') ? L"%I64d" : L"%I64u");
+			if(swscanf(strPtr, formatString, &i) > 0)
 				ok = true;
 			if(negate)
 				i = -i;
@@ -998,8 +998,8 @@ RSVal ReadControlInt(int controlID, char sizeTypeID, char typeID, BOOL& success)
 	RSVal rv = 0;
 	BOOL ok = false;
 
-	char text [64];
-	if(GetDlgItemText(RamSearchHWnd,controlID,text,64))
+	WCHAR text [64];
+	if(GetDlgItemTextW(RamSearchHWnd,controlID,text,64))
 		ok = rv.scan(text, sizeTypeID, typeID);
 
 	success = ok;
@@ -1469,11 +1469,11 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 		if(!AutoSearchAutoRetry)
 		{
 //			Clear_Sound_Buffer();
-			int answer = MessageBox(RamSearchHWnd,"Choosing Retry will reset the search once and continue autosearching.\nChoose Ignore will reset the search whenever necessary and continue autosearching.\nChoosing Abort will reset the search once and stop autosearching.","Autosearch - out of results.",MB_ABORTRETRYIGNORE|MB_DEFBUTTON2|MB_ICONINFORMATION);
+			int answer = MessageBoxW(RamSearchHWnd,L"Choosing Retry will reset the search once and continue autosearching.\nChoose Ignore will reset the search whenever necessary and continue autosearching.\nChoosing Abort will reset the search once and stop autosearching.",L"Autosearch - out of results.",MB_ABORTRETRYIGNORE|MB_DEFBUTTON2|MB_ICONINFORMATION);
 			if(answer == IDABORT)
 			{
-				SendDlgItemMessage(RamSearchHWnd, IDC_C_AUTOSEARCH, BM_SETCHECK, BST_UNCHECKED, 0);
-				SendMessage(RamSearchHWnd, WM_COMMAND, IDC_C_AUTOSEARCH, 0);
+				SendDlgItemMessageW(RamSearchHWnd, IDC_C_AUTOSEARCH, BM_SETCHECK, BST_UNCHECKED, 0);
+				SendMessageW(RamSearchHWnd, WM_COMMAND, IDC_C_AUTOSEARCH, 0);
 			}
 			if(answer == IDIGNORE)
 				AutoSearchAutoRetry = true;
@@ -1760,13 +1760,13 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					Item->item.state = 0;
 					Item->item.iImage = 0;
 					const unsigned int iNum = Item->item.iItem;
-					static char num[64];
+					static WCHAR num[64];
 					switch (Item->item.iSubItem)
 					{
 						case 0:
 						{
 							int addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							sprintf(num,"%08X",addr);
+							swprintf(num,L"%08X",addr);
 							Item->item.pszText = num;
 						}	return true;
 						case 1:
@@ -1784,7 +1784,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						case 3:
 						{
 							int i = CALL_WITH_T_SIZE_TYPES(GetNumChangesFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							sprintf(num,"%d",i);
+							swprintf(num,L"%d",i);
 							Item->item.pszText = num;
 						}	return true;
 						//case 4:
@@ -2039,14 +2039,14 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					if(!ResultCount)
 					{
 
-						MessageBox(RamSearchHWnd,"Resetting search.","Out of results.",MB_OK|MB_ICONINFORMATION);
+						MessageBoxW(RamSearchHWnd,L"Resetting search.",L"Out of results.",MB_OK|MB_ICONINFORMATION);
 						soft_reset_address_info();
 					}
 
 					{rv = true; break;}
 
 invalid_field:
-					MessageBox(RamSearchHWnd,"Invalid or out-of-bound entered value.","Error",MB_OK|MB_ICONSTOP);
+					MessageBoxW(RamSearchHWnd,L"Invalid or out-of-bound entered value.",L"Error",MB_OK|MB_ICONSTOP);
 					if(AutoSearch) // stop autosearch if it just started
 					{
 						SendDlgItemMessage(hDlg, IDC_C_AUTOSEARCH, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -2073,7 +2073,7 @@ invalid_field:
 						if (selCount == 1)
 							inserted |= InsertWatch(tempWatch, hDlg);
 						else
-							inserted |= InsertWatch(tempWatch, "");
+							inserted |= InsertWatch(tempWatch, L"");
 
 						watchItemIndex = ListView_GetNextItem(ramListControl, watchItemIndex, LVNI_SELECTED);
 					}
@@ -2204,18 +2204,18 @@ invalid_field:
 
 void UpdateRamSearchTitleBar(int percent)
 {
-#define HEADER_STR " RAM Search - "
-#define PROGRESS_STR " %d%% ... "
-#define STATUS_STR "%d Possibilit%s (%d Region%s)"
+#define HEADER_STR L" RAM Search - "
+#define PROGRESS_STR L" %d%% ... "
+#define STATUS_STR L"%d Possibilit%s (%d Region%s)"
 
 	int poss = last_rs_possible;
 	int regions = last_rs_regions;
 	if(poss <= 0)
-		strcpy(Str_Tmp_RS," RAM Search");
+		wcscpy(Str_Tmp_RS,L" RAM Search");
 	else if(percent <= 0)
-		sprintf(Str_Tmp_RS, HEADER_STR STATUS_STR, poss, poss==1?"y":"ies", regions, regions==1?"":"s");
+		swprintf(Str_Tmp_RS, HEADER_STR STATUS_STR, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
 	else
-		sprintf(Str_Tmp_RS, PROGRESS_STR STATUS_STR, percent, poss, poss==1?"y":"ies", regions, regions==1?"":"s");
+		swprintf(Str_Tmp_RS, PROGRESS_STR STATUS_STR, percent, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
 	SetWindowText(RamSearchHWnd, Str_Tmp_RS);
 }
 
@@ -2234,7 +2234,7 @@ void SetRamSearchUndoType(HWND hDlg, int type)
 	if(s_undoType != type)
 	{
 		if((s_undoType!=2 && s_undoType!=-1)!=(type!=2 && type!=-1))
-			SendDlgItemMessage(hDlg,IDC_C_UNDO,WM_SETTEXT,0,(LPARAM)((type == 2 || type == -1) ? "Redo" : "Undo"));
+			SendDlgItemMessageW(hDlg,IDC_C_UNDO,WM_SETTEXT,0,(LPARAM)((type == 2 || type == -1) ? L"Redo" : L"Undo"));
 		if((s_undoType>0)!=(type>0))
 			EnableWindow(GetDlgItem(hDlg,IDC_C_UNDO),type>0);
 		s_undoType = type;
@@ -2265,7 +2265,7 @@ void InitRamSearch()
 #endif // compiler version
 
 
-void init_list_box(HWND Box, const char* Strs[], int numColumns, int *columnWidths) //initializes the ram search and/or ram watch listbox
+void init_list_box(HWND Box, LPCWSTR Strs[], int numColumns, int *columnWidths) //initializes the ram search and/or ram watch listbox
 {
 	LVCOLUMN Col;
 	Col.mask = LVCF_FMT | LVCF_ORDER | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
@@ -2274,7 +2274,7 @@ void init_list_box(HWND Box, const char* Strs[], int numColumns, int *columnWidt
 	{
 		Col.iOrder = i;
 		Col.iSubItem = i;
-		Col.pszText = (LPSTR)(Strs[i]);
+		Col.pszText = (LPWSTR)(Strs[i]);
 		Col.cx = columnWidths[i];
 		ListView_InsertColumn(Box,i,&Col);
 	}

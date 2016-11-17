@@ -470,7 +470,7 @@ namespace Hooks
             if (fseeds.find(dwFlsIndex) == fseeds.end()) {
                 _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
                 LOG() << "FlsSetValue(" << dwFlsIndex << ",lpFlsData), set _tiddata structure at " << ptd;
-                IPC::AutoWatch auto_watch(&(ptd->_holdrand), 'd', 'u', (std::string("AutoRandSeed_Fiber_") + std::to_string(dwFlsIndex)).c_str());
+                IPC::AutoWatch auto_watch(&(ptd->_holdrand), 'd', 'u', (std::wstring(L"AutoRandSeed_Fiber_") + std::to_wstring(dwFlsIndex)).c_str());
                 IPC::SendIPCMessage(IPC::Command::CMD_WATCH_ADDRESS, &auto_watch, sizeof(auto_watch));
                 fseeds[dwFlsIndex] = &(ptd->_holdrand);
             }
