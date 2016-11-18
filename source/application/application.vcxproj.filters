@@ -97,6 +97,7 @@
     </ClCompile>
     <ClCompile Include="AVIDumping\WaveFormat.cpp">
       <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
     <ClCompile Include="DbgHelp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -194,6 +195,7 @@
     </ClInclude>
     <ClInclude Include="AVIDumping\WaveFormat.h">
       <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
     <ClInclude Include="DbgHelp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
