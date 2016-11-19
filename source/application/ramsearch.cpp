@@ -1701,7 +1701,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hDlg,IDC_C_AUTOSEARCH,BM_SETCHECK,AutoSearch?BST_CHECKED:BST_UNCHECKED,0);
 			//const char* names[5] = {"Address","Value","Previous","Changes","Notes"};
 			//int widths[5] = {62,64,64,55,55};
-			const char* names[] = {"Address","Value","Previous","Changes"};
+			LPCWSTR names[] = {L"Address",L"Value",L"Previous",L"Changes"};
 			int widths[4] = {68,76,76,68};
 			if (!ResultCount)
 				reset_address_info();
@@ -1710,7 +1710,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				signal_new_frame();
 				CompactAddrs();
 			}
-			void init_list_box(HWND Box, const char* Strs[], int numColumns, int *columnWidths);
+			void init_list_box(HWND Box, LPCWSTR Strs[], int numColumns, int *columnWidths);
 			init_list_box(GetDlgItem(hDlg,IDC_RAMLIST),names,4,widths);
 			//ListView_SetItemCount(GetDlgItem(hDlg,IDC_RAMLIST),ResultCount);
 			if (!noMisalign) SendDlgItemMessage(hDlg, IDC_MISALIGN, BM_SETCHECK, BST_CHECKED, 0);
