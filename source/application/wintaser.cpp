@@ -4410,7 +4410,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                         auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
                         if (dbghelp_it != process_handle_to_dbghelp.end())
                         {
-                        //    dbghelp_it->second.LoadSymbols(de.u.LoadDll.hFile, filename, reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
+                            dbghelp_it->second.LoadSymbols(de.u.LoadDll.hFile, filename, reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
                         }
                         LOADSYMBOLS2(hGameProcess, filename, de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
 
@@ -4542,7 +4542,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                         auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
                         if (dbghelp_it != process_handle_to_dbghelp.end())
                         {
-                        //    dbghelp_it->second.LoadSymbols(de.u.CreateProcessInfo.hFile, filename, reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
+                            dbghelp_it->second.LoadSymbols(de.u.CreateProcessInfo.hFile, filename, reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
                         }
 						LOADSYMBOLS2(hGameProcess, filename, de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						//CloseHandle(de.u.CreateProcessInfo.hProcess);

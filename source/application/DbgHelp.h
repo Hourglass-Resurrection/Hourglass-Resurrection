@@ -19,28 +19,42 @@ class DbgHelpPriv;
 class DbgHelp
 {
 public:
-    struct StacktraceInfo
+    struct FrameRegisterInfo
+    {
+        DWORD   Edi;
+        DWORD   Esi;
+        DWORD   Ebx;
+        DWORD   Edx;
+        DWORD   Ecx;
+        DWORD   Eax;
+
+        DWORD   Ebp;
+        DWORD   Eip;
+        DWORD   Esp;
+    };
+    struct StackFrameInfo
     {
         /*
          * Help constructor for faster addition of StacktraceInfo structs to the
          * member vector.
          */
-        StacktraceInfo(DWORD64 address, const std::string& module_path) :
+        StackFrameInfo(DWORD64 address, const std::wstring& module_path) :
             m_address(address),
             m_module_path(module_path)
         {
         }
         DWORD64 m_address;
-        std::string m_module_path;
+        std::wstring m_module_path;
+        FrameRegisterInfo m_regs;
     };
 
     explicit DbgHelp(HANDLE process);
     ~DbgHelp();
 
-    void LoadSymbols(HANDLE module_file, LPCSTR module_name, DWORD64 module_base);
-    std::vector<StacktraceInfo> Stacktrace(HANDLE thread, INT max_depth = -1);
-    std::vector<std::wstring> GetFunctionTrace(const std::vector<StacktraceInfo>& trace);
-    std::vector<std::wstring> GetFullTrace(const std::vector<StacktraceInfo>& trace);
+    void LoadSymbols(HANDLE module_file, LPCWSTR module_name, DWORD64 module_base);
+    std::vector<StackFrameInfo> Stacktrace(HANDLE thread, INT max_depth = -1);
+    std::vector<std::wstring> GetFunctionTrace(const std::vector<StackFrameInfo>& trace);
+    std::vector<std::wstring> GetFullTrace(const std::vector<StackFrameInfo>& trace);
 
 private:
     /*
@@ -66,5 +80,5 @@ private:
      */
     std::unique_ptr<DbgHelpPriv> m_private;
     std::wstring m_symbol_paths;
-    std::map<DWORD64, std::string> m_loaded_modules;
+    std::map<DWORD64, std::wstring> m_loaded_modules;
 };
