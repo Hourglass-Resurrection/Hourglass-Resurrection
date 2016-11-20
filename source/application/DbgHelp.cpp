@@ -42,6 +42,18 @@ namespace
 
     template<class T>
     using UniqueCOMPtr = std::unique_ptr<T, COMObjectDeleter<T>>;
+
+    template<class T>
+    UniqueCOMPtr<T> MakeUniqueCOMPtr(REFIID class_id)
+    {
+        T* result = nullptr;
+        if (CoCreateInstance(class_id, nullptr, CLSCTX_INPROC_SERVER, __uuidof(T),
+                             reinterpret_cast<LPVOID*>(&result)) != S_OK)
+        {
+            throw std::bad_alloc();
+        }
+        return std::move(UniqueCOMPtr<T>(result));
+    }
 }
 
 class StackWalkHelper : public IDiaStackWalkHelper
@@ -540,22 +552,9 @@ DbgHelpPriv::DbgHelpPriv() :
 
 bool DbgHelpPriv::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
 {
-    IDiaDataSource* source = nullptr;
+    auto data_source = MakeUniqueCOMPtr<IDiaDataSource>(CLSID_DiaSource);
     IDiaSession* sess = nullptr;
     IDiaSymbol* sym = nullptr;
-
-    if (CoCreateInstance(CLSID_DiaSource, nullptr, CLSCTX_INPROC_SERVER,
-                         __uuidof(IDiaDataSource), reinterpret_cast<LPVOID*>(&source)) != S_OK)
-    {
-        return false;
-    }
-
-    /*
-     * Now the pointer is valid, so lets turn it into a unique_ptr so that we can be sure we
-     * destroy it.
-     */
-    UniqueCOMPtr<IDiaDataSource> data_source(source);
-    source = nullptr;
 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), nullptr) != S_OK)
     {
@@ -597,7 +596,7 @@ bool DbgHelpPriv::LoadSymbols(DWORD64 module_base, const std::wstring& exec, con
 
 bool DbgHelpPriv::Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHelp::StackFrameInfo>* trace)
 {
-    IDiaStackWalker* walker = nullptr;
+    auto stack_walker = MakeUniqueCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
     IDiaEnumStackFrames* frames = nullptr;
     CONTEXT thread_context;
     thread_context.ContextFlags = CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS;
@@ -609,13 +608,6 @@ bool DbgHelpPriv::Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHelp::
     {
         return false;
     }
-    if (CoCreateInstance(CLSID_DiaStackWalker, nullptr, CLSCTX_INPROC_SERVER,
-                         IID_IDiaStackWalker, reinterpret_cast<LPVOID*>(&walker)) != S_OK)
-    {
-        return false;
-    }
-    UniqueCOMPtr<IDiaStackWalker> stack_walker(walker);
-    walker = nullptr;
 
     if (stack_walker->getEnumFrames2(m_platform, nullptr, &frames) != S_OK)
     {
