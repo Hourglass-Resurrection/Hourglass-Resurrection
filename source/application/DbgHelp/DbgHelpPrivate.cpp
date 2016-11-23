@@ -84,8 +84,8 @@ bool DbgHelpPrivate::Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHel
     {
         return false;
     }
-
-    if (stack_walker->getEnumFrames2(m_platform, nullptr, &frames) != S_OK)
+    DbgHelpStackWalkHelper helper(this, thread_context);
+    if (stack_walker->getEnumFrames2(m_platform, &helper, &frames) != S_OK)
     {
         return false;
     }

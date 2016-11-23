@@ -16,10 +16,10 @@
 
 #include "DbgHelpPrivate.h"
 
-class StackWalkHelper : public IDiaStackWalkHelper
+class DbgHelpStackWalkHelper : public IDiaStackWalkHelper
 {
 public:
-    StackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context);
+    DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context);
 
     /*
     * From IUnknown, overload these to turn this class into a regular C++ object.

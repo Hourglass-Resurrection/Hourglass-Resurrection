@@ -16,13 +16,13 @@
 
 #include "DbgHelpStackWalkHelper.h"
 
-StackWalkHelper::StackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context) :
+DbgHelpStackWalkHelper::DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context) :
     m_priv(priv)
 {
     memcpy(&m_thread_context, &context, sizeof(CONTEXT));
 }
 
-HRESULT StackWalkHelper::QueryInterface(REFIID riid, void** ppvObject)
+HRESULT DbgHelpStackWalkHelper::QueryInterface(REFIID riid, void** ppvObject)
 {
     if (ppvObject == nullptr)
     {
@@ -33,17 +33,17 @@ HRESULT StackWalkHelper::QueryInterface(REFIID riid, void** ppvObject)
     return E_NOINTERFACE;
 }
 
-ULONG StackWalkHelper::AddRef()
+ULONG DbgHelpStackWalkHelper::AddRef()
 {
     return 0;
 }
 
-ULONG StackWalkHelper::Release()
+ULONG DbgHelpStackWalkHelper::Release()
 {
     return 0;
 }
 
-HRESULT StackWalkHelper::get_registerValue(DWORD index, ULONGLONG* register_value)
+HRESULT DbgHelpStackWalkHelper::get_registerValue(DWORD index, ULONGLONG* register_value)
 {
     if (register_value == nullptr)
     {
@@ -174,7 +174,7 @@ HRESULT StackWalkHelper::get_registerValue(DWORD index, ULONGLONG* register_valu
     return S_OK;
 }
 
-HRESULT StackWalkHelper::put_registerValue(DWORD index, ULONGLONG register_value)
+HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG register_value)
 {
     static constexpr DWORD LOBYTE_MASK = MAXDWORD - MAXBYTE;
     static constexpr DWORD HIBYTE_MASK = MAXDWORD - (MAXWORD - MAXBYTE);
@@ -307,7 +307,7 @@ HRESULT StackWalkHelper::put_registerValue(DWORD index, ULONGLONG register_value
     return S_OK;
 }
 
-HRESULT StackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_address, DWORD buffer_length, DWORD* bytes_read, BYTE* buffer)
+HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_address, DWORD buffer_length, DWORD* bytes_read, BYTE* buffer)
 {
     /*
     * We do not limit the access to memory depending on type.
@@ -325,7 +325,7 @@ HRESULT StackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_addre
     return S_OK;
 }
 
-HRESULT StackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULONGLONG* return_address)
+HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULONGLONG* return_address)
 {
     SIZE_T read_bytes;
     DWORD return_address_location;
@@ -374,7 +374,7 @@ HRESULT StackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULONGLONG*
     return S_OK;
 }
 
-HRESULT StackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame, ULONGLONG start_address, ULONGLONG* return_address)
+HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame, ULONGLONG start_address, ULONGLONG* return_address)
 {
     /*
     * Keep this unimplemented for now.
@@ -382,39 +382,39 @@ HRESULT StackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame, ULONG
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
+HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
     IDiaEnumFrameData* enumerator;
 
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)
+HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)
 {
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data_length, DWORD* bytes_read, BYTE* buffer)
+HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data_length, DWORD* bytes_read, BYTE* buffer)
 {
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::imageForVA(ULONGLONG virtual_address_context, ULONGLONG* virtual_address_image_start)
+HRESULT DbgHelpStackWalkHelper::imageForVA(ULONGLONG virtual_address_context, ULONGLONG* virtual_address_image_start)
 {
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::addressForVA(ULONGLONG va, DWORD* pISect, DWORD* pOffset)
+HRESULT DbgHelpStackWalkHelper::addressForVA(ULONGLONG va, DWORD* pISect, DWORD* pOffset)
 {
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::numberOfFunctionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD* pNumFragments)
+HRESULT DbgHelpStackWalkHelper::numberOfFunctionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD* pNumFragments)
 {
     return E_NOTIMPL;
 }
 
-HRESULT StackWalkHelper::functionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD cFragments, ULONGLONG * pVaFragment, DWORD * pLenFragment)
+HRESULT DbgHelpStackWalkHelper::functionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD cFragments, ULONGLONG * pVaFragment, DWORD * pLenFragment)
 {
     return E_NOTIMPL;
 }
