@@ -68,14 +68,16 @@ void DbgHelp::LoadSymbols(HANDLE module_file, LPCWSTR module_name, DWORD64 modul
 std::vector<DbgHelp::StackFrameInfo> DbgHelp::Stacktrace(HANDLE thread, INT max_depth)
 {
     std::vector<DbgHelp::StackFrameInfo> trace;
-    //IDiaStackWalker* walker = nullptr;
 
     if (m_loaded_modules.empty())
     {
-        return trace;
+        return  {};
     }
 
-
+    if (m_private->Stacktrace(thread, max_depth, &trace))
+    {
+        return trace;
+    }
 
     //stack_frame.AddrPC.Offset = thread_context.Eip;
     //stack_frame.AddrPC.Mode = AddrModeFlat;
@@ -110,7 +112,7 @@ std::vector<DbgHelp::StackFrameInfo> DbgHelp::Stacktrace(HANDLE thread, INT max_
     //        break;
     //    }
     //}
-    return trace;
+    return {};
 }
 
 //std::vector<std::wstring> DbgHelp::GetFunctionTrace(const std::vector<StacktraceInfo>& trace)
