@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-class DbgHelpPriv;
+class DbgHelpPrivate;
 
 class DbgHelp
 {
@@ -70,15 +70,13 @@ private:
     std::wstring GetTypeName(DWORD64 module_base, ULONG type_index);
     std::wstring GetSymbolName(DWORD64 module_base, ULONG type_index);
 
-    HANDLE m_process;
-
     /*
      * It's not possible to safely get the full path of the loaded module once we're in a
      * stack tracing scenario, but, since we know the full path while loading symbols we
      * can save the address and path of the module, and look it up during the stack trace.
      * -- Warepire
      */
-    std::unique_ptr<DbgHelpPriv> m_private;
+    std::unique_ptr<DbgHelpPrivate> m_private;
     std::wstring m_symbol_paths;
     std::map<DWORD64, std::wstring> m_loaded_modules;
 };

@@ -143,6 +143,9 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelp.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
     <ClCompile Include="GUI\DlgBase.cpp" />
@@ -156,7 +159,6 @@
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
-    <ClCompile Include="DbgHelp.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
@@ -171,7 +173,9 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
     <ClInclude Include="CustomDLGs.h" />
-    <ClInclude Include="DbgHelp.h" />
+    <ClInclude Include="DbgHelp\DbgHelp.h" />
+    <ClInclude Include="DbgHelp\DbgHelpPrivate.h" />
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
     <ClInclude Include="GUI\DlgBase.h" />
@@ -195,6 +199,7 @@
     <ClInclude Include="..\shared\version.h" />
     <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Utils\COM.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico" />

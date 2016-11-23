@@ -70,7 +70,7 @@ using namespace Config;
 #include "DirLocks.h"
 #include "ExeFileOperations.h"
 
-#include "DbgHelp.h"
+#include "DbgHelp/DbgHelp.h"
 
 #pragma warning(disable:4995)
 

@@ -24,6 +24,12 @@
     <Filter Include="Source Files\AVIDumping">
       <UniqueIdentifier>{b06adc34-504b-4b14-80a4-e32cc54d948a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DbgHelp">
+      <UniqueIdentifier>{598a903a-ef95-4faf-9d4b-de692f0eb375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{73785f56-4309-4fed-b86c-ac56057f350b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomDLGs.cpp">
@@ -98,8 +104,14 @@
     <ClCompile Include="AVIDumping\WaveFormat.cpp">
       <Filter>Source Files\AVIDumping</Filter>
     </ClCompile>
-    <ClCompile Include="DbgHelp.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelp.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -196,8 +208,17 @@
     <ClInclude Include="AVIDumping\WaveFormat.h">
       <Filter>Source Files\AVIDumping</Filter>
     </ClInclude>
-    <ClInclude Include="DbgHelp.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="DbgHelp\DbgHelpPrivate.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\COM.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelp.h">
+      <Filter>Source Files\DbgHelp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
