@@ -358,6 +358,8 @@ HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtua
 
 HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULONGLONG* return_address)
 {
+    return E_NOTIMPL;
+
     SIZE_T read_bytes;
     DWORD return_address_location;
     DWORD length_pushed_params;
@@ -385,9 +387,9 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULO
 
     return_address_location = m_thread_context.Ebp + length_pushed_params;
     /*
-    * A pushed CS register is always 16 bits (2 bytes), any other pushed register will be
-    * a multiple of 4 bytes.
-    */
+     * A pushed CS register is always 16 bits (2 bytes), any other pushed register will be
+     * a multiple of 4 bytes.
+     */
     if ((length_pushed_regs % 4) != 0)
     {
         return_address_location += 2;
@@ -408,20 +410,19 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULO
 HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame, ULONGLONG start_address, ULONGLONG* return_address)
 {
     /*
-    * Keep this unimplemented for now.
-    */
+     * Keep this unimplemented for now.
+     */
     return E_NOTIMPL;
 }
 
 HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
-    auto data_source = m_priv->GetDiaDataSource(virtual_address);
-    if (data_source == nullptr)
+    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
+    if (session == nullptr)
     {
         return E_FAIL;
     }
 
-    auto session = m_priv->GetDiaSession(data_source);
     auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(session);
     if (enum_frame_data == nullptr)
     {
@@ -433,19 +434,49 @@ HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameD
 
 HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)
 {
-    return E_NOTIMPL;
+    IDiaEnumSymbolsByAddr* enum_symbols;
+    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
+    if (session == nullptr)
+    {
+        return E_FAIL;
+    }
+
+    if (session->getSymbolsByAddr(&enum_symbols) != S_OK)
+    {
+        return E_FAIL;
+    }
+
+    Utils::COM::UniqueCOMPtr<IDiaEnumSymbolsByAddr> symbols_by_addr(enum_symbols);
+    enum_symbols = nullptr;
+
+    return symbols_by_addr->symbolByVA(virtual_address, symbol);
 }
 
 HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data_length, DWORD* bytes_read, BYTE* buffer)
 {
+    /*
+     * 64-bit specific
+     * TODO: Implement when 64-bit is supported.
+     */
     return E_NOTIMPL;
 }
 
 HRESULT DbgHelpStackWalkHelper::imageForVA(ULONGLONG virtual_address_context, ULONGLONG* virtual_address_image_start)
 {
-    return E_NOTIMPL;
+    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address_context));
+    if (session == nullptr)
+    {
+        return S_FALSE;
+    }
+    return session->get_loadAddress(virtual_address_image_start);
 }
 
+/*
+ * TODO: What are these meant to do?
+ * These have literally ZERO documentation. According to Microsoft they "don't even exist",
+ * except for in the DIA SDK header, but no explanations given there...
+ * -- Warepire
+ */
 HRESULT DbgHelpStackWalkHelper::addressForVA(ULONGLONG va, DWORD* pISect, DWORD* pOffset)
 {
     return E_NOTIMPL;
