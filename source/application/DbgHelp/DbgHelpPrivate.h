@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
  /*
- * Default location of the DIA SDK within VS2015 Community edition.
- */
+  * Default location of the DIA SDK within VS2015 Community edition.
+  */
 #include <../../DIA SDK/include/dia2.h>
 
 #include "../Utils/COM.h"
@@ -35,10 +35,9 @@ private:
     HANDLE m_process;
     std::map<DWORD64, Utils::COM::UniqueCOMPtr<IDiaDataSource>> m_sources;
     std::map<IDiaDataSource*, Utils::COM::UniqueCOMPtr<IDiaSession>> m_sessions;
-    std::map<IDiaSession*, Utils::COM::UniqueCOMPtr<IDiaSymbol>> m_symbols;
     /*
-    * Assume everything is compiled for the same platform.
-    */
+     * Assume everything is compiled for the same platform.
+     */
     CV_CPU_TYPE_e m_platform;
     bool m_platform_set;
 };

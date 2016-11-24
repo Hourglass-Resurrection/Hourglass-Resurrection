@@ -78,9 +78,6 @@ using namespace Config;
 #define CONTEXT_ALL (CONTEXT_FULL | CONTEXT_FLOATING_POINT | CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS)
 #endif
 
-#define stricmp _stricmp
-#define unlink _unlink
-
 HINSTANCE hInst;
 WCHAR title[MAX_LOADSTRING];
 WCHAR window_class[MAX_LOADSTRING];

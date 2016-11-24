@@ -16,6 +16,37 @@
 
 #include "DbgHelpStackWalkHelper.h"
 
+namespace
+{
+    /*
+     * Helper template function for getting a specific IDiaTable from an IDiaSession.
+     */
+    template<class T>
+    Utils::COM::UniqueCOMPtr<T> GetDiaTable(IDiaSession* session)
+    {
+        IDiaEnumTables* enum_tables;
+        IDiaTable* table;
+        T* desired_table = nullptr;
+        ULONG num_tables_found;
+        if (session->getEnumTables(&enum_tables) != S_OK)
+        {
+            return nullptr;
+        }
+
+        while (enum_tables->Next(1, &table, &num_tables_found) == S_OK && num_tables_found == 1)
+        {
+            HRESULT rv = table->QueryInterface(__uuidof(T), reinterpret_cast<LPVOID*>(&desired_table));
+            table->Release();
+            if (rv == S_OK)
+            {
+                break;
+            }
+        }
+        enum_tables->Release();
+        return std::move(Utils::COM::UniqueCOMPtr<T>(desired_table));
+    }
+}
+
 DbgHelpStackWalkHelper::DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context) :
     m_priv(priv)
 {
@@ -384,9 +415,20 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame
 
 HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
-    IDiaEnumFrameData* enumerator;
+    auto data_source = m_priv->GetDiaDataSource(virtual_address);
+    if (data_source == nullptr)
+    {
+        return E_FAIL;
+    }
 
-    return E_NOTIMPL;
+    auto session = m_priv->GetDiaSession(data_source);
+    auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(session);
+    if (enum_frame_data == nullptr)
+    {
+        return E_FAIL;
+    }
+
+    return enum_frame_data->frameByVA(virtual_address, frame);
 }
 
 HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)

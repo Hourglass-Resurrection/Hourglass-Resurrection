@@ -45,16 +45,21 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     Utils::COM::UniqueCOMPtr<IDiaSession> session(sess);
     sess = nullptr;
 
-    if (session->get_globalScope(&sym) != S_OK)
+    if (session->put_loadAddress(module_base) != S_OK)
     {
         return false;
     }
 
-    Utils::COM::UniqueCOMPtr<IDiaSymbol> symbol(sym);
-    sym = nullptr;
-
     if (!m_platform_set)
     {
+        if (session->get_globalScope(&sym) != S_OK)
+        {
+            return false;
+        }
+
+        Utils::COM::UniqueCOMPtr<IDiaSymbol> symbol(sym);
+        sym = nullptr;
+
         DWORD platform;
         if (symbol->get_platform(&platform) != S_OK)
         {
@@ -65,7 +70,6 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     }
     m_sources.emplace(module_base, std::move(data_source));
     m_sessions.emplace(data_source.get(), std::move(session));
-    m_symbols.emplace(session.get(), std::move(symbol));
 
     return true;
 }
@@ -75,7 +79,7 @@ bool DbgHelpPrivate::Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHel
     auto stack_walker = Utils::COM::MakeUniqueCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
     IDiaEnumStackFrames* frames = nullptr;
     CONTEXT thread_context;
-    thread_context.ContextFlags = CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS;
+    thread_context.ContextFlags = CONTEXT_ALL;
     if (!m_platform_set)
     {
         return false;
