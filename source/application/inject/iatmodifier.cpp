@@ -42,13 +42,22 @@ void IATModifier::setImageBase(uintptr_t address)
 
 void IATModifier::writeIAT(const std::wstring& dll, bool runFirst)
 {
-	vector<std::wstring> dlls;
-	dlls.push_back(dll);
+	vector<std::string> dlls;
+    /*
+     * Meh: Ugly-ass hack to not trash the IAT.
+     * This should die in a fire when the new DLL loading comes into place.
+     */
+    {
+        char buffer[MAX_PATH + 1];
+        snprintf(buffer, MAX_PATH, "%S", dll.c_str());
+        dlls.push_back(buffer);
+    }
+	//dlls.push_back(dll);
 	writeIAT(dlls, runFirst);
 }
 
 // write one or more new import descriptors by allocating a new import descriptor table
-void IATModifier::writeIAT(const vector<std::wstring>& dlls, bool runFirst)
+void IATModifier::writeIAT(const vector<std::string>& dlls, bool runFirst)
 {
 	if (dlls.empty()) throw IATModifierException("DLL path list must not be empty");
 	if (importDescrTblAddr_ == NULL) throw IATModifierException("Import descriptor must not be NULL");
