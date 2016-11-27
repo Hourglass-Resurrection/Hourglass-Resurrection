@@ -50,8 +50,8 @@ void SrcLinkTrace( LPCTSTR, LPCTSTR, ULONG );
 void StackTrace( HANDLE, LPCTSTR, HANDLE );
 void StackTraceOfDepth( HANDLE, LPCTSTR, int, int, HANDLE );
 void FunctionParameterInfo();
-void LoadModuleSymbols(HANDLE hProcess, PWSTR name);
-void LoadModuleSymbols(HANDLE hProcess, PWSTR name, HANDLE hFile, DWORD base);
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name);
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name, HANDLE hFile, DWORD base);
 
 #else
 

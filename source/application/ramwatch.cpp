@@ -442,11 +442,11 @@ void OpenRWRecentFile(int memwRFileNumber)
 	return;
 }
 
-int Change_File_L(LPWSTR Dest, LPWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR Ext, HWND hwnd)
+int Change_File_L(LPWSTR Dest, LPCWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR Ext, HWND hwnd)
 {
 	OPENFILENAME ofn;
 
-	SetCurrentDirectoryW(Config::thisprocessPath);
+	SetCurrentDirectoryW(Config::this_process_path.c_str());
 
 	if(!wcscmp(Dest, L""))
 	{
@@ -473,11 +473,11 @@ int Change_File_L(LPWSTR Dest, LPWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR E
 	return 0;
 }
 
-int Change_File_S(LPWSTR Dest, LPWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR Ext, HWND hwnd)
+int Change_File_S(LPWSTR Dest, LPCWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR Ext, HWND hwnd)
 {
 	OPENFILENAME ofn;
 
-	SetCurrentDirectory(Config::thisprocessPath);
+	SetCurrentDirectoryW(Config::this_process_path.c_str());
 
 	if(!wcscmp(Dest, L""))
 	{
@@ -506,12 +506,12 @@ int Change_File_S(LPWSTR Dest, LPWSTR Dir, LPWSTR Titre, LPWSTR Filter, LPWSTR E
 
 bool Save_Watches()
 {
-	LPWSTR slash = std::max(wcsrchr(Config::exefilename, L'\\'), wcsrchr(Config::exefilename, L'/'));
-	wcscpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
+	size_t slash = Config::exe_filename.find_last_of(L"\\/");
+    wcscpy(Str_Tmp_RW, Config::exe_filename.substr((slash != std::wstring::npos) ? slash + 1 : 0).c_str());
 	LPWSTR dot = wcsrchr(Str_Tmp_RW, L'.');
 	if(dot) *dot = 0;
 	wcscat(Str_Tmp_RW,L".wch");
-	if(Change_File_S(Str_Tmp_RW, Config::thisprocessPath, L"Save Watches", L"Watchlist\0*.wch\0All Files\0*.*\0\0", L"wch", RamWatchHWnd))
+	if(Change_File_S(Str_Tmp_RW, Config::this_process_path.c_str(), L"Save Watches", L"Watchlist\0*.wch\0All Files\0*.*\0\0", L"wch", RamWatchHWnd))
 	{
 		FILE *WatchFile = _wfopen(Str_Tmp_RW,L"r+b");
 		if(!WatchFile) WatchFile = _wfopen(Str_Tmp_RW,L"w+b");
@@ -626,12 +626,12 @@ bool Load_Watches(bool clear, LPCWSTR filename)
 
 bool Load_Watches(bool clear)
 {
-	LPWSTR slash = std::max(wcsrchr(Config::exefilename, '\\'), wcsrchr(Config::exefilename, '/'));
-	wcscpy(Str_Tmp_RW,slash ? slash+1 : Config::exefilename);
+    size_t slash = Config::exe_filename.find_last_of(L"\\/");
+    wcscpy(Str_Tmp_RW, Config::exe_filename.substr((slash != std::wstring::npos) ? slash + 1 : 0).c_str());
 	LPWSTR dot = wcsrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
 	wcscat(Str_Tmp_RW,L".wch");
-	if(Change_File_L(Str_Tmp_RW, Config::thisprocessPath, L"Load Watches", L"Watchlist\0*.wch\0All Files\0*.*\0\0", L"wch", RamWatchHWnd))
+	if(Change_File_L(Str_Tmp_RW, Config::this_process_path.c_str(), L"Load Watches", L"Watchlist\0*.wch\0All Files\0*.*\0\0", L"wch", RamWatchHWnd))
 	{
 		return Load_Watches(clear, Str_Tmp_RW);
 	}

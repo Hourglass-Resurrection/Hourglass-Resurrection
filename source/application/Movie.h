@@ -30,5 +30,5 @@ struct Movie
 	Movie();
 };
 
-/*static*/ bool SaveMovieToFile(Movie& movie, LPWSTR filename);
+/*static*/ bool SaveMovieToFile(Movie& movie, LPCWSTR filename);
 /*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, LPCWSTR filename/*, bool forPreview=false*/);

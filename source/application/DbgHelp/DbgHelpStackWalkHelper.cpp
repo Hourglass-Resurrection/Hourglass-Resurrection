@@ -12,6 +12,7 @@
  */
 #include <../../DIA SDK/include/dia2.h>
 
+#include "../logging.h"
 #include "DbgHelpPrivate.h"
 
 #include "DbgHelpStackWalkHelper.h"
@@ -417,6 +418,7 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame
 
 HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
+    debugprintf(L"[Hourglass][StackWalker] %s(virtual_address=%llu, frame=%p)\n", __FUNCTIONW__, virtual_address, frame);
     auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
     if (session == nullptr)
     {
@@ -434,6 +436,11 @@ HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameD
 
 HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)
 {
+    debugprintf(L"[Hourglass][StackWalker] %s(virtual_address=%llu, symbol=%p)\n", __FUNCTIONW__, virtual_address, symbol);
+    /*
+     * TODO: Register found symbol if it's a function-tag
+     */
+    HRESULT rv;
     IDiaEnumSymbolsByAddr* enum_symbols;
     auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
     if (session == nullptr)
@@ -441,15 +448,26 @@ HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbo
         return E_FAIL;
     }
 
-    if (session->getSymbolsByAddr(&enum_symbols) != S_OK)
+    rv = session->getSymbolsByAddr(&enum_symbols);
+    if (rv != S_OK)
     {
-        return E_FAIL;
+        return rv;
     }
 
     Utils::COM::UniqueCOMPtr<IDiaEnumSymbolsByAddr> symbols_by_addr(enum_symbols);
     enum_symbols = nullptr;
 
-    return symbols_by_addr->symbolByVA(virtual_address, symbol);
+    rv = symbols_by_addr->symbolByVA(virtual_address, symbol);
+    if (rv != S_OK)
+    {
+        return rv;
+    }
+
+    /*
+     * TODO: Somehow remember the symbol and map it to a frame.
+     */
+
+    return rv;
 }
 
 HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data_length, DWORD* bytes_read, BYTE* buffer)

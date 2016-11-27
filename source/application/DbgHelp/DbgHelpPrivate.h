@@ -25,6 +25,8 @@ class DbgHelpPrivate
 {
 public:
     DbgHelpPrivate(HANDLE process);
+    ~DbgHelpPrivate();
+
     bool LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path);
     bool Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHelp::StackFrameInfo>* stack);
 
@@ -40,4 +42,5 @@ private:
      */
     CV_CPU_TYPE_e m_platform;
     bool m_platform_set;
+    bool m_should_uninitialize;
 };

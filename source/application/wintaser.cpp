@@ -300,38 +300,32 @@ bool HotkeyHWndIsHotkeys = true;
 
 InputCapture inputC; // TODO, put the declaration somewhere else ?
 
-/** Checks the path to ensure it is usable for the program.
+/** Normalizes the path to ensure it is usable for the program.
  *
- * Note: it requires both buffers given to be at least MAX_PATH characters in size.
- *       It is allowed for both arguments to point at the same buffer.
- * @param *output char pointer to where the normalized path will be written.
- * @param *path char pointer to where the path to normalize is stored
- * @return *output the same char pointer in parameter, containing the normalized path
+ * @param path const widechar string with path to normalize
+ * @return normalized path as a widechar string.
  */
-LPWSTR NormalizePath(LPWSTR output, LPCWSTR path)
+std::wstring NormalizePath(const std::wstring& path)
 {
-	extern bool started;
-    if (!started)
+    extern bool started;
+    if (path.empty() || started)
     {
-        while (*path == L' ')
-        {
-            path++;
-        }
+        return path;
     }
+
     DWORD len = 0;
+    WCHAR normalized_path[MAX_PATH + 1];
     if (!started)
     {
-        len = GetFullPathNameW(path, MAX_PATH, output, nullptr);
+        len = GetFullPathNameW(path.c_str(), MAX_PATH, normalized_path, nullptr);
+        if (len == 0)
+            PrintLastError(L"GetFullPathName", GetLastError());
     }
     if (len != 0 && len < MAX_PATH)
     {
-        GetLongPathNameW(output, output, MAX_PATH); // GetFullPathName won't always convert short filenames to long filenames
+        GetLongPathNameW(normalized_path, normalized_path, MAX_PATH); // GetFullPathName won't always convert short filenames to long filenames
     }
-    else if (path != output)
-    {
-        wcscpy(output, path);
-    }
-    return output;
+    return normalized_path;
 }
 
 // Following code needs functions from C header files
@@ -346,7 +340,7 @@ LPWSTR NormalizePath(LPWSTR output, LPCWSTR path)
  * @param *pszFilename TCHAR string with the path to translate.
  * @return bool true in case of success, false elsewhere.
  */
-static bool TranslateDeviceName(LPWSTR filename)
+static std::wstring TranslateDeviceName(const std::wstring& filename)
 {
     // Translate path with device name to drive letters.
     WCHAR temp_str[BUFSIZE];
@@ -365,28 +359,27 @@ static bool TranslateDeviceName(LPWSTR filename)
             *drive = *p;
             if (QueryDosDeviceW(drive, name, MAX_PATH) != 0)
             {
-                size_t name_len = (UINT)wcslen(name);
+                size_t name_len = wcslen(name);
                 if (name_len < MAX_PATH)
                 {
-                    found = (_wcsnicmp(filename, name, name_len) == 0);
+                    found = (_wcsnicmp(filename.c_str(), name, name_len) == 0);
                     if (found)
                     {
                         WCHAR temp_file[MAX_PATH];
-                        int len = swprintf(temp_file, MAX_PATH, L"%s%s", drive, filename + name_len);
+                        int len = swprintf(temp_file, MAX_PATH, L"%s%s", drive, filename.c_str() + name_len);
                         if (len > sizeof(temp_file))
                         {
-                            return false;
+                            return L"";
                         }
-                        wcsncpy(filename, temp_file, len);
+                        wcsncpy(temp_str, temp_file, len);
+                        break;
                     }
                 }
-            }
-            while (*p++);
+            } while (*p++);
         } while (!found && *p);
-        NormalizePath(filename, filename);
-        return true;
+        return NormalizePath(temp_str);
     }
-    return false;
+    return L"";
 }
 
 /** Retrieve the path of the executable that generated the given process.
@@ -398,13 +391,14 @@ static bool TranslateDeviceName(LPWSTR filename)
  * @param hProcess HANDLE to a process.
  * @param filename char* where the path will be stored.
  */
-bool GetFileNameFromProcessHandle(HANDLE hProcess, LPWSTR filename)
+std::wstring GetFileNameFromProcessHandle(HANDLE hProcess)
 {
+    WCHAR filename[MAX_PATH + 1];
     if (GetProcessImageFileNameW(hProcess, filename, MAX_PATH) != 0)
     {
         return TranslateDeviceName(filename);
     }
-    return false;
+    return L"";
 }
 /** Retrieve the path of the executable that generated the given file handle.
  * TODO why?
@@ -412,12 +406,13 @@ bool GetFileNameFromProcessHandle(HANDLE hProcess, LPWSTR filename)
  * @param hFile HANDLE to a file.
  * @param pszFilename TCHAR* where the path will be stored.
  */
-bool GetFileNameFromFileHandle(HANDLE file, LPWSTR filename) 
+std::wstring GetFileNameFromFileHandle(HANDLE file) 
 {
     // Creates a mapping of a given file, then tries to relate the mapping
     // to a possibly existing other mapping of the same file.
     // In case of success, the path we got is translated to be usable.
     bool success = false;
+    WCHAR filename[MAX_PATH + 1];
     HANDLE mapped_file = CreateFileMappingW(file, NULL, PAGE_READONLY, 0, 1, NULL);
     if (mapped_file != nullptr)
     {
@@ -426,7 +421,7 @@ bool GetFileNameFromFileHandle(HANDLE file, LPWSTR filename)
         {
             if (GetMappedFileNameW(GetCurrentProcess(), mem, filename, MAX_PATH) != 0)
             {
-                success = TranslateDeviceName(filename);
+                success = true;
             }
             UnmapViewOfFile(mem);
         }
@@ -434,9 +429,9 @@ bool GetFileNameFromFileHandle(HANDLE file, LPWSTR filename)
     }
     if (!success)
     {
-        wcscpy(filename, L"(unknown)");
+        return L"";
     }
-    return success;
+    return TranslateDeviceName(filename);
 }
 
 /** Get the thread suspend count.
@@ -567,12 +562,8 @@ LogCategoryFlag excludeLogFlags = LCF_NONE
 
 
 
-//char moviefilename [MAX_PATH+1];
-//char exefilename [MAX_PATH+1];
-//char commandline [160];
-//char thisprocessPath [MAX_PATH+1];
-WCHAR injectedDllPath [MAX_PATH+1];
-WCHAR subexefilename [MAX_PATH+1];
+std::wstring injected_dll_path;
+std::wstring sub_exe_filename;
 
 
 
@@ -615,11 +606,11 @@ void UpdateRerecordCountDisplay()
  * @return size integer with the number of bytes of given file, 
  *			    or 0 if the file has not been found.
  */
-LONGLONG CalcFilesize(LPWSTR path)
+LONGLONG CalcFilesize(const std::wstring& path)
 {
     BOOL rv;
     LARGE_INTEGER file_size;
-    HANDLE file = CreateFileW(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE)
     {
         return 0;
@@ -637,9 +628,9 @@ LONGLONG CalcFilesize(LPWSTR path)
  * @return size integer with the number of bytes of given file, 
  *			    or 0 if the file has not been found.
  */
-int CalcExeFilesize()
+LONGLONG CalcExeFilesize()
 {
-	return CalcFilesize(exefilename);
+	return CalcFilesize(exe_filename.c_str());
 }
 
 
@@ -653,19 +644,23 @@ int CalcExeFilesize()
  * @param path char* with the filepath
  * @return path char* with the filename alone
  */
-LPCWSTR GetFilenameWithoutPath(LPCWSTR path)
+std::wstring GetFilenameWithoutPath(const std::wstring& path)
 {
-    LPCWSTR slash = std::max(wcsrchr(path, L'\\'), wcsrchr(path, L'/'));
-    return slash ? slash + 1 : path;
+    size_t last = path.find_last_of(L"\\/");
+    if (last == std::wstring::npos)
+    {
+        return path;
+    }
+    return path.substr(last + 1);
 }
 
 /** Get the name of the .exe file without the rest of the path.
  * @see GetExeFilenameWithoutPath() FIXME why is this here? Maybe it was supposed to be @see GetGilenameWithoutPath?
  * @return path char* with the filename alone
  */
-LPCWSTR GetExeFilenameWithoutPath()
+std::wstring GetExeFilenameWithoutPath()
 {
-	return GetFilenameWithoutPath(exefilename);
+	return GetFilenameWithoutPath(exe_filename);
 }
 
 /** TODO clarifying.
@@ -1025,7 +1020,7 @@ void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& 
 //}
 
 
-void SaveMovie(LPWSTR filename)
+void SaveMovie(const std::wstring& filename)
 {
 	// Update some variables, this should be harmless... (mostly)...
 	// May however become really harmful if SaveMovie is called during the LoadMovie scenario!
@@ -1037,13 +1032,13 @@ void SaveMovie(LPWSTR filename)
 	{
 		movie.fps = localTASflags.framerate;
 		movie.it = localTASflags.initialTime;
-		CalcFileMD5Cached(exefilename, movie.fmd5);
+		CalcFileMD5Cached(exe_filename.c_str(), movie.fmd5);
 		movie.fsize = CalcExeFilesize();
-		wcscpy(movie.commandline, commandline);
+		wcscpy(movie.commandline, command_line.c_str());
 		movie.headerBuilt = true;
 	}
 
-	if(SaveMovieToFile(movie, filename))
+	if(SaveMovieToFile(movie, filename.c_str()))
 	{
 		unsavedMovieData = false;
 	}
@@ -1052,10 +1047,10 @@ void SaveMovie(LPWSTR filename)
 
 // returns 1 on success, 0 on failure, -1 on cancel
 // TODO: Dependency on parameter can probably be removed.
-int LoadMovie(LPCWSTR filename)
+int LoadMovie(const std::wstring& filename)
 {
 	// NOTE: if ( !LoadMovieFromFile(movie, filename) ) return 0; Maybe do it like that? Cleaner.
-	bool rv = LoadMovieFromFile(movie, filename);
+	bool rv = LoadMovieFromFile(movie, filename.c_str());
 	if(rv == false) return 0; // Check if LoadMovieFromFile failed, if it did we don't need to continue.
 
 	if(localTASflags.playback)
@@ -1089,7 +1084,7 @@ int LoadMovie(LPCWSTR filename)
 			movie.version = VERSION;
 		}
 		unsigned int temp_md5[4];
-		CalcFileMD5Cached(exefilename, temp_md5);
+		CalcFileMD5Cached(exe_filename.c_str(), temp_md5);
 		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
 		{
 			WCHAR str[1024];
@@ -1145,16 +1140,16 @@ int LoadMovie(LPCWSTR filename)
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
 			}
 		}
-		if(wcscmp(movie.commandline, commandline) != 0)
+		if(wcscmp(movie.commandline, command_line.c_str()) != 0)
 		{
 			WCHAR str[1024];
-			swprintf(str, L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, commandline);
+			swprintf(str, L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, command_line.c_str());
 			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
-				wcscpy(commandline, movie.commandline);
+				command_line = movie.commandline;
 				// Also update the window text.
-				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
+				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), command_line.c_str());
 			}
 		}
 	}
@@ -1342,7 +1337,7 @@ void SaveGameStatePhase2(int slot)
 	// TEMP: save movie file (temp because should be incremental, not only on savestate)
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 
 	// done
@@ -1770,7 +1765,7 @@ void LoadGameStatePhase2(int slot)
 
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 
 	// done... actually that wasn't so bad
@@ -1792,7 +1787,7 @@ bool CreateAVIFile()
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrInitialDir = thisprocessPath;
+	ofn.lpstrInitialDir = this_process_path.c_str();
 	ofn.lpstrTitle = title;
 	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 	ofn.lpstrDefExt = L"avi";
@@ -1849,7 +1844,7 @@ void SaveGameStatePhase1(int slot)
 {
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "SAVE: %d", slot);
+	::sprintf(localCommandSlot, "SAVE: %d", slot);
 	SendCommand();
 	cannotSuspendForCommand = true;
 }
@@ -1857,7 +1852,7 @@ void LoadGameStatePhase1(int slot)
 {
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "LOAD: %d", slot);
+	::sprintf(localCommandSlot, "LOAD: %d", slot);
 	SendCommand();
 	cannotSuspendForCommand = true;
 }
@@ -1867,7 +1862,7 @@ void HandleRemotePauseEvents()
 		return;
 	if(!remoteCommandSlot)
 		return;
-	sprintf(localCommandSlot, "HANDLEEVENTS: %d", 1);
+	::sprintf(localCommandSlot, "HANDLEEVENTS: %d", 1);
 	SendCommand();
 }
 
@@ -2829,10 +2824,11 @@ void PrintPrivileges(HANDLE hProcess)
 void PrintPrivileges(HANDLE hProcess) {}
 #endif
 
-static void AbsolutifyPath(LPWSTR buf)
+static std::wstring AbsolutifyPath(const std::wstring& path)
 {
-	SearchPathW(nullptr, buf, nullptr, MAX_PATH, buf, nullptr);
-	NormalizePath(buf, buf);
+    WCHAR buffer[MAX_PATH + 1];
+	SearchPathW(nullptr, path.c_str(), nullptr, MAX_PATH, buffer, nullptr);
+	return NormalizePath(buffer);
 }
 
 LPCWSTR ExceptionCodeToDescription(DWORD code)
@@ -2874,55 +2870,37 @@ LPCWSTR ExceptionCodeToDescription(DWORD code)
 	}
 }
 
-static int CountSharedPrefixLength(LPCWSTR a, LPCWSTR b)
+static int CountSharedPrefixLength(const std::wstring& a, const std::wstring& b)
 {
 	int i = 0;
 	while(a[i] && tolower(a[i]) == tolower(b[i]))
 		i++;
 	return i;
 }
-static int CountBackslashes(LPCWSTR str)
+static int CountBackslashes(const std::wstring& str)
 {
-	int count = 0;
-    while ((str = wcschr(str, L'\\')) != 0)
-        count++, str++;
-	return count;
+    return std::count(str.begin(), str.end(), L'\\');
 }
 
-static int IsPathTrusted(LPCWSTR path)
+static int IsPathTrusted(const std::wstring& path)
 {
 	// we want to return 0 for all system or installed dlls,
 	// 2 for our own dll, 1 for the game exe,
 	// and 1 for any dlls or exes around the game's directory
 
-	if(!wcsicmp(path, injectedDllPath))
-		return 2;
+    if (!wcsicmp(path.c_str(), injected_dll_path.c_str()))
+    {
+        return 2;
+    }
 
-	int outCount = 2;
-	//if(movie.version >= 68)
-	//{
-		if(CountBackslashes(exefilename + CountSharedPrefixLength(exefilename, path)) < outCount)
-			return 1;
-		if(CountBackslashes(subexefilename + CountSharedPrefixLength(subexefilename, path)) < outCount)
-			return 1;
-	//}
-	/*else // old version, which accidentally trusts some paths it clearly shouldn't:
-	{
-		const char* end = path + strlen(path);
-		for(const char* newEnd = end; outCount && newEnd != path; newEnd--)
-		{
-			if(*newEnd == '\\')
-			{
-				end = newEnd + 1;
-				outCount--;
-			}
-		}
-		if(!_strnicmp(path, exefilename, end - path))
-			return 1;
-		if(!_strnicmp(path, subexefilename, end - path))
-			return 1;
-	}*/
-	if(wcslen(path) >= 4 && !wcsnicmp(path + wcslen(path) - 4, L".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
+    int outCount = 2;
+
+	if(CountBackslashes(exe_filename.c_str() + CountSharedPrefixLength(exe_filename, path)) < outCount)
+		return 1;
+	if(CountBackslashes(sub_exe_filename.c_str() + CountSharedPrefixLength(sub_exe_filename, path)) < outCount)
+		return 1;
+
+    if(path.length() >= 4 && !wcsnicmp(path.c_str() + path.length() - 4, L".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
 		return 1;
 
 	return 0;
@@ -3021,14 +2999,14 @@ void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 			if((DWORD)mmi.mi.lpBaseOfDll >= (DWORD)mmi2.mi.lpBaseOfDll
 			&& (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage <= (DWORD)mmi2.mi.lpBaseOfDll+mmi2.mi.SizeOfImage)
 			{
-				debugprintf(L"apparently already TRUSTED MODULE 0x%08X - 0x%08X (%S)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
+				debugprintf(L"apparently already TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
 				return;
 			}
 		}
 		trustedModuleInfos.push_back(mmi);
 		SendTrustedRangeInfos(hProcess);
 	}
-	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%S)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
+	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
 }
 void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
 {
@@ -3457,41 +3435,38 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 //restartgame:
 
+
 	STARTUPINFO startupInfo = { sizeof(STARTUPINFO) };
 	PROCESS_INFORMATION processInfo = {0};
+    HANDLE hInitialThread = INVALID_HANDLE_VALUE;
+
+    do {
 	allProcessInfos.clear();
 	customBreakpoints.clear();
 
-	s_lastFrameCount = 0;
+    
+    s_lastFrameCount = 0;
 	movie.currentFrame = 0;
 	{
-		int loadMovieResult = LoadMovie(moviefilename);
+		int loadMovieResult = LoadMovie(movie_filename);
 		if(loadMovieResult < 0 || (localTASflags.playback && loadMovieResult == 0))
-			goto earlyAbort;
+			break;
 		OnMovieStart();
 	}
 
 	DeleteCriticalSection(&g_processMemCS);
 	InitializeCriticalSection(&g_processMemCS);
 
-	subexefilename[0] = 0;
-	AbsolutifyPath(exefilename);
-	WCHAR initialDirectory [MAX_PATH+1];
-	wcscpy(initialDirectory, exefilename);
-	LPWSTR slash = std::max(wcsrchr(initialDirectory, L'\\'), wcsrchr(initialDirectory, L'/'));
-	if(slash)
-		*slash = 0;
+    sub_exe_filename.clear();
+    exe_filename = AbsolutifyPath(exe_filename);
+    std::wstring initial_directory = exe_filename.substr(0, exe_filename.find_last_of(L"\\/"));
 
-	LPWSTR cmdline = nullptr;
-	/*if(movie.version >= 60 && movie.version <= 63)
-		cmdline = commandline;
-	else if(movie.version >= 64)
-	{*/
-		// TODO: Expand the size of allowed commandline
-		static WCHAR tempcmdline [ARRAYSIZE(commandline)+MAX_PATH+4];
-		swprintf(tempcmdline, L"\"%s\" %s", exefilename, commandline);
-		cmdline = tempcmdline;
-	//}
+    std::vector<wchar_t> cmdline;
+    cmdline.push_back(L'\"');
+    cmdline.insert(cmdline.end(), exe_filename.begin(), exe_filename.end());
+    cmdline.push_back(L'\"');
+    cmdline.push_back(L' ');
+    cmdline.insert(cmdline.end(), command_line.begin(), command_line.end());
 
 	/*debugprintf("enabling full debug privileges...\n");
 	if(!EnableDebugPrivilege())
@@ -3499,10 +3474,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		debugprintf("failed to enable full debug privileges...\n");
 	}*/
 
-	debugprintf(L"creating process \"%s\"...\n", exefilename);
+	debugprintf(L"creating process \"%s\"...\n", exe_filename.c_str());
 	//debugprintf("initial directory = \"%s\"...\n", initialDirectory);
-	BOOL created = CreateProcessW(exefilename, // application name
-		cmdline, // commandline arguments
+	BOOL created = CreateProcessW(exe_filename.c_str(), // application name
+		cmdline.data(), // commandline arguments
 		NULL, // process attributes (e.g. security descriptor)
 		NULL, // thread attributes (e.g. security descriptor)
 		FALSE, // inherit handles
@@ -3510,7 +3485,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		///*INHERIT_PARENT_AFFINITY*/0x00010000 | CREATE_SUSPENDED | DEBUG_ONLY_THIS_PROCESS, // creation flags
 		//0,//CREATE_SUSPENDED ,//| DEBUG_ONLY_THIS_PROCESS, // creation flags
 		NULL, // environment
-		initialDirectory, // initial directory
+		initial_directory.c_str(), // initial directory
 		&startupInfo,
 		&processInfo);
 
@@ -3524,7 +3499,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			swprintf(str,
 				L"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
 				L"Hourglass doesn't have high enough privileges to launch the game.\n"
-				L"Try closing Hourglass and then opening it with \"Run as administrator\".", exefilename);
+				L"Try closing Hourglass and then opening it with \"Run as administrator\".", exe_filename.c_str());
 			CustomMessageBox(str, L"Permission Denied", MB_OK|MB_ICONERROR);
 		}
 	}
@@ -3671,13 +3646,11 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 	debugprintf(L"attempting injection...\n");
 
-	LPWSTR dllpath = injectedDllPath;
-	wcscpy(dllpath, thisprocessPath);
-	wcscat(dllpath, L"\\hooks.dll");
+	injected_dll_path = this_process_path + L"\\hooks.dll";
 
 	if(!onlyHookChildProcesses)
 	{
-		InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, dllpath, runDllLast!=0);
+		InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 
 		debugprintf(L"done injection. starting game thread\n");
 	}
@@ -3704,7 +3677,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	CheckDialogChanges(0);
 	EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_STOP), true);
 	mainMenuNeedsRebuilding = true;
-	HANDLE hInitialThread = processInfo.hThread;
+	hInitialThread = processInfo.hThread;
 	ResumeThread(hInitialThread);
 
 	//BOOL firstBreak = TRUE;
@@ -3781,7 +3754,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					{
 						SIZE_T bytesRead = 0;
 						if(!ReadProcessMemory(hProcess, dsi.lpDebugStringData, (LPVOID)str, len, &bytesRead))
-							sprintf(str, /*"SHORTTRACE: 0,50 "*/ "ERROR READING STRING of length %d\n", len);
+							::sprintf(str, /*"SHORTTRACE: 0,50 "*/ "ERROR READING STRING of length %d\n", len);
 
 						const char* pstr = str;
 
@@ -4355,7 +4328,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						{
 							if(unsavedMovieData)
 							{
-								SaveMovie(moviefilename);
+								SaveMovie(movie_filename);
 							}
 
 							goto done;
@@ -4381,12 +4354,11 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 //					debugprintf("LOAD_DLL_DEBUG_EVENT: 0x%X\n", de.u.LoadDll.lpBaseOfDll);
 					if(dll_base_to_filename[de.u.LoadDll.lpBaseOfDll].length() == 0)
 					{
-						WCHAR filename [MAX_PATH+1];
-						GetFileNameFromFileHandle(de.u.LoadDll.hFile, filename);
-						debugprintf(L"LOADED DLL: %s\n", filename);
+						std::wstring filename = GetFileNameFromFileHandle(de.u.LoadDll.hFile);
+						debugprintf(L"LOADED DLL: %s\n", filename.c_str());
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
-						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename);
-						AddAndSendDllInfo(filename, true, hProcess);
+						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename.c_str());
+						AddAndSendDllInfo(filename.c_str(), true, hProcess);
 
 #if 0 // DLL LOAD CALLSTACK PRINTING
 
@@ -4407,9 +4379,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                         auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
                         if (dbghelp_it != process_handle_to_dbghelp.end())
                         {
-                            dbghelp_it->second.LoadSymbols(de.u.LoadDll.hFile, filename, reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
+                            dbghelp_it->second.LoadSymbols(de.u.LoadDll.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
                         }
-                        LOADSYMBOLS2(hGameProcess, filename, de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
+                        LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
 
 						// apparently we have to close it here.
 						// waiting until UNLOAD_DLL_DEBUG_EVENT could make us close an invalid handle
@@ -4495,17 +4467,17 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			case CREATE_PROCESS_DEBUG_EVENT:
 				{
 #pragma region CREATE_PROCESS_DEBUG_EVENT
-                    WCHAR filename[MAX_PATH + 1];
+                    std::wstring filename = GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess);
 
 					// hFile is NULL sometimes...
-					if(/*(movie.version >= 0 && movie.version < 40) || */!GetFileNameFromProcessHandle(de.u.CreateProcessInfo.hProcess, filename))
-						GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile, filename);
+					if(filename == L"")
+						filename = GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile);
 
 //					debugprintf("CREATE_PROCESS_DEBUG_EVENT: 0x%X\n", de.u.CreateProcessInfo.lpBaseOfImage);
-					debugprintf(L"CREATED PROCESS: %s\n", filename);
-					swprintf(subexefilename, L"%s", filename);
+					debugprintf(L"CREATED PROCESS: %s\n", filename.c_str());
+                    sub_exe_filename = filename;
                     process_handle_to_dbghelp.emplace(de.u.CreateProcessInfo.hProcess, de.u.CreateProcessInfo.hProcess);
-					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename);
+					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename.c_str());
 					hGameThreads[de.dwThreadId] = de.u.CreateProcessInfo.hThread;
 					ASSERT(hGameThreads[de.dwThreadId].handle);
 					hGameThreads[de.dwThreadId].hProcess = de.u.CreateProcessInfo.hProcess;
@@ -4526,9 +4498,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 ////						SuspendThread(de.u.CreateProcessInfo.hThread);
 //					}
 
-					bool nullFile = !de.u.CreateProcessInfo.hFile/* && !(movie.version >= 0 && movie.version < 40)*/;
+					bool nullFile = !de.u.CreateProcessInfo.hFile;
 					if(nullFile)
-						de.u.CreateProcessInfo.hFile = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+						de.u.CreateProcessInfo.hFile = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 					if(de.dwProcessId == processInfo.dwProcessId)
 					{
@@ -4539,9 +4511,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                         auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
                         if (dbghelp_it != process_handle_to_dbghelp.end())
                         {
-                            dbghelp_it->second.LoadSymbols(de.u.CreateProcessInfo.hFile, filename, reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
+                            dbghelp_it->second.LoadSymbols(de.u.CreateProcessInfo.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
                         }
-						LOADSYMBOLS2(hGameProcess, filename, de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
+						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						//CloseHandle(de.u.CreateProcessInfo.hProcess);
 					}
 					else
@@ -4561,9 +4533,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						debugprintf(L"switched to child process, handle 0x%X, PID = %d.\n", hGameProcess, processInfo.dwProcessId);
 						PrintPrivileges(hGameProcess);
 						EXTENDEDTRACEINITIALIZEEX( NULL, hGameProcess );
-						LOADSYMBOLS2(hGameProcess, filename, de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
+						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						debugprintf(L"attempting injection...\n");
-						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, dllpath, runDllLast!=0);
+						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 						debugprintf(L"done injection. continuing...\n");
 					}
 
@@ -4588,7 +4560,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 					if(unsavedMovieData)
 					{
-						SaveMovie(moviefilename);
+						SaveMovie(movie_filename);
 					}
 
 					//UnregisterModuleInfo(de.u.ExitProcess.lpBaseOfImage, hProcess, filename);
@@ -4700,7 +4672,8 @@ done:
 //		//CloseHandle(hGameProcess);
 //	}
 	hGameProcess = 0;
-earlyAbort:
+        } while (false);
+
 	DebuggerThreadFuncCleanup(hInitialThread, processInfo.hProcess);
 //	CloseHandle(processInfo.hProcess);
 
@@ -4861,7 +4834,7 @@ void PrepareForExit()
 	}
 	if(unsavedMovieData)
 	{
-		SaveMovie(moviefilename);
+		SaveMovie(movie_filename);
 	}
 	Save_Config();
 	TerminateDebuggerThread(6500);
@@ -4940,7 +4913,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                       LPTSTR    lpCmdLine,
                       int       nCmdShow)
 {
-	GetCurrentDirectoryW(MAX_PATH, thisprocessPath);
+    {
+        WCHAR path[MAX_PATH + 1];
+        GetCurrentDirectoryW(MAX_PATH, path);
+        this_process_path = path;
+    }
 
 	// this is so we don't start the target with the debug heap,
 	// which would cause all sorts of complaining exceptions we'd have to ignore
@@ -4965,7 +4942,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	InitDebugCriticalSection();
 	InitializeCriticalSection(&g_gameHWndsCS);
 
-	NormalizePath(thisprocessPath, thisprocessPath);
+	this_process_path = NormalizePath(this_process_path);
 
 	// DetectOS function call goes here!!
 	DetectWindowsVersion(&(localTASflags.osVersionMajor), &(localTASflags.osVersionMinor));
@@ -5167,29 +5144,29 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	bool writable = true;
 	bool exists = true;
 	bool exeexists = true;
-	FILE* moviefile = *moviefilename ? _wfopen(moviefilename, L"r+b") : NULL;
+	FILE* moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"r+b") : NULL;
 	if(moviefile)
 		fclose(moviefile);
 	else
 	{
-		moviefile = *moviefilename ? _wfopen(moviefilename, L"rb") : NULL;
+		moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"rb") : NULL;
 		if(moviefile)
 			fclose(moviefile);
 		else
 			exists = false;
 
-		moviefile = *moviefilename ? _wfopen(moviefilename, L"ab") : NULL;
+		moviefile = !movie_filename.empty() ? _wfopen(movie_filename.c_str(), L"ab") : NULL;
 		if(moviefile)
 		{
 			fclose(moviefile);
 			if(!exists)
-				DeleteFileW(moviefilename);
+				DeleteFileW(movie_filename.c_str());
 		}
 		else
 			writable = false;
 	}
 
-	FILE* exefile = *exefilename ? _wfopen(exefilename, L"rb") : NULL;
+	FILE* exefile = !exe_filename.empty() ? _wfopen(exe_filename.c_str(), L"rb") : NULL;
 	if(exefile)
 		fclose(exefile);
 	else
@@ -5212,7 +5189,7 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 	// preview data from movie
 	if(exists && !started)
 	{
-		LoadMovie(moviefilename);
+		LoadMovie(movie_filename);
 		
 		UpdateFrameCountDisplay(movie.currentFrame, 1);
 
@@ -5494,22 +5471,15 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     switch(message)  
     {  
         case WM_INITDIALOG:
-			if(VERSION >= 0)
-			{
-				WCHAR title [256];
-				swprintf(title, L"Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
+        {
+            WCHAR title[256];
+			swprintf(title, L"Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
 #ifdef _DEBUG
-				wcscat(title, L" (debug build)");
+			wcscat(title, L" (debug build)");
 #endif
-				SetWindowTextW(hDlg, title);
-			}
-#ifdef _DEBUG
-			else
-			{
-				SetWindowTextW(hDlg, L"Hourglass (debug)");
-			}
-#endif
-            break;
+			SetWindowTextW(hDlg, title);
+		}
+        break;
 
 		case WM_SHOWWINDOW:
  			{
@@ -5538,29 +5508,18 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				CheckDlgButton(hDlg, IDC_RADIO_THREAD_WRAP, localTASflags.threadMode == 1);
 				CheckDlgButton(hDlg, IDC_RADIO_THREAD_ALLOW, localTASflags.threadMode == 2);
 
-				WCHAR path [MAX_PATH+1];
-				if(exefilename[0] == '\0')
-				{
-					path[0] = 0;
-					//strcpy(path, thisprocessPath);
-					//path[MAX_PATH-23] = 0;
- 					//strcat(path, "\\..\\game\\Doukutsu.exe");
-				}
-				else
-				{
-					wcscpy(path, exefilename);
-				}
-				AbsolutifyPath(path);
+				std::wstring path = exe_filename;
+				path = AbsolutifyPath(path);
 				//char temp_moviefilename [MAX_PATH+1];
 				//strcpy(temp_moviefilename, moviefilename);
 				movienameCustomized = false;
 				// As they start blank, we have no interest in updating these if the filenames
 				// are empty. This prevents messages about file '' not existing.
-				if (path[0] != 0)
-					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path);
-				if (moviefilename[0] != 0)
-					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), moviefilename);
-				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), commandline);
+				if (!path.empty())
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path.c_str());
+				if (!movie_filename.empty())
+					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), movie_filename.c_str());
+				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), command_line.c_str());
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));
 
@@ -6409,7 +6368,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						CloseAVI();
 						if(unsavedMovieData)
 						{
-							SaveMovie(moviefilename);
+							SaveMovie(movie_filename);
 						}
 						Save_Config();
 						//CheckDlgButton(hDlg, IDC_AVIVIDEO, aviMode & 1);
@@ -6418,7 +6377,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						TerminateDebuggerThread(12000);
 						if(unsavedMovieData)
 						{
-							SaveMovie(moviefilename);
+							SaveMovie(movie_filename);
 						}
 						terminateRequest = false;
 						if(afterDebugThreadExit)
@@ -6438,13 +6397,17 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_RECORD), false);
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_PLAY), false);
 						movie = Movie();
-						SaveMovie(moviefilename); // Save the new movie.
+						SaveMovie(movie_filename); // Save the new movie.
 						localTASflags.playback = false;
 						nextLoadRecords = true;
 						localTASflags.fastForward = false;
 						started = true; CheckDialogChanges(-1); started = false;
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_STOP), false);
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        {
+                            WCHAR commandline[1024];
+                            GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                            command_line = commandline;
+                        }
 						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
@@ -6462,7 +6425,11 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						nextLoadRecords = false;
 						started = true; CheckDialogChanges(-1); started = false;
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_STOP), false);
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        {
+                            WCHAR commandline[1024];
+                            GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                            command_line = commandline;
+                        }
 						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
@@ -6480,7 +6447,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						WCHAR filename [MAX_PATH+1] = {0};
 						WCHAR directory [MAX_PATH+1] = {0};
-						SplitToValidPath(exefilename, thisprocessPath, filename, directory);
+						SplitToValidPath(exe_filename.c_str(), this_process_path.c_str(), filename, directory);
 
 						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
 						ofn.hwndOwner = hWnd;
@@ -6509,8 +6476,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						Save_Config();
 						WCHAR filename [MAX_PATH+1] = {0};
 						WCHAR directory [MAX_PATH+1] = {0};
-						SplitToValidPath(moviefilename, thisprocessPath, filename, directory);
-						NormalizePath(moviefilename, moviefilename);
+						SplitToValidPath(movie_filename.c_str(), this_process_path.c_str(), filename, directory);
+						movie_filename = NormalizePath(movie_filename);
 
 						bool isSave = (command == ID_FILES_RECORDMOV/* || command == ID_FILES_RESUMEMOVAS*/);
 
@@ -6590,7 +6557,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						// otherwise we start with the default dir.
 						WCHAR filename[MAX_PATH+1] = {'\0'};
 						WCHAR directory[MAX_PATH+1] = {'\0'};
-						SplitToValidPath(moviefilename, thisprocessPath, filename, directory);
+						SplitToValidPath(movie_filename.c_str(), this_process_path.c_str(), filename, directory);
 						//strcpy(filename, GetFilenameWithoutPath(moviefilename));
 						//strcpy(directory, thisprocessPath);
 
@@ -6629,32 +6596,37 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				case IDC_EDIT_COMMANDLINE:
 					if(HIWORD(wParam) == EN_CHANGE)
 					{
-						GetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        WCHAR commandline[1024];
+                        GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
+                        command_line = commandline;
 					}
 					break;
 				case IDC_TEXT_EXE:
-					if(HIWORD(wParam) == EN_CHANGE || !movieFileExists || !*moviefilename)
+					if(HIWORD(wParam) == EN_CHANGE || !movieFileExists || movie_filename.empty())
 					{
 						static bool recursing = false;
 						if(recursing)
 							break;
 						recursing = true;
 
-						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_EXE), exefilename, MAX_PATH);
-						NormalizePath(exefilename, exefilename);
+                        {
+                            WCHAR buffer[MAX_PATH + 1];
+                            GetWindowTextW(GetDlgItem(hDlg, IDC_TEXT_EXE), buffer, MAX_PATH);
+                            exe_filename = NormalizePath(buffer);
+                        }
 						EnableDisablePlayRecordButtons(hDlg); // updates exeFileExists
 
 						if(!exeFileExists) // Extra check, do we need it?
 						{
 							WCHAR str[1024];
-							swprintf(str, L"The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exefilename);
+							swprintf(str, L"The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exe_filename.c_str());
 							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
 						}
 
 						debugprintf(L"Attempting to determinate default thread stack size for the game...\n");
-						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exefilename);
+						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exe_filename.c_str());
 						if(localTASflags.threadStackSize != 0)
 						{
 							debugprintf(L"Detecting the default stack size succeeded, size is: %u bytes\n", localTASflags.threadStackSize);
@@ -6662,7 +6634,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						else
 						{
 							WCHAR str[1024];
-							swprintf(str, L"Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exefilename);
+							swprintf(str, L"Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exe_filename.c_str());
 							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
@@ -6673,43 +6645,43 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						//if(file)
 						//{
 						//	fclose(file);
-							if((!movienameCustomized && HIWORD(wParam) == EN_CHANGE) || !movieFileExists || !*moviefilename)
+							if((!movienameCustomized && HIWORD(wParam) == EN_CHANGE) || !movieFileExists || movie_filename.empty())
 							{
 								// a little hack to help people out when first selecting an exe for recording,
 								// until perhaps there's a proper ini file for such defaults
 								int newFramerate;
 								BOOL newLagskip;
 								int newRunDllLast = 0;
-								LPCWSTR fname = GetExeFilenameWithoutPath();
-								if(!wcsicmp(fname, L"Doukutsu.exe")
-								|| !wcsicmp(fname, L"dxIka.exe")
-								|| !wcsicmp(fname, L"nothing.exe")
-								|| !wcsnicmp(fname, L"iwbtgbeta", wcslen(L"iwbtgbeta")-1)
-								|| !wcsicmp(fname, L"i_wanna_be_the_GB.exe")
+								std::wstring fname = GetExeFilenameWithoutPath();
+								if(!wcsicmp(fname.c_str(), L"Doukutsu.exe")
+								|| !wcsicmp(fname.c_str(), L"dxIka.exe")
+								|| !wcsicmp(fname.c_str(), L"nothing.exe")
+								|| !wcsnicmp(fname.c_str(), L"iwbtgbeta", wcslen(L"iwbtgbeta")-1)
+								|| !wcsicmp(fname.c_str(), L"i_wanna_be_the_GB.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = false;
 								}
-								else if(!wcsicmp(fname, L"Lyle in Cube Sector.exe")
-								|| !wcsicmp(fname, L"Eternal Daughter.exe")
-								|| !wcsicmp(fname, L"Geoffrey The Fly.exe")
+								else if(!wcsicmp(fname.c_str(), L"Lyle in Cube Sector.exe")
+								|| !wcsicmp(fname.c_str(), L"Eternal Daughter.exe")
+								|| !wcsicmp(fname.c_str(), L"Geoffrey The Fly.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = true;
 								}
-								else if(!wcsicmp(fname, L"herocore.exe"))
+								else if(!wcsicmp(fname.c_str(), L"herocore.exe"))
 								{
 									newFramerate = 40; newLagskip = false;
 								}
-								else if(!wcsicmp(fname, L"iji.exe"))
+								else if(!wcsicmp(fname.c_str(), L"iji.exe"))
 								{
 									newFramerate = 30; newLagskip = false;
 								}
-								else if(!wcsicmp(fname, L"lamulana.exe"))
+								else if(!wcsicmp(fname.c_str(), L"lamulana.exe"))
 								{
 									newFramerate = 60; newLagskip = true;
 								}
-								else if(!wcsicmp(fname, L"NinjaSenki.exe"))
+								else if(!wcsicmp(fname.c_str(), L"NinjaSenki.exe"))
 								{
 									newFramerate = 60; newLagskip = false;
 
@@ -6721,7 +6693,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 										tasFlagsDirty = true;
 									}
 								}
-								else if(!wcsicmp(fname, L"RotateGear.exe"))
+								else if(!wcsicmp(fname.c_str(), L"RotateGear.exe"))
 								{
 									newFramerate = 60; newLagskip = false; newRunDllLast = true;
 								}
@@ -6748,31 +6720,31 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 									mainMenuNeedsRebuilding = true;
 								}
 							}
-							if(!movieFileExists || (moviefilename[0] == '\0') || !movienameCustomized) // set default movie name based on exe
+							if(!movieFileExists || movie_filename.empty() || !movienameCustomized) // set default movie name based on exe
 							{
 								bool setMovieFile = true;
 								if(movieFileExists)
 								{
-									LPCWSTR exefname = GetExeFilenameWithoutPath();
-									if(!wcsncmp(exefname, moviefilename, wcslen(exefname)-4)) // Compare names, without the file extension.
+									std::wstring exefname = GetExeFilenameWithoutPath();
+									if(!wcsncmp(exefname.c_str(), movie_filename.c_str(), exefname.length()-4)) // Compare names, without the file extension.
 										setMovieFile = false; // exe didn't actually change
 								}
 
 								if(setMovieFile)
 								{
 									WCHAR filename [MAX_PATH+1];
-									wcscpy(filename, exefilename);
+									wcscpy(filename, exe_filename.c_str());
 									LPWSTR slash = std::max(wcsrchr(filename, '\\'), wcsrchr(filename, '/'));
 									LPWSTR dot = wcsrchr(filename, '.');
 									if(slash<dot)
 									{
 										WCHAR path [MAX_PATH+1];
-										wcscpy(path, thisprocessPath);
+										wcscpy(path, this_process_path.c_str());
 										wcscat(path, L"\\");
 										wcscpy(dot, L".hgr");
 										LPCWSTR moviename = slash ? slash+1 : filename;
 										wcscat(path, moviename);
-										if(0 != wcscmp(path, moviefilename))
+										if(0 != wcscmp(path, movie_filename.c_str()))
 										{
 											SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), path);
 											movienameCustomized = false;
@@ -6792,12 +6764,16 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						// TODO: We can probably skip this alltogether and just make the check in OPENMOVIE.
 						// Will require implementing ability to run games without recording movies.
 						// This should do for now.
-						WCHAR tmp_movie[MAX_PATH+1];
-						GetWindowText(GetDlgItem(hDlg, IDC_TEXT_MOVIE), tmp_movie, MAX_PATH);
-						NormalizePath(tmp_movie, tmp_movie);
+                        std::wstring tmp_movie;
+                        {
+                            WCHAR buffer[MAX_PATH + 1];
+                            GetWindowTextW(GetDlgItem(hDlg, IDC_TEXT_MOVIE), buffer, MAX_PATH);
+                            tmp_movie = buffer;
+                        }
+						tmp_movie = NormalizePath(tmp_movie);
 						
 						// HACK... TODO: Fix this properly, by completing TODO above!
-						if(tmp_movie[0] == '\0') break; // No movie loaded, don't go forward with anything.
+						if(tmp_movie.empty()) break; // No movie loaded, don't go forward with anything.
 
 						EnableDisablePlayRecordButtons(hDlg);
 						movienameCustomized = tmp_movie[0] != '\0';
@@ -6810,33 +6786,30 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								// TODO:
 								// IF SaveMovie fails here, it means that the movie file got deleted between the last save and the creation of the new movie
 								// Should we really handle that scenario?
-								SaveMovie(moviefilename);
+								SaveMovie(movie_filename);
 							}
 							unsavedMovieData = false;
 							movie.headerBuilt = false; // Otherwise we may retain the old header? // TODO: Find this out
 						}
 
-						if(moviefilename[0] != '\0') // We have currently locked the directory that we're saving the old movie to.
+						if(!movie_filename.empty()) // We have currently locked the directory that we're saving the old movie to.
 						{
 							UnlockDirectory(MOVIE);
 						}
 
-						WCHAR movieDirectory[MAX_PATH+1];
-						// TODO: max will call strrchr 3 times in total, perhaps that can be reduced to 2 times?
-						LPWSTR dirEnd = std::max(wcsrchr(tmp_movie, '\\'), wcsrchr(tmp_movie, '/'));
-						unsigned int strLen = dirEnd - tmp_movie + 1; // Pointers-as-values math, yay!
-						wcsncpy(movieDirectory, tmp_movie, (size_t)strLen);
-						movieDirectory[strLen] = '\0'; // properly null-terminate the string.
+						std::wstring movie_directory;
+						size_t slash = tmp_movie.find_last_of(L"\\/");
+                        movie_directory = tmp_movie.substr(0, slash);
 
 						// Attempt to lock the new directory.
-						if(LockDirectory(movieDirectory, MOVIE) == false)
+						if(LockDirectory(movie_directory.c_str(), MOVIE) == false)
 						{
-							moviefilename[0] = '\0'; // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
+							movie_filename.clear(); // Let's not keep the old movie file name, or there could be some non-desired overwriting taking place.
 							break; // Break early so that we don't allow the movie to be loaded.
 						}
 
 						// If we got here we can finally transfer the new movie filename into the old movie filename.
-						wcscpy(moviefilename, tmp_movie);
+                        movie_filename = tmp_movie;
 					}
 					break;
 				}

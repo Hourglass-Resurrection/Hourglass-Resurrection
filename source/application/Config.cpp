@@ -105,10 +105,10 @@ namespace Config{
 	int inputFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_OTHER|FOCUS_FLAG_TASER; // allowbackgroundinput;
 	int hotkeysFocusFlags = FOCUS_FLAG_TASEE|FOCUS_FLAG_TASER; // allowbackgroundhotkeys;
 
-    WCHAR moviefilename[MAX_PATH + 1];
-    WCHAR exefilename[MAX_PATH + 1];
-    WCHAR commandline[160];
-    WCHAR thisprocessPath[MAX_PATH + 1];
+    std::wstring movie_filename;
+    std::wstring exe_filename;
+    std::wstring command_line;
+    std::wstring this_process_path;
 
 	//const char* defaultConfigFilename = "hourglass.cfg";
 
@@ -128,12 +128,12 @@ namespace Config{
         }
         else
         {
-            swprintf(Conf_File, L"%s\\%s", thisprocessPath, filename);
+            swprintf(Conf_File, L"%s\\%s", this_process_path.c_str(), filename);
         }
 
-        WritePrivateProfileStringW(L"General", L"Exe path", exefilename, Conf_File);
-        WritePrivateProfileStringW(L"General", L"Movie path", moviefilename, Conf_File);
-        WritePrivateProfileStringW(L"General", L"Command line", commandline, Conf_File);
+        WritePrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), Conf_File);
+        WritePrivateProfileStringW(L"General", L"Movie path", movie_filename.c_str(), Conf_File);
+        WritePrivateProfileStringW(L"General", L"Command line", command_line.c_str(), Conf_File);
 
         SetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
         //SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
@@ -178,7 +178,7 @@ namespace Config{
 		WCHAR Name[2048];
 		OPENFILENAMEW ofn;
 
-		SetCurrentDirectoryW(thisprocessPath);
+		SetCurrentDirectoryW(this_process_path.c_str());
 
 		wcscpy(&Name[0], defaultConfigFilename);
 		memset(&ofn, 0, sizeof(OPENFILENAMEW));
@@ -190,7 +190,7 @@ namespace Config{
 		ofn.nMaxFile = 2047;
 		ofn.lpstrFilter = L"Config Files\0*.cfg\0All Files\0*.*\0\0";
 		ofn.nFilterIndex = 1;
-		ofn.lpstrInitialDir = thisprocessPath;
+		ofn.lpstrInitialDir = this_process_path.c_str();
 		ofn.lpstrDefExt = L"cfg";
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
@@ -209,15 +209,19 @@ namespace Config{
 		if(!filename)
 			filename = defaultConfigFilename;
 		WCHAR Conf_File[1024];
+        WCHAR temp_str[1024];
 
 		if(*filename && filename[1] == ':')
 			wcscpy(Conf_File, filename);
 		else
-			swprintf(Conf_File, L"%s\\%s", thisprocessPath, filename);
+			swprintf(Conf_File, L"%s\\%s", this_process_path.c_str(), filename);
 
-		GetPrivateProfileStringW(L"General", L"Exe path", exefilename, exefilename, MAX_PATH, Conf_File);
-		GetPrivateProfileStringW(L"General", L"Movie path", moviefilename, moviefilename, MAX_PATH, Conf_File);
-		GetPrivateProfileStringW(L"General", L"Command line", commandline, commandline, ARRAYSIZE(commandline), Conf_File);
+		GetPrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), temp_str, MAX_PATH, Conf_File);
+        exe_filename = temp_str;
+		GetPrivateProfileStringW(L"General", L"Movie path", movie_filename.c_str(), temp_str, MAX_PATH, Conf_File);
+        movie_filename = temp_str;
+		GetPrivateProfileStringW(L"General", L"Command line", command_line.c_str(), temp_str, ARRAYSIZE(temp_str), Conf_File);
+        command_line = temp_str;
 
 		nextLoadRecords = 0!=GetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
 		//localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
@@ -267,7 +271,7 @@ namespace Config{
 		WCHAR Name[2048];
 		OPENFILENAMEW ofn;
 
-		SetCurrentDirectoryW(thisprocessPath);
+		SetCurrentDirectoryW(this_process_path.c_str());
 
 		wcscpy(&Name[0], defaultConfigFilename);
 		memset(&ofn, 0, sizeof(OPENFILENAMEW));
@@ -279,7 +283,7 @@ namespace Config{
 		ofn.nMaxFile = 2047;
 		ofn.lpstrFilter = L"Config Files\0*.cfg\0All Files\0*.*\0\0";
 		ofn.nFilterIndex = 1;
-		ofn.lpstrInitialDir = thisprocessPath;
+		ofn.lpstrInitialDir = this_process_path.c_str();
 		ofn.lpstrDefExt = L"cfg";
 		ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 

@@ -34,7 +34,7 @@ struct InjectDLLThreadFuncInfo
 	DWORD dwInjectProcessID;
 	HANDLE hInjectThread;
 	DWORD dwInjectThreadID;
-	LPWSTR injectDllPath;
+	LPCWSTR injectDllPath;
 	BOOL injectIsAsyncReady;
 	BOOL injectAllowedToFinish;
 	bool runDllLast;
@@ -47,7 +47,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 	DWORD dwInjectProcessID = info->dwInjectProcessID;
 	HANDLE hInjectThread = info->hInjectThread;
 	DWORD dwInjectThreadID = info->dwInjectThreadID;
-	LPWSTR dllPath = info->injectDllPath;
+	LPCWSTR dllPath = info->injectDllPath;
 	bool runDllLast = info->runDllLast;
 	DWORD dwThread = 0;
 	size_t dwPathLength = 1024;
@@ -68,7 +68,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 
 	if(injected)
 	{
-		debugprintf(L"Injecting \"%S\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
+		debugprintf(L"Injecting \"%s\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
 		info->injectIsAsyncReady = TRUE;
 		goto done;
 	} 
@@ -103,7 +103,7 @@ done:
 	return 0;
 }
 
-void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, LPWSTR dllPath, bool runDllLast)
+void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, LPCWSTR dllPath, bool runDllLast)
 {
 	InjectDLLThreadFuncInfo* info = new InjectDLLThreadFuncInfo;
 	info->hInjectProcess = hProcess;

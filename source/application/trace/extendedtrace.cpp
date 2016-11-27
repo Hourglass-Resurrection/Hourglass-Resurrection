@@ -225,7 +225,7 @@ BOOL CALLBACK EnumSymProc(
 }
 
 
-void LoadModuleSymbols(HANDLE hProcess, PWSTR name)
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name)
 {
 #ifdef ASSUME_SINGLE_HPROCESS
 	hProcess = s_hProcess;
@@ -280,7 +280,7 @@ void LoadModuleSymbols(HANDLE hProcess, PWSTR name)
 	return;
 }
 
-void LoadModuleSymbols(HANDLE hProcess, PWSTR name, HANDLE file, DWORD base )
+void LoadModuleSymbols(HANDLE hProcess, LPCWSTR name, HANDLE file, DWORD base )
 {
 #ifdef ASSUME_SINGLE_HPROCESS
 	hProcess = s_hProcess;

@@ -36,7 +36,7 @@ Movie::Movie()
 // NOTE: FPS and InitialTime used to have +1, we don't know why and we removed it as we made the values unsigned.
 // If problems arise, revert back to old behavior!
 #define MOVIE_TYPE_IDENTIFIER 0x02486752 // "\02HgR"
-/*static*/ bool SaveMovieToFile(Movie& movie, LPWSTR filename)
+/*static*/ bool SaveMovieToFile(Movie& movie, LPCWSTR filename)
 {
 	//bool hadUnsaved = unsaved;
 	//unsaved = false;
@@ -48,25 +48,25 @@ Movie::Movie()
 	if(!file) // File failed to open
 	{
 
-		if(errno == EACCES)
-		{
-			// If for some reason the file has been set to read-only in Windows since the last save,
-			// we attempt to save it to a new file just as a safety-measure... because people...
-			int dotLocation = (wcsrchr(filename, L'.'))-filename+1; // Wohoo for using pointers as values!
-			WCHAR newFilename[MAX_PATH+1];
-			wcsncpy(newFilename, filename, dotLocation);
-			newFilename[dotLocation+1] = L'\0'; // Make sure the string is null-terminated before we cat it.
-			wcscat(newFilename, L"new.hgr\0");
+		//if(errno == EACCES)
+		//{
+		//	// If for some reason the file has been set to read-only in Windows since the last save,
+		//	// we attempt to save it to a new file just as a safety-measure... because people...
+		//	int dotLocation = (wcsrchr(filename, L'.'))-filename+1; // Wohoo for using pointers as values!
+		//	WCHAR newFilename[MAX_PATH+1];
+		//	wcsncpy(newFilename, filename, dotLocation);
+		//	newFilename[dotLocation+1] = L'\0'; // Make sure the string is null-terminated before we cat it.
+		//	wcscat(newFilename, L"new.hgr\0");
 
-			WCHAR str[1024];
-			swprintf(str, L"Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
-			CustomMessageBox(str, L"Warning!", MB_OK | MB_ICONWARNING);
+		//	WCHAR str[1024];
+		//	swprintf(str, L"Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
+		//	CustomMessageBox(str, L"Warning!", MB_OK | MB_ICONWARNING);
 
-			file = _wfopen(newFilename, L"wb");
-			
-			// Update to the new filename
-			wcscpy(filename, newFilename);
-		}
+		//	file = _wfopen(newFilename, L"wb");
+		//	
+		//	// Update to the new filename
+		//	wcscpy(filename, newFilename);
+		//}
 
 		if (!file) // New file also failed OR first file failed for some other reason
 		{

@@ -87,13 +87,32 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	HMENU InputInputFocus = CreatePopupMenu();
 
 
-
-	LPCWSTR exefilenameonly = std::max(wcsrchr(exefilename, L'\\'), wcsrchr(exefilename, L'/'));
-	if (exefilenameonly) ++exefilenameonly;
-	if (!exeFileExists) exefilenameonly = NULL;
-	LPCWSTR moviefilenameonly = std::max(wcsrchr(moviefilename, L'\\'), wcsrchr(moviefilename, L'/'));
-	if (moviefilenameonly) ++moviefilenameonly;
-	if (!movieFileExists) moviefilenameonly = NULL;
+    std::wstring exe_filename_only;
+    if (!exeFileExists)
+    {
+        size_t slash = exe_filename.find_last_of(L"\\/");
+        if (slash != std::wstring::npos)
+        {
+            exe_filename_only = exe_filename.substr(slash + 1);
+        }
+        else
+        {
+            exe_filename_only = exe_filename;
+        }
+    }
+    std::wstring movie_filename_only;
+    if (!movieFileExists)
+    {
+        size_t slash = movie_filename.find_last_of(L"\\/");
+        if (slash != std::wstring::npos)
+        {
+            movie_filename_only = movie_filename.substr(slash + 1);
+        }
+        else
+        {
+            movie_filename_only = movie_filename;
+        }
+    }
 	bool on = true;
 
 	Flags = MF_BYPOSITION | MF_POPUP | MF_STRING;
@@ -114,11 +133,11 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	Flags = MF_BYPOSITION | MF_STRING;
 	i = 0;
 
-	on = exefilenameonly && !started;
-	swprintf(str, L"&Open Executable... %s%s%s", on ? L"(now open: \"" : L"", on ? exefilenameonly : L"", on ? L"\")" : L"");
+	on = !exe_filename_only.empty() && !started;
+	swprintf(str, L"&Open Executable... %s%s%s", on ? L"(now open: \"" : L"", on ? exe_filename_only.c_str() : L"", on ? L"\")" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (started ? MF_GRAYED : 0), ID_FILES_OPENEXE, L"\tCtrl+O", str, L"can't change while running");
-	on = moviefilenameonly && !started;
-	swprintf(str, L"&Open Movie... %s%s%s", on ? L"(now open: \"" : L"", on ? moviefilenameonly : L"", on ? L"\")" : L"");
+	on = !movie_filename_only.empty() && !started;
+	swprintf(str, L"&Open Movie... %s%s%s", on ? L"(now open: \"" : L"", on ? movie_filename_only.c_str() : L"", on ? L"\")" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (started ? MF_GRAYED : 0), ID_FILES_OPENMOV, L"\tCtrl+M", str, L"can't change while running");
 
 	InsertMenuW(Files, i++, MF_SEPARATOR, NULL, NULL);
@@ -127,7 +146,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	HelperFuncInsertMenuByID(Files, i++, Flags, ID_FILES_PLAYMOV, "\tCtrl+P", "&Play Movie...", 0);
 	HelperFuncInsertMenuByID(Files, i++, Flags | (!started?MF_GRAYED:0), ID_FILES_WATCHMOV, "", "&Watch From Beginning", "must be running");
 #endif
-	swprintf(str, started ? L"&Watch From Beginning" : L"&Play Movie %s%s%s", moviefilenameonly ? L"\"" : L"", moviefilenameonly ? moviefilenameonly : L"", moviefilenameonly ? L"\"" : L"");
+	swprintf(str, started ? L"&Watch From Beginning" : L"&Play Movie %s%s%s", !movie_filename_only.empty() ? L"\"" : L"", movie_filename_only.c_str(), !movie_filename_only.empty() ? L"\"" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (!(movieFileExists&&exeFileExists) ? MF_GRAYED : 0), started ? ID_FILES_WATCHMOV : ID_FILES_PLAYMOV, L"\tCtrl+P", str, movieFileExists ? L"must open an executable first" : L"must open a movie first");
 
 	InsertMenuW(Files, i++, MF_SEPARATOR, NULL, NULL);

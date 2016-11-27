@@ -66,10 +66,10 @@ namespace Config{ // A namespace is maybe not the best solution...
 	extern int inputFocusFlags;
 	extern int hotkeysFocusFlags;
 
-    extern WCHAR moviefilename[MAX_PATH + 1];
-    extern WCHAR exefilename[MAX_PATH + 1];
-    extern WCHAR commandline[160];
-    extern WCHAR thisprocessPath[MAX_PATH + 1];
+    extern std::wstring movie_filename;
+    extern std::wstring exe_filename;
+    extern std::wstring command_line;
+    extern std::wstring this_process_path;
 
 	static LPCWSTR defaultConfigFilename = L"hourglass.cfg";
     
