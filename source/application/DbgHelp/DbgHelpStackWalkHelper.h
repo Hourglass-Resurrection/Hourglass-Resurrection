@@ -22,8 +22,8 @@ public:
     DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context);
 
     /*
-    * From IUnknown, overload these to turn this class into a regular C++ object.
-    */
+     * From IUnknown, overload these to turn this class into a regular C++ object.
+     */
     HRESULT STDMETHODCALLTYPE QueryInterface(
         /* [in] */ REFIID riid,
         /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject);

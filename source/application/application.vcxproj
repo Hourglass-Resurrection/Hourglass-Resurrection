@@ -144,6 +144,7 @@
     <ClCompile Include="CPUinfo.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
     <ClCompile Include="DbgHelp\DbgHelp.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp" />
     <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp" />
     <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp" />
     <ClCompile Include="DirLocks.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="CPUinfo.h" />
     <ClInclude Include="CustomDLGs.h" />
     <ClInclude Include="DbgHelp\DbgHelp.h" />
+    <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h" />
     <ClInclude Include="DbgHelp\DbgHelpPrivate.h" />
     <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h" />
     <ClInclude Include="DirLocks.h" />

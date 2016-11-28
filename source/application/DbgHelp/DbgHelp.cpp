@@ -15,16 +15,12 @@
 
 #include "DbgHelp.h"
 
-/*
- * TODO: Break up into several files, create directory!
- * -- Warepire
- */
-
 DbgHelp::DbgHelp(HANDLE process) :
     m_private(std::make_unique<DbgHelpPrivate>(process))
 {
     std::array<WCHAR, 0x1000> buffer;
     buffer.fill('\0');
+    m_symbol_paths.append(L".");
 
     if (GetCurrentDirectoryW(buffer.size(), buffer.data()) != 0)
     {

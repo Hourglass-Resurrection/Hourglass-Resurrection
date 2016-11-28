@@ -14,8 +14,10 @@
 #include <../../DIA SDK/include/dia2.h>
 #pragma comment(lib, "../../DIA SDK/lib/diaguids.lib")
 
+#include "../logging.h"
 #include "../Utils/COM.h"
 #include "DbgHelp.h"
+#include "DbgHelpLoadCallback.h"
 #include "DbgHelpStackWalkHelper.h"
 
 #include "DbgHelpPrivate.h"
@@ -42,11 +44,12 @@ DbgHelpPrivate::~DbgHelpPrivate()
 
 bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
 {
+    DbgHelpLoadCallback load_callback;
     auto data_source = Utils::COM::MakeUniqueCOMPtr<IDiaDataSource>(CLSID_DiaSource);
     IDiaSession* sess = nullptr;
     IDiaSymbol* sym = nullptr;
 
-    if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), nullptr) != S_OK)
+    if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
         return false;
     }
@@ -75,12 +78,17 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
         sym = nullptr;
 
         DWORD platform;
-        if (symbol->get_platform(&platform) != S_OK)
+        HRESULT rv = symbol->get_platform(&platform);
+        if (rv == S_OK)
         {
+            m_platform_set = true;
+            m_platform = static_cast<CV_CPU_TYPE_e>(platform);
+        }
+        else if (rv != S_FALSE)
+        {
+            debugprintf(L"symbol->get_platform failed with 0x%X", rv);
             return false;
         }
-        m_platform_set = true;
-        m_platform = static_cast<CV_CPU_TYPE_e>(platform);
     }
     m_sources.emplace(module_base, std::move(data_source));
     m_sessions.emplace(data_source.get(), std::move(session));
