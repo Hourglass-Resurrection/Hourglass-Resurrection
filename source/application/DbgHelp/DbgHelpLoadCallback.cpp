@@ -18,11 +18,17 @@
 
 #include "DbgHelpLoadCallback.h"
 
-HRESULT DbgHelpLoadCallback::QueryInterface(REFIID riid, void ** ppvObject)
+HRESULT DbgHelpLoadCallback::QueryInterface(REFIID riid, void** ppvObject)
 {
     if (ppvObject == nullptr)
     {
         return E_POINTER;
+    }
+
+    if (riid == __uuidof(IDiaLoadCallback))
+    {
+        *ppvObject = this;
+        return S_OK;
     }
 
     *ppvObject = nullptr;

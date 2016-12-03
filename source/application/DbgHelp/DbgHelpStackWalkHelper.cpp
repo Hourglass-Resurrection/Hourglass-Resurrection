@@ -61,6 +61,12 @@ HRESULT DbgHelpStackWalkHelper::QueryInterface(REFIID riid, void** ppvObject)
         return E_POINTER;
     }
 
+    if (riid == __uuidof(IDiaStackWalkHelper))
+    {
+        *ppvObject = this;
+        return S_OK;
+    }
+
     *ppvObject = nullptr;
     return E_NOINTERFACE;
 }
