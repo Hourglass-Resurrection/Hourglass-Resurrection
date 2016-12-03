@@ -219,7 +219,7 @@ void DetectWindowsVersion(int *major, int *minor)
         }
 
         wcscat(filename, L"\\System32\\kernel32.dll");
-        debugprintf(L"Using file '%S' for the detection.\n", filename);
+        debugprintf(L"Using file '%s' for the detection.\n", filename);
 
         UINT size = 0;
 
