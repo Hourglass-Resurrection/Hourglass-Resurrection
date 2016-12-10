@@ -49,6 +49,8 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     IDiaSession* sess = nullptr;
     IDiaSymbol* sym = nullptr;
 
+    debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"n", exec.c_str());
+
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
         return false;
@@ -90,34 +92,42 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
             return false;
         }
     }
+    m_loaded_modules.emplace(module_base, exec);
     m_sources.emplace(module_base, std::move(data_source));
     m_sessions.emplace(data_source.get(), std::move(session));
 
     return true;
 }
 
-bool DbgHelpPrivate::Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHelp::StackFrameInfo>* trace)
+bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
 {
     auto stack_walker = Utils::COM::MakeUniqueCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
     IDiaEnumStackFrames* frames = nullptr;
     CONTEXT thread_context;
     thread_context.ContextFlags = CONTEXT_ALL;
-    if (!m_platform_set)
+    if (m_loaded_modules.empty())
     {
         return false;
     }
+
     if (GetThreadContext(thread, &thread_context) == FALSE)
     {
         return false;
     }
     DbgHelpStackWalkHelper helper(this, thread_context);
-    if (stack_walker->getEnumFrames2(m_platform, &helper, &frames) != S_OK)
+    /*
+     * CV_CFL_PENTIUM is the flag passed to getEnumFrames2 internally by getEnumFrames.
+     */
+    if (stack_walker->getEnumFrames2(m_platform_set ? m_platform : CV_CFL_PENTIUM, &helper, &frames) != S_OK)
     {
         return false;
     }
     Utils::COM::UniqueCOMPtr<IDiaEnumStackFrames> stack_frames(frames);
     frames = nullptr;
 
+    ULONG humbug;
+    IDiaStackFrame *bah;
+    stack_frames->Next(1, &bah, &humbug);
 
     return true;
 }

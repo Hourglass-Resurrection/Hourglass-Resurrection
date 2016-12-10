@@ -3427,7 +3427,7 @@ void OnMovieStart()
 }
 
 
-static std::map<HANDLE, DbgHelp> process_handle_to_dbghelp;
+static DbgHelp debug_help;
 // debuggerthreadproc
 static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam) 
 {
@@ -3850,12 +3850,9 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
-                                                if (dbghelp_it != process_handle_to_dbghelp.end())
-                                                {
-                                                    auto trace = dbghelp_it->second.Stacktrace(found->second);
-                                                    debugprintf(L"hello!");
-                                                }
+                                                auto cb = [](const DbgHelpStackWalkCallback&) { return DbgHelpStackWalkCallback::Action::CONTINUE; };
+                                                debug_help.StackWalk(de.dwProcessId, found->second.handle, cb);
+                                                debugprintf(L"hello!");
                                             }
                                         }
                                         break;
@@ -4376,11 +4373,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 						//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = de.u.LoadDll.hFile;
 						dll_base_to_filename[de.u.LoadDll.lpBaseOfDll] = filename;
-                        auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
-                        if (dbghelp_it != process_handle_to_dbghelp.end())
-                        {
-                            dbghelp_it->second.LoadSymbols(de.u.LoadDll.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
-                        }
+                        debug_help.LoadSymbols(de.dwProcessId, de.u.LoadDll.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
                         LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
 
 						// apparently we have to close it here.
@@ -4476,7 +4469,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 //					debugprintf("CREATE_PROCESS_DEBUG_EVENT: 0x%X\n", de.u.CreateProcessInfo.lpBaseOfImage);
 					debugprintf(L"CREATED PROCESS: %s\n", filename.c_str());
                     sub_exe_filename = filename;
-                    process_handle_to_dbghelp.emplace(de.u.CreateProcessInfo.hProcess, de.u.CreateProcessInfo.hProcess);
+                    debug_help.AddProcess(de.u.CreateProcessInfo.hProcess, de.dwProcessId);
 					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename.c_str());
 					hGameThreads[de.dwThreadId] = de.u.CreateProcessInfo.hThread;
 					ASSERT(hGameThreads[de.dwThreadId].handle);
@@ -4502,17 +4495,14 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					if(nullFile)
 						de.u.CreateProcessInfo.hFile = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
+                    debug_help.LoadSymbols(de.dwProcessId, de.u.CreateProcessInfo.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
+
 					if(de.dwProcessId == processInfo.dwProcessId)
 					{
 						// even if we don't have symbols for it,
 						// this still lets us see the exe name
 						// next to the addresses of functions it calls.
                         hGameProcess = de.u.CreateProcessInfo.hProcess;
-                        auto dbghelp_it = process_handle_to_dbghelp.find(hGameProcess);
-                        if (dbghelp_it != process_handle_to_dbghelp.end())
-                        {
-                            dbghelp_it->second.LoadSymbols(de.u.CreateProcessInfo.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.CreateProcessInfo.lpBaseOfImage));
-                        }
 						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						//CloseHandle(de.u.CreateProcessInfo.hProcess);
 					}

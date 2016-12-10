@@ -345,18 +345,20 @@ HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG registe
     return S_OK;
 }
 
-HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_address, DWORD buffer_length, DWORD* bytes_read, BYTE* buffer)
+HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_address,
+                                           DWORD buffer_length, DWORD* bytes_read, BYTE* buffer)
 {
     /*
-    * We do not limit the access to memory depending on type.
-    * TODO: Can some memory have read access disabled?
-    * -- Warepire
-    */
+     * We do not limit the access to memory depending on type.
+     * TODO: Can some memory have read access disabled?
+     * -- Warepire
+     */
     if (bytes_read == nullptr)
     {
         return E_POINTER;
     }
-    if (ReadProcessMemory(m_priv->GetProcess(), reinterpret_cast<LPCVOID>(virtual_address), buffer, buffer_length, bytes_read) == FALSE)
+    if (ReadProcessMemory(m_priv->GetProcess(), reinterpret_cast<LPCVOID>(virtual_address),
+                          buffer, buffer_length, bytes_read) == FALSE)
     {
         return E_FAIL;
     }
@@ -404,7 +406,7 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULO
 
 
     if ((ReadProcessMemory(m_priv->GetProcess(), reinterpret_cast<LPCVOID>(return_address_location),
-        return_address, sizeof(DWORD), &read_bytes) == FALSE) ||
+                           return_address, sizeof(DWORD), &read_bytes) == FALSE) ||
         read_bytes != sizeof(DWORD))
     {
         *return_address = 0;
@@ -424,7 +426,6 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame
 
 HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
-    debugprintf(L"[Hourglass][StackWalker] %s(virtual_address=%llu, frame=%p)\n", __FUNCTIONW__, virtual_address, frame);
     auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
     if (session == nullptr)
     {
@@ -442,9 +443,8 @@ HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameD
 
 HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbol** symbol)
 {
-    debugprintf(L"[Hourglass][StackWalker] %s(virtual_address=%llu, symbol=%p)\n", __FUNCTIONW__, virtual_address, symbol);
     /*
-     * TODO: Register found symbol if it's a function-tag
+     * TODO: Register found symbol if it's a function-tag?
      */
     HRESULT rv;
     IDiaEnumSymbolsByAddr* enum_symbols;
@@ -468,10 +468,6 @@ HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbo
     {
         return rv;
     }
-
-    /*
-     * TODO: Somehow remember the symbol and map it to a frame.
-     */
 
     return rv;
 }

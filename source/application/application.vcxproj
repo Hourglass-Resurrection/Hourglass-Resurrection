@@ -146,6 +146,8 @@
     <ClCompile Include="DbgHelp\DbgHelp.cpp" />
     <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp" />
     <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallbackPrivate.cpp" />
     <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
@@ -177,6 +179,8 @@
     <ClInclude Include="DbgHelp\DbgHelp.h" />
     <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h" />
     <ClInclude Include="DbgHelp\DbgHelpPrivate.h" />
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h" />
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallbackPrivate.h" />
     <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />

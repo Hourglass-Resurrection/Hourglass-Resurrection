@@ -47,19 +47,25 @@ ULONG DbgHelpLoadCallback::Release()
 
 HRESULT DbgHelpLoadCallback::NotifyDebugDir(BOOL executable, DWORD data_length, BYTE * data)
 {
-    debugprintf(L"Found Debug Directory in %s, length=%d\n", executable ? L"executable" : L"dbg-file", data_length);
+    debugprintf(L"[Hourglass][DebugSymbols] Found debug directory in %s, length=%d\n", executable ? L"executable" : L"dbg-file", data_length);
     return S_OK;
 }
 
 HRESULT DbgHelpLoadCallback::NotifyOpenDBG(LPCOLESTR dbg_path, HRESULT result_code)
 {
-    debugprintf(L"Loading dbg-file from \"%s\", result_code=0x%X\n", dbg_path, result_code);
+    if (result_code == S_OK)
+    {
+        debugprintf(L"[Hourglass][DebugSymbols] Loaded dbg-file from \"%s\"\n", dbg_path);
+    }
     return S_OK;
 }
 
 HRESULT DbgHelpLoadCallback::NotifyOpenPDB(LPCOLESTR pdb_path, HRESULT result_code)
 {
-    debugprintf(L"Loading pdb-file from \"%s\", result_code=0x%X\n", pdb_path, result_code);
+    if (result_code == S_OK)
+    {
+        debugprintf(L"[Hourglass][DebugSymbols] Loaded pdb-file from \"%s\"\n", pdb_path);
+    }
     return S_OK;
 }
 

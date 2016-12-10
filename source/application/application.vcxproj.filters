@@ -116,6 +116,12 @@
     <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp">
       <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallbackPrivate.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomDLGs.h">
@@ -224,6 +230,12 @@
       <Filter>Source Files\DbgHelp</Filter>
     </ClInclude>
     <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallbackPrivate.h">
       <Filter>Source Files\DbgHelp</Filter>
     </ClInclude>
   </ItemGroup>

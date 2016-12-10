@@ -18,7 +18,7 @@
   */
 #include <../../DIA SDK/include/dia2.h>
 
-#include "../Utils/COM.h"
+#include "application/Utils/COM.h"
 #include "DbgHelp.h"
 
 class DbgHelpPrivate
@@ -28,13 +28,21 @@ public:
     ~DbgHelpPrivate();
 
     bool LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path);
-    bool Stacktrace(HANDLE thread, INT max_depth, std::vector<DbgHelp::StackFrameInfo>* stack);
+    bool StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb);
 
     HANDLE GetProcess() const;
     IDiaDataSource* GetDiaDataSource(DWORD64 virtual_address) const;
     IDiaSession* GetDiaSession(IDiaDataSource* source) const;
 private:
     HANDLE m_process;
+    /*
+     * It's not possible to safely get the full path of the loaded module once we're in a
+     * stack tracing scenario, but, since we know the full path while loading symbols we
+     * can save the address and path of the module, and look it up during the stack trace.
+     * -- Warepire
+     */
+    std::map<DWORD64, std::wstring> m_loaded_modules;
+
     std::map<DWORD64, Utils::COM::UniqueCOMPtr<IDiaDataSource>> m_sources;
     std::map<IDiaDataSource*, Utils::COM::UniqueCOMPtr<IDiaSession>> m_sessions;
     /*
