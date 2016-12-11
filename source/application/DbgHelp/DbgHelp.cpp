@@ -49,6 +49,7 @@ DbgHelp::DbgHelp()
 
 DbgHelp::~DbgHelp()
 {
+    m_private_map.clear();
 }
 
 void DbgHelp::AddProcess(HANDLE process, DWORD process_id)

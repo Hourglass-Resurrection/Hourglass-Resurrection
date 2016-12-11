@@ -3850,7 +3850,11 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                auto cb = [](const DbgHelpStackWalkCallback&) { return DbgHelpStackWalkCallback::Action::CONTINUE; };
+                                                auto cb = [](const DbgHelpStackWalkCallback& data)
+                                                    { 
+                                                        debugprintf(L"STACK FRAME: %s : %s\n", data.GetModuleName().c_str(), data.GetFunctionName().c_str());
+                                                        return DbgHelpStackWalkCallback::Action::CONTINUE; 
+                                                    };
                                                 debug_help.StackWalk(de.dwProcessId, found->second.handle, cb);
                                                 debugprintf(L"hello!");
                                             }

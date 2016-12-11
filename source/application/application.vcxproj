@@ -166,6 +166,7 @@
     <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
     <ClCompile Include="inject\process.cpp" />
+    <ClCompile Include="Utils\File.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\input.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="..\shared\version.h" />
     <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Utils\File.h" />
     <ClInclude Include="Utils\COM.h" />
   </ItemGroup>
   <ItemGroup>

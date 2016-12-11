@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2016- Hourglass Resurrection Team
+ * Hourglass Resurrection is licensed under GPL v2.
+ * Refer to the file COPYING.txt in the project root.
+ */
+
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN

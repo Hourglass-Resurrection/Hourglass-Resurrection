@@ -14,11 +14,14 @@
 #include <../../DIA SDK/include/dia2.h>
 #pragma comment(lib, "../../DIA SDK/lib/diaguids.lib")
 
-#include "../logging.h"
-#include "../Utils/COM.h"
+#include "application/logging.h"
+#include "application/Utils/File.h"
+#include "application/Utils/COM.h"
 #include "DbgHelp.h"
 #include "DbgHelpLoadCallback.h"
 #include "DbgHelpStackWalkHelper.h"
+#include "DbgHelpStackWalkCallback.h"
+#include "DbgHelpStackWalkCallbackPrivate.h"
 
 #include "DbgHelpPrivate.h"
 
@@ -48,8 +51,12 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     auto data_source = Utils::COM::MakeUniqueCOMPtr<IDiaDataSource>(CLSID_DiaSource);
     IDiaSession* sess = nullptr;
     IDiaSymbol* sym = nullptr;
+    DWORD module_size_in_ram = Utils::File::PEHeader(exec).GetImageSizeInRAM();
 
-    debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"n", exec.c_str());
+    m_loaded_modules[module_base].m_module_name = exec;
+    m_loaded_modules[module_base].m_module_size = module_size_in_ram;
+
+    debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"\n", exec.c_str());
 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
@@ -92,9 +99,7 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
             return false;
         }
     }
-    m_loaded_modules.emplace(module_base, exec);
-    m_sources.emplace(module_base, std::move(data_source));
-    m_sessions.emplace(data_source.get(), std::move(session));
+    m_loaded_modules[module_base].m_module_symbol_session = std::move(session);
 
     return true;
 }
@@ -125,9 +130,19 @@ bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
     Utils::COM::UniqueCOMPtr<IDiaEnumStackFrames> stack_frames(frames);
     frames = nullptr;
 
-    ULONG humbug;
-    IDiaStackFrame *bah;
-    stack_frames->Next(1, &bah, &humbug);
+    IDiaStackFrame *stack_frame = nullptr;
+    for (ULONG next = 0; (stack_frames->Next(1, &stack_frame, &next) == S_OK) && (next == 1);)
+    {
+        ULONGLONG pc;
+        stack_frame->get_registerValue(CV_REG_EIP, &pc);
+        auto mod_info = GetModuleData(pc);
+        auto rv = cb(DbgHelpStackWalkCallback(new DbgHelpStackWalkCallbackPrivate(stack_frame, mod_info)));
+        stack_frame->Release();
+        if (rv == DbgHelpStackWalkCallback::Action::STOP)
+        {
+            break;
+        }
+    }
 
     return true;
 }
@@ -137,27 +152,22 @@ HANDLE DbgHelpPrivate::GetProcess() const
     return m_process;
 }
 
-IDiaDataSource* DbgHelpPrivate::GetDiaDataSource(DWORD64 virtual_address) const
+const DbgHelpPrivate::ModuleData* DbgHelpPrivate::GetModuleData(ULONGLONG virtual_address) const
 {
     /*
-    * lower_bound() will return an iterator to the location in the map where 'address' should
-    * be inserted, be it used with i.e. emplace_hint(). We can thus use it to look up the
-    * DataSource tied to 'virtual_address' by checking the position before.
-    */
-    auto it = m_sources.lower_bound(virtual_address);
-    if (it == m_sources.begin() || (--it) == m_sources.begin())
+     * lower_bound() will return an iterator to the location in the map where 'address' should
+     * be inserted, be it used with i.e. emplace_hint(). We can thus use it to look up the
+     * DataSource tied to 'virtual_address' by checking the position before.
+     */
+    auto it = m_loaded_modules.lower_bound(virtual_address);
+    if (it == m_loaded_modules.begin() || (--it) == m_loaded_modules.begin())
     {
         return nullptr;
     }
-    return it->second.get();
-}
-
-IDiaSession* DbgHelpPrivate::GetDiaSession(IDiaDataSource* source) const
-{
-    auto it = m_sessions.find(source);
-    if (it == m_sessions.end())
+    LONGLONG rva = virtual_address - it->first;
+    if (rva >= 0 && it->second.m_module_size >= rva)
     {
-        return nullptr;
+        return &(it->second);
     }
-    return it->second.get();
+    return nullptr;
 }

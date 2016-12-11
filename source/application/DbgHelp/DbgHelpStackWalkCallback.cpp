@@ -7,13 +7,26 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include <memory>
-
 #include "DbgHelpStackWalkCallbackPrivate.h"
 
 #include "DbgHelpStackWalkCallback.h"
 
-DbgHelpStackWalkCallback::DbgHelpStackWalkCallback(std::unique_ptr<DbgHelpStackWalkCallbackPrivate> priv)
+DbgHelpStackWalkCallback::DbgHelpStackWalkCallback(DbgHelpStackWalkCallbackPrivate* priv) :
+    m_priv(priv)
 {
-    m_priv.swap(priv);
 }
+
+DbgHelpStackWalkCallback::~DbgHelpStackWalkCallback()
+{
+    delete m_priv;
+}
+
+ std::wstring DbgHelpStackWalkCallback::GetModuleName() const
+ {
+     return m_priv->GetModuleName();
+ }
+
+ std::wstring DbgHelpStackWalkCallback::GetFunctionName() const
+ {
+     return m_priv->GetFunctionName();
+ }

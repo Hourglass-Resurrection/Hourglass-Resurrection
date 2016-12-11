@@ -24,6 +24,13 @@
 class DbgHelpPrivate
 {
 public:
+    struct ModuleData
+    {
+        DWORD m_module_size;
+        std::wstring m_module_name;
+        Utils::COM::UniqueCOMPtr<IDiaSession> m_module_symbol_session;
+    };
+
     DbgHelpPrivate(HANDLE process);
     ~DbgHelpPrivate();
 
@@ -31,20 +38,17 @@ public:
     bool StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb);
 
     HANDLE GetProcess() const;
-    IDiaDataSource* GetDiaDataSource(DWORD64 virtual_address) const;
-    IDiaSession* GetDiaSession(IDiaDataSource* source) const;
+    const ModuleData* GetModuleData(ULONGLONG virtual_address) const;
 private:
     HANDLE m_process;
     /*
      * It's not possible to safely get the full path of the loaded module once we're in a
-     * stack tracing scenario, but, since we know the full path while loading symbols we
+     * stack walking scenario, but, since we know the full path while loading symbols we
      * can save the address and path of the module, and look it up during the stack trace.
      * -- Warepire
      */
-    std::map<DWORD64, std::wstring> m_loaded_modules;
+    std::map<DWORD64, ModuleData> m_loaded_modules;
 
-    std::map<DWORD64, Utils::COM::UniqueCOMPtr<IDiaDataSource>> m_sources;
-    std::map<IDiaDataSource*, Utils::COM::UniqueCOMPtr<IDiaSession>> m_sessions;
     /*
      * Assume everything is compiled for the same platform.
      */

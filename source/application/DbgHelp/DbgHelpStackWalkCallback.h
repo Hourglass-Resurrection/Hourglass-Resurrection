@@ -9,7 +9,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include <memory>
+#include <string>
 
 class DbgHelpStackWalkCallbackPrivate;
 
@@ -22,9 +22,12 @@ public:
         STOP,
     };
 
-    DbgHelpStackWalkCallback(std::unique_ptr<DbgHelpStackWalkCallbackPrivate> priv);
+    DbgHelpStackWalkCallback(DbgHelpStackWalkCallbackPrivate* priv);
+    ~DbgHelpStackWalkCallback();
 
     // TODO: Methods
+    std::wstring GetModuleName() const;
+    std::wstring GetFunctionName() const;
 private:
-    std::unique_ptr<DbgHelpStackWalkCallbackPrivate> m_priv;
+    DbgHelpStackWalkCallbackPrivate* m_priv;
 };

@@ -426,13 +426,13 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame
 
 HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameData** frame)
 {
-    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
-    if (session == nullptr)
+    auto data = m_priv->GetModuleData(virtual_address);
+    if (data == nullptr || data->m_module_symbol_session == nullptr)
     {
         return E_FAIL;
     }
 
-    auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(session);
+    auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(data->m_module_symbol_session.get());
     if (enum_frame_data == nullptr)
     {
         return E_FAIL;
@@ -448,13 +448,13 @@ HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbo
      */
     HRESULT rv;
     IDiaEnumSymbolsByAddr* enum_symbols;
-    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address));
-    if (session == nullptr)
+    auto data = m_priv->GetModuleData(virtual_address);
+    if (data == nullptr || data->m_module_symbol_session == nullptr)
     {
         return E_FAIL;
     }
 
-    rv = session->getSymbolsByAddr(&enum_symbols);
+    rv = data->m_module_symbol_session->getSymbolsByAddr(&enum_symbols);
     if (rv != S_OK)
     {
         return rv;
@@ -483,12 +483,12 @@ HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data
 
 HRESULT DbgHelpStackWalkHelper::imageForVA(ULONGLONG virtual_address_context, ULONGLONG* virtual_address_image_start)
 {
-    auto session = m_priv->GetDiaSession(m_priv->GetDiaDataSource(virtual_address_context));
-    if (session == nullptr)
+    auto data = m_priv->GetModuleData(virtual_address_context);
+    if (data == nullptr || data->m_module_symbol_session == nullptr)
     {
         return S_FALSE;
     }
-    return session->get_loadAddress(virtual_address_image_start);
+    return data->m_module_symbol_session->get_loadAddress(virtual_address_image_start);
 }
 
 /*
