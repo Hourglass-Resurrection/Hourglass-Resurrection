@@ -51,16 +51,20 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     auto data_source = Utils::COM::MakeUniqueCOMPtr<IDiaDataSource>(CLSID_DiaSource);
     IDiaSession* sess = nullptr;
     IDiaSymbol* sym = nullptr;
-    DWORD module_size_in_ram = Utils::File::PEHeader(exec).GetImageSizeInRAM();
+    auto file_headers = Utils::File::ExecutableFileHeaders(exec);
+    DWORD module_size_in_ram = file_headers.GetImageSizeInRAM();
 
     m_loaded_modules[module_base].m_module_name = exec;
+    m_loaded_modules[module_base].m_module_load_address = module_base;
     m_loaded_modules[module_base].m_module_size = module_size_in_ram;
 
     debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"\n", exec.c_str());
 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
-        return false;
+        debugprintf(L"[Hourglass][DebugSymbols] No symbols found, exporting symbols.\n");
+        m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable();
+        return true;
     }
 
     if (data_source->openSession(&sess) != S_OK)

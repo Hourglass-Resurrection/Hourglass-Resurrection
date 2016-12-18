@@ -30,12 +30,26 @@ std::wstring DbgHelpStackWalkCallbackPrivate::GetModuleName()
 
 std::wstring DbgHelpStackWalkCallbackPrivate::GetFunctionName()
 {
-    if (m_mod_info == nullptr || m_mod_info->m_module_symbol_session == nullptr)
+    
+    if (m_mod_info == nullptr)
     {
         return L"?";
     }
-    auto symbol = GetFunctionSymbol();
     std::wstring function_name = L"?";
+    if (m_mod_info->m_module_symbol_session == nullptr)
+    {
+        ULONGLONG pc;
+        m_frame->get_registerValue(CV_REG_EIP, &pc);
+        pc -= m_mod_info->m_module_load_address;
+        auto it = m_mod_info->m_module_exports_table.lower_bound(pc);
+        if (it != m_mod_info->m_module_exports_table.begin() || (--it) != m_mod_info->m_module_exports_table.begin())
+        {
+            function_name = it->second;
+        }
+        return function_name;
+    }
+    auto symbol = GetFunctionSymbol();
+    
     BSTR name = nullptr;
     if (symbol != nullptr && symbol->get_name(&name) == S_OK)
     {

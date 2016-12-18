@@ -3856,7 +3856,16 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                         return DbgHelpStackWalkCallback::Action::CONTINUE; 
                                                     };
                                                 debug_help.StackWalk(de.dwProcessId, found->second.handle, cb);
-                                                debugprintf(L"hello!");
+                                                std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                                if (found != hGameThreads.end())
+                                                {
+                                                    HANDLE hThread = found->second;
+                                                    WCHAR msg[16 + 72];
+                                                    swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                    THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+                                                }
+
+                                                debugprintf(L"Hello!\n");
                                             }
                                         }
                                         break;
@@ -3905,7 +3914,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                 HANDLE hThread = found->second;
                                                 //THREADSTACKTRACE(hThread);
                                                 WCHAR msg[16 + 72];
-                                                swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
                                                 THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
                                             }
                                         }
@@ -4075,7 +4084,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								HANDLE hThread = found->second;
 								//THREADSTACKTRACE(hThread);
 								WCHAR msg [16+72];
-								swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
+								swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
 								THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
 								//THREADSTACKTRACEMSG(hThread, msg, (found->second).hProcess);
 							}
@@ -4094,7 +4103,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								ThreadInfo& info = hGameThreads[threadId];
 								HANDLE hThread = info.handle;
 								WCHAR msg [16+72];
-								swprintf(msg, L"(id=0x%X) (name=%s)", threadId, info.name);
+								swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
 								THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
 							}
 
@@ -4395,7 +4404,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					//HANDLE hFile = dllBaseToHandle[de.u.UnloadDll.lpBaseOfDll];
 					//GetFileNameFromFileHandle(hFile, filename);
 					LPCWSTR filename = dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll].c_str();
-					debugprintf(L"UNLOADED DLL: %S\n", filename);
+					debugprintf(L"UNLOADED DLL: %s\n", filename);
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
 					UnregisterModuleInfo(de.u.UnloadDll.lpBaseOfDll, hProcess, filename);
 					AddAndSendDllInfo(filename, false, hProcess);
@@ -4429,7 +4438,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				debugprintf(L"thread status: id=0x%X, handle=0x%X, suspend=%d, name=%S\n", threadId, hThread, suspendCount, threadInfo.name);
 				//THREADSTACKTRACE(hThread);
 				WCHAR msg [16+72];
-				swprintf(msg, L"(id=0x%X) (name=%s)", threadId, threadInfo.name);
+				swprintf(msg, L"(id=0x%X) (name=%S)", threadId, threadInfo.name);
 				THREADSTACKTRACEMSG(hThread, msg, /*threadInfo.hProcess*/hGameProcess);
 			}
 

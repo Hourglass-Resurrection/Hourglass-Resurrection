@@ -31,6 +31,7 @@
 #include "shared/msg.h"
 #include "extendedtrace.h"
 #include "../Config.h"
+#include "application\logging.h"
 
 //#pragma comment(lib, "imagehlp.lib")
 //#pragma comment(lib, "dbghelp.lib")
@@ -62,6 +63,7 @@ static BOOL(__stdcall *pSymGetSymFromAddr)(HANDLE, DWORD, PDWORD, PIMAGEHLP_SYMB
 static DWORD(__stdcall *pUnDecorateSymbolName)(PCSTR, PSTR, DWORD, DWORD) = NULL;
 static BOOL(__stdcall *pSymGetLineFromAddr)(HANDLE hProcess, DWORD, PDWORD, PIMAGEHLP_LINE) = NULL;
 static BOOL(__stdcall *pSymGetTypeInfo)(HANDLE, DWORD64, ULONG, IMAGEHLP_SYMBOL_TYPE_INFO, PVOID) = NULL;
+static BOOL(__stdcall *pSymRegisterCallback)(HANDLE, PSYMBOL_REGISTERED_CALLBACK, PVOID) = NULL;
 
 void LoadDbghelpDll()
 {
@@ -109,10 +111,50 @@ void LoadDbghelpDll()
 	(FARPROC&)pUnDecorateSymbolName = GetProcAddress(dll, "UnDecorateSymbolName");
 	(FARPROC&)pSymGetLineFromAddr = GetProcAddress(dll, "SymGetLineFromAddr");
 	(FARPROC&)pSymGetTypeInfo = GetProcAddress(dll, "SymGetTypeInfo");
+    (FARPROC&)pSymRegisterCallback = GetProcAddress(dll, "SymRegisterCallback");
 }
 
 
 
+BOOL
+CALLBACK
+SymRegisterCallbackProc64(
+    __in HANDLE hProcess,
+    __in ULONG ActionCode,
+    __in_opt PVOID CallbackData,
+    __in_opt PVOID UserContext
+)
+{
+    UNREFERENCED_PARAMETER(hProcess);
+    UNREFERENCED_PARAMETER(UserContext);
+
+    PIMAGEHLP_CBA_EVENT evt;
+
+    // If SYMOPT_DEBUG is set, then the symbol handler will pass
+    // verbose information on its attempt to load symbols.
+    // This information be delivered as text strings.
+
+    switch (ActionCode)
+    {
+    case CBA_EVENT:
+        evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
+        debugprintf(L"%S", (PCSTR)evt->desc);
+        break;
+
+        // CBA_DEBUG_INFO is the old ActionCode for symbol spew.
+        // It still works, but we use CBA_EVENT in this example.
+    case CBA_DEBUG_INFO:
+        debugprintf(L"%S", (PCSTR)CallbackData);
+        break;
+
+    default:
+        // Return false to any ActionCode we don't handle
+        // or we could generate some undesirable behavior.
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 
 #define BUFFERSIZE   0x800
@@ -327,6 +369,7 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
 	symOptions |= SYMOPT_CASE_INSENSITIVE;
 	symOptions |= SYMOPT_OMAP_FIND_NEAREST;
 	symOptions |= SYMOPT_ALLOW_ABSOLUTE_SYMBOLS;
+    symOptions |= SYMOPT_DEBUG;
 	//symOptions |= SYMOPT_UNDNAME;
 	//symOptions |= SYMOPT_NO_PROMPTS;
 	if(pSymSetOptions)
@@ -346,6 +389,8 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
 	if(!rv) // try without a search path?
 		rv = pSymInitialize( hProcess, NULL, FALSE);
 	
+    pSymRegisterCallback(hProcess, SymRegisterCallbackProc64, NULL);
+
 	return rv;
 }
 
@@ -803,9 +848,9 @@ BOOL GetFunctionInfoFromAddresses( ULONG fnAddress, ULONG stackAddress, LPTSTR l
 					pOutString += swprintf(pOutString, L", ");
 
 				if(isString)
-					pOutString += swprintf(pOutString, L"0x%X (\"%s\")", value, dataLong);
+					pOutString += swprintf(pOutString, L"0x%X (\"%S\")", value, dataLong);
 				else if(isWmCode)
-					pOutString += swprintf(pOutString, L"0x%X (%s)", value, GetWindowsMessageName(value));
+					pOutString += swprintf(pOutString, L"0x%X (%S)", value, GetWindowsMessageName(value));
 				else if(isSmallInt || isMultipleOf100)
 					pOutString += swprintf(pOutString, L"%d", (int)value);
 				else
@@ -920,7 +965,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 	callStack.AddrStack.Mode   = AddrModeFlat;
 	callStack.AddrFrame.Mode   = AddrModeFlat;
 
-   OutputDebugStringFormat( L"Call stack info(thread=0x%X) : %S\n", 
+   OutputDebugStringFormat( L"Call stack info(thread=0x%X) : %s\n", 
          hThread,
          lpszMessage );
 
@@ -961,7 +1006,7 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
 		GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, symInfo, hProcess );
 		GetSourceInfoFromAddress( callStack.AddrPC.Offset, srcInfo, hProcess );
 
-		OutputDebugStringFormat( L"     %S : %S\n", srcInfo, symInfo );
+		OutputDebugStringFormat( L"     %s : %s\n", srcInfo, symInfo );
 	}
 }
 
@@ -1018,7 +1063,7 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
 	if ( bResult && callStack.AddrFrame.Offset != 0) 
 	{
 	   GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, lpszFnInfo, hProcess );
-	   OutputDebugStringFormat( L"Function info(thread=0x%X) : %S\n", hThread, lpszFnInfo );
+	   OutputDebugStringFormat( L"Function info(thread=0x%X) : %s\n", hThread, lpszFnInfo );
 	}
 	else
 	   OutputDebugStringFormat( L"Function info(thread=0x%X) failed.\n" );

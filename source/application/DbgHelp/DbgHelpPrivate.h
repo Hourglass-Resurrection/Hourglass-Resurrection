@@ -26,9 +26,11 @@ class DbgHelpPrivate
 public:
     struct ModuleData
     {
+        DWORD64 m_module_load_address;
         DWORD m_module_size;
         std::wstring m_module_name;
         Utils::COM::UniqueCOMPtr<IDiaSession> m_module_symbol_session;
+        std::map<DWORD, std::wstring> m_module_exports_table;
     };
 
     DbgHelpPrivate(HANDLE process);
