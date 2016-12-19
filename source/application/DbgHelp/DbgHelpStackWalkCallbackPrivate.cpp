@@ -7,6 +7,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <sstream>
 #include <string>
 
 #include "application/logging.h"
@@ -21,16 +22,23 @@ DbgHelpStackWalkCallbackPrivate::DbgHelpStackWalkCallbackPrivate(IDiaStackFrame*
 
 std::wstring DbgHelpStackWalkCallbackPrivate::GetModuleName()
 {
+    ULONGLONG pc;
+    m_frame->get_registerValue(CV_REG_EIP, &pc);
+    std::wstringstream name;
     if (m_mod_info == nullptr)
     {
-        return L"?";
+        name << L"?";
     }
-    return m_mod_info->m_module_name;
+    else
+    {
+        name << m_mod_info->m_module_name;
+    }
+    name << L"!0x" << std::hex << pc;
+    return name.str();
 }
 
 std::wstring DbgHelpStackWalkCallbackPrivate::GetFunctionName()
 {
-    
     if (m_mod_info == nullptr)
     {
         return L"?";
@@ -42,7 +50,7 @@ std::wstring DbgHelpStackWalkCallbackPrivate::GetFunctionName()
         m_frame->get_registerValue(CV_REG_EIP, &pc);
         pc -= m_mod_info->m_module_load_address;
         auto it = m_mod_info->m_module_exports_table.lower_bound(pc);
-        if (it != m_mod_info->m_module_exports_table.begin() || (--it) != m_mod_info->m_module_exports_table.begin())
+        if (it != m_mod_info->m_module_exports_table.begin() && (--it) != m_mod_info->m_module_exports_table.begin())
         {
             function_name = it->second;
         }

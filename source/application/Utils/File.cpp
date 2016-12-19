@@ -209,11 +209,11 @@ namespace Utils
                 {
                     WORD ordinal;
                     memcpy(&ordinal, file_contents.data() + ordinal_table_offset + (j * sizeof(WORD)), sizeof(WORD));
-                    DWORD index = (ordinal - 1/* - directory.Base*/) * sizeof(DWORD);
+                    DWORD index = (ordinal /* - directory.Base*/) * sizeof(DWORD);
                     DWORD function_address;
                     memcpy(&function_address, file_contents.data() + function_table_offset + index, sizeof(DWORD));
                     DWORD name_offset;
-                    memcpy(&name_offset, file_contents.data() + name_table_offset + index, sizeof(DWORD));
+                    memcpy(&name_offset, file_contents.data() + name_table_offset + (j * sizeof(DWORD)), sizeof(DWORD));
                     name_offset = RvaToOffset(name_offset);
                     std::wstring name;
                     if (name_offset == -1)
