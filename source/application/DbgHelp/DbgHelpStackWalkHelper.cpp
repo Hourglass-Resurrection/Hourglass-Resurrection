@@ -7,6 +7,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <atlbase.h>
+#include <atlcom.h>
 /*
  * Default location of the DIA SDK within VS2015 Community edition.
  */
@@ -23,11 +25,11 @@ namespace
      * Helper template function for getting a specific IDiaTable from an IDiaSession.
      */
     template<class T>
-    Utils::COM::UniqueCOMPtr<T> GetDiaTable(IDiaSession* session)
+    CComPtr<T> GetDiaTable(CComPtr<IDiaSession> session)
     {
-        IDiaEnumTables* enum_tables;
+        CComPtr<IDiaEnumTables> enum_tables;
         IDiaTable* table;
-        T* desired_table = nullptr;
+        CComPtr<T> desired_table;
         ULONG num_tables_found;
         if (session->getEnumTables(&enum_tables) != S_OK)
         {
@@ -43,8 +45,7 @@ namespace
                 break;
             }
         }
-        enum_tables->Release();
-        return std::move(Utils::COM::UniqueCOMPtr<T>(desired_table));
+        return desired_table;
     }
 }
 
@@ -432,7 +433,7 @@ HRESULT DbgHelpStackWalkHelper::frameForVA(ULONGLONG virtual_address, IDiaFrameD
         return E_FAIL;
     }
 
-    auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(data->m_module_symbol_session.get());
+    auto enum_frame_data = GetDiaTable<IDiaEnumFrameData>(data->m_module_symbol_session);
     if (enum_frame_data == nullptr)
     {
         return E_FAIL;
@@ -447,21 +448,18 @@ HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbo
      * TODO: Register found symbol if it's a function-tag?
      */
     HRESULT rv;
-    IDiaEnumSymbolsByAddr* enum_symbols;
+    CComPtr<IDiaEnumSymbolsByAddr> symbols_by_addr;
     auto data = m_priv->GetModuleData(virtual_address);
     if (data == nullptr || data->m_module_symbol_session == nullptr)
     {
         return E_FAIL;
     }
 
-    rv = data->m_module_symbol_session->getSymbolsByAddr(&enum_symbols);
+    rv = data->m_module_symbol_session->getSymbolsByAddr(&symbols_by_addr);
     if (rv != S_OK)
     {
         return rv;
     }
-
-    Utils::COM::UniqueCOMPtr<IDiaEnumSymbolsByAddr> symbols_by_addr(enum_symbols);
-    enum_symbols = nullptr;
 
     rv = symbols_by_addr->symbolByVA(virtual_address, symbol);
     if (rv != S_OK)

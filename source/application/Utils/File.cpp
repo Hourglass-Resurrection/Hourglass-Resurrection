@@ -131,11 +131,10 @@ Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& fi
      * So, sacrificing efficiency for easier to understand code.
      * -- Warepire
      */
-    auto file = File(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN);
+    File file(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN);
+    SIZE_T file_size = file.GetSize();
     SIZE_T read;
-    SIZE_T file_size;
 
-    file_size = file.GetSize();
     if (file_size == 0)
     {
         return;

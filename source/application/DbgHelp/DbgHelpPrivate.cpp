@@ -4,10 +4,16 @@
  * Refer to the file COPYING.txt in the project root.
  */
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <atlbase.h>
+#include <atlcom.h>
 /*
  * Default location of the DIA SDK within VS2015 Community edition.
  */
@@ -15,8 +21,8 @@
 #pragma comment(lib, "../../DIA SDK/lib/diaguids.lib")
 
 #include "application/logging.h"
-#include "application/Utils/File.h"
 #include "application/Utils/COM.h"
+#include "application/Utils/File.h"
 #include "DbgHelp.h"
 #include "DbgHelpLoadCallback.h"
 #include "DbgHelpStackWalkHelper.h"
@@ -48,14 +54,13 @@ DbgHelpPrivate::~DbgHelpPrivate()
 bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
 {
     DbgHelpLoadCallback load_callback;
-    auto data_source = Utils::COM::MakeUniqueCOMPtr<IDiaDataSource>(CLSID_DiaSource);
-    IDiaSession* sess = nullptr;
-    IDiaSymbol* sym = nullptr;
+    auto data_source = Utils::COM::CreateCOMPtr<IDiaDataSource>(CLSID_DiaSource);
+    CComPtr<IDiaSession> session;
+    CComPtr<IDiaSymbol> symbol;
     auto file_headers = Utils::File::ExecutableFileHeaders(exec);
     DWORD module_size_in_ram = file_headers.GetImageSizeInRAM();
 
     m_loaded_modules[module_base].m_module_name = exec;
-    m_loaded_modules[module_base].m_module_load_address = module_base;
     m_loaded_modules[module_base].m_module_size = module_size_in_ram;
 
     debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"\n", exec.c_str());
@@ -63,17 +68,14 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
         debugprintf(L"[Hourglass][DebugSymbols] No symbols found, exporting symbols.\n");
-        m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable();
+        m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable(module_base);
         return true;
     }
 
-    if (data_source->openSession(&sess) != S_OK)
+    if (data_source->openSession(&session) != S_OK)
     {
         return false;
     }
-
-    Utils::COM::UniqueCOMPtr<IDiaSession> session(sess);
-    sess = nullptr;
 
     if (session->put_loadAddress(module_base) != S_OK)
     {
@@ -82,13 +84,10 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
 
     if (!m_platform_set)
     {
-        if (session->get_globalScope(&sym) != S_OK)
+        if (session->get_globalScope(&symbol) != S_OK)
         {
             return false;
         }
-
-        Utils::COM::UniqueCOMPtr<IDiaSymbol> symbol(sym);
-        sym = nullptr;
 
         DWORD platform;
         HRESULT rv = symbol->get_platform(&platform);
@@ -110,8 +109,8 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
 
 bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
 {
-    auto stack_walker = Utils::COM::MakeUniqueCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
-    IDiaEnumStackFrames* frames = nullptr;
+    auto stack_walker = Utils::COM::CreateCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
+    CComPtr<IDiaEnumStackFrames> stack_frames;
     CONTEXT thread_context;
     thread_context.ContextFlags = CONTEXT_ALL;
     if (m_loaded_modules.empty())
@@ -127,12 +126,10 @@ bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
     /*
      * CV_CFL_PENTIUM is the flag passed to getEnumFrames2 internally by getEnumFrames.
      */
-    if (stack_walker->getEnumFrames2(m_platform_set ? m_platform : CV_CFL_PENTIUM, &helper, &frames) != S_OK)
+    if (stack_walker->getEnumFrames2(m_platform_set ? m_platform : CV_CFL_PENTIUM, &helper, &stack_frames) != S_OK)
     {
         return false;
     }
-    Utils::COM::UniqueCOMPtr<IDiaEnumStackFrames> stack_frames(frames);
-    frames = nullptr;
 
     IDiaStackFrame *stack_frame = nullptr;
     for (ULONG next = 0; (stack_frames->Next(1, &stack_frame, &next) == S_OK) && (next == 1);)
@@ -140,7 +137,7 @@ bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
         ULONGLONG pc;
         stack_frame->get_registerValue(CV_REG_EIP, &pc);
         auto mod_info = GetModuleData(pc);
-        auto rv = cb(DbgHelpStackWalkCallback(new DbgHelpStackWalkCallbackPrivate(stack_frame, mod_info)));
+        auto rv = cb(DbgHelpStackWalkCallback(new DbgHelpStackWalkCallbackPrivate(m_process, stack_frame, mod_info)));
         stack_frame->Release();
         if (rv == DbgHelpStackWalkCallback::Action::STOP)
         {

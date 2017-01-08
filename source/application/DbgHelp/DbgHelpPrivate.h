@@ -13,12 +13,14 @@
 #include <memory>
 #include <string>
 #include <vector>
- /*
-  * Default location of the DIA SDK within VS2015 Community edition.
-  */
+
+#include <atlbase.h>
+#include <atlcom.h>
+/*
+ * Default location of the DIA SDK within VS2015 Community edition.
+ */
 #include <../../DIA SDK/include/dia2.h>
 
-#include "application/Utils/COM.h"
 #include "DbgHelp.h"
 
 class DbgHelpPrivate
@@ -26,11 +28,10 @@ class DbgHelpPrivate
 public:
     struct ModuleData
     {
-        DWORD64 m_module_load_address;
         DWORD m_module_size;
         std::wstring m_module_name;
-        Utils::COM::UniqueCOMPtr<IDiaSession> m_module_symbol_session;
-        std::map<DWORD, std::wstring> m_module_exports_table;
+        CComPtr<IDiaSession> m_module_symbol_session;
+        std::map<DWORD64, std::wstring> m_module_exports_table;
     };
 
     DbgHelpPrivate(HANDLE process);
