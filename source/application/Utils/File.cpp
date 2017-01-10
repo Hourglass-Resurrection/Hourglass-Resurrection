@@ -72,7 +72,9 @@ bool Utils::File::File::CloseFile()
     {
         return false;
     }
-    return (CloseHandle(m_file) == TRUE);
+    auto file = m_file;
+    m_file = INVALID_HANDLE_VALUE;
+    return (CloseHandle(file) == TRUE);
 }
 
 SIZE_T Utils::File::File::GetSize()
@@ -91,8 +93,8 @@ SIZE_T Utils::File::File::GetSize()
     return size.QuadPart;
 }
 
-    LONGLONG Utils::File::File::Seek(LONGLONG distance, DWORD starting_point)
-    {
+LONGLONG Utils::File::File::Seek(LONGLONG distance, DWORD starting_point)
+{
     if (!IsValid())
     {
         return -1;
