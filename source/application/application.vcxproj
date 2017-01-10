@@ -90,7 +90,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)external\dbghelp\dbghelp.dll" "$(OutDir)"</Command>
+      <Command>copy "$(SolutionDir)external\DIA\msdia140.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,7 +132,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)external\dbghelp\dbghelp.dll" "$(OutDir)"</Command>
+      <Command>copy "$(SolutionDir)external\DIA\msdia140.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -3852,7 +3852,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 auto cb = [](const DbgHelpStackWalkCallback& data)
                                                     { 
-                                                        debugprintf(L"STACK FRAME: %s : %s\n", data.GetModuleName().c_str(), data.GetFunctionName().c_str());
+                                                        debugprintf(L"STACK FRAME: %s : %s /%d\n", data.GetModuleName().c_str(), data.GetFunctionName().c_str(), data.GetParameterCount());
                                                         return DbgHelpStackWalkCallback::Action::CONTINUE; 
                                                     };
                                                 debug_help.StackWalk(de.dwProcessId, found->second.handle, cb);
@@ -3861,7 +3861,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                 {
                                                     HANDLE hThread = found->second;
                                                     WCHAR msg[16 + 72];
-                                                    swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                    swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
                                                     THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
                                                 }
 
@@ -3949,7 +3949,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 HANDLE hThread = found->second;
                                                 WCHAR msg[16 + 72];
-                                                swprintf(msg, L"(id=0x%X) (name=%s)", found->first, found->second.name);
+                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
                                                 StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
                                             }
                                         }
@@ -4008,7 +4008,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                     ThreadInfo& info = hGameThreads[threadId];
                                                     HANDLE hThread = info.handle;
                                                     WCHAR msg[16 + 72];
-                                                    swprintf(msg, L"(id=0x%X) (name=%s)", threadId, info.name);
+                                                    swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
                                                     THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
                                                 }
                                             }

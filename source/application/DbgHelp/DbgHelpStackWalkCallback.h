@@ -28,6 +28,7 @@ public:
     // TODO: Methods
     std::wstring GetModuleName() const;
     std::wstring GetFunctionName() const;
+    DWORD GetParameterCount() const;
 private:
     DbgHelpStackWalkCallbackPrivate* m_priv;
 };

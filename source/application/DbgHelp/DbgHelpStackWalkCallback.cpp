@@ -30,3 +30,8 @@ DbgHelpStackWalkCallback::~DbgHelpStackWalkCallback()
  {
      return m_priv->GetFunctionName();
  }
+
+ DWORD DbgHelpStackWalkCallback::GetParameterCount() const
+ {
+     return m_priv->GetParameterCount();
+ }
