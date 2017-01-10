@@ -136,6 +136,10 @@ bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
     {
         ULONGLONG pc;
         stack_frame->get_registerValue(CV_REG_EIP, &pc);
+        if (pc == 0)
+        {
+            break;
+        }
         auto mod_info = GetModuleData(pc);
         auto rv = cb(DbgHelpStackWalkCallback(new DbgHelpStackWalkCallbackPrivate(m_process, stack_frame, mod_info)));
         stack_frame->Release();
