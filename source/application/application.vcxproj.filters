@@ -24,6 +24,12 @@
     <Filter Include="Source Files\AVIDumping">
       <UniqueIdentifier>{b06adc34-504b-4b14-80a4-e32cc54d948a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{7f7de3bb-5a1d-4fea-bc61-5f3435cc9534}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils\file">
+      <UniqueIdentifier>{0fe41f72-a5c7-4674-8bb8-5943b0da3776}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomDLGs.cpp">
@@ -97,6 +103,15 @@
     </ClCompile>
     <ClCompile Include="AVIDumping\WaveFormat.cpp">
       <Filter>Source Files\AVIDumping</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\file\Path.cpp">
+      <Filter>Source Files\utils\file</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\file\FileDialog.cpp">
+      <Filter>Source Files\utils\file</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\File.h">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
