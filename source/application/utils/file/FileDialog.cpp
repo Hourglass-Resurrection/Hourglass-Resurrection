@@ -20,7 +20,9 @@ namespace
         { Utils::File::FileFilter::AllFiles, "All Files (*.*)|*.*|" },
         { Utils::File::FileFilter::HourglassMovie, "Windows TAS Files (*.hgr)|*.hgr|" },
         { Utils::File::FileFilter::Executable, "Executables (*.exe)|*.exe|" },
-        { Utils::File::FileFilter::Config, "Config Files (*.cfg)|*.cfg|" }
+        { Utils::File::FileFilter::Config, "Config Files (*.cfg)|*.cfg|" },
+        { Utils::File::FileFilter::WatchList, "Watchlist (*.wch)|*.wch|" },
+        { Utils::File::FileFilter::AVI, "AVI file (*.avi)|*.avi|" }
     };
     
     std::string GetFilter(const std::vector<Utils::File::FileFilter> file_types)
@@ -75,7 +77,7 @@ std::string Utils::File::GetFileNameSave(
     open_file_name.lpstrFile = buffer;
     open_file_name.nMaxFile = FILENAME_MAX;
     open_file_name.lpstrInitialDir = location.c_str();
-    open_file_name.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+    open_file_name.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_NOREADONLYRETURN;
 
     return GetSaveFileName(&open_file_name) ? buffer : "";
 }

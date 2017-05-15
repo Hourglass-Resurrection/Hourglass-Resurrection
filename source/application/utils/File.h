@@ -18,7 +18,9 @@ namespace Utils
             AllFiles,
             HourglassMovie,
             Executable,
-            Config
+            Config,
+            WatchList,
+            AVI
         };
 
         std::string GetFileNameOpen(

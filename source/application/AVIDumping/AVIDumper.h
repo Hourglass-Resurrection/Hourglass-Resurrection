@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015- Hourglass Resurrection Team
+ * Copyright (c) 2017 - Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
  */
@@ -12,7 +12,7 @@ void ProcessCaptureSoundInfo();
 // Must be called once and ONCE only, recommended to make the call from the initialization code of the whole program!
 void InitAVICriticalSections();
 
-bool SetAVIFilename(char* filename);
+bool SetAVIFilename(const char* filename);
 void SetLastFrameSoundInfo(void* soundInfoPointer);
 void SetGammaRamp(void* gammaRampPointer, HANDLE process);
 void SetPaletteEntriesPointer(void* pointer);
