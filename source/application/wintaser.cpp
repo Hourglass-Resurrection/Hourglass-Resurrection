@@ -1752,7 +1752,7 @@ bool CreateAVIFile()
         Utils::File::FileFilter::AllFiles
     });
 
-    if (avi_file_name == "")
+    if (avi_file_name.empty())
     {
         return false;
     }
@@ -6423,7 +6423,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             Utils::File::FileFilter::AllFiles
                         });
 
-                        if (exe_file_name != "")
+                        if (!exe_file_name.empty())
                         {
                             HWND dialog_item = GetDlgItem(hDlg, IDC_TEXT_EXE);
                             SetWindowTextAndScrollRight(dialog_item, exe_file_name.c_str());
@@ -6439,7 +6439,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 				//case ID_FILES_RESUMEMOVAS: // TODO: Eliminate this case
 						Save_Config();
-                        
+
 						bool isSave = (command == ID_FILES_RECORDMOV/* || command == ID_FILES_RESUMEMOVAS*/);
 
 						bool wasPaused = paused;
@@ -6466,7 +6466,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             });
                         }
 
-                        if (movie_file_name != "")
+                        if (!movie_file_name.empty())
                         {
                             /*if(started && (!localTASflags.playback || nextLoadRecords))
                             {
@@ -6528,7 +6528,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             Utils::File::FileFilter::AllFiles
                         });
 
-                        if (movie_file_name != "")
+                        if (!movie_file_name.empty())
                         {
                             // As SaveMovie actually modifies the contents of the passed string, we
                             // can't just pass the const .c_str() result

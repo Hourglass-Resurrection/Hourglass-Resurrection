@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 - Hourglass Resurrection Team
+ * Copyright(c) 2017- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
  */
@@ -15,7 +15,7 @@
 namespace
 {
     // The pipe characters are just placeholders for the null characters to ease string manipulation
-    std::map<Utils::File::FileFilter, const char*> gs_file_type_map =
+    std::map<Utils::File::FileFilter, const char*> file_type_map =
     {
         { Utils::File::FileFilter::AllFiles, "All Files (*.*)|*.*|" },
         { Utils::File::FileFilter::HourglassMovie, "Windows TAS Files (*.hgr)|*.hgr|" },
@@ -29,9 +29,9 @@ namespace
     {
         std::string result = "";
 
-        for (auto file_type : file_types)
+        for (auto& file_type : file_types)
         {
-            const char* filter = gs_file_type_map[file_type];
+            const char* filter = file_type_map[file_type];
             result.append(filter);
         }
 
@@ -41,8 +41,8 @@ namespace
 }
 
 std::string Utils::File::GetFileNameOpen(
-    const std::string location,
-    const std::vector<File::FileFilter> file_types)
+    const std::string& location,
+    const std::vector<File::FileFilter>& file_types)
 {
     auto filter = GetFilter(file_types);
 
@@ -62,8 +62,8 @@ std::string Utils::File::GetFileNameOpen(
 }
 
 std::string Utils::File::GetFileNameSave(
-    const std::string location,
-    const std::vector<File::FileFilter> file_types)
+    const std::string& location,
+    const std::vector<File::FileFilter>& file_types)
 {
     auto filter = GetFilter(file_types);
 

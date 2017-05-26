@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 - Hourglass Resurrection Team
+ * Copyright(c) 2017- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
  */
@@ -24,14 +24,14 @@ namespace Utils
         };
 
         std::string GetFileNameOpen(
-            const std::string location,
-            const std::vector<FileFilter> file_types);
+            const std::string& location,
+            const std::vector<FileFilter>& file_types);
 
         std::string GetFileNameSave(
-            const std::string location,
-            const std::vector<FileFilter> file_types);
+            const std::string& location,
+            const std::vector<FileFilter>& file_types);
 
-        std::string GetFileName(std::string path);
-        std::string GetDirectoryName(std::string path);
+        std::string GetFileName(std::string& path);
+        std::string GetDirectoryName(std::string& path);
     }
 }

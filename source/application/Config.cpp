@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 - Hourglass Resurrection Team
+ * Copyright(c) 2015- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
  */
@@ -170,15 +170,15 @@ namespace Config{
             Utils::File::FileFilter::AllFiles,
         });
 
-        if (config_file_name != "")
+        if (config_file_name.empty())
+        {
+            return 0;
+        }
+        else
         {
             Save_Config(config_file_name.c_str());
             debugprintf(L"config saved in \"%S\".\n", config_file_name);
             return 1;
-        }
-        else
-        {
-            return 0;
         }
 	}
 
@@ -248,14 +248,14 @@ namespace Config{
             Utils::File::FileFilter::AllFiles,
         });
 
-        if (config_file_name != "")
+        if (config_file_name.empty())
         {
-            Load_Config(config_file_name.c_str());
-            return 1;
+            return 0;
         }
         else
         {
-            return 0;
+            Load_Config(config_file_name.c_str());
+            return 1;
         }
     }
 }

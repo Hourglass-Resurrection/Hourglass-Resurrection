@@ -453,7 +453,7 @@ int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
     });
 
     file_name.copy(Dest, file_name.length());
-    return file_name == "" ? 0 : 1;
+    return file_name.empty() ? 0 : 1;
 }
 
 int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, HWND hwnd)
@@ -464,7 +464,7 @@ int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
     });
 
     file_name.copy(Dest, file_name.length());
-    return file_name == "" ? 0 : 1;
+    return file_name.empty() ? 0 : 1;
 }
 
 bool Save_Watches()
