@@ -3,6 +3,7 @@ branches:
   only:
   - master
 skip_tags: true
+image: Visual Studio 2017
 configuration:
 - Debug
 - Release
