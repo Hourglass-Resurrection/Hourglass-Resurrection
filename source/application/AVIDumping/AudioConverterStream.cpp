@@ -50,35 +50,37 @@ AudioConverterStream::AudioConverterStream(WaveFormat sourceFormat, WaveFormat d
 					{
 						for (form = 0; form <= 1 && !foundSuggest; foundSuggest ? 0 : ++form)
 						{
-							int flags = 0;
-							flags |= chan ? ACM_FORMATSUGGESTF_NCHANNELS      : 0;
-							flags |= samp ? ACM_FORMATSUGGESTF_NSAMPLESPERSEC : 0;
-							flags |= bits ? ACM_FORMATSUGGESTF_WBITSPERSAMPLE : 0;
-							flags |= form ? ACM_FORMATSUGGESTF_WFORMATTAG     : 0;
-
-							intermediateFormat = destFormat;
-							MMRESULT mmSuggest = acmFormatSuggest(NULL, sourceFormat, intermediateFormat, intermediateFormat.GetSize(), flags);
-							if (mmSuggest == MMSYSERR_NOERROR)
 							{
-								// Got a possibly-valid suggestion, but it might be a suggestion to
-								// do absolutely nothing (which would be bad), so we first make sure
-								// there's some sort of change involved:
-								if (!FormatsMatch(sourceFormat, intermediateFormat))
+								int flags = 0;
+								flags |= chan ? ACM_FORMATSUGGESTF_NCHANNELS      : 0;
+								flags |= samp ? ACM_FORMATSUGGESTF_NSAMPLESPERSEC : 0;
+								flags |= bits ? ACM_FORMATSUGGESTF_WBITSPERSAMPLE : 0;
+								flags |= form ? ACM_FORMATSUGGESTF_WFORMATTAG     : 0;
+
+								intermediateFormat = destFormat;
+								MMRESULT mmSuggest = acmFormatSuggest(NULL, sourceFormat, intermediateFormat, intermediateFormat.GetSize(), flags);
+								if (mmSuggest == MMSYSERR_NOERROR)
 								{
-									// We got a suggestion
-									foundSuggest = true;
-
-									// Now check to see if it's identical to a previous conversion
-									// state. If it is, then we'll revert foundSuggest to false to
-									// prevent endless conversion cycles.
-									for (int prev = 0; prev < numPrevSourceFormats && prevSourceFormats && foundSuggest; prev++)
+									// Got a possibly-valid suggestion, but it might be a suggestion to
+									// do absolutely nothing (which would be bad), so we first make sure
+									// there's some sort of change involved:
+									if (!FormatsMatch(sourceFormat, intermediateFormat))
 									{
-										WaveFormat& oldFormat = *prevSourceFormats[prev];
+										// We got a suggestion
+										foundSuggest = true;
 
-										if (FormatsMatch(oldFormat, intermediateFormat))
+										// Now check to see if it's identical to a previous conversion
+										// state. If it is, then we'll revert foundSuggest to false to
+										// prevent endless conversion cycles.
+										for (int prev = 0; prev < numPrevSourceFormats && prevSourceFormats && foundSuggest; prev++)
 										{
-											// We already went through this exact format
-											foundSuggest = false;
+											WaveFormat& oldFormat = *prevSourceFormats[prev];
+
+											if (FormatsMatch(oldFormat, intermediateFormat))
+											{
+												// We already went through this exact format
+												foundSuggest = false;
+											}
 										}
 									}
 								}

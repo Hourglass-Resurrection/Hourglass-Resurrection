@@ -28,7 +28,7 @@ public:
 
     void AddMenuCategory(const std::wstring& name, DWORD id, bool enabled, bool last);
     void AddSubMenu(const std::wstring& name, DWORD id, bool enabled, bool last);
-    void AddMenuItem(const std::wstring& name, DWORD id, bool enabled, bool last, bool default);
+    void AddMenuItem(const std::wstring& name, DWORD id, bool enabled, bool last, bool default_choice);
     void AddCheckableMenuItem(const std::wstring& name, DWORD id,
                               bool enabled, bool checked, bool last);
     void AddMenuItemSeparator();

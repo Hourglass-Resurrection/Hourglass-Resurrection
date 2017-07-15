@@ -91,9 +91,9 @@ void Menu::AddSubMenu(const std::wstring& name, DWORD id, bool enabled, bool las
     AddMenuCategory(name, id, enabled, last);
 }
 
-void Menu::AddMenuItem(const std::wstring& name, DWORD id, bool enabled, bool last, bool default)
+void Menu::AddMenuItem(const std::wstring& name, DWORD id, bool enabled, bool last, bool default_choice)
 {
-    DWORD state = (enabled ? MFS_ENABLED : MFS_DISABLED) | (default ? MFS_DEFAULT : 0);
+    DWORD state = (enabled ? MFS_ENABLED : MFS_DISABLED) | (default_choice ? MFS_DEFAULT : 0);
     WORD res = (last ? 0x80 : 0x00);
     AddMenuObject(name, id, MFT_STRING, state, res);
 }

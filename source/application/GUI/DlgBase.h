@@ -99,7 +99,7 @@ protected:
                        DWORD id,
                        SHORT x, SHORT y,
                        SHORT w, SHORT h,
-                       bool default);
+                       bool default_choice);
     void AddCheckbox(const std::wstring& caption,
                      DWORD id,
                      SHORT x, SHORT y,

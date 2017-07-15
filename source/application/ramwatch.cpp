@@ -442,7 +442,7 @@ void OpenRWRecentFile(int memwRFileNumber)
 	return;
 }
 
-int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, HWND hwnd)
+int Change_File_L(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
 	OPENFILENAME ofn;
 
@@ -473,7 +473,7 @@ int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 	return 0;
 }
 
-int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, HWND hwnd)
+int Change_File_S(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
 	OPENFILENAME ofn;
 
@@ -1009,7 +1009,8 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							Item->item.pszText = num;
 						}	return true;
 						case 2:
-							Item->item.pszText = rswatches[iNum].comment ? rswatches[iNum].comment : "";
+							num[0] = '\0';
+							Item->item.pszText = rswatches[iNum].comment ? rswatches[iNum].comment : num;
 							return true;
 
 						default:

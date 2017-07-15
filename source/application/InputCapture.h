@@ -150,8 +150,8 @@ private:
 
 public:
 
-	InputCapture::InputCapture();
-	InputCapture::InputCapture(char* filename);
+	InputCapture();
+	InputCapture(char* filename);
 
 	static const int SICount = 204;
 	static const int eventCount = 67;

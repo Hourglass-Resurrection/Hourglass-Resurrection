@@ -36,14 +36,14 @@ private:
 class IATModifierException : public std::runtime_error
 {
 public:
-	IATModifierException::IATModifierException(const std::string& msg) : std::runtime_error(msg) {};
+	IATModifierException(const std::string& msg) : std::runtime_error(msg) {};
 };
 
 // exception while writing image import descriptors
 class WriteIIDException : public std::runtime_error
 {
 public:
-	WriteIIDException::WriteIIDException(const std::string& msg, const MemoryAccessException& e) : std::runtime_error(msg), innerException_(e) {};
+	WriteIIDException(const std::string& msg, const MemoryAccessException& e) : std::runtime_error(msg), innerException_(e) {};
 	MemoryAccessException innerException() const { return innerException_; };
 
 private:

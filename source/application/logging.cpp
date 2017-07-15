@@ -75,7 +75,7 @@ int debugprintf(LPCWSTR fmt, ...)
 	return rv;
 }
 
-void PrintLastError(LPTSTR lpszFunction, DWORD dw)
+void PrintLastError(LPCTSTR lpszFunction, DWORD dw)
 {
 	if(!dw)
 		return;

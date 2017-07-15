@@ -35,7 +35,7 @@ namespace Hooks
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
     HOOK_FUNCTION_DECLARE(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
 
-    void SetThreadName(DWORD dwThreadID, char* threadName);
+    void SetThreadName(DWORD dwThreadID, const char* threadName);
 
     void ApplyThreadIntercepts();
 }

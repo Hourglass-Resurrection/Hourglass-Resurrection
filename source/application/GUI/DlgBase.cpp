@@ -202,10 +202,10 @@ void DlgBase::AddPushButton(const std::wstring& caption,
                             DWORD id,
                             SHORT x, SHORT y,
                             SHORT w, SHORT h,
-                            bool default)
+                            bool default_choice)
 {
     AddObject(0,
-              WS_GROUP | WS_TABSTOP | (default ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON),
+              WS_GROUP | WS_TABSTOP | (default_choice ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON),
               L"\xFFFF\x0080",
               caption,
               id,

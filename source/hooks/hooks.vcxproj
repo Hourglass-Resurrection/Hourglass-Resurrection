@@ -76,7 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Oy- /permissive- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -107,7 +107,7 @@
       </Message>
     </CustomBuildStep>
     <ClCompile>
-      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Oy- /permissive- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
