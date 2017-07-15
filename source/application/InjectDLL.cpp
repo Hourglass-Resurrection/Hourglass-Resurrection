@@ -61,6 +61,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 		terminateRequest = true;
 	}
 
+	DWORD exitCode = 0;
 
 	// modify the IDT (import directory table) (though the IAT is more commonly referred to)
 	// so that Windows thinks the game needs to load our DLL first
@@ -71,9 +72,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 		debugprintf(L"Injecting \"%S\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
 		info->injectIsAsyncReady = TRUE;
 		goto done;
-	} 
-
-	DWORD exitCode = 0;
+	}
 
 	if(exitCode == 0)
 	{

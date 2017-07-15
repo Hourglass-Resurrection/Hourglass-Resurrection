@@ -3430,8 +3430,24 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	movie.currentFrame = 0;
 	{
 		int loadMovieResult = LoadMovie(moviefilename);
-		if(loadMovieResult < 0 || (localTASflags.playback && loadMovieResult == 0))
-			goto earlyAbort;
+		if (loadMovieResult < 0 || (localTASflags.playback && loadMovieResult == 0))
+		{
+			// Replacing this goto with copy-pasted code.
+			// goto earlyAbort;
+
+			HANDLE hInitialThread = processInfo.hThread;
+			DebuggerThreadFuncCleanup(hInitialThread, processInfo.hProcess);
+			//	CloseHandle(processInfo.hProcess);
+
+			// certain cleanup tasks need to happen after this thread has exited,
+			// because either they might take too long, or they enable things in the UI
+			// that aren't safe to click on until after this thread is really completely gone
+			afterDebugThreadExit = true;
+
+			//	TerminateThread(GetCurrentThread(), 0); // hack for Vista (on Vista this thread just freezes if we try to return instead)
+			//	return 0; // this works fine on Windows XP but not on Vista?
+			return 0;
+		}
 		OnMovieStart();
 	}
 
@@ -4641,7 +4657,11 @@ done:
 //		//CloseHandle(hGameProcess);
 //	}
 	hGameProcess = 0;
-earlyAbort:
+
+// The only goto to this label in the first few lines of this function
+// had to be replaced with copy-pasted code to prevent errors.
+//earlyAbort:
+
 	DebuggerThreadFuncCleanup(hInitialThread, processInfo.hProcess);
 //	CloseHandle(processInfo.hProcess);
 

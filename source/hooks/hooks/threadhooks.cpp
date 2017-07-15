@@ -27,7 +27,7 @@ namespace Hooks
     } THREADNAME_INFO;
 #pragma pack(pop)
 
-    void SetThreadName(DWORD dwThreadID, char* threadName)
+    void SetThreadName(DWORD dwThreadID, const char* threadName)
     {
         // note: we can only call unhooked functions here, since SetThreadName can get called before anything is hooked
         if (notramps)
