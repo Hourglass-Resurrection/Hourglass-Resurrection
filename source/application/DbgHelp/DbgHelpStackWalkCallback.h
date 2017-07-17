@@ -25,9 +25,10 @@ class DbgHelpStackWalkCallback : public IDbgHelpStackWalkCallback
 public:
     DbgHelpStackWalkCallback(HANDLE process, IDiaStackFrame* frame, const DbgHelpPrivate::ModuleData* mod_info);
 
-    const std::wstring GetModuleName();
-    const std::wstring GetFunctionName();
-    const DWORD GetParameterCount();
+    const std::wstring GetModuleName() override;
+    const std::wstring GetFunctionName() override;
+    const DWORD GetParameterCount() override;
+
     DbgHelpArgType GetParameterType(DWORD num);
     std::wstring GetParameterTypeName(DWORD num);
     std::wstring GetParameterName(DWORD num);
