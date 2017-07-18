@@ -132,7 +132,7 @@ public:
     const std::wstring GetName() const
     {
         return std::visit([](const auto& type) {
-            return type.GetName() + L" *"s;
+            return type.GetName() + L" *"; // L" *"s somehow becomes garbage data. Can't replicate in a test program.
         }, m_underlying_type);
     }
 
