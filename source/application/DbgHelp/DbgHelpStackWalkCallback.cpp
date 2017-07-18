@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -27,7 +27,7 @@ DbgHelpStackWalkCallback::DbgHelpStackWalkCallback(HANDLE process, IDiaStackFram
 }
 
 // TODO: Split module name and PC
-const std::wstring DbgHelpStackWalkCallback::GetModuleName()
+std::wstring DbgHelpStackWalkCallback::GetModuleName()
 {
     std::wstringstream name;
     if (m_mod_info == nullptr)
@@ -42,7 +42,7 @@ const std::wstring DbgHelpStackWalkCallback::GetModuleName()
     return name.str();
 }
 
-const std::wstring DbgHelpStackWalkCallback::GetFunctionName()
+std::wstring DbgHelpStackWalkCallback::GetFunctionName()
 {
     if (m_mod_info == nullptr)
     {
@@ -69,95 +69,88 @@ const std::wstring DbgHelpStackWalkCallback::GetFunctionName()
     }
     return function_name;
 }
-
-// TODO: RFC
-std::wstring DbgHelpStackWalkCallback::GetFunctionParameters()
-{
-    if (m_mod_info == nullptr)
-    {
-        return L"?";
-    }
-
-    ULONGLONG stackframe_base = 0;
-    bool can_get_values = (m_frame->get_base(&stackframe_base) == S_OK);
-
-    DWORD param_count = GetParameterCount();
-    std::wstring params = L"(";
-    //if (m_mod_info->m_module_symbol_session == nullptr)
-    {
-        /*
-         * We don't know the parameter names, nor types, nor the actual count, but we have a guess.
-         * We'll also assume that there's no more than 26 parameters to a function.
-         * We count backwards here, as parameters are pushed right-to-left and stacks grow downwards.
-         */
-        for (DWORD i = 0; /*i < param_count && */i < 26; i++)
-        {
-            params += ('a' + i);
-            if (can_get_values)
-            {
-                ULONGLONG address = stackframe_base + (i * 4);
-                DWORD value;
-                SIZE_T read_bytes;
-                if (ReadProcessMemory(m_process, reinterpret_cast<LPVOID>(address), &value, sizeof(value), &read_bytes) == TRUE)
-                {
-                    debugprintf(L"%#llX: %#X\n", address, value);
-                    //params += L"=0x";
-                    //std::wstringstream hex_value;
-                    //hex_value << std::hex << value;
-                    //params += hex_value.str();
-                    //if (i < param_count - 1)
-                    //{
-                    //    params += L", ";
-                    //}
-                }
-            }
-        }
-        params += L")?";
-    }
-    //else
-    //{
-    //    for (DWORD i = param_count; i > 0; i--)
-    //    {
-
-    //    }
-    //    params += L")";
-    //}
-    return params;
-}
+//
+//// TODO: RFC
+//std::wstring DbgHelpStackWalkCallback::GetFunctionParameters()
+//{
+//    if (m_mod_info == nullptr)
+//    {
+//        return L"?";
+//    }
+//
+//    ULONGLONG stackframe_base = 0;
+//    bool can_get_values = (m_frame->get_base(&stackframe_base) == S_OK);
+//
+//    DWORD param_count = GetParameterCount();
+//    std::wstring params = L"(";
+//    //if (m_mod_info->m_module_symbol_session == nullptr)
+//    {
+//        /*
+//         * We don't know the parameter names, nor types, nor the actual count, but we have a guess.
+//         * We'll also assume that there's no more than 26 parameters to a function.
+//         * We count backwards here, as parameters are pushed right-to-left and stacks grow downwards.
+//         */
+//        for (DWORD i = 0; /*i < param_count && */i < 26; i++)
+//        {
+//            params += ('a' + i);
+//            if (can_get_values)
+//            {
+//                ULONGLONG address = stackframe_base + (i * 4);
+//                DWORD value;
+//                SIZE_T read_bytes;
+//                if (ReadProcessMemory(m_process, reinterpret_cast<LPVOID>(address), &value, sizeof(value), &read_bytes) == TRUE)
+//                {
+//                    debugprintf(L"%#llX: %#X\n", address, value);
+//                    //params += L"=0x";
+//                    //std::wstringstream hex_value;
+//                    //hex_value << std::hex << value;
+//                    //params += hex_value.str();
+//                    //if (i < param_count - 1)
+//                    //{
+//                    //    params += L", ";
+//                    //}
+//                }
+//            }
+//        }
+//        params += L")?";
+//    }
+//    //else
+//    //{
+//    //    for (DWORD i = param_count; i > 0; i--)
+//    //    {
+//
+//    //    }
+//    //    params += L")";
+//    //}
+//    return params;
+//}
 
 DWORD DbgHelpStackWalkCallback::GetUnsureStatus()
 {
     return m_unsure;
 }
 
-const DWORD DbgHelpStackWalkCallback::GetParameterCount()
+std::vector<DbgHelpStackWalkCallback::Parameter> DbgHelpStackWalkCallback::GetParameters()
 {
+    if (m_mod_info == nullptr)
+    {
+        return std::vector<Parameter>();
+    }
+
     if (!m_params_enumerated)
     {
         EnumerateParameters();
     }
 
-    return m_param_info.size();
-}
+    std::vector<Parameter> parameters;
+    parameters.reserve(m_param_info.size());
 
-DbgHelpArgType DbgHelpStackWalkCallback::GetParameterType(DWORD num)
-{
-    return DbgHelpArgType();
-}
+    for (const ParamInfo& param_info : m_param_info)
+    {
+        parameters.emplace_back(param_info.m_type, param_info.m_name, GetParameterValue(param_info));
+    }
 
-std::wstring DbgHelpStackWalkCallback::GetParameterTypeName(DWORD num)
-{
-    return std::wstring();
-}
-
-std::wstring DbgHelpStackWalkCallback::GetParameterName(DWORD num)
-{
-    return std::wstring();
-}
-
-std::shared_ptr<void> DbgHelpStackWalkCallback::GetParameterValue(DWORD num)
-{
-    return std::shared_ptr<void>();
+    return parameters;
 }
 
 CComPtr<IDiaSymbol> DbgHelpStackWalkCallback::GetFunctionSymbol()
@@ -174,6 +167,156 @@ ULONGLONG DbgHelpStackWalkCallback::GetProgramCounter()
     return pc;
 }
 
+// In these functions length MUST match the "expected" size of the basic types,
+// otherwise they will be read incorrectly.
+static std::optional<DbgHelpBasicType::BasicType> GetDbgHelpIntType(ULONGLONG length, bool is_signed)
+{
+    switch (length)
+    {
+    case 1:
+        return is_signed ? DbgHelpBasicType::BasicType::Int8 : DbgHelpBasicType::BasicType::UnsignedInt8;
+    case 2:
+        return is_signed ? DbgHelpBasicType::BasicType::Int16 : DbgHelpBasicType::BasicType::UnsignedInt16;
+    case 4:
+        return is_signed ? DbgHelpBasicType::BasicType::Int32 : DbgHelpBasicType::BasicType::UnsignedInt32;
+    case 8:
+        return is_signed ? DbgHelpBasicType::BasicType::Int64 : DbgHelpBasicType::BasicType::UnsignedInt64;
+    default:
+        return std::nullopt;
+    }
+}
+
+static std::optional<DbgHelpBasicType::BasicType> GetDbgHelpFloatType(ULONGLONG length)
+{
+    switch (length)
+    {
+    case 4:
+        return DbgHelpBasicType::BasicType::Float;
+    case 8:
+        return DbgHelpBasicType::BasicType::Double;
+    default:
+        return std::nullopt;
+    }
+}
+
+static std::optional<DbgHelpBasicType> GetDbgHelpBasicType(ULONGLONG length, DWORD basic_type)
+{
+    switch (basic_type)
+    {
+    case btChar:
+        return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char);
+    case btInt:
+    case btLong:
+        {
+            auto int_type = GetDbgHelpIntType(length, true);
+            if (int_type.has_value())
+            {
+                return DbgHelpBasicType(int_type.value());
+            }
+        }
+        break;
+    // Treat wchar_t, char16_t and char32_t as integers of the given size as they don't have a defined size.
+    case btWChar:
+    case btChar16:
+    case btChar32:
+    case btUInt:
+    case btULong:
+        {
+            auto int_type = GetDbgHelpIntType(length, false);
+            if (int_type.has_value())
+            {
+                return DbgHelpBasicType(int_type.value());
+            }
+        }
+        break;
+    case btFloat:
+        {
+            auto float_type = GetDbgHelpFloatType(length);
+            if (float_type.has_value())
+            {
+                return DbgHelpBasicType(float_type.value());
+            }
+        }
+        break;
+    }
+
+    // Everything we don't know about / don't handle yet.
+    return std::nullopt;
+}
+
+static DbgHelpType GetDbgHelpType(ULONGLONG length, DWORD type_tag, CComPtr<IDiaSymbol> type_info)
+{
+    DbgHelpUnknownType default_return_value = DbgHelpUnknownType(length);
+
+    DWORD type;
+    switch (type_tag)
+    {
+    case SymTagBaseType:
+        if (type_info->get_baseType(&type) == S_OK)
+        {
+            // Convert the type.
+            std::optional<DbgHelpType> rv = GetDbgHelpBasicType(length, type);
+            return rv.value_or(default_return_value);
+        }
+        break;
+
+    case SymTagPointerType:
+        {
+            CComPtr<IDiaSymbol> underlying_type;
+            if (type_info->get_type(&underlying_type) == S_OK)
+            {
+                ULONGLONG underlying_length;
+                if (type_info->get_length(&underlying_length) == S_OK)
+                {
+                    DWORD underlying_type_tag;
+                    if (type_info->get_symTag(&underlying_type_tag) == S_OK)
+                    {
+                        // This complicated std::visit() expression converts DbgHelpType
+                        // to DbgHelpBasicType or DbgHelpUnknownType.
+
+                        // This helper type is required until VS2017.3 with constexpr ifs.
+                        class visitor
+                        {
+                            size_t m_length;
+
+                        public:
+                            visitor(size_t length) : m_length(length) {}
+
+                            DbgHelpPointerType operator()(DbgHelpBasicType t)
+                            {
+                                return DbgHelpPointerType(t, m_length);
+                            }
+
+                            DbgHelpPointerType operator()(DbgHelpPointerType t)
+                            {
+                                // TODO: this is here until multi-level pointers are supported.
+                                // Treat the underlying pointer as an unsigned integer.
+                                return DbgHelpPointerType(GetDbgHelpBasicType(t.GetSize(), btUInt).value(), m_length);
+                            }
+
+                            DbgHelpPointerType operator()(DbgHelpUnknownType t)
+                            {
+                                return DbgHelpPointerType(t, m_length);
+                            }
+                        };
+
+                        return std::visit(visitor(length),
+                            GetDbgHelpType(underlying_length, underlying_type_tag, underlying_type).m_type);
+                    }
+                    else
+                    {
+                        return DbgHelpPointerType(DbgHelpUnknownType(underlying_length), length);
+                    }
+                }
+            }
+        }
+        break;
+    }
+
+    // Everything we don't know about / don't handle yet.
+    return default_return_value;
+}
+
 // TODO: RFC
 void DbgHelpStackWalkCallback::EnumerateParameters()
 {
@@ -188,7 +331,8 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
         m_unsure++;
         for (DWORD i = 0; i < 4; i++)
         {
-            m_param_info.emplace_back(ParamInfo{ DbgHelpArgType::Int, L"int", { static_cast<WCHAR>(L'a' + i) }, nullptr, nullptr, 4, i * 4 });
+            m_param_info.emplace_back(ParamInfo{ DbgHelpBasicType(DbgHelpBasicType::BasicType::Int32),
+                                                 std::nullopt, nullptr, nullptr, i * 4 });
         }
     }
     else
@@ -207,13 +351,8 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
          * This will be incremented for each found symbol, with it's size.
          */
         DWORD offset = 0;
-        for (DWORD count = 0; (enum_symbols->Next(1, &sym_info, &num_fetched) == S_OK); count++)
+        for (DWORD count = 0; (enum_symbols->Next(1, &sym_info, &num_fetched) == S_OK && num_fetched == 1); count++)
         {
-            if (num_fetched != 1)
-            {
-                sym_info->Release();
-                continue;
-            }
             CComPtr<IDiaSymbol> type_info;
             if (sym_info->get_type(&type_info) != S_OK)
             {
@@ -241,62 +380,8 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
                 sym_info->Release();
                 continue;
             }
-            DbgHelpArgType arg_type = DbgHelpArgType::Unknown;
-            if (typetag == SymTagEnum || typetag == SymTagBaseType)
-            {
-                DWORD type;
-                if (type_info->get_baseType(&type) == S_OK)
-                {
-                    switch (type)
-                    {
-                    case btNoType:
-                        arg_type = DbgHelpArgType::Unknown;
-                        break;
-                    case btVoid:
-                        arg_type = DbgHelpArgType::Unknown;
-                        break;
-                    case btChar:
-                        arg_type = DbgHelpArgType::Char;
-                        break;
-                    case btWChar:
-                        arg_type = DbgHelpArgType::WideChar;
-                        break;
-                    case btInt:
-                        arg_type = (length == 4) ? DbgHelpArgType::Int : DbgHelpArgType::LongLong;
-                        break;
-                    case btUInt:
-                        arg_type = (length == 4) ? DbgHelpArgType::UnsignedInt
-                                                 : DbgHelpArgType::UnsignedLongLong;
-                        break;
-                    case btFloat:
-                        arg_type = (length == 4) ? DbgHelpArgType::Float
-                                                 : ((length == 8) ? DbgHelpArgType::Double
-                                                                  : DbgHelpArgType::LongDouble);
-                        break;
-                            //btBCD = 9,
-                            //btBool = 10,
-                            //btLong = 13,
-                            //btULong = 14,
-                            //btCurrency = 25,
-                            //btDate = 26,
-                            //btVariant = 27,
-                            //btComplex = 28,
-                            //btBit = 29,
-                            //btBSTR = 30,
-                            //btHresult = 31,
-                            //btChar16 = 32,  // char16_t
-                            //btChar32 = 33,  // char32_t
-                    }
-                }
-            }
-            else if (typetag == SymTagUDT)
-            {
-                DWORD udt;
-                if (type_info->get_udtKind(&udt) == S_OK)
-                {
 
-                }
-            }
+            DbgHelpType arg_type = GetDbgHelpType(length, typetag, type_info);
 
             BSTR name;
             if (sym_info->get_name(&name) != S_OK)
@@ -308,11 +393,10 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
              * something else has probably gone really awry.
              * -- Warepire
              */
-            m_param_info.emplace_back(ParamInfo{ arg_type, L"",
-                                                 name != nullptr ? name :
-                                                     std::wstring({ static_cast<WCHAR>(L'a' + count) }),
-                                                 sym_info, type_info,
-                                                 static_cast<DWORD>(length), offset });
+            m_param_info.emplace_back(ParamInfo{ arg_type,
+                                                 name != nullptr
+                                                     ? std::make_optional(std::wstring(name)) : std::nullopt,
+                                                 sym_info, type_info, offset });
             offset += static_cast<DWORD>(length);
             // Temp debug stuff
             //debugprintf(L"Found argument %s with type tag %u\n", name, typetag);
@@ -337,4 +421,89 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
         }
     }*/
     m_params_enumerated = true;
+}
+
+std::optional<IDbgHelpStackWalkCallback::ParameterValue>
+DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
+{
+    ULONGLONG stackframe_base = 0;
+    if (m_frame->get_base(&stackframe_base) != S_OK)
+    {
+        return std::nullopt;
+    }
+
+    // First, value initialize the variant we're going to read bytes into.
+    class visitor
+    {
+    public:
+        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpBasicType t)
+        {
+            switch (t.m_type)
+            {
+            case DbgHelpBasicType::BasicType::Char:
+                return char{};
+            case DbgHelpBasicType::BasicType::Int8:
+                return int8_t{};
+            case DbgHelpBasicType::BasicType::UnsignedInt8:
+                return uint8_t{};
+            case DbgHelpBasicType::BasicType::Int16:
+                return int16_t{};
+            case DbgHelpBasicType::BasicType::UnsignedInt16:
+                return uint16_t{};
+            case DbgHelpBasicType::BasicType::Int32:
+                return int32_t{};
+            case DbgHelpBasicType::BasicType::UnsignedInt32:
+                return uint32_t{};
+            case DbgHelpBasicType::BasicType::Int64:
+                return int64_t{};
+            case DbgHelpBasicType::BasicType::UnsignedInt64:
+                return uint64_t{};
+            case DbgHelpBasicType::BasicType::Float:
+                return float{};
+            case DbgHelpBasicType::BasicType::Double:
+                return double{};
+            }
+        }
+
+        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpPointerType t)
+        {
+            return static_cast<void*>(nullptr);
+        }
+
+        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpUnknownType t)
+        {
+            // We don't get the values of unknown types.
+            return std::nullopt;
+        }
+    };
+
+    std::optional<IDbgHelpStackWalkCallback::ParameterValue> value = std::visit(visitor(), param_info.m_type.m_type);
+
+    // Now, read the bytes.
+    // I'm really missing all the support functions for these types like map(), filter(), etc...
+    if (value.has_value())
+    {
+        bool success = std::visit([&](auto& t) {
+            ULONGLONG address = stackframe_base + param_info.m_offset;
+            SIZE_T read_bytes;
+
+            return ReadProcessMemory(m_process,
+                                     reinterpret_cast<LPVOID>(address),
+                                     &t,
+                                     sizeof(t),
+                                     &read_bytes) == TRUE
+                && read_bytes == sizeof(t);
+        }, *value);
+
+        if (success)
+        {
+            return value;
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    return std::nullopt;
 }

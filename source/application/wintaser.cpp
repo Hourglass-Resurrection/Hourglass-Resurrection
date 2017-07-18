@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // main EXE cpp
@@ -48,6 +48,7 @@ using namespace Config;
 #include <string>
 #include <algorithm>
 #include <type_traits>
+#include <sstream>
 #include <aclapi.h>
 #include <assert.h>
 
@@ -3865,7 +3866,33 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 auto cb = [](IDbgHelpStackWalkCallback& data)
                                                     { 
-                                                        debugprintf(L"STACK FRAME: %s : %s /%d\n", data.GetModuleName().c_str(), data.GetFunctionName().c_str(), data.GetParameterCount());
+                                                        debugprintf(L"STACK FRAME: %s : %s(", data.GetModuleName().c_str(), data.GetFunctionName().c_str());
+
+                                                        bool first = true;
+                                                        for (const auto& parameter : data.GetParameters())
+                                                        {
+                                                            std::wstring value_string = L"?";
+                                                            if (parameter.m_value.has_value())
+                                                            {
+                                                                value_string = std::visit([](auto&& t) {
+                                                                    // TODO: creating an oss for every argument is slow.
+                                                                    std::wostringstream oss;
+                                                                    oss << t;
+                                                                    return oss.str();
+                                                                }, *parameter.m_value);
+                                                            }
+
+                                                            debugprintf(L"%s%s %s = %s",
+                                                                        first ? L"" : L", ",
+                                                                        parameter.m_type.GetName().c_str(),
+                                                                        parameter.m_name.value_or(L"?").c_str(),
+                                                                        value_string.c_str());
+
+                                                            first = false;
+                                                        }
+
+                                                        debugprintf(L")\n");
+
                                                         return IDbgHelpStackWalkCallback::Action::CONTINUE;
                                                     };
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, cb);
