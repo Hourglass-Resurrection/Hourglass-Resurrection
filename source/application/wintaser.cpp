@@ -372,7 +372,7 @@ static std::wstring TranslateDeviceName(const std::wstring& filename)
                         {
                             return L"";
                         }
-                        wcsncpy(temp_str, temp_file, len);
+                        wcsncpy(temp_str, temp_file, len + 1);
                         break;
                     }
                 }
