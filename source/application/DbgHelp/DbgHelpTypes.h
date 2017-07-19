@@ -18,6 +18,7 @@ class DbgHelpBasicType
 {
 public:
     enum class BasicType {
+        Void,
         Char,
         Int8,
         UnsignedInt8,
@@ -39,6 +40,8 @@ public:
     {
         switch (m_type)
         {
+        case BasicType::Void:
+            return L"void"s;
         case BasicType::Char:
             return L"char"s;
         case BasicType::Int8:
@@ -68,6 +71,8 @@ public:
     {
         switch (m_type)
         {
+        case BasicType::Void:
+            return 0;
         case BasicType::Char:
             return 1;
         case BasicType::Int8:
@@ -94,18 +99,18 @@ public:
     }
 };
 
-// An unknown type with a known size.
+// An unknown type with a known size. Might have an available name.
 class DbgHelpUnknownType
 {
 public:
     const size_t m_size;
+    const std::optional<std::wstring> m_name;
 
-    DbgHelpUnknownType(size_t size) : m_size(size) {}
+    DbgHelpUnknownType(size_t size, std::optional<std::wstring> name = std::nullopt) : m_size(size), m_name(name) {}
 
     std::wstring GetName() const
     {
-        // TODO: test when this happens, maybe return "void" makes more sense.
-        return L"unknown"s;
+        return m_name.value_or(L"unknown"s);
     }
 
     size_t GetSize() const

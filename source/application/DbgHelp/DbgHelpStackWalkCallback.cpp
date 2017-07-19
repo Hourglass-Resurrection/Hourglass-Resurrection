@@ -55,6 +55,8 @@ namespace
     {
         switch (basic_type)
         {
+        case btVoid:
+            return DbgHelpBasicType(DbgHelpBasicType::BasicType::Void);
         case btChar:
             return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char);
         case btInt:
@@ -118,10 +120,10 @@ namespace
                 if (type_info->get_type(&underlying_type) == S_OK)
                 {
                     ULONGLONG underlying_length;
-                    if (type_info->get_length(&underlying_length) == S_OK)
+                    if (underlying_type->get_length(&underlying_length) == S_OK)
                     {
                         DWORD underlying_type_tag;
-                        if (type_info->get_symTag(&underlying_type_tag) == S_OK)
+                        if (underlying_type->get_symTag(&underlying_type_tag) == S_OK)
                         {
                             // This complicated std::visit() expression converts DbgHelpType
                             // to DbgHelpBasicType or DbgHelpUnknownType.
@@ -192,6 +194,21 @@ namespace
                     // Can only be DbgHelpUnknownType in this case.
                     return DbgHelpEnumType(std::get<DbgHelpUnknownType>(underlying_type.m_type), name);
                 }
+            }
+            break;
+
+        case SymTagUDT:
+            {
+                std::optional<std::wstring> name;
+
+                BSTR name_bstr;
+                if (type_info->get_name(&name_bstr) == S_OK)
+                {
+                    name = name_bstr;
+                    SysFreeString(name_bstr);
+                }
+
+                return DbgHelpUnknownType(length, name);
             }
             break;
         }
@@ -424,6 +441,8 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
         {
             switch (t.m_type)
             {
+            case DbgHelpBasicType::BasicType::Void:
+                return std::nullopt;
             case DbgHelpBasicType::BasicType::Char:
                 return char{};
             case DbgHelpBasicType::BasicType::Int8:
