@@ -43,10 +43,10 @@ public:
     {
     public:
         DbgHelpType m_type;
-        std::optional<std::wstring> m_name;
+        std::wstring m_name;
         std::optional<ParameterValue> m_value;
 
-        Parameter(DbgHelpType type, std::optional<std::wstring> name, std::optional<ParameterValue> value)
+        Parameter(DbgHelpType type, std::wstring name, std::optional<ParameterValue> value)
             : m_type(type), m_name(name), m_value(value) {}
     };
 

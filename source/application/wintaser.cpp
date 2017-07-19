@@ -3881,20 +3881,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                                 oss << L", ";
                                                             }
 
-                                                            // Add the parameter type.
-                                                            oss << parameter.m_type.GetName() << L' ';
-
-                                                            // Add the parameter name.
-                                                            if (parameter.m_name.has_value())
-                                                            {
-                                                                oss << parameter.m_name.value();
-                                                            }
-                                                            else
-                                                            {
-                                                                oss << L"arg" << std::dec << arg_number << std::hex;
-                                                            }
-
-                                                            oss << L" = ";
+                                                            // Add the parameter type and name.
+                                                            oss << parameter.m_type.GetName() << L' ' << parameter.m_name << L" = ";
 
                                                             // Add the parameter value.
                                                             if (parameter.m_value.has_value())

@@ -274,9 +274,14 @@ std::vector<DbgHelpStackWalkCallback::Parameter> DbgHelpStackWalkCallback::GetPa
     std::vector<Parameter> parameters;
     parameters.reserve(m_param_info.size());
 
+    size_t arg_index = 1;
     for (const ParamInfo& param_info : m_param_info)
     {
-        parameters.emplace_back(param_info.m_type, param_info.m_name, GetParameterValue(param_info));
+        parameters.emplace_back(param_info.m_type,
+            param_info.m_name.value_or(L"arg"s + std::to_wstring(arg_index)),
+            GetParameterValue(param_info));
+
+        ++arg_index;
     }
 
     return parameters;
