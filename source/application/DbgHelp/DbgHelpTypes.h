@@ -42,21 +42,21 @@ public:
         case BasicType::Char:
             return L"char"s;
         case BasicType::Int8:
-            return L"int8_t"s;
+            return L"s8"s;
         case BasicType::UnsignedInt8:
-            return L"uint8_t"s;
+            return L"u8"s;
         case BasicType::Int16:
-            return L"int16_t"s;
+            return L"s16"s;
         case BasicType::UnsignedInt16:
-            return L"uint16_t"s;
+            return L"u16"s;
         case BasicType::Int32:
-            return L"int32_t"s;
+            return L"i32"s;
         case BasicType::UnsignedInt32:
-            return L"uint32_t"s;
+            return L"u32"s;
         case BasicType::Int64:
-            return L"int64_t"s;
+            return L"s64"s;
         case BasicType::UnsignedInt64:
-            return L"uint64_t"s;
+            return L"u64"s;
         case BasicType::Float:
             return L"float"s;
         case BasicType::Double:
