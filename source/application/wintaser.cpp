@@ -3930,7 +3930,15 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                             ++arg_number;
                                                         }
 
-                                                        oss << L")\n";
+                                                        oss << L')';
+
+                                                        // Add the unsure status display.
+                                                        if (data.GetUnsureStatus() > 0)
+                                                        {
+                                                            oss << L'?';
+                                                        }
+
+                                                        oss << L'\n';
 
                                                         debugprintf(L"%s", oss.str().c_str());
 

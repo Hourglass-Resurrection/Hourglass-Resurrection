@@ -30,8 +30,7 @@ public:
     std::wstring GetModuleName() override;
     std::wstring GetFunctionName() override;
     std::vector<Parameter> GetParameters() override;
-
-    DWORD GetUnsureStatus();
+    DWORD GetUnsureStatus() override;
 private:
     /*
      * TODO: Cache more?
