@@ -35,7 +35,7 @@ public:
 
     DbgHelpBasicType(BasicType type) : m_type(type) {}
 
-    const std::wstring GetName() const
+    std::wstring GetName() const
     {
         switch (m_type)
         {
@@ -64,7 +64,7 @@ public:
         }
     }
 
-    const size_t GetSize() const
+    size_t GetSize() const
     {
         switch (m_type)
         {
@@ -102,24 +102,59 @@ public:
 
     DbgHelpUnknownType(size_t size) : m_size(size) {}
 
-    const std::wstring GetName() const
+    std::wstring GetName() const
     {
         // TODO: test when this happens, maybe return "void" makes more sense.
         return L"unknown"s;
     }
 
-    const size_t GetSize() const
+    size_t GetSize() const
     {
         return m_size;
     }
 };
 
-// A pointer to either a basic type or an unknown type.
+// An enum of either a basic type or an unknown type.
+class DbgHelpEnumType
+{
+public:
+    const std::variant<DbgHelpBasicType, DbgHelpUnknownType> m_underlying_type;
+    const std::optional<std::wstring> m_name;
+
+    DbgHelpEnumType(DbgHelpBasicType underlying_type, std::optional<std::wstring> name)
+        : m_underlying_type(underlying_type), m_name(name) {}
+    DbgHelpEnumType(DbgHelpUnknownType underlying_type, std::optional<std::wstring> name)
+        : m_underlying_type(underlying_type), m_name(name) {}
+
+    std::wstring GetName() const
+    {
+        return std::visit([this](const auto& type) {
+            std::wstring rv = L"enum";
+
+            if (m_name.has_value())
+            {
+                rv += L' ' + m_name.value();
+            }
+
+            rv += L" : " + type.GetName();
+            return rv;
+        }, m_underlying_type);
+    }
+
+    size_t GetSize() const
+    {
+        return std::visit([](const auto& type) {
+            return type.GetSize();
+        }, m_underlying_type);
+    }
+};
+
+// A pointer to either a basic type, an unknown type or an enum.
 // This doesn't cleanly support multiple level deep pointers at the moment.
 class DbgHelpPointerType
 {
 public:
-    const std::variant<DbgHelpBasicType, DbgHelpUnknownType> m_underlying_type;
+    const std::variant<DbgHelpBasicType, DbgHelpUnknownType, DbgHelpEnumType> m_underlying_type;
 
     // Size of the pointer type (differs between 32-bit and 64-bit targets).
     const size_t m_size;
@@ -128,38 +163,41 @@ public:
         : m_underlying_type(underlying_type), m_size(size) {}
     DbgHelpPointerType(DbgHelpUnknownType underlying_type, size_t size)
         : m_underlying_type(underlying_type), m_size(size) {}
+    DbgHelpPointerType(DbgHelpEnumType underlying_type, size_t size)
+        : m_underlying_type(underlying_type), m_size(size) {}
 
-    const std::wstring GetName() const
+    std::wstring GetName() const
     {
         return std::visit([](const auto& type) {
             return type.GetName() + L" *"; // L" *"s somehow becomes garbage data. Can't replicate in a test program.
         }, m_underlying_type);
     }
 
-    const size_t GetSize() const
+    size_t GetSize() const
     {
         return m_size;
     }
 };
 
-// The type is either one of the basic types, an unknown type or a pointer.
+// The type is either one of the basic types, an unknown type, a pointer or an enum.
 class DbgHelpType
 {
 public:
-    const std::variant<DbgHelpBasicType, DbgHelpPointerType, DbgHelpUnknownType> m_type;
+    const std::variant<DbgHelpBasicType, DbgHelpPointerType, DbgHelpUnknownType, DbgHelpEnumType> m_type;
 
     DbgHelpType(DbgHelpBasicType type) : m_type(type) {}
     DbgHelpType(DbgHelpPointerType type) : m_type(type) {}
     DbgHelpType(DbgHelpUnknownType type) : m_type(type) {}
+    DbgHelpType(DbgHelpEnumType type) : m_type(type) {}
 
-    const std::wstring GetName() const
+    std::wstring GetName() const
     {
         return std::visit([](const auto& type) {
             return type.GetName();
         }, m_type);
     }
 
-    const size_t GetSize() const
+    size_t GetSize() const
     {
         return std::visit([](const auto& type) {
             return type.GetSize();

@@ -150,6 +150,11 @@ namespace
                                 {
                                     return DbgHelpPointerType(t, m_length);
                                 }
+
+                                DbgHelpPointerType operator()(DbgHelpEnumType t)
+                                {
+                                    return DbgHelpPointerType(t, m_length);
+                                }
                             };
 
                             return std::visit(visitor(length),
@@ -160,6 +165,31 @@ namespace
                             return DbgHelpPointerType(DbgHelpUnknownType(underlying_length), length);
                         }
                     }
+                }
+            }
+            break;
+
+        case SymTagEnum:
+            {
+                std::optional<std::wstring> name;
+
+                BSTR name_bstr;
+                if (type_info->get_name(&name_bstr) == S_OK)
+                {
+                    name = name_bstr;
+                    SysFreeString(name_bstr);
+                }
+
+                DbgHelpType underlying_type = GetDbgHelpType(length, SymTagBaseType, type_info);
+
+                if (std::holds_alternative<DbgHelpBasicType>(underlying_type.m_type))
+                {
+                    return DbgHelpEnumType(std::get<DbgHelpBasicType>(underlying_type.m_type), name);
+                }
+                else
+                {
+                    // Can only be DbgHelpUnknownType in this case.
+                    return DbgHelpEnumType(std::get<DbgHelpUnknownType>(underlying_type.m_type), name);
                 }
             }
             break;
@@ -415,6 +445,11 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
         std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpPointerType t)
         {
             return static_cast<void*>(nullptr);
+        }
+
+        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpEnumType t)
+        {
+            return std::visit(*this, t.m_underlying_type);
         }
 
         std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpUnknownType t)
