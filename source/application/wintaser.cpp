@@ -3899,6 +3899,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                             // Add the parameter value.
                                                             if (parameter.m_value.has_value())
                                                             {
+#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
                                                                 class visitor
                                                                 {
                                                                     std::wostringstream& m_oss;

@@ -126,6 +126,7 @@ namespace
                             // This complicated std::visit() expression converts DbgHelpType
                             // to DbgHelpBasicType or DbgHelpUnknownType.
 
+#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
                             // This helper type is required until VS2017.3 with constexpr ifs.
                             class visitor
                             {
@@ -409,6 +410,7 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
         return std::nullopt;
     }
 
+#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
     // First, value initialize the variant we're going to read bytes into.
     class visitor
     {
