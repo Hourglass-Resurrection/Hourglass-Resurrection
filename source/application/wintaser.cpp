@@ -3866,32 +3866,73 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 auto cb = [](IDbgHelpStackWalkCallback& data)
                                                     { 
-                                                        debugprintf(L"STACK FRAME: %s : %s(", data.GetModuleName().c_str(), data.GetFunctionName().c_str());
+                                                        std::wostringstream oss(L"STACK FRAME: ");
+                                                        oss.setf(std::ios_base::showbase);
+                                                        oss.setf(std::ios_base::hex, std::ios_base::basefield);
 
-                                                        bool first = true;
+                                                        // Add the module and function name.
+                                                        oss << data.GetModuleName() << L" : " << data.GetFunctionName() << L'(';
+
+                                                        size_t arg_number = 1;
                                                         for (const auto& parameter : data.GetParameters())
                                                         {
-                                                            std::wstring value_string = L"?";
-                                                            if (parameter.m_value.has_value())
+                                                            if (arg_number > 1)
                                                             {
-                                                                value_string = std::visit([](auto&& t) {
-                                                                    // TODO: creating an oss for every argument is slow.
-                                                                    std::wostringstream oss;
-                                                                    oss << t;
-                                                                    return oss.str();
-                                                                }, *parameter.m_value);
+                                                                oss << L", ";
                                                             }
 
-                                                            debugprintf(L"%s%s %s = %s",
-                                                                        first ? L"" : L", ",
-                                                                        parameter.m_type.GetName().c_str(),
-                                                                        parameter.m_name.value_or(L"?").c_str(),
-                                                                        value_string.c_str());
+                                                            // Add the parameter type.
+                                                            oss << parameter.m_type.GetName() << L' ';
 
-                                                            first = false;
+                                                            // Add the parameter name.
+                                                            if (parameter.m_name.has_value())
+                                                            {
+                                                                oss << parameter.m_name.value();
+                                                            }
+                                                            else
+                                                            {
+                                                                oss << L"arg" << std::dec << arg_number << std::hex;
+                                                            }
+
+                                                            oss << L" = ";
+
+                                                            // Add the parameter value.
+                                                            if (parameter.m_value.has_value())
+                                                            {
+                                                                class visitor
+                                                                {
+                                                                    std::wostringstream& m_oss;
+
+                                                                public:
+                                                                    visitor(std::wostringstream& oss) : m_oss(oss) {}
+
+                                                                    void operator()(char value)
+                                                                    {
+                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                                                                    }
+
+                                                                    // Pointers ignore showbase.
+                                                                    void operator()(void* value)
+                                                                    {
+                                                                        m_oss << L"0x" << value;
+                                                                    }
+
+                                                                    template<typename T>
+                                                                    void operator()(T value)
+                                                                    {
+                                                                        m_oss << value;
+                                                                    }
+                                                                };
+
+                                                                std::visit(visitor(oss), parameter.m_value.value());
+                                                            }
+
+                                                            ++arg_number;
                                                         }
 
-                                                        debugprintf(L")\n");
+                                                        oss << L")\n";
+
+                                                        debugprintf(L"%s", oss.str().c_str());
 
                                                         return IDbgHelpStackWalkCallback::Action::CONTINUE;
                                                     };
