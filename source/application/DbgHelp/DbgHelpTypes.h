@@ -50,7 +50,7 @@ public:
         case BasicType::UnsignedInt16:
             return L"u16"s;
         case BasicType::Int32:
-            return L"i32"s;
+            return L"s32"s;
         case BasicType::UnsignedInt32:
             return L"u32"s;
         case BasicType::Int64:
