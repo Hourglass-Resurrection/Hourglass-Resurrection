@@ -465,7 +465,7 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
     // I'm really missing all the support functions for these types like map(), filter(), etc...
     if (value.has_value())
     {
-        bool success = std::visit([&](auto& t) {
+        bool success = std::visit([this, &stackframe_base, &param_info](auto& t) {
             ULONGLONG address = stackframe_base + param_info.m_offset;
             SIZE_T read_bytes;
 
