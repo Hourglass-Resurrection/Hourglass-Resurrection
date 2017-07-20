@@ -3901,7 +3901,25 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                                 public:
                                                                     visitor(std::wostringstream& oss) : m_oss(oss) {}
 
+                                                                    /*
+                                                                     * Print chars.
+                                                                     */
                                                                     void operator()(char value)
+                                                                    {
+                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                                                                    }
+
+                                                                    void operator()(wchar_t value)
+                                                                    {
+                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                                                                    }
+
+                                                                    void operator()(char16_t value)
+                                                                    {
+                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                                                                    }
+
+                                                                    void operator()(char32_t value)
                                                                     {
                                                                         m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
                                                                     }
