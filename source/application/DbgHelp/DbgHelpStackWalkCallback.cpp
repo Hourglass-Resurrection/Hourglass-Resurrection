@@ -78,10 +78,13 @@ namespace
          * -- YaLTeR
          */
         case btWChar:
+            static_assert(sizeof(wchar_t) == 2, "time to implement handling of different wchar_t sizes");
             return DbgHelpBasicType(DbgHelpBasicType::BasicType::WideChar);
         case btChar16:
+            static_assert(sizeof(char16_t) == 2, "time to implement handling of different char16_t sizes");
             return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char16);
         case btChar32:
+            static_assert(sizeof(char32_t) == 4, "time to implement handling of different char32_t sizes");
             return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char32);
 
         case btUInt:
