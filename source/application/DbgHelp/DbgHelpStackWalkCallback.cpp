@@ -362,6 +362,12 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
                 sym_info->Release();
                 continue;
             }
+            DWORD kind;
+            if (sym_info->get_dataKind(&kind) != S_OK || kind != DataIsParam)
+            {
+                sym_info->Release();
+                continue;
+            }
             DWORD symtag;
             if (sym_info->get_symTag(&symtag) != S_OK || symtag == SymTagCallSite)
             {
