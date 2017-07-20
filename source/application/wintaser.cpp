@@ -364,7 +364,23 @@ static std::wstring TranslateDeviceName(const std::wstring& filename)
                 size_t name_len = wcslen(name);
                 if (name_len < MAX_PATH)
                 {
-                    found = (_wcsnicmp(filename.c_str(), name, name_len) == 0);
+                    /*
+                     * HACK! TODO: replace with proper code.
+                     */
+                    if (filename.find(L"\\Device\\Mup") == 0)  // HACK! - Symbolic links can't be resolved properly for \\Device\\Mup paths.
+                    {
+                        std::wstring substr = filename.substr(wcslen(L"\\Device\\Mup"));
+                        size_t substr_end = substr.find(L'\\');
+                        substr_end = substr.find(L'\\', substr_end + 1); // hostname
+                        substr_end = substr.find(L'\\', substr_end + 1); // share name
+                        substr = substr.substr(0, substr_end);
+                        found = (wcsstr(name, substr.c_str()) != nullptr);
+                        name_len = wcslen(L"\\Device\\Mup") + substr.size();
+                    }
+                    else
+                    {
+                        found = (_wcsnicmp(filename.c_str(), name, name_len) == 0);
+                    }
                     if (found)
                     {
                         WCHAR temp_file[MAX_PATH];
