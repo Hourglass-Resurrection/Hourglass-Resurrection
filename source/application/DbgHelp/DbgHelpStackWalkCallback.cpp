@@ -72,12 +72,18 @@ namespace
                 }
             }
             break;
+
         /*
-         * Treat wchar_t, char16_t and char32_t as integers of the given size as they don't have a defined size.
+         * This code assumes that lengths of the extra char types are the same as sizeof's of the respective types.
+         * -- YaLTeR
          */
         case btWChar:
+            return DbgHelpBasicType(DbgHelpBasicType::BasicType::WideChar);
         case btChar16:
+            return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char16);
         case btChar32:
+            return DbgHelpBasicType(DbgHelpBasicType::BasicType::Char32);
+
         case btUInt:
         case btULong:
             {
@@ -471,6 +477,12 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
                 return std::nullopt;
             case DbgHelpBasicType::BasicType::Char:
                 return char{};
+            case DbgHelpBasicType::BasicType::WideChar:
+                return wchar_t{};
+            case DbgHelpBasicType::BasicType::Char16:
+                return char16_t{};
+            case DbgHelpBasicType::BasicType::Char32:
+                return char32_t{};
             case DbgHelpBasicType::BasicType::Int8:
                 return int8_t{};
             case DbgHelpBasicType::BasicType::UnsignedInt8:

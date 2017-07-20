@@ -26,6 +26,9 @@ public:
     };
 
     using ParameterValue = std::variant<char,
+                                        wchar_t,
+                                        char16_t,
+                                        char32_t,
                                         int8_t,
                                         uint8_t,
                                         int16_t,

@@ -13,9 +13,6 @@ using std::string_literals::operator""s;
 
 /*
  * This struct contains all basic types which have a defined size.
- * This doesn't include types like wchar_t without a defined size,
- * or types like long double for which no basic type exists in MSVC.
- * -- YaLTeR
  */
 class DbgHelpBasicType
 {
@@ -23,6 +20,9 @@ public:
     enum class BasicType {
         Void,
         Char,
+        WideChar,
+        Char16,
+        Char32,
         Int8,
         UnsignedInt8,
         Int16,
@@ -47,6 +47,12 @@ public:
             return L"void"s;
         case BasicType::Char:
             return L"char"s;
+        case BasicType::WideChar:
+            return L"wchar_t"s;
+        case BasicType::Char16:
+            return L"char16_t"s;
+        case BasicType::Char32:
+            return L"char32_t"s;
         case BasicType::Int8:
             return L"s8"s;
         case BasicType::UnsignedInt8:
@@ -77,27 +83,33 @@ public:
         case BasicType::Void:
             return 0;
         case BasicType::Char:
-            return 1;
+            return sizeof(char);
+        case BasicType::WideChar:
+            return sizeof(wchar_t);
+        case BasicType::Char16:
+            return sizeof(char16_t);
+        case BasicType::Char32:
+            return sizeof(char32_t);
         case BasicType::Int8:
-            return 1;
+            return sizeof(int8_t);
         case BasicType::UnsignedInt8:
-            return 1;
+            return sizeof(uint8_t);
         case BasicType::Int16:
-            return 2;
+            return sizeof(int16_t);
         case BasicType::UnsignedInt16:
-            return 2;
+            return sizeof(uint16_t);
         case BasicType::Int32:
-            return 4;
+            return sizeof(int32_t);
         case BasicType::UnsignedInt32:
-            return 4;
+            return sizeof(uint32_t);
         case BasicType::Int64:
-            return 8;
+            return sizeof(int64_t);
         case BasicType::UnsignedInt64:
-            return 8;
+            return sizeof(uint64_t);
         case BasicType::Float:
-            return 4;
+            return sizeof(float);
         case BasicType::Double:
-            return 8;
+            return sizeof(double);
         }
     }
 };
