@@ -31,6 +31,7 @@ public:
     std::wstring GetFunctionName() override;
     std::vector<Parameter> GetParameters() override;
     DWORD GetUnsureStatus() override;
+
 private:
     /*
      * TODO: Cache more?

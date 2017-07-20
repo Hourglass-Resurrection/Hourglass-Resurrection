@@ -38,7 +38,9 @@ public:
                                         double,
                                         void*>;
 
-    // TODO: Is there any good way to connect m_type to the value type?
+    /*
+     * TODO: Is there any good way to connect m_type to the value type?
+     */
     class Parameter
     {
     public:

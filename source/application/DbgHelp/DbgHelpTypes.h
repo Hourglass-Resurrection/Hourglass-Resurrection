@@ -11,9 +11,12 @@
 
 using std::string_literals::operator""s;
 
-// This struct contains all basic types which have a defined size.
-// This doesn't include types like wchar_t without a defined size,
-// or types like long double for which no basic type exists in MSVC.
+/*
+ * This struct contains all basic types which have a defined size.
+ * This doesn't include types like wchar_t without a defined size,
+ * or types like long double for which no basic type exists in MSVC.
+ * -- YaLTeR
+ */
 class DbgHelpBasicType
 {
 public:
@@ -99,7 +102,9 @@ public:
     }
 };
 
-// An unknown type with a known size. Might have an available name.
+/*
+ * An unknown type with a known size. Might have an available name.
+ */
 class DbgHelpUnknownType
 {
 public:
@@ -119,7 +124,9 @@ public:
     }
 };
 
-// An enum of either a basic type or an unknown type.
+/*
+ * An enum of either a basic type or an unknown type.
+ */
 class DbgHelpEnumType
 {
 public:
@@ -154,14 +161,18 @@ public:
     }
 };
 
-// A pointer to either a basic type, an unknown type or an enum.
-// This doesn't cleanly support multiple level deep pointers at the moment.
+/*
+ * A pointer to either a basic type, an unknown type or an enum.
+ * This doesn't cleanly support multiple level deep pointers at the moment.
+ */
 class DbgHelpPointerType
 {
 public:
     const std::variant<DbgHelpBasicType, DbgHelpUnknownType, DbgHelpEnumType> m_underlying_type;
 
-    // Size of the pointer type (differs between 32-bit and 64-bit targets).
+    /*
+     * Size of the pointer type (differs between 32-bit and 64-bit targets).
+     */
     const size_t m_size;
 
     DbgHelpPointerType(DbgHelpBasicType underlying_type, size_t size)
@@ -174,7 +185,11 @@ public:
     std::wstring GetName() const
     {
         return std::visit([](const auto& type) {
-            return type.GetName() + L" *"; // L" *"s somehow becomes garbage data. Can't replicate in a test program.
+            /*
+             * L" *"s somehow becomes garbage data. Can't replicate in a test program.
+             * -- YaLTeR
+             */
+            return type.GetName() + L" *";
         }, m_underlying_type);
     }
 
@@ -184,7 +199,9 @@ public:
     }
 };
 
-// The type is either one of the basic types, an unknown type, a pointer or an enum.
+/*
+ * The type is either one of the basic types, an unknown type, a pointer or an enum.
+ */
 class DbgHelpType
 {
 public:

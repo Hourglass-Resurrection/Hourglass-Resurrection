@@ -19,8 +19,11 @@
 
 namespace
 {
-    // In these functions length MUST match the "expected" size of the basic types,
-    // otherwise they will be read incorrectly.
+    /*
+     * In these functions length MUST match the "expected" size of the basic types (see DbgHelpBasicType::GetSize()),
+     * otherwise they will be read incorrectly.
+     * -- YaLTeR
+     */
     std::optional<DbgHelpBasicType::BasicType> GetDbgHelpIntType(ULONGLONG length, bool is_signed)
     {
         switch (length)
@@ -69,7 +72,9 @@ namespace
                 }
             }
             break;
-        // Treat wchar_t, char16_t and char32_t as integers of the given size as they don't have a defined size.
+        /*
+         * Treat wchar_t, char16_t and char32_t as integers of the given size as they don't have a defined size.
+         */
         case btWChar:
         case btChar16:
         case btChar32:
@@ -94,7 +99,9 @@ namespace
             break;
         }
 
-        // Everything we don't know about / don't handle yet.
+        /*
+         * Everything we don't know about / don't handle yet.
+         */
         return std::nullopt;
     }
 
@@ -108,7 +115,9 @@ namespace
         case SymTagBaseType:
             if (type_info->get_baseType(&type) == S_OK)
             {
-                // Convert the type.
+                /*
+                 * Convert the type.
+                 */
                 std::optional<DbgHelpType> rv = GetDbgHelpBasicType(length, type);
                 return rv.value_or(default_return_value);
             }
@@ -125,11 +134,13 @@ namespace
                         DWORD underlying_type_tag;
                         if (underlying_type->get_symTag(&underlying_type_tag) == S_OK)
                         {
-                            // This complicated std::visit() expression converts DbgHelpType
-                            // to DbgHelpBasicType or DbgHelpUnknownType.
+                            /*
+                             * This complicated std::visit() expression converts DbgHelpType
+                             * to DbgHelpBasicType or DbgHelpUnknownType.
+                             * -- YaLTeR
+                             */
 
 #pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
-                            // This helper type is required until VS2017.3 with constexpr ifs.
                             class visitor
                             {
                                 size_t m_length;
@@ -144,8 +155,11 @@ namespace
 
                                 DbgHelpPointerType operator()(DbgHelpPointerType t)
                                 {
-                                    // TODO: this is here until multi-level pointers are supported.
-                                    // Treat the underlying pointer as an unsigned integer.
+                                    /*
+                                     * TODO: this is here until multi-level pointers are supported.
+                                     * Treat the underlying pointer as an unsigned integer.
+                                     * -- YaLTeR
+                                     */
                                     return DbgHelpPointerType(GetDbgHelpBasicType(t.GetSize(), btUInt).value(), m_length);
                                 }
 
@@ -191,7 +205,9 @@ namespace
                 }
                 else
                 {
-                    // Can only be DbgHelpUnknownType in this case.
+                    /*
+                     * Can only be DbgHelpUnknownType in this case.
+                     */
                     return DbgHelpEnumType(std::get<DbgHelpUnknownType>(underlying_type.m_type), name);
                 }
             }
@@ -213,7 +229,9 @@ namespace
             break;
         }
 
-        // Everything we don't know about / don't handle yet.
+        /*
+         * Everything we don't know about / don't handle yet.
+         */
         return default_return_value;
     }
 }
@@ -439,7 +457,9 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
     }
 
 #pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
-    // First, value initialize the variant we're going to read bytes into.
+    /*
+     * First, value initialize the variant we're going to read bytes into.
+     */
     class visitor
     {
     public:
@@ -486,15 +506,18 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
 
         std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpUnknownType t)
         {
-            // We don't get the values of unknown types.
+            /*
+             * We don't get the values of unknown types.
+             */
             return std::nullopt;
         }
     };
 
     std::optional<IDbgHelpStackWalkCallback::ParameterValue> value = std::visit(visitor(), param_info.m_type.m_type);
 
-    // Now, read the bytes.
-    // I'm really missing all the support functions for these types like map(), filter(), etc...
+    /*
+     * Now, read the bytes.
+     */
     if (value.has_value())
     {
         bool success = std::visit([this, &stackframe_base, &param_info](auto& t) {
