@@ -253,6 +253,9 @@
     <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h">
       <Filter>Source Files\DbgHelp</Filter>
     </ClInclude>
+    <ClInclude Include="DbgHelp\DiaEnumIterator.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wintaser.rc" />

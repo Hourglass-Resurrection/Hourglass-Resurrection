@@ -184,6 +184,7 @@
     <ClInclude Include="DbgHelp\DbgHelp.h" />
     <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h" />
     <ClInclude Include="DbgHelp\DbgHelpPrivate.h" />
+    <ClInclude Include="DbgHelp\DiaEnumIterator.h" />
     <ClInclude Include="DbgHelp\IDbgHelpStackWalkCallback.h" />
     <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h" />
     <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h" />

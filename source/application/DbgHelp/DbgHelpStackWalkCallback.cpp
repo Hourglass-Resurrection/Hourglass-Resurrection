@@ -16,6 +16,7 @@
 #include "application/logging.h"
 #include "DbgHelpPrivate.h"
 #include "DbgHelpStackWalkCallback.h"
+#include "DiaEnumIterator.h"
 
 namespace
 {
@@ -371,46 +372,36 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
         {
             return;
         }
-        IDiaSymbol* sym_info;
-        ULONG num_fetched;
-
         /*
          * This will be incremented for each found symbol, with it's size.
          */
         DWORD offset = 0;
-        for (DWORD count = 0; (enum_symbols->Next(1, &sym_info, &num_fetched) == S_OK && num_fetched == 1); count++)
+
+        for (const auto& sym_info : enum_symbols)
         {
             CComPtr<IDiaSymbol> type_info;
             if (sym_info->get_type(&type_info) != S_OK)
             {
-                /*
-                 * This will filter out most non-argument children in the function
-                 */
-                sym_info->Release();
                 continue;
             }
             DWORD kind;
             if (sym_info->get_dataKind(&kind) != S_OK || kind != DataIsParam)
             {
-                sym_info->Release();
                 continue;
             }
             DWORD symtag;
             if (sym_info->get_symTag(&symtag) != S_OK || symtag == SymTagCallSite)
             {
-                sym_info->Release();
                 continue;
             }
             DWORD typetag;
             if (type_info->get_symTag(&typetag) != S_OK)
             {
-                sym_info->Release();
                 continue;
             }
             ULONGLONG length = 0;
             if (type_info->get_length(&length) != S_OK)
             {
-                sym_info->Release();
                 continue;
             }
 
@@ -438,7 +429,6 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
             {
                 SysFreeString(name);
             }
-            sym_info->Release();
         }
     }
     /*ULONGLONG stackframe_base = 0;

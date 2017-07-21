@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -13,6 +13,7 @@
 
 #include "../logging.h"
 #include "DbgHelpPrivate.h"
+#include "DiaEnumIterator.h"
 
 #include "DbgHelpStackWalkHelper.h"
 
@@ -25,18 +26,15 @@ namespace
     CComPtr<T> GetDiaTable(CComPtr<IDiaSession> session)
     {
         CComPtr<IDiaEnumTables> enum_tables;
-        IDiaTable* table;
         CComPtr<T> desired_table;
-        ULONG num_tables_found;
         if (session->getEnumTables(&enum_tables) != S_OK)
         {
             return nullptr;
         }
 
-        while (enum_tables->Next(1, &table, &num_tables_found) == S_OK && num_tables_found == 1)
+        for (const auto& table : enum_tables)
         {
             HRESULT rv = table->QueryInterface(__uuidof(T), reinterpret_cast<LPVOID*>(&desired_table));
-            table->Release();
             if (rv == S_OK)
             {
                 break;
