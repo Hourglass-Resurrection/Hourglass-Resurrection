@@ -9,3 +9,4 @@ build/
 *.VC.opendb
 *.VC.db
 ipch/
+.vs/
