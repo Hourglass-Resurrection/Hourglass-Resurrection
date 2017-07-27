@@ -104,9 +104,6 @@
     <ClCompile Include="AVIDumping\WaveFormat.cpp">
       <Filter>Source Files\AVIDumping</Filter>
     </ClCompile>
-    <ClCompile Include="utils\file\Path.cpp">
-      <Filter>Source Files\utils\file</Filter>
-    </ClCompile>
     <ClCompile Include="utils\file\FileDialog.cpp">
       <Filter>Source Files\utils\file</Filter>
     </ClCompile>

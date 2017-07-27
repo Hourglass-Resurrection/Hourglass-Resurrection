@@ -141,7 +141,6 @@
     <ClCompile Include="AVIDumping\WaitableBool.cpp" />
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
     <ClCompile Include="utils\file\FileDialog.cpp" />
-    <ClCompile Include="utils\file\Path.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />

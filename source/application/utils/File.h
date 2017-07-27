@@ -30,8 +30,5 @@ namespace Utils
         std::string GetFileNameSave(
             const std::string& location,
             const std::vector<FileFilter>& file_types);
-
-        std::string GetFileName(std::string& path);
-        std::string GetDirectoryName(std::string& path);
     }
 }
