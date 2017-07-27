@@ -60,6 +60,11 @@ namespace DbgHelp
         s_private_map.emplace(process_id, std::make_unique<DbgHelpPrivate>(process));
     }
 
+    void RemoveProcess(DWORD process_id)
+    {
+        s_private_map.erase(process_id);
+    }
+
     void LoadSymbols(DWORD process_id, HANDLE module_file, LPCWSTR module_name, DWORD64 module_base)
     {
         s_private_map.at(process_id)->LoadSymbols(module_base, module_name, s_symbol_paths);

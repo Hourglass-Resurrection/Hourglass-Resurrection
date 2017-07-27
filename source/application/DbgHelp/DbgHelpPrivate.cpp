@@ -28,23 +28,11 @@
 
 DbgHelpPrivate::DbgHelpPrivate(HANDLE process) :
     m_process(process),
-    m_platform_set(false),
-    m_should_uninitialize(true)
+    m_platform_set(false)
 {
-    HRESULT rv = CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_SPEED_OVER_MEMORY);
-    if (rv != S_OK && rv != S_FALSE)
-    {
-        m_should_uninitialize = false;
-    }
 }
 
-DbgHelpPrivate::~DbgHelpPrivate()
-{
-    if (m_should_uninitialize)
-    {
-        CoUninitialize();
-    }
-}
+DbgHelpPrivate::~DbgHelpPrivate() = default;
 
 bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
 {

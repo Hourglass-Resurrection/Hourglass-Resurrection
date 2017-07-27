@@ -54,5 +54,4 @@ private:
      */
     CV_CPU_TYPE_e m_platform;
     bool m_platform_set;
-    bool m_should_uninitialize;
 };

@@ -18,6 +18,8 @@ namespace DbgHelp
     void Init();
 
     void AddProcess(HANDLE process, DWORD process_id);
+    void RemoveProcess(DWORD process_id);
+
     void LoadSymbols(DWORD process_id, HANDLE module_file, LPCWSTR module_name, DWORD64 module_base);
 
     using StackWalkCallback = std::function<IDbgHelpStackWalkCallback::Action(IDbgHelpStackWalkCallback&)>;

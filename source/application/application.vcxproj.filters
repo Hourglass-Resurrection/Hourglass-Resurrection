@@ -131,6 +131,9 @@
     <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp">
       <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\COM.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomDLGs.h">

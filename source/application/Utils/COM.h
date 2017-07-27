@@ -27,5 +27,18 @@ namespace Utils
             }
             return result;
         }
+
+        class COMInstance
+        {
+        public:
+            static void Init();
+        private:
+            COMInstance() throw();
+            ~COMInstance();
+            COMInstance(const COMInstance&) = delete;
+            void operator=(const COMInstance&) = delete;
+
+            static bool ms_initialized;
+        };
     }
 }

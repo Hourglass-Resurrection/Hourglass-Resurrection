@@ -60,6 +60,9 @@ using namespace Config;
 
 #include "AVIDumping\AVIDumper.h"
 
+#include "DbgHelp/DbgHelp.h"
+#include "Utils/COM.h"
+
 #include "external/ddraw.h"
 #include "shared/logcat.h"
 #include "shared/ipc.h"
@@ -71,8 +74,6 @@ using namespace Config;
 #include "DirLocks.h"
 #include "ExeFileOperations.h"
 #include "Utils/File.h"
-
-#include "DbgHelp/DbgHelp.h"
 
 #pragma warning(disable:4995)
 
@@ -3875,7 +3876,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     switch (ipc_frame.m_command)
                                     {
                                     case IPC::Command::CMD_DEBUG_MESSAGE:
-                                        debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetMessage());
+                                        debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetDebugMessage());
                                         {
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
@@ -4688,6 +4689,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						SaveMovie(movie_filename);
 					}
 
+                    DbgHelp::RemoveProcess(de.dwProcessId);
+
 					//UnregisterModuleInfo(de.u.ExitProcess.lpBaseOfImage, hProcess, filename);
 
 					//ContinueDebugEvent(de.dwProcessId, 0, DBG_CONTINUE); //DBG_TERMINATE_PROCESS
@@ -5084,6 +5087,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	InitRamSearch();
 
 	Load_Config();
+
+    Utils::COM::COMInstance::Init();
 
     DbgHelp::Init();
 

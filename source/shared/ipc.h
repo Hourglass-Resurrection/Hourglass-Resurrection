@@ -128,11 +128,6 @@ struct TrustedRangeInfos
  * Communication interface for the DLL, all communication is initiated by the DLL.
  */
 
-/*
- * Undefine some WinAPI names that get in the way.
- */
-#undef GetMessage
-
 namespace IPC
 {
     enum class Command : DWORD64
@@ -339,7 +334,7 @@ namespace IPC
         {
             m_message[0] = L'\0';
         }
-        LPCWSTR GetMessage() const
+        LPCWSTR GetDebugMessage() const
         {
             return m_message;
         }
