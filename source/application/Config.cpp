@@ -1,3 +1,9 @@
+/*
+ * Copyright(c) 2015- Hourglass Resurrection Team
+ * Hourglass Resurrection is licensed under GPL v2.
+ * Refer to the file COPYING.txt in the project root.
+ */
+
 #include "Config.h"
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
@@ -6,6 +12,7 @@
 #include "ramwatch.h"
 #include "logging.h"
 #include "shared/version.h"
+#include "utils/File.h"
 
 namespace Config{
 
@@ -156,34 +163,23 @@ namespace Config{
 	}
 
 
-	int Save_As_Config(HWND hWnd, HINSTANCE hInst)
+	int Save_As_Config()
 	{
-		char Name[2048];
-		OPENFILENAME ofn;
+        std::string config_file_name = Utils::File::GetFileNameSave(thisprocessPath, {
+            Utils::File::FileFilter::Config,
+            Utils::File::FileFilter::AllFiles,
+        });
 
-		SetCurrentDirectoryA(thisprocessPath);
-
-		strcpy(&Name[0], defaultConfigFilename);
-		memset(&ofn, 0, sizeof(OPENFILENAME));
-
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = hWnd;
-		ofn.hInstance = hInst;
-		ofn.lpstrFile = Name;
-		ofn.nMaxFile = 2047;
-		ofn.lpstrFilter = "Config Files\0*.cfg\0All Files\0*.*\0\0";
-		ofn.nFilterIndex = 1;
-		ofn.lpstrInitialDir = thisprocessPath;
-		ofn.lpstrDefExt = "cfg";
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-		if(GetSaveFileName(&ofn))
-		{
-			Save_Config(Name);
-			debugprintf(L"config saved in \"%S\".\n", Name);
-			return 1;
-		}
-		else return 0;
+        if (config_file_name.empty())
+        {
+            return 0;
+        }
+        else
+        {
+            Save_Config(config_file_name.c_str());
+            debugprintf(L"config saved in \"%S\".\n", config_file_name);
+            return 1;
+        }
 	}
 
 
@@ -245,32 +241,21 @@ namespace Config{
 	}
 
 
-	int Load_As_Config(HWND hWnd, HINSTANCE hInst)
-	{
-		char Name[2048];
-		OPENFILENAME ofn;
+    int Load_As_Config()
+    {
+        std::string config_file_name = Utils::File::GetFileNameOpen(thisprocessPath, {
+            Utils::File::FileFilter::Config,
+            Utils::File::FileFilter::AllFiles,
+        });
 
-		SetCurrentDirectoryA(thisprocessPath);
-
-		strcpy(&Name[0], defaultConfigFilename);
-		memset(&ofn, 0, sizeof(OPENFILENAME));
-
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = hWnd;
-		ofn.hInstance = hInst;
-		ofn.lpstrFile = Name;
-		ofn.nMaxFile = 2047;
-		ofn.lpstrFilter = "Config Files\0*.cfg\0All Files\0*.*\0\0";
-		ofn.nFilterIndex = 1;
-		ofn.lpstrInitialDir = thisprocessPath;
-		ofn.lpstrDefExt = "cfg";
-		ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-
-		if(GetOpenFileName(&ofn))
-		{
-			Load_Config(Name);
-			return 1;
-		}
-		else return 0;
-	}
+        if (config_file_name.empty())
+        {
+            return 0;
+        }
+        else
+        {
+            Load_Config(config_file_name.c_str());
+            return 1;
+        }
+    }
 }

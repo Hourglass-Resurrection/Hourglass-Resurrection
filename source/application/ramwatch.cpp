@@ -3,6 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
+
 // Windows Header Files:
 #include <windows.h>
 #include "resource.h"
@@ -19,6 +20,8 @@
 #pragma comment(lib, "shell32.lib")
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
+
+#include "utils\File.h"
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
@@ -444,64 +447,24 @@ void OpenRWRecentFile(int memwRFileNumber)
 
 int Change_File_L(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
-	OPENFILENAME ofn;
+    std::string file_name = Utils::File::GetFileNameOpen(Config::thisprocessPath, {
+        Utils::File::FileFilter::WatchList,
+        Utils::File::FileFilter::AllFiles
+    });
 
-	SetCurrentDirectory(Config::thisprocessPath);
-
-	if(!strcmp(Dest, ""))
-	{
-		strcpy(Dest, "default.");
-		strcat(Dest, Ext);
-	}
-
-	memset(&ofn, 0, sizeof(OPENFILENAME));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hwnd;
-	ofn.hInstance = hInst;
-	ofn.lpstrFile = Dest;
-	ofn.nMaxFile = 2047;
-	ofn.lpstrFilter = Filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = Dir;
-	ofn.lpstrTitle = Titre;
-	ofn.lpstrDefExt = Ext;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-
-	if(GetOpenFileName(&ofn)) return 1;
-
-	return 0;
+    file_name.copy(Dest, file_name.length());
+    return file_name.empty() ? 0 : 1;
 }
 
 int Change_File_S(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
-	OPENFILENAME ofn;
+    std::string file_name = Utils::File::GetFileNameSave(Config::thisprocessPath, {
+        Utils::File::FileFilter::WatchList,
+        Utils::File::FileFilter::AllFiles
+    });
 
-	SetCurrentDirectory(Config::thisprocessPath);
-
-	if(!strcmp(Dest, ""))
-	{
-		strcpy(Dest, "default.");
-		strcat(Dest, Ext);
-	}
-
-	memset(&ofn, 0, sizeof(OPENFILENAME));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hwnd;
-	ofn.hInstance = hInst;
-	ofn.lpstrFile = Dest;
-	ofn.nMaxFile = 2047;
-	ofn.lpstrFilter = Filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = Dir;
-	ofn.lpstrTitle = Titre;
-	ofn.lpstrDefExt = Ext;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	if(GetSaveFileName(&ofn)) return 1;
-
-	return 0;
+    file_name.copy(Dest, file_name.length());
+    return file_name.empty() ? 0 : 1;
 }
 
 bool Save_Watches()

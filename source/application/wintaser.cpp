@@ -68,6 +68,7 @@ using namespace Config;
 #include "CPUinfo.h"
 #include "DirLocks.h"
 #include "ExeFileOperations.h"
+#include "Utils/File.h"
 
 
 #pragma warning(disable:4995)
@@ -1746,34 +1747,32 @@ void LoadGameStatePhase2(int slot)
 
 bool CreateAVIFile()
 {
-	char filename[MAX_PATH+1];
-	filename[0] = '\0'; // extra safety
-	char title[32];
-	if(localTASflags.aviMode & 1)
-		strcpy(title, "Save AVI File");
-	else
-		strcpy(title, "Save AVI File (audio only)");
-	OPENFILENAME ofn = {sizeof(OPENFILENAME)};
-	ofn.hwndOwner = hWnd;
-	ofn.hInstance = hInst;
-	ofn.lpstrFilter = "AVI file\0*.avi\0All Files\0*.*\0\0";
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrInitialDir = thisprocessPath;
-	ofn.lpstrTitle = title;
-	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt = "avi";
-	if(!GetSaveFileName(&ofn))
-		return false;
+    std::string avi_file_name = Utils::File::GetFileNameSave(thisprocessPath, {
+        Utils::File::FileFilter::AVI,
+        Utils::File::FileFilter::AllFiles
+    });
 
-	// Attempt to inform the AVI dumper about the path to dump to
-	bool success = SetAVIFilename(filename);
-	if(!success) return false;
-	// If hGameProcess has a value at this point and file creation was successful,
-	// register hGameProcess with the AVI Dumper now so that we can start capture immediately
-	if(hGameProcess) SetCaptureProcess(hGameProcess);
-	return true;
+    if (avi_file_name.empty())
+    {
+        return false;
+    }
+
+    // Attempt to inform the AVI dumper about the path to dump to
+    bool success = SetAVIFilename(avi_file_name.c_str());
+
+    if (!success)
+    {
+        return false;
+    }
+
+    // If hGameProcess has a value at this point and file creation was successful,
+    // register hGameProcess with the AVI Dumper now so that we can start capture immediately
+    if (hGameProcess)
+    {
+        SetCaptureProcess(hGameProcess);
+    }
+
+    return true;
 }
 
 void SendCommand()
@@ -6227,10 +6226,10 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				//	Save_Config();
 				//	break;
 				case ID_FILES_SAVECONFIGAS:
-					Save_As_Config(hDlg, hInst);
+					Save_As_Config();
 					break;
 				case ID_FILES_LOADCONFIGFROM:
-					Load_As_Config(hDlg, hInst);
+					Load_As_Config();
 					break;
 
 				//case IDC_AVIVIDEO:
@@ -6438,27 +6437,19 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 				case ID_FILES_OPENEXE:
 				case IDC_BUTTON_GAMEBROWSE:
-					{
-						char filename [MAX_PATH+1] = {0};
-						char directory [MAX_PATH+1] = {0};
-						SplitToValidPath(exefilename, thisprocessPath, filename, directory);
+                    {
+                        std::string exe_file_name = Utils::File::GetFileNameOpen(thisprocessPath, {
+                            Utils::File::FileFilter::Executable,
+                            Utils::File::FileFilter::AllFiles
+                        });
 
-						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
-						ofn.hwndOwner = hWnd;
-						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Executable Program (*.exe)\0*.exe\0All Files\0*.*\0\0";
-						ofn.nFilterIndex = 1;
-						ofn.lpstrFile = filename;
-						ofn.nMaxFile = MAX_PATH;
-						ofn.lpstrInitialDir = directory;
-						ofn.lpstrTitle = "Choose Executable";
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-						ofn.lpstrDefExt = "exe";
-						if(GetOpenFileName(&ofn))
-						{
-							SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), filename);
-						}
-						Save_Config();
+                        if (!exe_file_name.empty())
+                        {
+                            HWND dialog_item = GetDlgItem(hDlg, IDC_TEXT_EXE);
+                            SetWindowTextAndScrollRight(dialog_item, exe_file_name.c_str());
+                        }
+
+                        Save_Config();
 					}
 					break;
 				case ID_FILES_RECORDMOV:
@@ -6468,10 +6459,6 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 				//case ID_FILES_RESUMEMOVAS: // TODO: Eliminate this case
 						Save_Config();
-						char filename [MAX_PATH+1] = {0};
-						char directory [MAX_PATH+1] = {0};
-						SplitToValidPath(moviefilename, thisprocessPath, filename, directory);
-						NormalizePath(moviefilename, moviefilename);
 
 						bool isSave = (command == ID_FILES_RECORDMOV/* || command == ID_FILES_RESUMEMOVAS*/);
 
@@ -6482,25 +6469,32 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							tasFlagsDirty = true;
 						}
 
-						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
-						ofn.hwndOwner = hWnd;
-						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Windows TAS Files (*.hgr)\0*.hgr\0All Files\0*.*\0\0";
-						ofn.nFilterIndex = 1;
-						ofn.lpstrFile = filename;
-						ofn.nMaxFile = MAX_PATH;
-						ofn.lpstrInitialDir = directory;
-						ofn.lpstrTitle = isSave ? "Create Movie File" : "Choose Movie File";
-						ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | (isSave ? (OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN) : 0);
-						ofn.lpstrDefExt = "hgr";
-						if(isSave ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn))
-						{
-							/*if(started && (!localTASflags.playback || nextLoadRecords))
-							{
-								SaveMovie();
-							}*/
+                        std::string movie_file_name;
 
-							SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), filename);
+                        if (isSave)
+                        {
+                            movie_file_name = Utils::File::GetFileNameOpen(thisprocessPath, {
+                                Utils::File::FileFilter::HourglassMovie,
+                                Utils::File::FileFilter::AllFiles
+                            });
+                        }
+                        else
+                        {
+                            movie_file_name = Utils::File::GetFileNameSave(thisprocessPath, {
+                                Utils::File::FileFilter::HourglassMovie,
+                                Utils::File::FileFilter::AllFiles
+                            });
+                        }
+
+                        if (!movie_file_name.empty())
+                        {
+                            /*if(started && (!localTASflags.playback || nextLoadRecords))
+                            {
+                                SaveMovie();
+                            }*/
+
+                            HWND dialog_item = GetDlgItem(hDlg, IDC_TEXT_MOVIE);
+                            SetWindowTextAndScrollRight(dialog_item, movie_file_name.c_str());
 
 							if(movieFileWritable && exeFileExists)
 							{
@@ -6537,51 +6531,40 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						UpdateFrameCountDisplay(movie.currentFrame, 1);
 					}
 					break;
-				case ID_FILES_BACKUPMOVIE:
-					{
-						bool wasPaused = paused;
-						if(!paused) //If we're not paused, pause
-						{
-							paused = true;
-							tasFlagsDirty = true;
-						}
+                case ID_FILES_BACKUPMOVIE:
+                    {
+                        bool wasPaused = paused;
 
-						// Always start with the name of the movie currently recording.
-						// And in the same directory as the movie currently recording if possible
-						// otherwise we start with the default dir.
-						char filename[MAX_PATH+1] = {'\0'};
-						char directory[MAX_PATH+1] = {'\0'};
-						SplitToValidPath(moviefilename, thisprocessPath, filename, directory);
-						//strcpy(filename, GetFilenameWithoutPath(moviefilename));
-						//strcpy(directory, thisprocessPath);
+                        // If we're not paused, pause
+                        if (!paused)
+                        {
+                            paused = true;
+                            tasFlagsDirty = true;
+                        }
 
-						OPENFILENAME ofn = {sizeof(OPENFILENAME)};
-						ofn.hwndOwner = hWnd;
-						ofn.hInstance = hInst;
-						ofn.lpstrFilter = "Windows TAS Files (*.hgr)\0*.hgr\0All Files\0*.*\0\0";
-						ofn.nFilterIndex = 1;
-						ofn.lpstrFile = filename;
-						ofn.nMaxFile = MAX_PATH;
-						ofn.lpstrInitialDir = directory;
-						ofn.lpstrTitle = "Save Backup Movie";
-						ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOREADONLYRETURN;
-						ofn.lpstrDefExt = "hgr";
-						if(GetSaveFileName(&ofn))
-						{
-							// This is really fucking ugly, needs improving
-							//char oldmoviefilename[MAX_PATH+1];
-							//strcpy(oldmoviefilename, moviefilename);
-							//strcpy(moviefilename, filename);
-							SaveMovie(filename);
-							//strcpy(moviefilename, oldmoviefilename);
-						}
-						if(paused != wasPaused) // If we had to pause earlier, unpause now.
-						{
-							paused = wasPaused;
-							tasFlagsDirty = true;
-						}
-					}
-					break;
+                        // Always start with the name of the movie currently recording.
+                        std::string movie_file_name = Utils::File::GetFileNameSave(moviefilename, {
+                            Utils::File::FileFilter::HourglassMovie,
+                            Utils::File::FileFilter::AllFiles
+                        });
+
+                        if (!movie_file_name.empty())
+                        {
+                            // As SaveMovie actually modifies the contents of the passed string, we
+                            // can't just pass the const .c_str() result
+                            char c_file_name[FILENAME_MAX];
+                            movie_file_name.copy(c_file_name, movie_file_name.length());
+                            SaveMovie(c_file_name);
+                        }
+
+                        // If we had to pause earlier, unpause now.
+                        if (paused != wasPaused)
+                        {
+                            paused = wasPaused;
+                            tasFlagsDirty = true;
+                        }
+                    }
+                    break;
 //				case ID_FILES_SPLICE:
 //					if(!SpliceHWnd)
 //						SpliceHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_SPLICE), hWnd, (DLGPROC) SpliceProc);
