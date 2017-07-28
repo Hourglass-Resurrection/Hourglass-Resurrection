@@ -841,7 +841,7 @@ void CloseAVI()
 	mainMenuNeedsRebuilding = true;
 }
 
-bool SetAVIFilename(char* filename)
+bool SetAVIFilename(const char* filename)
 {
 	if (strlen(filename) > MAX_PATH + 1) // filename too long
 	{
