@@ -1,3 +1,9 @@
+/*
+ * Copyright(c) 2015- Hourglass Resurrection Team
+ * Hourglass Resurrection is licensed under GPL v2.
+ * Refer to the file COPYING.txt in the project root.
+ */
+
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
@@ -84,11 +90,10 @@ namespace Config{ // A namespace is maybe not the best solution...
      */
 	int Save_Config(const char* filename=0);
 
-    /* Saves in the default config file the window and the program's instance.
-     * @param hWnd HWND (Handles to a Window) data
-     * @param hInst HINSTANCE data
+    /*
+     * Saves in the default config file the window and the program's instance.
      */
-	int Save_As_Config(HWND hWnd, HINSTANCE hInst);
+    int Save_As_Config();
 
     /* Loads the configuration.
      * If no filename is given, the default configuration file is used.
@@ -97,10 +102,8 @@ namespace Config{ // A namespace is maybe not the best solution...
      */
 	int Load_Config(const char* filename=0);
 
-    /* Loads from the default config file the window and the program's instance.
-     * @param hWnd HWND (Handles to a Window) data
-     * @param hInst HINSTANCE data
+    /* 
+     * Loads from the default config file the window and the program's instance.
      */
-	int Load_As_Config(HWND hWnd, HINSTANCE hInst);
-
+    int Load_As_Config();
 }

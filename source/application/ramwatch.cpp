@@ -1,8 +1,9 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0500
+
 // Windows Header Files:
 #include <windows.h>
 #include "resource.h"
@@ -19,6 +20,8 @@
 #pragma comment(lib, "shell32.lib")
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
+
+#include "utils\File.h"
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
@@ -442,66 +445,26 @@ void OpenRWRecentFile(int memwRFileNumber)
 	return;
 }
 
-int Change_File_L(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
+int Change_File_L(char *Dest)
 {
-	OPENFILENAME ofn;
+    std::string file_name = Utils::File::GetFileNameOpen(Config::thisprocessPath, {
+        Utils::File::FileFilter::WatchList,
+        Utils::File::FileFilter::AllFiles
+    });
 
-	SetCurrentDirectory(Config::thisprocessPath);
-
-	if(!strcmp(Dest, ""))
-	{
-		strcpy(Dest, "default.");
-		strcat(Dest, Ext);
-	}
-
-	memset(&ofn, 0, sizeof(OPENFILENAME));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hwnd;
-	ofn.hInstance = hInst;
-	ofn.lpstrFile = Dest;
-	ofn.nMaxFile = 2047;
-	ofn.lpstrFilter = Filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = Dir;
-	ofn.lpstrTitle = Titre;
-	ofn.lpstrDefExt = Ext;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-
-	if(GetOpenFileName(&ofn)) return 1;
-
-	return 0;
+    file_name.copy(Dest, file_name.length());
+    return file_name.empty() ? 0 : 1;
 }
 
-int Change_File_S(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
+int Change_File_S(char *Dest)
 {
-	OPENFILENAME ofn;
+    std::string file_name = Utils::File::GetFileNameSave(Config::thisprocessPath, {
+        Utils::File::FileFilter::WatchList,
+        Utils::File::FileFilter::AllFiles
+    });
 
-	SetCurrentDirectory(Config::thisprocessPath);
-
-	if(!strcmp(Dest, ""))
-	{
-		strcpy(Dest, "default.");
-		strcat(Dest, Ext);
-	}
-
-	memset(&ofn, 0, sizeof(OPENFILENAME));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hwnd;
-	ofn.hInstance = hInst;
-	ofn.lpstrFile = Dest;
-	ofn.nMaxFile = 2047;
-	ofn.lpstrFilter = Filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = Dir;
-	ofn.lpstrTitle = Titre;
-	ofn.lpstrDefExt = Ext;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	if(GetSaveFileName(&ofn)) return 1;
-
-	return 0;
+    file_name.copy(Dest, file_name.length());
+    return file_name.empty() ? 0 : 1;
 }
 
 bool Save_Watches()
@@ -511,7 +474,7 @@ bool Save_Watches()
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp_RW,".wch");
-	if(Change_File_S(Str_Tmp_RW, Config::thisprocessPath, "Save Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_S(Str_Tmp_RW))
 	{
 		FILE *WatchFile = fopen(Str_Tmp_RW,"r+b");
 		if(!WatchFile) WatchFile = fopen(Str_Tmp_RW,"w+b");
@@ -631,7 +594,7 @@ bool Load_Watches(bool clear)
 	char* dot = strrchr(Str_Tmp_RW, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp_RW,".wch");
-	if(Change_File_L(Str_Tmp_RW, Config::thisprocessPath, "Load Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_L(Str_Tmp_RW))
 	{
 		return Load_Watches(clear, Str_Tmp_RW);
 	}
