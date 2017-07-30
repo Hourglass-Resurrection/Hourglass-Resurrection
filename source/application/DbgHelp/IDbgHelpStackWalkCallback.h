@@ -57,6 +57,7 @@ public:
 
     virtual ~IDbgHelpStackWalkCallback() = default;
 
+    virtual ULONGLONG GetProgramCounter() = 0;
     virtual std::wstring GetModuleName() = 0;
     virtual std::wstring GetFunctionName() = 0;
     virtual std::vector<Parameter> GetParameters() = 0;

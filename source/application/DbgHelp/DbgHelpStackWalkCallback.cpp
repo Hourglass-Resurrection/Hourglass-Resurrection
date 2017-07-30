@@ -7,7 +7,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include <sstream>
 #include <string>
 
 #include <atlbase.h>
@@ -255,20 +254,23 @@ DbgHelpStackWalkCallback::DbgHelpStackWalkCallback(HANDLE process, IDiaStackFram
 {
 }
 
-// TODO: Split module name and PC
+ULONGLONG DbgHelpStackWalkCallback::GetProgramCounter()
+{
+    ULONGLONG pc;
+    m_frame->get_registerValue(CV_REG_EIP, &pc);
+    return pc;
+}
+
 std::wstring DbgHelpStackWalkCallback::GetModuleName()
 {
-    std::wstringstream name;
     if (m_mod_info == nullptr)
     {
-        name << L"?";
+        return L"?";
     }
     else
     {
-        name << m_mod_info->m_module_name;
+        return m_mod_info->m_module_name;
     }
-    name << L"!0x" << std::hex << GetProgramCounter();
-    return name.str();
 }
 
 std::wstring DbgHelpStackWalkCallback::GetFunctionName()
@@ -339,12 +341,6 @@ CComPtr<IDiaSymbol> DbgHelpStackWalkCallback::GetFunctionSymbol()
     return symbol;
 }
 
-ULONGLONG DbgHelpStackWalkCallback::GetProgramCounter()
-{
-    ULONGLONG pc;
-    m_frame->get_registerValue(CV_REG_EIP, &pc);
-    return pc;
-}
 
 void DbgHelpStackWalkCallback::EnumerateParameters()
 {
@@ -422,8 +418,6 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
                                                      ? std::make_optional(std::wstring(name)) : std::nullopt,
                                                  sym_info, type_info, offset });
             offset += static_cast<DWORD>(length);
-            // Temp debug stuff
-            //debugprintf(L"Found argument %s with type tag %u\n", name, typetag);
 
             if (name != nullptr)
             {
@@ -431,18 +425,6 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
             }
         }
     }
-    /*ULONGLONG stackframe_base = 0;
-    m_frame->get_base(&stackframe_base);
-    for (DWORD i = 0; i < 30; i++)
-    {
-        ULONGLONG address = stackframe_base + (i * 4);
-        DWORD value;
-        SIZE_T read_bytes;
-        if (ReadProcessMemory(m_process, reinterpret_cast<LPVOID>(address), &value, sizeof(value), &read_bytes) == TRUE)
-        {
-            debugprintf(L"%#llX: %#X\n", address, value);
-        }
-    }*/
     m_params_enumerated = true;
 }
 

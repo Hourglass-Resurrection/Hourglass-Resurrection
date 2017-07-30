@@ -3890,7 +3890,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                         /*
                                                          * Add the module and function name.
                                                          */
-                                                        oss << data.GetModuleName() << L" : " << data.GetFunctionName() << L'(';
+                                                        oss << data.GetModuleName() << L"!0x" << data.GetProgramCounter();
+                                                        oss << L" : " << data.GetFunctionName() << L'(';
 
                                                         size_t arg_number = 1;
                                                         for (const auto& parameter : data.GetParameters())

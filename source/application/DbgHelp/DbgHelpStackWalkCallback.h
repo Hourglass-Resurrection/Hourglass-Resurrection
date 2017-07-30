@@ -27,6 +27,7 @@ class DbgHelpStackWalkCallback : public IDbgHelpStackWalkCallback
 public:
     DbgHelpStackWalkCallback(HANDLE process, IDiaStackFrame* frame, const DbgHelpPrivate::ModuleData* mod_info);
 
+    ULONGLONG GetProgramCounter() override;
     std::wstring GetModuleName() override;
     std::wstring GetFunctionName() override;
     std::vector<Parameter> GetParameters() override;
@@ -51,7 +52,6 @@ private:
      * Always validate data before calling them.
      */
     CComPtr<IDiaSymbol> GetFunctionSymbol();
-    ULONGLONG GetProgramCounter();
     void EnumerateParameters();
     std::optional<ParameterValue> GetParameterValue(const ParamInfo& param_info);
 
@@ -60,7 +60,6 @@ private:
     const DbgHelpPrivate::ModuleData* m_mod_info;
 
     DWORD m_unsure;
-    CV_call_e m_call_conv; // TODO: own enum
     std::vector<ParamInfo> m_param_info;
 
     bool m_params_enumerated;

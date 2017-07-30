@@ -16,26 +16,17 @@ class DbgHelpLoadCallback : public IDiaLoadCallback
     /*
      * From IUnknown, overload these to turn this class into a regular C++ object.
      */
-    HRESULT STDMETHODCALLTYPE QueryInterface(
-        /* [in] */ REFIID riid,
-        /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject);
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject);
 
     ULONG STDMETHODCALLTYPE AddRef();
 
     ULONG STDMETHODCALLTYPE Release();
 
-    HRESULT STDMETHODCALLTYPE NotifyDebugDir(
-        /* [in] */ BOOL executable,
-        /* [in] */ DWORD data_length,
-        /* [size_is][in] */ BYTE *data);
+    HRESULT STDMETHODCALLTYPE NotifyDebugDir(BOOL executable, DWORD data_length, BYTE *data);
 
-    HRESULT STDMETHODCALLTYPE NotifyOpenDBG(
-        /* [in] */ LPCOLESTR dbg_path,
-        /* [in] */ HRESULT result_code);
+    HRESULT STDMETHODCALLTYPE NotifyOpenDBG(LPCOLESTR dbg_path, HRESULT result_code);
 
-    HRESULT STDMETHODCALLTYPE NotifyOpenPDB(
-        /* [in] */ LPCOLESTR pdb_path,
-        /* [in] */ HRESULT result_code);
+    HRESULT STDMETHODCALLTYPE NotifyOpenPDB(LPCOLESTR pdb_path, HRESULT result_code);
 
     HRESULT STDMETHODCALLTYPE RestrictRegistryAccess();
 
