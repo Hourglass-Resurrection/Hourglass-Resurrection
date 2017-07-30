@@ -25,7 +25,6 @@
 //#include "svnrev.h" // defines SRCVERSION number
 #include "shared/version.h"
 #include "Resource.h"
-#include "trace/ExtendedTrace.h"
 #include "InjectDLL.h"
 #include "CustomDLGs.h"
 #include "Movie.h"
@@ -1003,15 +1002,14 @@ void CheckSrcDllVersion(DWORD version)
 static char localCommandSlot_COPY[256];
 #endif
 
-void SuggestThreadName(DWORD threadId, HANDLE hProcess, IPC::SuggestThreadName& thread_name)
+void SuggestThreadName(DWORD thread_id, DWORD process_id, IPC::SuggestThreadName& thread_name)
 {
     thread_name.SetThreadName("unknown");
 	// print the callstack of the exception thread
-	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(threadId);
+	std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(thread_id);
 	if(found != hGameThreads.end())
 	{
-		HANDLE hThread = found->second;
-		THREADSTACKTRACE(hThread, hProcess); // FIXME
+        DbgHelp::StackWalk(process_id, found->second.handle, PrintStackTrace);
 	}
 }
 
@@ -3275,14 +3273,6 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 
 	//CloseThreadHandles(threadHandleToClose, hProcess);
 
-	EXTENDEDTRACEUNINITIALIZE(hProcess);
-	//for(unsigned int i = 0; i < allProcessInfos.size(); i++)
-	//{
-	//	HANDLE hOldProcess = allProcessInfos[i].hProcess;
-	//	EXTENDEDTRACEUNINITIALIZE(hOldProcess);
-	//	debugprintf("Closing process handle 0x%X\n", hOldProcess);
-	//	CloseHandle(hOldProcess);
-	//}
 	allProcessInfos.clear();
 	customBreakpoints.clear();
 
@@ -3668,11 +3658,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 //	AdjustPrivileges(hGameProcess, TRUE);
 
-	if(!onlyHookChildProcesses)
-	{
-		EXTENDEDTRACEINITIALIZEEX( NULL, hGameProcess );
-	}
-
 	//debugprintf("INITIAL THREAD: 0x%X\n", processInfo.hThread);
 
 	debugprintf(L"attempting injection...\n");
@@ -3877,121 +3862,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     {
                                     case IPC::Command::CMD_DEBUG_MESSAGE:
                                         debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetDebugMessage());
-                                        {
-                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                                            if (found != hGameThreads.end())
-                                            {
-                                                auto cb = [](IDbgHelpStackWalkCallback& data)
-                                                    { 
-                                                        std::wostringstream oss(L"STACK FRAME: ");
-                                                        oss.setf(std::ios_base::showbase);
-                                                        oss.setf(std::ios_base::hex, std::ios_base::basefield);
-
-                                                        /*
-                                                         * Add the module and function name.
-                                                         */
-                                                        oss << data.GetModuleName() << L"!0x" << data.GetProgramCounter();
-                                                        oss << L" : " << data.GetFunctionName() << L'(';
-
-                                                        size_t arg_number = 1;
-                                                        for (const auto& parameter : data.GetParameters())
-                                                        {
-                                                            if (arg_number > 1)
-                                                            {
-                                                                oss << L", ";
-                                                            }
-
-                                                            /*
-                                                             * Add the parameter type and name.
-                                                             */
-                                                            oss << parameter.m_type.GetName() << L' ' << parameter.m_name << L" = ";
-
-                                                            /*
-                                                             * Add the parameter value.
-                                                             */
-                                                            if (parameter.m_value.has_value())
-                                                            {
-#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
-                                                                class visitor
-                                                                {
-                                                                    std::wostringstream& m_oss;
-
-                                                                public:
-                                                                    visitor(std::wostringstream& oss) : m_oss(oss) {}
-
-                                                                    /*
-                                                                     * Print chars.
-                                                                     */
-                                                                    void operator()(char value)
-                                                                    {
-                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                                                                    }
-
-                                                                    void operator()(wchar_t value)
-                                                                    {
-                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                                                                    }
-
-                                                                    void operator()(char16_t value)
-                                                                    {
-                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                                                                    }
-
-                                                                    void operator()(char32_t value)
-                                                                    {
-                                                                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                                                                    }
-
-                                                                    /*
-                                                                     * Pointers ignore showbase.
-                                                                     */
-                                                                    void operator()(void* value)
-                                                                    {
-                                                                        m_oss << L"0x" << value;
-                                                                    }
-
-                                                                    template<typename T>
-                                                                    void operator()(T value)
-                                                                    {
-                                                                        m_oss << value;
-                                                                    }
-                                                                };
-
-                                                                std::visit(visitor(oss), parameter.m_value.value());
-                                                            }
-
-                                                            ++arg_number;
-                                                        }
-
-                                                        oss << L')';
-
-                                                        /*
-                                                         * Add the unsure status display.
-                                                         */
-                                                        if (data.GetUnsureStatus() > 0)
-                                                        {
-                                                            oss << L'?';
-                                                        }
-
-                                                        oss << L'\n';
-
-                                                        debugprintf(L"%s", oss.str().c_str());
-
-                                                        return IDbgHelpStackWalkCallback::Action::CONTINUE;
-                                                    };
-                                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle, cb);
-                                                std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                                                if (found != hGameThreads.end())
-                                                {
-                                                    HANDLE hThread = found->second;
-                                                    WCHAR msg[16 + 72];
-                                                    swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
-                                                    THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-                                                }
-
-                                                debugprintf(L"Hello!\n");
-                                            }
-                                        }
                                         break;
                                     case IPC::Command::CMD_DLL_VERSION:
                                         CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
@@ -4027,7 +3897,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                         ReceiveKeyboardLayout(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
                                         break;
                                     case IPC::Command::CMD_SUGGEST_THREAD_NAME:
-                                        SuggestThreadName(de.dwThreadId, hGameProcess, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
+                                        SuggestThreadName(de.dwThreadId, de.dwProcessId, *reinterpret_cast<IPC::SuggestThreadName*>(buf.data()));
                                         {
                                             DWORD bytes_written;
                                             WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), ipc_frame.m_command_data_size, &bytes_written);
@@ -4035,11 +3905,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                HANDLE hThread = found->second;
-                                                //THREADSTACKTRACE(hThread);
-                                                WCHAR msg[16 + 72];
-                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
-                                                THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
+                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)", found->first, found->second.name);
+                                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
                                         break;
@@ -4068,13 +3935,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                         {
                                             // print the callstack of the thread
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
-                                            IPC::StackTrace* stack_trace_info = reinterpret_cast<IPC::StackTrace*>(buf.data());
                                             if (found != hGameThreads.end())
                                             {
-                                                HANDLE hThread = found->second;
-                                                WCHAR msg[16 + 72];
-                                                swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
-                                                StackTraceOfDepth(hThread, msg, stack_trace_info->GetMinDepth(), stack_trace_info->GetMaxDepth(), /*(found->second).hProcess*/hGameProcess);
+                                                debugprintf(L"Tracing thread(id=0x%X) (name=%S)", found->first, found->second.name);
+                                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
                                         break;
@@ -4131,9 +3995,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                     DWORD threadId = gameThreadIdList[i];
                                                     ThreadInfo& info = hGameThreads[threadId];
                                                     HANDLE hThread = info.handle;
-                                                    WCHAR msg[16 + 72];
-                                                    swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
-                                                    THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
+                                                    debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, info.name);
+                                                    DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
                                                 }
                                             }
 #endif
@@ -4205,12 +4068,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
 							if(found != hGameThreads.end())
 							{
-								HANDLE hThread = found->second;
-								//THREADSTACKTRACE(hThread);
-								WCHAR msg [16+72];
-								swprintf(msg, L"(id=0x%X) (name=%S)", found->first, found->second.name);
-								THREADSTACKTRACEMSG(hThread, msg, /*(found->second).hProcess*/hGameProcess);
-								//THREADSTACKTRACEMSG(hThread, msg, (found->second).hProcess);
+								debugprintf(L"Tracing thread (id=0x%X) (name=%S)", found->first, found->second.name);
+                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
 							}
 						}
 
@@ -4225,10 +4084,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								if(threadId == de.dwThreadId)
 									continue;
 								ThreadInfo& info = hGameThreads[threadId];
-								HANDLE hThread = info.handle;
-								WCHAR msg [16+72];
-								swprintf(msg, L"(id=0x%X) (name=%S)", threadId, info.name);
-								THREADSTACKTRACEMSG(hThread, msg, /*info.hProcess*/hGameProcess);
+								debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, info.name);
+                                DbgHelp::StackWalk(de.dwProcessId, info.handle, PrintStackTrace);
 							}
 
 							//std::map<DWORD,ThreadInfo>::iterator iter;
@@ -4511,7 +4368,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = de.u.LoadDll.hFile;
 						dll_base_to_filename[de.u.LoadDll.lpBaseOfDll] = filename;
                         DbgHelp::LoadSymbols(de.dwProcessId, de.u.LoadDll.hFile, filename.c_str(), reinterpret_cast<DWORD64>(de.u.LoadDll.lpBaseOfDll));
-                        LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.LoadDll.hFile, de.u.LoadDll.lpBaseOfDll);
 
 						// apparently we have to close it here.
 						// waiting until UNLOAD_DLL_DEBUG_EVENT could make us close an invalid handle
@@ -4560,10 +4416,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				//int waitCount = threadInfo.waitingCount;
 				//debugprintf("thread status: id=0x%X, handle=0x%X, suspend=%d, wait=%d, name=%s\n", threadId, hThread, suspendCount, waitCount, threadInfo.name);
 				debugprintf(L"thread status: id=0x%X, handle=0x%X, suspend=%d, name=%S\n", threadId, hThread, suspendCount, threadInfo.name);
-				//THREADSTACKTRACE(hThread);
-				WCHAR msg [16+72];
-				swprintf(msg, L"(id=0x%X) (name=%S)", threadId, threadInfo.name);
-				THREADSTACKTRACEMSG(hThread, msg, /*threadInfo.hProcess*/hGameProcess);
+				debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, threadInfo.name);
+                DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
 			}
 
 					//ThreadInfo newThreadInfo;
@@ -4636,11 +4490,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 					if(de.dwProcessId == processInfo.dwProcessId)
 					{
-						// even if we don't have symbols for it,
-						// this still lets us see the exe name
-						// next to the addresses of functions it calls.
                         hGameProcess = de.u.CreateProcessInfo.hProcess;
-						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						//CloseHandle(de.u.CreateProcessInfo.hProcess);
 					}
 					else
@@ -4654,13 +4504,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						processInfo.dwThreadId = de.dwThreadId;
 						processInfo.hThread = de.u.CreateProcessInfo.hThread;
 
-						//EXTENDEDTRACEUNINITIALIZE(hProcess);
 //						CloseHandle(hGameProcess);
 						hGameProcess = processInfo.hProcess;
 						debugprintf(L"switched to child process, handle 0x%X, PID = %d.\n", hGameProcess, processInfo.dwProcessId);
 						PrintPrivileges(hGameProcess);
-						EXTENDEDTRACEINITIALIZEEX( NULL, hGameProcess );
-						LOADSYMBOLS2(hGameProcess, filename.c_str(), de.u.CreateProcessInfo.hFile, de.u.CreateProcessInfo.lpBaseOfImage);
 						debugprintf(L"attempting injection...\n");
 						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 						debugprintf(L"done injection. continuing...\n");

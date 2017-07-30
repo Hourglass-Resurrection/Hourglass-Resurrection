@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\trace">
-      <UniqueIdentifier>{7db5e5dc-67a7-4186-9cd5-9b23d8f1490a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\inject">
       <UniqueIdentifier>{848b6770-f704-45e4-a4c9-ce128028573d}</UniqueIdentifier>
     </Filter>
@@ -59,9 +56,6 @@
     <ClCompile Include="wintaser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trace\extendedtrace.cpp">
-      <Filter>Source Files\trace</Filter>
-    </ClCompile>
     <ClCompile Include="inject\iatmodifier.cpp">
       <Filter>Source Files\inject</Filter>
     </ClCompile>
@@ -110,9 +104,6 @@
     <ClCompile Include="Utils\File\FileDialog.cpp">
       <Filter>Source Files\Utils\File</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\File.h">
-      <Filter>Source Files\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp">
       <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
@@ -156,9 +147,6 @@
     </ClInclude>
     <ClInclude Include="ramwatch.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trace\extendedtrace.h">
-      <Filter>Source Files\trace</Filter>
     </ClInclude>
     <ClInclude Include="inject\iatmodifier.h">
       <Filter>Source Files\inject</Filter>

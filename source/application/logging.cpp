@@ -1,4 +1,6 @@
-#include <windows.h>
+﻿#include <windows.h>
+
+#include <sstream>
 
 #include "logging.h"
 
@@ -7,6 +9,8 @@
 #include "shared/ipc.h"
 #include "Config.h"
 //#define ANONYMIZE_PRINT_NUMS // for simplifying diffs (debugging)
+
+#include "DbgHelp/DbgHelp.h"
 
 FILE* debuglogfile = NULL;
 
@@ -88,3 +92,110 @@ void PrintLastError(LPCWSTR lpszFunction, DWORD dw)
 	debugprintf(L"%s failed, error %d: %s", lpszFunction, dw, lpMsgBuf);
     LocalFree(lpMsgBuf);
 }
+
+IDbgHelpStackWalkCallback::Action PrintStackTrace(IDbgHelpStackWalkCallback& data)
+{
+    /*
+     * C++ dictates that classes inside functions can't declare template methods,
+     * classes inside lamdas can however, so, just wrap it.
+     * -- Warepire
+     */
+    auto dummy = [&data]() {
+        std::wostringstream oss(L"STACK FRAME: ");
+        oss.setf(std::ios_base::showbase);
+        oss.setf(std::ios_base::hex, std::ios_base::basefield);
+
+        /*
+         * Add the module and function name.
+         */
+        oss << data.GetModuleName() << L"!0x" << data.GetProgramCounter();
+        oss << L" : " << data.GetFunctionName() << L'(';
+
+        size_t arg_number = 1;
+        for (const auto& parameter : data.GetParameters())
+        {
+            if (arg_number > 1)
+            {
+                oss << L", ";
+            }
+
+            /*
+             * Add the parameter type and name.
+             */
+            oss << parameter.m_type.GetName() << L' ' << parameter.m_name << L" = ";
+
+            /*
+             * Add the parameter value.
+             */
+            if (parameter.m_value.has_value())
+            {
+#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
+                class visitor
+                {
+                    std::wostringstream& m_oss;
+
+                public:
+                    visitor(std::wostringstream& oss) : m_oss(oss) {}
+
+                    /*
+                     * Print chars.
+                     */
+                    void operator()(char value)
+                    {
+                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                    }
+
+                    void operator()(wchar_t value)
+                    {
+                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                    }
+
+                    void operator()(char16_t value)
+                    {
+                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                    }
+
+                    void operator()(char32_t value)
+                    {
+                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                    }
+
+                    /*
+                     * Pointers ignore showbase.
+                     */
+                    void operator()(void* value)
+                    {
+                        m_oss << L"0x" << value;
+                    }
+
+                    template<typename T>
+                    void operator()(T value)
+                    {
+                        m_oss << value;
+                    }
+                };
+
+                std::visit(visitor(oss), parameter.m_value.value());
+            }
+
+            ++arg_number;
+        }
+
+        oss << L')';
+
+        /*
+         * Add the unsure status display.
+         */
+        if (data.GetUnsureStatus() > 0)
+        {
+            oss << L'?';
+        }
+
+        oss << L'\n';
+
+        debugprintf(L"%s", oss.str().c_str());
+
+        return IDbgHelpStackWalkCallback::Action::CONTINUE;
+    };
+    return dummy();
+};

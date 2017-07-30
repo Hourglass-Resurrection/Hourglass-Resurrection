@@ -168,7 +168,6 @@
     <ClCompile Include="ramwatch.cpp" />
     <ClCompile Include="Utils\COM.cpp" />
     <ClCompile Include="wintaser.cpp" />
-    <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
     <ClCompile Include="inject\process.cpp" />
     <ClCompile Include="Utils\File.cpp" />
@@ -203,7 +202,6 @@
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
-    <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />
     <ClInclude Include="inject\process.h" />
     <ClInclude Include="..\shared\asm.h" />
