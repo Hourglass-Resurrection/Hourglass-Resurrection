@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -284,7 +284,7 @@ Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::Executable
                  * reloc entries that have the top 4 bits zero'd are just padding for alignment as
                  * each block must start on a 4-byte boundary.
                  */
-                if (reloc & 0xF000 == 0)
+                if ((reloc & 0xF000) == 0)
                 {
                     continue;
                 }
