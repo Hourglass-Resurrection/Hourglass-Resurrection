@@ -18,7 +18,7 @@ public:
 	std::vector<IMAGE_IMPORT_DESCRIPTOR> readImportTable();
 	void setImageBase(uintptr_t address);
 	void writeIAT(const std::vector<std::string>& dlls, bool runFirst=true);
-	void writeIAT(const std::string& dll, bool runFirst=true);
+	void writeIAT(const std::wstring& dll, bool runFirst=true);
 	IMAGE_NT_HEADERS readNTHeaders() const;
 
 private:

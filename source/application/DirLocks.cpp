@@ -20,30 +20,30 @@
 
 static std::map<LockTypes, HANDLE> locks;
 
-static const char * LockTypesToString[] = { "Movie", "SaveState", };
+static LPCWSTR LockTypesToString[] = { L"Movie", L"SaveState", };
 
-bool LockDirectory(char* directory, LockTypes type)
+bool LockDirectory(LPCWSTR directory, LockTypes type)
 {
-	dirlockdebug(L"DirLocking: Locking directory '%S' for %Ss.\n", directory, LockTypesToString[(unsigned int)type]);
+	dirlockdebug(L"DirLocking: Locking directory '%s' for %ss.\n", directory, LockTypesToString[(unsigned int)type]);
 	// A different directory is already locked, since we will no longer need to hang on to that directory, we'll just Unlock it.
 	if(locks.find(type) != locks.end()) 
 	{
-		dirlockdebug(L"DirLocking: Found existing lock when locking directory for %S\n.", LockTypesToString[(unsigned int)type]);
+		dirlockdebug(L"DirLocking: Found existing lock when locking directory for %s\n.", LockTypesToString[(unsigned int)type]);
 		UnlockDirectory(type);
 	}
 
-	char name[MAX_PATH+1];
-	strcpy(name, directory);
-	strcat(name, "hourglass.lock\0");
+	WCHAR name[MAX_PATH+1];
+	wcscpy(name, directory);
+	wcscat(name, L"hourglass.lock\0");
 	// FILE_FLAG_DELETE_ON_CLOSE is really handy here as it means we don't have to manage the deletion process for the lock-files ourselves.
-	HANDLE rv = CreateFile(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), NULL);
+	HANDLE rv = CreateFileW(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), NULL);
 	if(rv == INVALID_HANDLE_VALUE)
 	{
-		DirLockPrintLastError("DirLocking: CreateFile", GetLastError());
+		DirLockPrintLastError(L"DirLocking: CreateFile", GetLastError());
 		// Locking directory failed, issue an error-message and stop.
-		char str[1024];
-		sprintf(str, "Locking the directory '%s' for %ss failed\nPlease make sure that Hourglass has rights to create files in this directory or choose another directory", directory, LockTypesToString[(unsigned int)type]);
-		CustomMessageBox(str, "Error!", (MB_OK | MB_ICONERROR));
+		WCHAR str[1024];
+		swprintf(str, L"Locking the directory '%s' for %ss failed\nPlease make sure that Hourglass has rights to create files in this directory or choose another directory", directory, LockTypesToString[(unsigned int)type]);
+		CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 		return false;
 	}
 	locks[type] = rv;
@@ -61,11 +61,11 @@ void UnlockAllDirectories()
 
 void UnlockDirectory(LockTypes type)
 {
-	dirlockdebug(L"DirLocking: Unlocking directory for %Ss.\n", LockTypesToString[(unsigned int)type]);
+	dirlockdebug(L"DirLocking: Unlocking directory for %ss.\n", LockTypesToString[(unsigned int)type]);
 	std::map<LockTypes,HANDLE>::iterator it = locks.find(type);
 	if(it == locks.end())
 	{
-		dirlockdebug(L"DirLocking: ERROR: Couldn't find a locked directory for %Ss.\n", LockTypesToString[(unsigned int)type]);
+		dirlockdebug(L"DirLocking: ERROR: Couldn't find a locked directory for %ss.\n", LockTypesToString[(unsigned int)type]);
 		return; // Directory is not locked, this should never happen...
 	}
 	CloseHandle(it->second);

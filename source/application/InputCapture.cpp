@@ -465,7 +465,7 @@ bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 	HRESULT rval = DirectInputCreate(hInst, DIRECTINPUT_VERSION, &lpDI, NULL);
 	if(rval != DI_OK)
 	{
-		MessageBox(hWnd, "DirectInput failed... You must have at least DirectX 5", "Error", MB_OK);
+		MessageBoxW(hWnd, L"DirectInput failed... You must have at least DirectX 5", L"Error", MB_OK);
 		return false;
 	}
 
@@ -475,7 +475,7 @@ bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 	// Is a keyboard mandatory ?
 	if(rval != DI_OK)
 	{
-		MessageBox(hWnd, "I couldn't find any keyboard here", "Error", MB_OK);
+		MessageBoxW(hWnd, L"I couldn't find any keyboard here", L"Error", MB_OK);
 		return false;
 	}
 
@@ -949,7 +949,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			HINSTANCE hInstProcess = (HINSTANCE)GetModuleHandle(NULL);
 			if(hInstProcess == NULL)
 			{
-				PrintLastError("InputConfig: GetModuleHandle", GetLastError());
+				PrintLastError(L"InputConfig: GetModuleHandle", GetLastError());
 				return FALSE;
 			}
 			if(!(inputC->InitInputs(hInstProcess, hDlg)))
@@ -991,7 +991,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			{
 				case IDC_CONF_RESTOREDEFHKS:
 				{
-					HRESULT rv = CustomMessageBox("Restoring the HotKeys to default will not be undoable by closing the Config window.\n\nDo you wish to continue?", "Warning!", MB_YESNO | MB_ICONWARNING);
+					HRESULT rv = CustomMessageBox(L"Restoring the HotKeys to default will not be undoable by closing the Config window.\n\nDo you wish to continue?", L"Warning!", MB_YESNO | MB_ICONWARNING);
 					if(rv == IDYES)
 					{
 						inputC->BuildDefaultEventMapping();
@@ -1002,7 +1002,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				} break;
 				case IDC_CONF_RESTOREDEFGIS:
 				{
-					HRESULT rv = CustomMessageBox("Restoring the Game Input keys to default will not be undoable by closing the Config window.\n\nDo you wish to continue?", "Warning!", MB_YESNO | MB_ICONWARNING);
+					HRESULT rv = CustomMessageBox(L"Restoring the Game Input keys to default will not be undoable by closing the Config window.\n\nDo you wish to continue?", L"Warning!", MB_YESNO | MB_ICONWARNING);
 					if(rv == IDYES)
 					{
 						inputC->BuildDefaultInputMapping();

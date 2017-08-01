@@ -20,12 +20,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -67,7 +67,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VSInstallDir);..\..\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NOMINMAX;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -81,7 +81,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;psapi.lib;$(VSInstallDir)DIA SDK\lib\diaguids.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hourglass-resurrection-d.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -92,7 +92,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)external\dbghelp\dbghelp.dll" "$(OutDir)"</Command>
+      <Command>copy "$(SolutionDir)external\DIA\msdia140.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -111,7 +111,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\..\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VSInstallDir);..\..\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NOMINMAX;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -124,7 +124,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;psapi.lib;$(VSInstallDir)DIA SDK\lib\diaguids.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hourglass-resurrection.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -136,7 +136,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)external\dbghelp\dbghelp.dll" "$(OutDir)"</Command>
+      <Command>copy "$(SolutionDir)external\DIA\msdia140.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -144,10 +144,16 @@
     <ClCompile Include="AVIDumping\AVIDumper.cpp" />
     <ClCompile Include="AVIDumping\WaitableBool.cpp" />
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
-    <ClCompile Include="utils\file\FileDialog.cpp" />
+    <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp" />
+    <ClCompile Include="Utils\File\FileDialog.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
     <ClCompile Include="CustomDLGs.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelp.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp" />
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp" />
     <ClCompile Include="DirLocks.cpp" />
     <ClCompile Include="ExeFileOperations.cpp" />
     <ClCompile Include="GUI\DlgBase.cpp" />
@@ -161,8 +167,8 @@
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
+    <ClCompile Include="Utils\COM.cpp" />
     <ClCompile Include="wintaser.cpp" />
-    <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
     <ClCompile Include="inject\process.cpp" />
   </ItemGroup>
@@ -172,10 +178,17 @@
     <ClInclude Include="AVIDumping\AVIDumper.h" />
     <ClInclude Include="AVIDumping\WaitableBool.h" />
     <ClInclude Include="AVIDumping\WaveFormat.h" />
-    <ClCompile Include="utils\File.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
     <ClInclude Include="CustomDLGs.h" />
+    <ClInclude Include="DbgHelp\DbgHelp.h" />
+    <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h" />
+    <ClInclude Include="DbgHelp\DbgHelpPrivate.h" />
+    <ClInclude Include="DbgHelp\DiaEnumIterator.h" />
+    <ClInclude Include="DbgHelp\IDbgHelpStackWalkCallback.h" />
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h" />
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h" />
+    <ClInclude Include="DbgHelp\DbgHelpTypes.h" />
     <ClInclude Include="DirLocks.h" />
     <ClInclude Include="ExeFileOperations.h" />
     <ClInclude Include="GUI\DlgBase.h" />
@@ -189,7 +202,6 @@
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
-    <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />
     <ClInclude Include="inject\process.h" />
     <ClInclude Include="..\shared\asm.h" />
@@ -199,6 +211,8 @@
     <ClInclude Include="..\shared\version.h" />
     <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Utils\File.h" />
+    <ClInclude Include="Utils\COM.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico" />

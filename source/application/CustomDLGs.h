@@ -1,4 +1,4 @@
 #pragma once
 
-int NormalMessageBox(LPCSTR lpText, LPCSTR lpCaption, UINT uType, HWND parent=NULL);
-int CustomMessageBox(LPCSTR lpText, LPCSTR lpCaption, UINT uType, HWND parent=NULL);
+int NormalMessageBox(LPCWSTR text, LPCWSTR caption, UINT type, HWND parent = nullptr);
+int CustomMessageBox(LPCWSTR text, LPCWSTR caption, UINT type, HWND parent = nullptr);

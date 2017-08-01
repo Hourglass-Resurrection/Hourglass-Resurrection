@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\trace">
-      <UniqueIdentifier>{7db5e5dc-67a7-4186-9cd5-9b23d8f1490a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\inject">
       <UniqueIdentifier>{848b6770-f704-45e4-a4c9-ce128028573d}</UniqueIdentifier>
     </Filter>
@@ -24,11 +21,14 @@
     <Filter Include="Source Files\AVIDumping">
       <UniqueIdentifier>{b06adc34-504b-4b14-80a4-e32cc54d948a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\utils">
-      <UniqueIdentifier>{7f7de3bb-5a1d-4fea-bc61-5f3435cc9534}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\utils\file">
+    <Filter Include="Source Files\Utils\File">
       <UniqueIdentifier>{0fe41f72-a5c7-4674-8bb8-5943b0da3776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DbgHelp">
+      <UniqueIdentifier>{598a903a-ef95-4faf-9d4b-de692f0eb375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{73785f56-4309-4fed-b86c-ac56057f350b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,9 +55,6 @@
     </ClCompile>
     <ClCompile Include="wintaser.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trace\extendedtrace.cpp">
-      <Filter>Source Files\trace</Filter>
     </ClCompile>
     <ClCompile Include="inject\iatmodifier.cpp">
       <Filter>Source Files\inject</Filter>
@@ -104,11 +101,29 @@
     <ClCompile Include="AVIDumping\WaveFormat.cpp">
       <Filter>Source Files\AVIDumping</Filter>
     </ClCompile>
-    <ClCompile Include="utils\file\FileDialog.cpp">
-      <Filter>Source Files\utils\file</Filter>
+    <ClCompile Include="Utils\File\FileDialog.cpp">
+      <Filter>Source Files\Utils\File</Filter>
     </ClCompile>
-    <ClCompile Include="utils\File.h">
-      <Filter>Source Files\utils</Filter>
+    <ClCompile Include="DbgHelp\DbgHelpPrivate.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkHelper.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelp.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\COM.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp">
+      <Filter>Source Files\Utils\File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,9 +147,6 @@
     </ClInclude>
     <ClInclude Include="ramwatch.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trace\extendedtrace.h">
-      <Filter>Source Files\trace</Filter>
     </ClInclude>
     <ClInclude Include="inject\iatmodifier.h">
       <Filter>Source Files\inject</Filter>
@@ -204,6 +216,36 @@
     </ClInclude>
     <ClInclude Include="AVIDumping\WaveFormat.h">
       <Filter>Source Files\AVIDumping</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpPrivate.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\COM.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkHelper.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelp.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpLoadCallback.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\File.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpTypes.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\IDbgHelpStackWalkCallback.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DbgHelpStackWalkCallback.h">
+      <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgHelp\DiaEnumIterator.h">
+      <Filter>Source Files\DbgHelp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

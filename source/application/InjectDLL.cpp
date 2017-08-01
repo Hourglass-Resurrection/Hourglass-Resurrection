@@ -10,7 +10,7 @@
 
 extern bool terminateRequest;
 
-bool InjectDLLIntoIDT(DWORD dwInjectProcessID, HANDLE hInjectProcess, HANDLE hInjectThread, const char* dllPath, bool runFirst)
+bool InjectDLLIntoIDT(DWORD dwInjectProcessID, HANDLE hInjectProcess, HANDLE hInjectThread, LPCWSTR dllPath, bool runFirst)
 {
 	try
 	{
@@ -22,7 +22,7 @@ bool InjectDLLIntoIDT(DWORD dwInjectProcessID, HANDLE hInjectProcess, HANDLE hIn
 	}
 	catch(const std::runtime_error &e)
 	{
-		debugprintf(L"Failed to inject DLL \"%S\" into process id 0x%X IAT: %S\n", dllPath, dwInjectProcessID, e.what());
+		debugprintf(L"Failed to inject DLL \"%s\" into process id 0x%X IAT: %S\n", dllPath, dwInjectProcessID, e.what());
 		return false;
 	}
 	return true;
@@ -34,7 +34,7 @@ struct InjectDLLThreadFuncInfo
 	DWORD dwInjectProcessID;
 	HANDLE hInjectThread;
 	DWORD dwInjectThreadID;
-	TCHAR* injectDllPath;
+	LPCWSTR injectDllPath;
 	BOOL injectIsAsyncReady;
 	BOOL injectAllowedToFinish;
 	bool runDllLast;
@@ -47,17 +47,17 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 	DWORD dwInjectProcessID = info->dwInjectProcessID;
 	HANDLE hInjectThread = info->hInjectThread;
 	DWORD dwInjectThreadID = info->dwInjectThreadID;
-	TCHAR* dllPath = info->injectDllPath;
+	LPCWSTR dllPath = info->injectDllPath;
 	bool runDllLast = info->runDllLast;
 	DWORD dwThread = 0;
 	size_t dwPathLength = 1024;
-	StringCchLength(dllPath, dwPathLength, &dwPathLength);
+	StringCchLengthW(dllPath, dwPathLength, &dwPathLength);
 
 	dwPathLength *= sizeof(WCHAR);
 
 	if (hProcess == NULL)
 	{
-		PrintLastError("CreateProcess", GetLastError());
+		PrintLastError(L"CreateProcess", GetLastError());
 		terminateRequest = true;
 	}
 
@@ -69,7 +69,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 
 	if(injected)
 	{
-		debugprintf(L"Injecting \"%S\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
+		debugprintf(L"Injecting \"%s\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
 		info->injectIsAsyncReady = TRUE;
 		goto done;
 	}
@@ -80,11 +80,11 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 		if(hProcess != NULL)
 		{
 			debugprintf(L"Injection failed...\n");
-			CustomMessageBox("Injection failed...\nYou can (hopefully) find more information in the debug log .txt file.", "Error", MB_OK | MB_ICONERROR);
+			CustomMessageBox(L"Injection failed...\nYou can (hopefully) find more information in the debug log .txt file.", L"Error", MB_OK | MB_ICONERROR);
 		}
 		else
 		{
-			CustomMessageBox("The game could not be launched...\nYou can (hopefully) find more information in the debug log .txt file.", "Error", MB_OK | MB_ICONERROR);
+			CustomMessageBox(L"The game could not be launched...\nYou can (hopefully) find more information in the debug log .txt file.", L"Error", MB_OK | MB_ICONERROR);
 		}
 	}
 	else // Why is this here??
@@ -102,7 +102,7 @@ done:
 	return 0;
 }
 
-void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, TCHAR *dllPath, bool runDllLast)
+void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, LPCWSTR dllPath, bool runDllLast)
 {
 	InjectDLLThreadFuncInfo* info = new InjectDLLThreadFuncInfo;
 	info->hInjectProcess = hProcess;

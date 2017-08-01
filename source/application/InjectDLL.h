@@ -7,4 +7,4 @@
  *                this is a MAJOR project that requires A LOT of code 
  *                re-structure.
  */
-void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, TCHAR *dllPath, bool runDllLast=false);
+void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThreadID, LPCWSTR dllPath, bool runDllLast=false);

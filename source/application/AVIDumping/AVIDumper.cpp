@@ -46,7 +46,7 @@ bool g_gammaRampEnabled = false;
 
 static HANDLE captureProcess = NULL;
 
-char avifilename[MAX_PATH + 1];
+WCHAR avifilename[MAX_PATH + 1];
 
 #define avidebugprintf verbosedebugprintf
 
@@ -576,7 +576,7 @@ struct AviFrameQueue
 						if (FAILED(hr))
 						{ 
 							debugprintf(L"AVIStreamWrite failed! (0x%X)\n", hr);
-							NormalMessageBox("AVIStreamWrite failed! (Sorry... try restarting this program and/or choosing a different codec.)\n", "Error", MB_OK|MB_ICONERROR);
+							NormalMessageBox(L"AVIStreamWrite failed! (Sorry... try restarting this program and/or choosing a different codec.)\n", L"Error", MB_OK|MB_ICONERROR);
 							CloseAVI();
 							Config::localTASflags.aviMode = 0;
 							tasFlagsDirty = true;
@@ -588,7 +588,7 @@ struct AviFrameQueue
 					{
 						if (aviEmptyFrameCount == 0 && (Config::localTASflags.aviMode & 2) && aviFrameCount < 300 && !aviSplitCount)
 						{
-							CustomMessageBox("The video encoder you chose is outputting some null frames.\nThis may confuse video players into adding delays and letting the sound stream get out of sync.", "Warning", MB_OK | MB_ICONWARNING);
+							CustomMessageBox(L"The video encoder you chose is outputting some null frames.\nThis may confuse video players into adding delays and letting the sound stream get out of sync.", L"Warning", MB_OK | MB_ICONWARNING);
 						}
 
 						aviEmptyFrameCount++;;
@@ -646,7 +646,7 @@ struct AviFrameQueue
 						if (FAILED(hr))
 						{ 
 							debugprintf(L"AVIStreamWrite(audio) failed! (0x%X)\n", hr);
-							NormalMessageBox("AVIStreamWrite(audio) failed!\n", "Error", MB_OK|MB_ICONERROR);
+							NormalMessageBox(L"AVIStreamWrite(audio) failed!\n", L"Error", MB_OK|MB_ICONERROR);
 							CloseAVI();
 							Config::localTASflags.aviMode = 0;
 							tasFlagsDirty = true;
@@ -841,14 +841,14 @@ void CloseAVI()
 	mainMenuNeedsRebuilding = true;
 }
 
-bool SetAVIFilename(const char* filename)
+bool SetAVIFilename(LPCWSTR filename)
 {
-	if (strlen(filename) > MAX_PATH + 1) // filename too long
+	if (wcslen(filename) > MAX_PATH + 1) // filename too long
 	{
 		return false;
 	}
 
-	strcpy(avifilename, filename);
+	wcscpy(avifilename, filename);
 	return true;
 }
 
@@ -877,7 +877,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 	aviSplitCount = oldAviSplitCount;
 	aviSplitDiscardCount = oldAviSplitDiscardCount;
 
-	const char* filename = avifilename;
+	LPCWSTR filename = avifilename;
 
 	if (aviSplitCount > 0)
 	{
@@ -887,22 +887,22 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 			aviSplitDiscardCount++;
 		}
 
-		static char avifilename2 [MAX_PATH+1];
-		strcpy(avifilename2, avifilename);
-		char* dot = strrchr(avifilename2, '.');
+		static WCHAR avifilename2 [MAX_PATH+1];
+		wcscpy(avifilename2, avifilename);
+		LPWSTR dot = wcsrchr(avifilename2, L'.');
 		if (dot)
 		{
 			*dot = 0;
 		}
 		else
 		{
-			dot = avifilename2 + strlen(avifilename2);
+			dot = avifilename2 + wcslen(avifilename2);
 		}
 
 		int segNum = aviSplitCount + 1 - aviSplitDiscardCount;
 		if (segNum > 1)
 		{
-			_snprintf(dot, MAX_PATH + 1 - strlen(avifilename2), "%03d%s", segNum, dot - avifilename2 + avifilename);
+			swprintf(dot, MAX_PATH + 1 - wcslen(avifilename2), L"%03d%s", segNum, dot - avifilename2 + avifilename);
 			filename = avifilename2;
 		}
 	}
@@ -919,14 +919,14 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 		aviLibraryOpened = true;
 	}
 
-	_unlink(filename);
+	DeleteFileW(filename);
 	HRESULT hr = AVIFileOpen(&aviFile, filename, OF_WRITE | OF_CREATE, NULL);
 	if (FAILED(hr))
 	{
-		char str[MAX_PATH + 64];
-		sprintf(str, "AVIFileOpen(\"%s\") failed!\n", filename);
-		debugprintf(L"%S", str);
-		NormalMessageBox(str, "Error", MB_OK|MB_ICONERROR);
+		WCHAR str[MAX_PATH + 64];
+		swprintf(str, L"AVIFileOpen(\"%s\") failed!\n", filename);
+		debugprintf(L"%s", str);
+		NormalMessageBox(str, L"Error", MB_OK|MB_ICONERROR);
 		return false;
 	}
 
@@ -954,7 +954,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 		if (FAILED(hr))
 		{ 
 			debugprintf(L"AVIFileCreateStream failed!\n");
-			NormalMessageBox("AVIFileCreateStream failed!\n", "Error", MB_OK|MB_ICONERROR);
+			NormalMessageBox(L"AVIFileCreateStream failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			CloseAVI();
 			return false;
 		}
@@ -978,7 +978,7 @@ chooseAnotherFormat:
 		if (FAILED(hr))
 		{ 
 			debugprintf(L"AVIMakeCompressedStream failed! (0x%X)\n", hr);
-			NormalMessageBox("AVIMakeCompressedStream failed!\n", "Error", MB_OK|MB_ICONERROR);
+			NormalMessageBox(L"AVIMakeCompressedStream failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			goto chooseAnotherFormat;
 		}
 
@@ -996,7 +996,7 @@ chooseAnotherFormat:
 		if (FAILED(hr))
 		{ 
 			debugprintf(L"AVIStreamSetFormat failed! (0x%X)\n", hr);
-			NormalMessageBox("AVIStreamSetFormat failed!\n", "Error", MB_OK|MB_ICONERROR);
+			NormalMessageBox(L"AVIStreamSetFormat failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			AVIStreamClose(aviCompressedStream);
 			aviCompressedStream = NULL;
 			goto chooseAnotherFormat;
@@ -1059,7 +1059,7 @@ bool ChooseAudioCodec(const LPWAVEFORMATEX defaultFormat)
 {
 	if (Config::localTASflags.framerate <= 0)
 	{
-		int result = CustomMessageBox("This is a no-framerate movie,\nso audio capture is unlikely to work well.", "Warning", MB_OKCANCEL | MB_ICONWARNING);
+		int result = CustomMessageBox(L"This is a no-framerate movie,\nso audio capture is unlikely to work well.", L"Warning", MB_OKCANCEL | MB_ICONWARNING);
 		
 		if (result == IDCANCEL)
 		{
@@ -1069,18 +1069,18 @@ bool ChooseAudioCodec(const LPWAVEFORMATEX defaultFormat)
 
 	chooseFormat = defaultFormat;
 
-	ACMFORMATCHOOSE choose = { sizeof(ACMFORMATCHOOSE) };
+	ACMFORMATCHOOSEW choose = { sizeof(ACMFORMATCHOOSEW) };
 	choose.fdwStyle  = ACMFORMATCHOOSE_STYLEF_INITTOWFXSTRUCT;
 	choose.hwndOwner = NULL; //hWnd;
 	choose.pwfx      = chooseFormat;
 	choose.cbwfx     = chooseFormat.GetMaxSize();
-	choose.pszTitle  = "Choose Audio Codec";
+	choose.pszTitle  = L"Choose Audio Codec";
 	choose.fdwEnum   = ACM_FORMATENUMF_OUTPUT;
 	// don't use ACM_FORMATENUMF_CONVERT because that's too conservative
 	// and would hide many of the conversions we're able to handle.
 	// ACM_FORMATENUMF_SUGGEST is even worse.
 
-	return acmFormatChoose(&choose) == MMSYSERR_NOERROR;
+	return acmFormatChooseW(&choose) == MMSYSERR_NOERROR;
 }   
 
 int OpenAVIAudioStream()
@@ -1161,7 +1161,7 @@ int OpenAVIAudioStream()
 			{
 				// try again
 				debugprintf(L"AudioConverterStream() failed!\n");
-				NormalMessageBox("Couldn't find a valid conversion sequence.\nTry a different audio codec.\n", "Error", MB_OK|MB_ICONERROR);
+				NormalMessageBox(L"Couldn't find a valid conversion sequence.\nTry a different audio codec.\n", L"Error", MB_OK|MB_ICONERROR);
 				delete audioConverterStream;
 				audioConverterStream = NULL;
 			}
@@ -1172,18 +1172,18 @@ int OpenAVIAudioStream()
 			}
 		}
 
-		AVISTREAMINFO streamInfo = { streamtypeAUDIO };
+		AVISTREAMINFOW streamInfo = { streamtypeAUDIO };
 		streamInfo.dwRate = outputFormat->nAvgBytesPerSec;
 		streamInfo.dwScale = outputFormat->nBlockAlign;
 		streamInfo.dwSampleSize = outputFormat->nBlockAlign;
 		streamInfo.dwQuality = -1;
 		streamInfo.dwInitialFrames = 0;
 
-		HRESULT hr = AVIFileCreateStream(aviFile, &aviSoundStream, &streamInfo);
+		HRESULT hr = AVIFileCreateStreamW(aviFile, &aviSoundStream, &streamInfo);
 		if (FAILED(hr))
 		{ 
 			debugprintf(L"AVIFileCreateStream(audio) failed!\n");
-			NormalMessageBox("AVIFileCreateStream(audio) failed!\nCapture will continue without audio\n", "Error", MB_OK|MB_ICONERROR);
+			NormalMessageBox(L"AVIFileCreateStream(audio) failed!\nCapture will continue without audio\n", L"Error", MB_OK|MB_ICONERROR);
 			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
 			return -1;
@@ -1193,7 +1193,7 @@ int OpenAVIAudioStream()
 		if (FAILED(hr))
 		{ 
 			debugprintf(L"AVIStreamSetFormat(audio) failed!\n");
-			NormalMessageBox("AVIStreamSetFormat(audio) failed!\nCapture will continue without audio\n", "Error", MB_OK|MB_ICONERROR);
+			NormalMessageBox(L"AVIStreamSetFormat(audio) failed!\nCapture will continue without audio\n", L"Error", MB_OK|MB_ICONERROR);
 			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
 			return -1;

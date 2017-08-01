@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 
 #include "shared/ipc.h"
 
