@@ -7,6 +7,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <cassert>
 #include <string>
 
 #include <atlbase.h>
@@ -338,6 +339,23 @@ CComPtr<IDiaSymbol> DbgHelpStackWalkCallback::GetFunctionSymbol()
 {
     CComPtr<IDiaSymbol> symbol;
     HRESULT rv = m_mod_info->m_module_symbol_session->findSymbolByVA(GetProgramCounter(), SymTagFunction, &symbol);
+
+    if (rv != S_OK)
+    {
+        rv = m_mod_info->m_module_symbol_session->findSymbolByVA(GetProgramCounter(), SymTagPublicSymbol, &symbol);
+        if (rv == S_OK)
+        {
+            BOOL is_function = false;
+            rv = symbol->get_function(&is_function);
+            if (!is_function)
+            {
+                rv = S_FALSE;
+            }
+        }
+    }
+
+    assert(rv == S_OK);
+
     return symbol;
 }
 
