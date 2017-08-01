@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -50,7 +50,7 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
-        debugprintf(L"[Hourglass][DebugSymbols] No symbols found, exporting symbols.\n");
+        debugprintf(L"[Hourglass][DebugSymbols] No symbols found, using export table as symbols.\n");
         m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable(module_base);
         return true;
     }
