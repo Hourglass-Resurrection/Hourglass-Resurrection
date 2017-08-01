@@ -116,14 +116,14 @@
     <ClCompile Include="DbgHelp\DbgHelpLoadCallback.cpp">
       <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\File.cpp">
-      <Filter>Source Files\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="DbgHelp\DbgHelpStackWalkCallback.cpp">
       <Filter>Source Files\DbgHelp</Filter>
     </ClCompile>
     <ClCompile Include="Utils\COM.cpp">
       <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp">
+      <Filter>Source Files\Utils\File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

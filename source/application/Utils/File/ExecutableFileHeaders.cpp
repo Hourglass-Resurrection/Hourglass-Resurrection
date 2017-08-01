@@ -10,142 +10,34 @@
 #include <algorithm>
 
 #include "application/logging.h"
-#include "File.h"
-
-Utils::File::File::File(const std::wstring& filename, DWORD access, DWORD share, DWORD create, DWORD flags) :
-    m_file(INVALID_HANDLE_VALUE)
-{
-    m_file = CreateFileW(filename.c_str(), access, share, nullptr, create, flags, nullptr);
-    if (m_file == INVALID_HANDLE_VALUE)
-    {
-        PrintLastError(L"CreateFileW", GetLastError());
-    }
-}
-
-Utils::File::File::~File()
-{
-    CloseFile();
-}
-
-bool Utils::File::File::ReadFile(LPBYTE buffer, SIZE_T length, SIZE_T* read)
-{
-    if (!IsValid())
-    {
-        return false;
-    }
-
-    SIZE_T read_bytes = 0;
-    SIZE_T length_remains = length;
-    while (read_bytes < length)
-    {
-        DWORD read_length = static_cast<DWORD>(std::min<SIZE_T>(static_cast<SIZE_T>(MAXDWORD), length_remains));
-        DWORD bytes = 0;
-        BOOL rv = ::ReadFile(m_file, buffer, read_length, &bytes, nullptr);
-        if (rv == FALSE)
-        {
-            return false;
-        }
-        if (bytes == 0)
-        {
-            break;
-        }
-        read_bytes += bytes;
-        length_remains -= bytes;
-    }
-            
-    if (read != nullptr)
-    {
-        *read = read_bytes;
-    }
-    return true;
-}
-
-bool Utils::File::File::WriteFile(const LPBYTE buffer, SIZE_T length, SIZE_T * written)
-{
-    // TODO
-    return false;
-}
-
-bool Utils::File::File::CloseFile()
-{
-    if (!IsValid())
-    {
-        return false;
-    }
-    auto file = m_file;
-    m_file = INVALID_HANDLE_VALUE;
-    return (CloseHandle(file) == TRUE);
-}
-
-SIZE_T Utils::File::File::GetSize()
-{
-    if (!IsValid())
-    {
-        return 0;
-    }
-    LARGE_INTEGER size;
-    memset(&size, 0, sizeof(size));
-
-    if (GetFileSizeEx(m_file, &size) != TRUE)
-    {
-        return 0;
-    }
-    return size.QuadPart;
-}
-
-LONGLONG Utils::File::File::Seek(LONGLONG distance, DWORD starting_point)
-{
-    if (!IsValid())
-    {
-        return -1;
-    }
-    LARGE_INTEGER move;
-    PLONG high_part = &move.HighPart;
-    move.QuadPart = distance;
-    if (move.HighPart == 0)
-    {
-        high_part = nullptr;
-    }
-    DWORD rv = SetFilePointer(m_file, move.LowPart, high_part, starting_point);
-    if (rv == INVALID_SET_FILE_POINTER)
-    {
-        return -1;
-    }
-
-    move.LowPart = rv;
-    return move.QuadPart;
-}
-
-bool Utils::File::File::IsValid() const
-{
-    return m_file != INVALID_HANDLE_VALUE;
-}
-
-
+#include "../File.h"
 
 Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& filename) :
+    m_file(INVALID_HANDLE_VALUE),
+    m_mapped_file(INVALID_HANDLE_VALUE),
+    m_buffer(nullptr),
     m_valid(false)
 {
-    /*
-     * This is not the most optimal way of dealing with it, reading the entire file into
-     * memory, but the alternative makes this code horrendously complex with seeking and
-     * offset math that is unnecessary when done this way.
-     * So, sacrificing efficiency for easier to understand code.
-     * -- Warepire
-     */
-    File file(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN);
-    SIZE_T file_size = file.GetSize();
-    SIZE_T read;
-
-    if (file_size == 0)
+    HANDLE m_file = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    if (m_file == INVALID_HANDLE_VALUE)
     {
         return;
     }
 
-    m_buffer.resize(file_size);
+    LARGE_INTEGER size = { 0, 0 };
+    if (GetFileSizeEx(m_file, &size) == FALSE)
+    {
+        return;
+    }
 
-    if (!file.ReadFile(m_buffer.data(), file_size, &read) ||
-        (read != file_size))
+    HANDLE m_mapped_file = CreateFileMappingW(m_file, nullptr, PAGE_READONLY, size.u.HighPart, size.u.LowPart, nullptr);
+    if (m_mapped_file == INVALID_HANDLE_VALUE)
+    {
+        return;
+    }
+    
+    m_buffer = reinterpret_cast<BYTE*>(MapViewOfFile(m_mapped_file, FILE_MAP_READ, 0, 0, 0));
+    if (m_buffer == nullptr)
     {
         return;
     }
@@ -162,29 +54,18 @@ Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& fi
     m_valid = true;
 }
 
+Utils::File::ExecutableFileHeaders::~ExecutableFileHeaders()
+{
+    if (m_mapped_file != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(m_mapped_file);
+    }
 
-            
-            //IMAGE_SECTION_HEADER section_header;
-            //for (UINT i = 0; i < m_pe_header.FileHeader.NumberOfSections; i++)
-            //{
-            //    LONGLONG section_header_pos = m_dos_header.e_lfanew +
-            //                                  sizeof(m_pe_header) +
-            //                                  (i * sizeof(section_header));
-            //    memcpy(&section_header,
-            //           file_contents.data() + section_header_pos,
-            //           sizeof(section_header));
-            //    debugprintf(L"Section %S found.\n", section_header.Name);
-            //    debugprintf(L"    VirtualSize: 0x%X\n", section_header.Misc.VirtualSize); //?
-            //    debugprintf(L"    VirtualAddress: 0x%X\n", section_header.VirtualAddress);
-            //    debugprintf(L"    SizeOfRawData: 0x%X\n", section_header.SizeOfRawData);
-            //    debugprintf(L"    PointerToRawData: 0x%X\n", section_header.PointerToRawData);
-            //    debugprintf(L"    PointerToRelocations: 0x%X\n", section_header.PointerToRelocations);
-            //    debugprintf(L"    PointerToLinenumbers: 0x%X\n", section_header.PointerToLinenumbers);
-            //    debugprintf(L"    NumberOfRelocations: 0x%X\n", section_header.NumberOfRelocations);
-            //    debugprintf(L"    NumberOfLinenumbers: 0x%X\n", section_header.NumberOfLinenumbers);
-            //    debugprintf(L"    Characteristics: 0x%X\n", section_header.Characteristics);
-            //}
-
+    if (m_file != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(m_file);
+    }
+}
 
 DWORD Utils::File::ExecutableFileHeaders::GetImageSizeInRAM() const
 {
@@ -213,9 +94,9 @@ std::map<DWORD64, std::wstring> Utils::File::ExecutableFileHeaders::GetExportTab
     for (UINT j = 0; j < export_directory->NumberOfNames; j++)
     {
         WORD ordinal;
-        memcpy(&ordinal, m_buffer.data() + ordinal_table_offset + (j * sizeof(WORD)), sizeof(WORD));
+        memcpy(&ordinal, m_buffer + ordinal_table_offset + (j * sizeof(WORD)), sizeof(WORD));
         DWORD name_offset;
-        memcpy(&name_offset, m_buffer.data() + name_table_offset + (j * sizeof(DWORD)), sizeof(DWORD));
+        memcpy(&name_offset, m_buffer + name_table_offset + (j * sizeof(DWORD)), sizeof(DWORD));
         name_offset = RvaToOffset(name_offset);
         /*
          * The index is supposed to be evaluated according to the following formula:
@@ -230,15 +111,15 @@ std::map<DWORD64, std::wstring> Utils::File::ExecutableFileHeaders::GetExportTab
          */
         DWORD index = ordinal * sizeof(DWORD);
         DWORD function_address;
-        memcpy(&function_address, m_buffer.data() + function_table_offset + index, sizeof(DWORD));
+        memcpy(&function_address, m_buffer + function_table_offset + index, sizeof(DWORD));
         std::wstring name;
         if (name_offset == -1)
         {
             name_offset = dll_name_offset;
         }
-        for (UINT k = 0; (m_buffer.data() + name_offset)[k] != '\0'; k++)
+        for (UINT k = 0; (m_buffer + name_offset)[k] != '\0'; k++)
         {
-            name.push_back((m_buffer.data() + name_offset)[k]);
+            name.push_back((m_buffer + name_offset)[k]);
         }
         if (name_offset == dll_name_offset)
         {
@@ -258,7 +139,7 @@ Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::Executable
     if (nt_header->OptionalHeader.NumberOfRvaAndSizes >= IMAGE_DIRECTORY_ENTRY_BASERELOC)
     {
         DWORD reloc_offset = RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
-        LPBYTE relocations = const_cast<LPBYTE>(m_buffer.data()) + reloc_offset;
+        LPBYTE relocations = const_cast<LPBYTE>(m_buffer) + reloc_offset;
         PIMAGE_BASE_RELOCATION this_reloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>(relocations);
         for (UINT j = 0; j < nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
             j += this_reloc->SizeOfBlock, relocations += this_reloc->SizeOfBlock,
@@ -273,9 +154,6 @@ Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::Executable
                 break;
             }
             UINT number_of_relocs = (this_reloc->SizeOfBlock - sizeof(this_reloc)) / sizeof(WORD);
-            //debugprintf(L"    VirtualAddress: 0x%X\n", this_reloc.VirtualAddress);
-            //debugprintf(L"    SizeOfBlock: 0x%X\n", this_reloc.SizeOfBlock);
-            //debugprintf(L"    Relocs: %d\n", number_of_relocs);
             WORD reloc;
             for (UINT r = 0; r < number_of_relocs; r++)
             {
@@ -322,19 +200,19 @@ DWORD Utils::File::ExecutableFileHeaders::RvaToOffset(DWORD rva) const
 
 const PIMAGE_DOS_HEADER Utils::File::ExecutableFileHeaders::GetDOSHeader() const
 {
-    return reinterpret_cast<PIMAGE_DOS_HEADER>(const_cast<LPBYTE>(m_buffer.data()));
+    return reinterpret_cast<PIMAGE_DOS_HEADER>(const_cast<LPBYTE>(m_buffer));
 }
 
 const PIMAGE_NT_HEADERS32 Utils::File::ExecutableFileHeaders::GetNTHeader() const
 {
     auto dos_header = GetDOSHeader();
-    return reinterpret_cast<PIMAGE_NT_HEADERS32>(const_cast<LPBYTE>(m_buffer.data()) + dos_header->e_lfanew);
+    return reinterpret_cast<PIMAGE_NT_HEADERS32>(const_cast<LPBYTE>(m_buffer) + dos_header->e_lfanew);
 }
 
 const PIMAGE_SECTION_HEADER Utils::File::ExecutableFileHeaders::GetSectionHeader() const
 {
     auto dos_header = GetDOSHeader();
-    return reinterpret_cast<PIMAGE_SECTION_HEADER>(const_cast<LPBYTE>(m_buffer.data()) + dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS32));
+    return reinterpret_cast<PIMAGE_SECTION_HEADER>(const_cast<LPBYTE>(m_buffer) + dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS32));
 }
 
 const PIMAGE_EXPORT_DIRECTORY Utils::File::ExecutableFileHeaders::GetExportDirectory() const
@@ -345,7 +223,7 @@ const PIMAGE_EXPORT_DIRECTORY Utils::File::ExecutableFileHeaders::GetExportDirec
     if (nt_header->OptionalHeader.NumberOfRvaAndSizes >= IMAGE_DIRECTORY_ENTRY_EXPORT &&
         nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
     {
-        directory = const_cast<LPBYTE>(m_buffer.data()) + RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        directory = const_cast<LPBYTE>(m_buffer) + RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     }
     return reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>(directory);
 }

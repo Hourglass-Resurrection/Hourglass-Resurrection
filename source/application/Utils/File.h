@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -17,37 +17,6 @@ namespace Utils
 {
     namespace File
     {
-        class File
-        {
-        public:
-            /*
-             * The access, share, create and flags variables map against the counterparts
-             * in the CreateFile() API.
-             */
-            File(const std::wstring& filename, DWORD access, DWORD share, DWORD create, DWORD flags);
-            ~File();
-            /*
-             * TODO: Read/WriteFile to return SIZE_T instead?
-             */
-            bool ReadFile(LPBYTE buffer, SIZE_T length, SIZE_T* read);
-            bool WriteFile(const LPBYTE buffer, SIZE_T length, SIZE_T* written);
-            bool CloseFile();
-            /*
-             * Returns the file size in bytes.
-             * Returns 0 on failure.
-             */
-            SIZE_T GetSize();
-            /*
-             * Returns the new position of the file pointer in the file.
-             * Returns -1 on failure.
-             */
-            LONGLONG Seek(LONGLONG distance, DWORD starting_point);
-
-            bool IsValid() const;
-        private:
-            HANDLE m_file;
-        };
-
         /*
          * ExecutableFileHeaders provides access to decoded contents of the PE / COFF headers
          * in an executable file.
@@ -81,6 +50,7 @@ namespace Utils
             };
 
             ExecutableFileHeaders(const std::wstring& filename);
+            ~ExecutableFileHeaders();
 
             /*
              * Returns the size (in bytes) of the DLL as it would be when loaded using i.e.
@@ -111,7 +81,9 @@ namespace Utils
             const PIMAGE_SECTION_HEADER GetSectionHeader() const;
             const PIMAGE_EXPORT_DIRECTORY GetExportDirectory() const;
 
-            std::vector<BYTE> m_buffer;
+            HANDLE m_file;
+            HANDLE m_mapped_file;
+            const BYTE* m_buffer;
 
             bool m_valid;
         };

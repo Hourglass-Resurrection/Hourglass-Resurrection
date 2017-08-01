@@ -144,6 +144,7 @@
     <ClCompile Include="AVIDumping\AVIDumper.cpp" />
     <ClCompile Include="AVIDumping\WaitableBool.cpp" />
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
+    <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp" />
     <ClCompile Include="Utils\File\FileDialog.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
@@ -170,7 +171,6 @@
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
     <ClCompile Include="inject\process.cpp" />
-    <ClCompile Include="Utils\File.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\input.h" />
