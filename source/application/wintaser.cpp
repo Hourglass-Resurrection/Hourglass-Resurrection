@@ -3905,7 +3905,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)", found->first, found->second.name);
+                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
@@ -3937,7 +3937,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                debugprintf(L"Tracing thread(id=0x%X) (name=%S)", found->first, found->second.name);
+                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
@@ -3995,7 +3995,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                     DWORD threadId = gameThreadIdList[i];
                                                     ThreadInfo& info = hGameThreads[threadId];
                                                     HANDLE hThread = info.handle;
-                                                    debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, info.name);
+                                                    debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, info.name);
                                                     DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
                                                 }
                                             }
@@ -4068,7 +4068,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
 							if(found != hGameThreads.end())
 							{
-								debugprintf(L"Tracing thread (id=0x%X) (name=%S)", found->first, found->second.name);
+								debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
 							}
 						}
@@ -4084,7 +4084,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								if(threadId == de.dwThreadId)
 									continue;
 								ThreadInfo& info = hGameThreads[threadId];
-								debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, info.name);
+								debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, info.name);
                                 DbgHelp::StackWalk(de.dwProcessId, info.handle, PrintStackTrace);
 							}
 
@@ -4416,7 +4416,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				//int waitCount = threadInfo.waitingCount;
 				//debugprintf("thread status: id=0x%X, handle=0x%X, suspend=%d, wait=%d, name=%s\n", threadId, hThread, suspendCount, waitCount, threadInfo.name);
 				debugprintf(L"thread status: id=0x%X, handle=0x%X, suspend=%d, name=%S\n", threadId, hThread, suspendCount, threadInfo.name);
-				debugprintf(L"Tracing thread (id=0x%X) (name=%S)", threadId, threadInfo.name);
+				debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, threadInfo.name);
                 DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
 			}
 
