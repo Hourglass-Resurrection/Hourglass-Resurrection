@@ -137,6 +137,22 @@ public:
 };
 
 /*
+ * An unknown type with an unknown size. Might have an available name.
+ */
+class DbgHelpUnknownUnsizedType
+{
+public:
+    const std::optional<std::wstring> m_name;
+
+    DbgHelpUnknownUnsizedType(std::optional<std::wstring> name = std::nullopt) : m_name(name) {}
+
+    std::wstring GetName() const
+    {
+        return m_name.value_or(L"unknown"s);
+    }
+};
+
+/*
  * An enum of either a basic type or an unknown type.
  */
 class DbgHelpEnumType
@@ -180,7 +196,10 @@ public:
 class DbgHelpPointerType
 {
 public:
-    const std::variant<DbgHelpBasicType, DbgHelpUnknownType, DbgHelpEnumType> m_underlying_type;
+    const std::variant<DbgHelpBasicType,
+                       DbgHelpUnknownType,
+                       DbgHelpEnumType,
+                       DbgHelpUnknownUnsizedType> m_underlying_type;
 
     /*
      * Size of the pointer type (differs between 32-bit and 64-bit targets).
@@ -192,6 +211,8 @@ public:
     DbgHelpPointerType(DbgHelpUnknownType underlying_type, size_t size)
         : m_underlying_type(underlying_type), m_size(size) {}
     DbgHelpPointerType(DbgHelpEnumType underlying_type, size_t size)
+        : m_underlying_type(underlying_type), m_size(size) {}
+    DbgHelpPointerType(DbgHelpUnknownUnsizedType underlying_type, size_t size)
         : m_underlying_type(underlying_type), m_size(size) {}
 
     std::wstring GetName() const

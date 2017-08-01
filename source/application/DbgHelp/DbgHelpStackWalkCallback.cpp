@@ -192,6 +192,30 @@ namespace
                             return DbgHelpPointerType(DbgHelpUnknownType(underlying_length), length);
                         }
                     }
+                    else
+                    {
+                        /*
+                         * The underlying type has unknown length. Perhaps we can at least retrieve the name.
+                         *
+                         * TODO: The only case of this I stumbled upon so far is SymTagFunctionType.
+                         *       It doesn't have a name, but it can be printed. This requires more work though.
+                         * -- YaLTeR
+                         */
+                        std::optional<std::wstring> name;
+
+                        DWORD underlying_type_tag;
+                        if (underlying_type->get_symTag(&underlying_type_tag) == S_OK)
+                        {
+                            BSTR name_bstr;
+                            if (type_info->get_name(&name_bstr) == S_OK)
+                            {
+                                name = name_bstr;
+                                SysFreeString(name_bstr);
+                            }
+                        }
+
+                        return DbgHelpPointerType(DbgHelpUnknownUnsizedType(name), length);
+                    }
                 }
             }
             break;
