@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #pragma once
@@ -350,7 +350,7 @@ namespace IPC
             /*
              * Build format string based on size of T.
              */
-            swprintf(format, ARRAYSIZE(format), L"0x%%0%d%sX", sizeof(T) * 2, sizeof(T) > 4 ? L"I64X" : L"l");
+            swprintf(format, ARRAYSIZE(format), L"0x%%0%d%sX", sizeof(T) * 2, sizeof(T) > 4 ? L"I64" : L"l");
             m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
             m_pos = std::min(m_pos, ARRAYSIZE(m_message));
             return *this;
