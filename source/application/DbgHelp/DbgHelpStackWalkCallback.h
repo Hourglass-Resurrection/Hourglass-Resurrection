@@ -58,6 +58,7 @@ private:
     HANDLE m_process;
     IDiaStackFrame* m_frame;
     const DbgHelpPrivate::ModuleData* m_mod_info;
+    ULONGLONG m_stack_frame_base;
 
     DWORD m_unsure;
     std::vector<ParamInfo> m_param_info;

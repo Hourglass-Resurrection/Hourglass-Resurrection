@@ -253,6 +253,8 @@ DbgHelpStackWalkCallback::DbgHelpStackWalkCallback(HANDLE process, IDiaStackFram
     m_unsure(0),
     m_params_enumerated(false)
 {
+    if (m_frame->get_base(&m_stack_frame_base) != S_OK)
+        m_stack_frame_base = 0;
 }
 
 ULONGLONG DbgHelpStackWalkCallback::GetProgramCounter()
@@ -386,10 +388,13 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
         {
             return;
         }
+
         /*
          * This will be incremented for each found symbol, with it's size.
+         * The parameters start at offset = 4.
+         * -- YaLTeR
          */
-        DWORD offset = 0;
+        DWORD offset = 4;
 
         for (const auto& sym_info : enum_symbols)
         {
@@ -426,6 +431,7 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
             {
                 name = nullptr;
             }
+
             /*
              * The cast should be safe, if a parameter on the stack needs more than 4 GB of memory
              * something else has probably gone really awry.
@@ -449,8 +455,7 @@ void DbgHelpStackWalkCallback::EnumerateParameters()
 std::optional<IDbgHelpStackWalkCallback::ParameterValue>
 DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
 {
-    ULONGLONG stackframe_base = 0;
-    if (m_frame->get_base(&stackframe_base) != S_OK)
+    if (m_stack_frame_base == 0)
     {
         return std::nullopt;
     }
@@ -525,8 +530,8 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
      */
     if (value.has_value())
     {
-        bool success = std::visit([this, &stackframe_base, &param_info](auto& t) {
-            ULONGLONG address = stackframe_base + param_info.m_offset;
+        bool success = std::visit([this, &param_info](auto& t) {
+            ULONGLONG address = m_stack_frame_base + param_info.m_offset;
             SIZE_T read_bytes;
 
             return ReadProcessMemory(m_process,
