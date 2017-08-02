@@ -129,19 +129,18 @@ public:
         {
             return;
         }
-        m_print_message = new IPC::DebugMessage();
-        *m_print_message << LogCategoryToString(category);
+        m_print_message << LogCategoryToString(category);
         int threadStamp = Hooks::getCurrentThreadstamp();
         if (threadStamp)
         {
-            *m_print_message << "[" << threadStamp << "]";
+            m_print_message << "[" << threadStamp << "]";
         }
         else
         {
-            *m_print_message << "[MAIN]";
+            m_print_message << "[MAIN]";
         }
-        *m_print_message << "[f=" << Hooks::getCurrentFramestamp() << "]";
-        *m_print_message << "[t=" << Hooks::getCurrentTimestamp() << "] ";
+        m_print_message << "[f=" << Hooks::getCurrentFramestamp() << "]";
+        m_print_message << "[t=" << Hooks::getCurrentTimestamp() << "] ";
     }
 
     DebugLog(const DebugLog<category>&) = delete;
@@ -151,9 +150,8 @@ public:
         {
             return;
         }
-        *m_print_message << "\n";
-        IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, m_print_message, sizeof(*m_print_message));
-        delete m_print_message;
+        m_print_message << "\n";
+        IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &m_print_message, sizeof(m_print_message));
     }
     DebugLog& operator=(const DebugLog&) = delete;
 
@@ -164,11 +162,11 @@ public:
         {
             return *this;
         }
-        *m_print_message << value;
+        m_print_message << value;
         return *this;
     }
 private:
-    IPC::DebugMessage* m_print_message;
+    IPC::DebugMessage m_print_message;
     LogCategory m_category;
 };
 
