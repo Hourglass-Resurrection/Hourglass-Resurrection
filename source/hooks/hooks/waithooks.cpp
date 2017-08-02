@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -27,7 +27,7 @@ namespace Hooks
     //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
     //		// to make the game run at a lower framerate than it naturally does.
     //		if(dwMilliseconds >= 5)
-            if (VerifyIsTrustedCaller(!tls.callerisuntrusted))
+            if (VerifyIsTrustedCaller())
                 detTimer.AddDelay(dwMilliseconds, TRUE, TRUE);
 
             dwMilliseconds = 0;
@@ -57,7 +57,7 @@ namespace Hooks
         BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
 
         //if(dwMilliseconds && s_frameThreadId == GetCurrentThreadId()) // main thread waiting?
-        if (dwMilliseconds && isFrameThread && !(bAlertable || !VerifyIsTrustedCaller(!tls.callerisuntrusted)))
+        if (dwMilliseconds && isFrameThread && !(bAlertable || !VerifyIsTrustedCaller()))
         {
             // add a delay for framerate adjustment and to take large sleeps into account.
     //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
@@ -119,7 +119,7 @@ namespace Hooks
             if (dwMilliseconds > 0)
             {
                 //	if(tls.isFrameThread && !tls.callerisuntrusted) // only apply this to the main thread
-                if (tls_IsPrimaryThread() && VerifyIsTrustedCaller(!tls.callerisuntrusted)) // only apply this to the main thread
+                if (tls_IsPrimaryThread() && VerifyIsTrustedCaller()) // only apply this to the main thread
                 {
                     // add the delay logically but don't physically wait yet
     //				if(rly){
@@ -330,7 +330,7 @@ namespace Hooks
                 // for eversion with multithreading disabled
                 dwMilliseconds = 0;
             }
-            else if (!tls.callerisuntrusted) // hack: if caller is untrusted already, it would have more trouble causing desync than otherwise, so in that case let it wait naturally to avoid frequent deadlocks in quartz.dll at Iji loading screens
+            else if (VerifyIsTrustedCaller()) // hack: if caller is untrusted already, it would have more trouble causing desync than otherwise, so in that case let it wait naturally to avoid frequent deadlocks in quartz.dll at Iji loading screens
             {
                 //if(dwMilliseconds == 0)
                 //{

@@ -144,6 +144,7 @@
     <ClCompile Include="AVIDumping\AVIDumper.cpp" />
     <ClCompile Include="AVIDumping\WaitableBool.cpp" />
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
+    <ClCompile Include="TrustedModule.cpp" />
     <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp" />
     <ClCompile Include="Utils\File\FileDialog.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="..\shared\version.h" />
     <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="TrustedModule.h" />
     <ClInclude Include="Utils\File.h" />
     <ClInclude Include="Utils\COM.h" />
   </ItemGroup>

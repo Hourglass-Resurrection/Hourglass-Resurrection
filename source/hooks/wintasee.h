@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #pragma once
@@ -18,7 +18,7 @@ bool RedrawScreen();
 BOOL tls_IsPrimaryThread();
 BOOL tls_IsPrimaryThread2(struct ThreadLocalStuff* pCurTls);
 
-bool VerifyIsTrustedCaller(bool trusted);
+bool VerifyIsTrustedCaller();
 
 bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer);
 

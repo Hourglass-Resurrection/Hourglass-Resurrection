@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -43,7 +43,6 @@ namespace Hooks
         HWND oldGamehwnd = gamehwnd;
 
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         curtls.treatDLLLoadsAsClient++;
         HWND hwnd = CreateWindowExA(dwExStyle, lpClassName,
             lpWindowName, dwStyle, X, Y, nWidth, nHeight,
@@ -52,7 +51,6 @@ namespace Hooks
         MySetWindowTextA(hwnd, lpWindowName);
 
         curtls.treatDLLLoadsAsClient--;
-        curtls.callerisuntrusted--;
         LOG() << "made hwnd = " << hwnd;
 #ifdef EMULATE_MESSAGE_QUEUES
         if (hwnd)
@@ -157,13 +155,11 @@ namespace Hooks
         createWindowDepth++;
         HWND oldGamehwnd = gamehwnd;
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         curtls.treatDLLLoadsAsClient++;
         HWND hwnd = CreateWindowExW(dwExStyle, lpClassName,
             lpWindowName, dwStyle, X, Y, nWidth, nHeight,
             hWndParent, hMenu, hInstance, lpParam);
         curtls.treatDLLLoadsAsClient--;
-        curtls.callerisuntrusted--;
         LOG() << "made hwnd = " << hwnd;
 #ifdef EMULATE_MESSAGE_QUEUES
         if (hwnd)
@@ -492,7 +488,7 @@ namespace Hooks
         // IsWindowFakeFullscreen checks disabled because they let window position info leak to Eternal Daughter and possibly others (maybe need to use ::IsChild inside IsWindowFakeFullscreen)
         // VerifyIsTrustedCaller checks added as a hack so that DirectDrawClipper can still get the real window coordinates
         // TODO: instead of calling VerifyIsTrustedCaller we could probably have MyDirectDrawSurface::MyBlt set a flag for us. although maybe this way is safer.
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             if (!lpRect)
                 return FALSE;
@@ -508,7 +504,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyGetWindowRect(HWND hWnd, LPRECT lpRect)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             if (!lpRect)
                 return FALSE;
@@ -525,7 +521,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyClientToScreen(HWND hWnd, LPPOINT lpPoint)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             return (lpPoint != NULL);
         }
@@ -535,7 +531,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyScreenToClient(HWND hWnd, LPPOINT lpPoint)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             return (lpPoint != NULL);
         }

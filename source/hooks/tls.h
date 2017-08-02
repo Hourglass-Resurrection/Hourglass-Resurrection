@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #pragma once
@@ -17,7 +17,6 @@ struct ThreadLocalStuff
 	BOOL isFrameThread;
 	BOOL isFirstThread;
 	BOOL createdFirstWindow;
-	LONG callerisuntrusted; // in this context "untrusted" means I can't trust it to be deterministic and behave the same between OS versions. was originally called "indefprochandler". TODO: may need to implement a way to ask the debugger to check the callstack to see if it's either my code or the game's code or some dll in the game's folder that's calling the current code, to catch cases where I have no entry function to hook.
 	LONG crawlHackDisableCount; // testing
 	LONG destroyWindowDepth;
 	BOOL callingClientLoadLibrary;
@@ -81,7 +80,6 @@ private:
 		isFrameThread = FALSE;
 		isFirstThread = FALSE;
 		createdFirstWindow = FALSE;
-		callerisuntrusted = 0;
 		crawlHackDisableCount = 0;
 		destroyWindowDepth = 0;
 		callingClientLoadLibrary = FALSE;

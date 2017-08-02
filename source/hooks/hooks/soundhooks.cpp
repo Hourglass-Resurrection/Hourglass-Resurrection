@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "external/dsound.h"
@@ -1130,9 +1130,7 @@ namespace Hooks
 		        ENTER(this);
 		        //bool dst = disableSelfTicking;
 		        //disableSelfTicking = true;
-		        tls.callerisuntrusted++;
 		        ULONG count = m_dsb->Release();
-		        tls.callerisuntrusted--;
 		        //disableSelfTicking = dst;
 		        if(0 == count)
 			        delete this;
@@ -1732,11 +1730,9 @@ namespace Hooks
 		        ThreadLocalStuff& curtls = tls;
 		        const char* oldName = curtls.curThreadCreateName;
 		        curtls.curThreadCreateName = "DirectSound";
-		        curtls.callerisuntrusted++;
 		
 		        HRESULT rv = m_ds->Initialize(pcGuidDevice);
 		
-		        curtls.callerisuntrusted--;
 		        curtls.curThreadCreateName = oldName;
 		        return rv;
 	        }
@@ -2630,12 +2626,8 @@ namespace Hooks
             // MymciSendCommandA seems to call MymciSendCommandW at least once internally so maybe this isn't necessary,
             // but I'll keep it in case some other OS version skips that step.
 
-            ThreadLocalStuff& curtls = tls;
-            curtls.callerisuntrusted++; // helps Eternal Daughter sync (especially when fast-forwarding with sleep skip on) and allows us to help prevent Iji deadlock in MyWaitForMultipleObjects when threads are enabled
-
             MCIERROR rv = mciSendCommandA(mciId, uMsg, dwParam1, dwParam2);
 
-            curtls.callerisuntrusted--;
             return rv;
         }
 
@@ -2643,18 +2635,16 @@ namespace Hooks
         HOOKFUNC MCIERROR WINAPI MymciSendCommandW(MCIDEVICEID mciId, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
         {
             ThreadLocalStuff& curtls = tls;
-            curtls.callerisuntrusted++;
 
-            const char* oldName = tls.curThreadCreateName;
+            const char* oldName = curtls.curThreadCreateName;
             if (!oldName) // in this case, only suggest a name if the caller hasn't already
                 tls.curThreadCreateName = "MediaControl";
 
             MCIERROR rv = mciSendCommandW(mciId, uMsg, dwParam1, dwParam2);
 
             if (!oldName)
-                tls.curThreadCreateName = oldName;
+                curtls.curThreadCreateName = oldName;
 
-            curtls.callerisuntrusted--;
             return rv;
         }
     }
@@ -2681,7 +2671,6 @@ namespace Hooks
                 //else
             {
                 ThreadLocalStuff& curtls = tls;
-                curtls.callerisuntrusted++;
 
                 const char* oldName = curtls.curThreadCreateName;
                 curtls.curThreadCreateName = "DirectSound";
@@ -2705,7 +2694,6 @@ namespace Hooks
                         rv = DS_OK;
                     }
                 }
-                curtls.callerisuntrusted--;
                 curtls.curThreadCreateName = oldName;
                 return rv;
             }
@@ -2730,7 +2718,6 @@ namespace Hooks
                 //else
             {
                 ThreadLocalStuff& curtls = tls;
-                curtls.callerisuntrusted++;
 
                 const char* oldName = curtls.curThreadCreateName;
                 curtls.curThreadCreateName = "DirectSound8";
@@ -2756,7 +2743,6 @@ namespace Hooks
                 }
 
                 curtls.curThreadCreateName = oldName;
-                curtls.callerisuntrusted--;
                 return rv;
             }
         }

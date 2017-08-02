@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <vector>
@@ -1000,8 +1000,6 @@ namespace Hooks
             STDMETHOD(CreateDevice)(REFGUID rguid, IDirectInputDeviceN** device, LPUNKNOWN unknown)
             {
                 ENTER();
-                ThreadLocalStuff& curtls = tls;
-                curtls.callerisuntrusted++;
                 HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
                 if (SUCCEEDED(hr))
                 {
@@ -1010,7 +1008,6 @@ namespace Hooks
                     // (at least if rguid == GUID_SysKeyboard that's what it'll do)
                     HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, rguid);
                 }
-                curtls.callerisuntrusted--;
 
                 return hr;
             }
@@ -1021,10 +1018,7 @@ namespace Hooks
                 // FIXME: NYI.
                 // this is leaking data to the game!
                 // for now, let's at least untrust it.
-                ThreadLocalStuff& curtls = tls;
-                curtls.callerisuntrusted++;
                 HRESULT rv = m_di->EnumDevices(devType, callback, ref, flags);
-                curtls.callerisuntrusted--;
                 return rv;
             }
 
@@ -1049,12 +1043,9 @@ namespace Hooks
             STDMETHOD(CreateDeviceEx)(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d)
             {
                 ENTER(a.Data1, b.Data1);
-                ThreadLocalStuff& curtls = tls;
-                curtls.callerisuntrusted++;
                 HRESULT hr = m_di->CreateDeviceEx(a, b, c, d);
                 if (SUCCEEDED(hr))
                     HookCOMInterface(b, c);
-                curtls.callerisuntrusted--;
                 return hr;
             }
 
@@ -1436,7 +1427,6 @@ namespace Hooks
             ThreadLocalStuff& curtls = tls;
             const char* oldName = curtls.curThreadCreateName;
             curtls.curThreadCreateName = "DirectInput";
-            curtls.callerisuntrusted++;
             HRESULT rv = DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
 
             if (SUCCEEDED(rv))
@@ -1455,7 +1445,6 @@ namespace Hooks
                 LOG() << "DirectInputCreateA FAILED, all on its own. Returned " << rv;
             }
             curtls.curThreadCreateName = oldName;
-            curtls.callerisuntrusted--;
 
             return rv;
         }
@@ -1466,7 +1455,6 @@ namespace Hooks
             ThreadLocalStuff& curtls = tls;
             const char* oldName = curtls.curThreadCreateName;
             curtls.curThreadCreateName = "DirectInput";
-            curtls.callerisuntrusted++;
             HRESULT rv = DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
 
             if (SUCCEEDED(rv))
@@ -1485,7 +1473,6 @@ namespace Hooks
                 LOG() << "DirectInputCreateW FAILED, all on its own. Returned " << rv;
             }
             curtls.curThreadCreateName = oldName;
-            curtls.callerisuntrusted--;
 
             return rv;
         }
@@ -1495,7 +1482,6 @@ namespace Hooks
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
-            curtls.callerisuntrusted++;
             const char* oldName = curtls.curThreadCreateName;
             curtls.curThreadCreateName = "directinputex";
             HRESULT rv = DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
@@ -1509,7 +1495,6 @@ namespace Hooks
                 LOG() << "DirectInputCreateEx FAILED, all on its own. Returned " << rv;
             }
             curtls.curThreadCreateName = oldName;
-            curtls.callerisuntrusted--;
             return rv;
         }
 
@@ -1519,7 +1504,6 @@ namespace Hooks
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
-            curtls.callerisuntrusted++;
             const char* oldName = curtls.curThreadCreateName;
             curtls.curThreadCreateName = "directinput8";
             HRESULT rv = DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
@@ -1533,7 +1517,6 @@ namespace Hooks
                 LOG() << "DirectInput8Create FAILED, all on its own. Returned " << rv;
             }
             curtls.curThreadCreateName = oldName;
-            curtls.callerisuntrusted--;
             return rv;
         }
 
