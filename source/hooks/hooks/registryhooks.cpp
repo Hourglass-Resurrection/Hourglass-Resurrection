@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -165,11 +165,9 @@ namespace Hooks
     {
         ENTER(nIndex);
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         curtls.treatDLLLoadsAsClient++;
         int systemResult = GetSystemMetrics(nIndex);
         curtls.treatDLLLoadsAsClient--;
-        curtls.callerisuntrusted--;
         int rv = systemResult;
         switch (nIndex)
         {

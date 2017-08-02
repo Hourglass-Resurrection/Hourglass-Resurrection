@@ -59,6 +59,7 @@ using namespace Config;
 
 #include "AVIDumping\AVIDumper.h"
 
+#include "TrustedModule.h"
 #include "DbgHelp/DbgHelp.h"
 #include "Utils/COM.h"
 
@@ -921,17 +922,6 @@ void ReceiveDllLoadInfosPointer(LPVOID dll_load_info_pointer)
 	remoteDllLoadInfos = dll_load_info_pointer;
 	dllLoadInfos.numInfos = 0;
 }
-
-
-static void* remoteTrustedRangeInfos = 0;
-
-void ReceiveTrustedRangeInfosPointer(LPVOID trusted_range_infos_pointer, HANDLE process)
-{
-	remoteTrustedRangeInfos = trusted_range_infos_pointer;
-	void SendTrustedRangeInfos(HANDLE hProcess);
-	SendTrustedRangeInfos(process);
-}
-
 
 static void* remoteGeneralInfoFromDll = 0;
 
@@ -2885,174 +2875,7 @@ LPCWSTR ExceptionCodeToDescription(DWORD code)
 	}
 }
 
-static int CountSharedPrefixLength(const std::wstring& a, const std::wstring& b)
-{
-	int i = 0;
-	while(a[i] && tolower(a[i]) == tolower(b[i]))
-		i++;
-	return i;
-}
-static int CountBackslashes(const std::wstring& str)
-{
-    return std::count(str.begin(), str.end(), L'\\');
-}
 
-static int IsPathTrusted(const std::wstring& path)
-{
-	// we want to return 0 for all system or installed dlls,
-	// 2 for our own dll, 1 for the game exe,
-	// and 1 for any dlls or exes around the game's directory
-
-    if (!wcsicmp(path.c_str(), injected_dll_path.c_str()))
-    {
-        return 2;
-    }
-
-    int outCount = 2;
-
-	if(CountBackslashes(exe_filename.c_str() + CountSharedPrefixLength(exe_filename, path)) < outCount)
-		return 1;
-	if(CountBackslashes(sub_exe_filename.c_str() + CountSharedPrefixLength(sub_exe_filename, path)) < outCount)
-		return 1;
-
-    if(path.length() >= 4 && !wcsnicmp(path.c_str() + path.length() - 4, L".cox", 4)) // hack, we can generally assume the game outputted any dll that has this extension
-		return 1;
-
-	return 0;
-}
-
-
-struct MyMODULEINFO
-{
-	MODULEINFO mi;
-	std::wstring path;
-};
-static std::vector<MyMODULEINFO> trustedModuleInfos;
-static MyMODULEINFO injectedDllModuleInfo;
-
-void SetTrustedRangeInfo(TrustedRangeInfo& to, const MyMODULEINFO& from)
-{
-	DWORD start = (DWORD)from.mi.lpBaseOfDll;
-	to.end = start + from.mi.SizeOfImage;
-	to.start = start;
-}
-
-void SendTrustedRangeInfos(HANDLE hProcess)
-{
-	TrustedRangeInfos infos = {};
-
-	SetTrustedRangeInfo(infos.infos[0], injectedDllModuleInfo);
-	infos.numInfos++;
-
-	int count = trustedModuleInfos.size();
-	for(int i = 0; i < count; i++)
-	{
-		if(i+1 < ARRAYSIZE(infos.infos))
-		{
-			SetTrustedRangeInfo(infos.infos[1+i], trustedModuleInfos[i]);
-			infos.numInfos++;
-		}
-	}
-	
-	SIZE_T bytesWritten = 0;
-	WriteProcessMemory(hProcess, remoteTrustedRangeInfos, &infos, sizeof(infos), &bytesWritten);
-}
-
-bool IsInRange(DWORD address, const MODULEINFO& range)
-{
-	return (DWORD)((DWORD)address - (DWORD)range.lpBaseOfDll) < (DWORD)(range.SizeOfImage);
-}
-bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
-{
-	int count = trustedModuleInfos.size();
-	for(int i = 0; i < count; i++)
-		if(IsInRange(address, trustedModuleInfos[i].mi))
-			return true;
-	return (address == 0);
-}
-
-DWORD CalculateModuleSize(LPVOID hModule, HANDLE hProcess)
-{
-	// as noted below, I can't use GetModuleInformation here,
-	// and I don't want to rely on the debughelp dll for core functionality either.
-	DWORD size = 0;
-	MEMORY_BASIC_INFORMATION mbi = {};
-	while(VirtualQueryEx(hProcess, (char*)hModule+size+0x1000, &mbi, sizeof(mbi))
-	&& (DWORD)mbi.AllocationBase == (DWORD)hModule)
-		size += mbi.RegionSize;
-	return std::max<DWORD>(size, 0x10000);
-}
-
-void RegisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
-{
-	int trusted = IsPathTrusted(path);
-	if(!trusted)
-		return; // we only want to keep track of the trusted ones
-
-	MyMODULEINFO mmi;
-//	if(!GetModuleInformation(hProcess, (HMODULE)hModule, &mmi.mi, sizeof(mmi.mi)))
-	{
-		// GetModuleInformation never works, and neither does EnumProcessModules.
-		// I think it's because we're calling it too early.
-		// (either that or some versions of PSAPI.DLL are simply busted)
-		// so this is the best fallback I could come up with
-		mmi.mi.lpBaseOfDll = hModule;
-		mmi.mi.SizeOfImage = CalculateModuleSize(hModule, hProcess);
-		mmi.mi.EntryPoint = hModule; // don't care
-	}
-	mmi.path = path;
-	if(trusted == 2)
-	{
-		injectedDllModuleInfo = mmi;
-		//SendTrustedRangeInfos(hProcess); // disabled because it's probably not ready to receive it yet.
-	}
-	else
-	{
-		for(unsigned int i = 0; i < trustedModuleInfos.size(); i++)
-		{
-			MyMODULEINFO& mmi2 = trustedModuleInfos[i];
-			if((DWORD)mmi.mi.lpBaseOfDll >= (DWORD)mmi2.mi.lpBaseOfDll
-			&& (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage <= (DWORD)mmi2.mi.lpBaseOfDll+mmi2.mi.SizeOfImage)
-			{
-				debugprintf(L"apparently already TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
-				return;
-			}
-		}
-		trustedModuleInfos.push_back(mmi);
-		SendTrustedRangeInfos(hProcess);
-	}
-	debugprintf(L"TRUSTED MODULE 0x%08X - 0x%08X (%s)\n", mmi.mi.lpBaseOfDll, (DWORD)mmi.mi.lpBaseOfDll+mmi.mi.SizeOfImage, path);
-}
-void UnregisterModuleInfo(LPVOID hModule, HANDLE hProcess, LPCWSTR path)
-{
-	int trusted = IsPathTrusted(path);
-	if(!trusted)
-		return; // we only want to keep track of the trusted ones
-
-	MEMORY_BASIC_INFORMATION mbi = {};
-	if(VirtualQueryEx(hProcess, (char*)hModule+0x1000, &mbi, sizeof(mbi)))
-		hModule = (HMODULE)mbi.AllocationBase;
-
-	if(trusted == 2)
-	{
-		injectedDllModuleInfo.path.clear();
-		memset(&injectedDllModuleInfo.mi, 0, sizeof(injectedDllModuleInfo.mi));
-		//SendTrustedRangeInfos(hProcess); // disabled because the thing we'd send it to is what just got unloaded
-	}
-	else
-	{
-		int count = trustedModuleInfos.size();
-		for(int i = 0; i < count; i++)
-		{
-			if(trustedModuleInfos[i].mi.lpBaseOfDll == hModule)
-			{
-				trustedModuleInfos.erase(trustedModuleInfos.begin() + i);
-				SendTrustedRangeInfos(hProcess);
-				break;
-			}
-		}
-	}
-}
 
 
 
@@ -3258,10 +3081,6 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 		AutoCritSect cs(&g_gameHWndsCS);
 		gameHWnds.clear();
 	}
-
-	trustedModuleInfos.clear();
-	injectedDllModuleInfo.path.clear();
-	memset(&injectedDllModuleInfo.mi, 0, sizeof(injectedDllModuleInfo.mi));
 
 	{
 		//std::map<LPVOID,HANDLE>::iterator iter;
@@ -3875,9 +3694,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     case IPC::Command::CMD_DLL_LOAD_INFO_BUF:
                                         ReceiveDllLoadInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()));
                                         break;
-                                    case IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF:
-                                        ReceiveTrustedRangeInfosPointer(*reinterpret_cast<LPVOID*>(buf.data()), hGameProcess);
-                                        break;
                                     case IPC::Command::CMD_TAS_FLAGS_BUF:
                                         ReceiveTASFlagsPointer(*reinterpret_cast<LPVOID*>(buf.data()));
                                         break;
@@ -3939,6 +3755,35 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             {
                                                 debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
+                                            }
+                                        }
+                                        break;
+                                    case IPC::Command::CMD_IS_TRUSTED_CALLER:
+                                        {
+                                            std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
+                                            if (found != hGameThreads.end())
+                                            {
+                                                std::wstring current_module;
+                                                UINT module_depth = 0;
+                                                bool is_trusted = true;
+                                                DbgHelp::StackWalk(de.dwProcessId, found->second.handle,
+                                                                   [&de, &is_trusted, &module_depth, &current_module](IDbgHelpStackWalkCallback &data) {
+                                                    if (current_module == data.GetModuleName())
+                                                    {
+                                                        return IDbgHelpStackWalkCallback::Action::CONTINUE;
+                                                    }
+                                                    is_trusted = TrustedModule::IsTrusted(de.dwProcessId, data.GetModuleName());
+                                                    current_module = data.GetModuleName();
+                                                    module_depth++;
+
+                                                    if (module_depth > 1 || !is_trusted)
+                                                    {
+                                                        return IDbgHelpStackWalkCallback::Action::STOP;
+                                                    }
+
+                                                    return IDbgHelpStackWalkCallback::Action::CONTINUE;
+                                                });
+                                                reinterpret_cast<IPC::TrustedCaller*>(buf.data())->SetTrusted(is_trusted);
                                             }
                                         }
                                         break;
@@ -4348,7 +4193,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						std::wstring filename = GetFileNameFromFileHandle(de.u.LoadDll.hFile);
 						debugprintf(L"LOADED DLL: %s\n", filename.c_str());
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
-						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename.c_str());
+                        TrustedModule::OnLoad(de.dwProcessId, filename.c_str());
 						AddAndSendDllInfo(filename.c_str(), true, hProcess);
 
 #if 0 // DLL LOAD CALLSTACK PRINTING
@@ -4386,7 +4231,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					LPCWSTR filename = dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll].c_str();
 					debugprintf(L"UNLOADED DLL: %s\n", filename);
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
-					UnregisterModuleInfo(de.u.UnloadDll.lpBaseOfDll, hProcess, filename);
+                    TrustedModule::OnUnload(de.dwProcessId, filename);
 					AddAndSendDllInfo(filename, false, hProcess);
 					//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = NULL;
 					dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll] = L"";
@@ -4461,7 +4306,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					debugprintf(L"CREATED PROCESS: %s\n", filename.c_str());
                     sub_exe_filename = filename;
                     DbgHelp::AddProcess(de.u.CreateProcessInfo.hProcess, de.dwProcessId);
-					RegisterModuleInfo(de.u.CreateProcessInfo.lpBaseOfImage, de.u.CreateProcessInfo.hProcess, filename.c_str());
+                    TrustedModule::OnLoad(de.dwProcessId, filename);
 					hGameThreads[de.dwThreadId] = de.u.CreateProcessInfo.hThread;
 					ASSERT(hGameThreads[de.dwThreadId].handle);
 					hGameThreads[de.dwThreadId].hProcess = de.u.CreateProcessInfo.hProcess;
@@ -4681,8 +4526,6 @@ static DWORD WINAPI AfterDebugThreadExitThread(LPVOID lpParam)
 	}
 	ClearAndDeallocateContainer(hGameThreads);
 	ClearAndDeallocateContainer(gameThreadIdList);
-	ClearAndDeallocateContainer(trustedModuleInfos);
-	ClearAndDeallocateContainer(injectedDllModuleInfo.path);
 	ClearAndDeallocateContainer(allProcessInfos);
 
 	DeallocateRamSearch();

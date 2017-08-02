@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "external/d3d.h"
@@ -434,15 +434,12 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirect3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
     {
         ENTER(SDKVersion);
-        ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreate(SDKVersion, lplpd3d, pUnkOuter);
         if (SUCCEEDED(rv))
         {
             HookCOMInterfaceUnknownVT(IDirect3D, *lplpd3d);
             //HookCOMInterface(IID_IDirect3D, (LPVOID*)lplpd3d);
         }
-        curtls.callerisuntrusted--;
         return rv;
     }
     HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreate7,
@@ -450,15 +447,12 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirect3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
     {
         ENTER(SDKVersion);
-        ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreate7(SDKVersion, lplpd3d, pUnkOuter);
         if (SUCCEEDED(rv))
         {
             HookCOMInterfaceUnknownVT(IDirect3D7, *lplpd3d);
             //HookCOMInterface(IID_IDirect3D7, (LPVOID*)lplpd3d); // doesn't work in Ninjah
         }
-        curtls.callerisuntrusted--;
         return rv;
     }
     HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreateDevice,
@@ -467,12 +461,9 @@ namespace Hooks
     {
         // maybe unnecessary?
         ENTER(lpGUID->Data1, lpd3ddevice);
-        ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreateDevice(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
         if (SUCCEEDED(rv))
             HookCOMInterfaceUnknownVT(IDirect3DDevice, *lplpd3ddevice);
-        curtls.callerisuntrusted--;
         return rv;
     }
     HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreateDevice7,
@@ -481,12 +472,9 @@ namespace Hooks
     {
         // maybe unnecessary?
         ENTER(lpGUID->Data1, lpd3ddevice);
-        ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         HRESULT rv = Direct3DCreateDevice7(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
         if (SUCCEEDED(rv))
             HookCOMInterfaceUnknownVT(IDirect3DDevice7, *lplpd3ddevice);
-        curtls.callerisuntrusted--;
         return rv;
     }
 

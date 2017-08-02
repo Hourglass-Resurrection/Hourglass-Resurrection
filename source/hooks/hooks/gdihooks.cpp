@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -245,7 +245,7 @@ namespace Hooks
                 if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
                 {
                     if ((/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(nXOriginDest,nYOriginDest))
-                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
                     {
                         if ((nWidthSrc >= gdiFrameBigEnoughWidth && nHeightSrc >= gdiFrameBigEnoughHeight)
                             || HDCSizeBigEnoughForFrameBoundary(hdcSrc))
@@ -310,7 +310,7 @@ namespace Hooks
                 if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
                 {
                     if ((/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(nXDest,nYDest))
-                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
                     {
                         if ((nWidth >= gdiFrameBigEnoughWidth && nHeight >= gdiFrameBigEnoughHeight)
                             || HDCSizeBigEnoughForFrameBoundary(hdcSrc))
@@ -414,7 +414,7 @@ namespace Hooks
             if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
             {
                 if (rv != 0 && rv != GDI_ERROR && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
-                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
                 {
                     if (!(tasflags.aviMode & 1))
                         FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
@@ -438,7 +438,7 @@ namespace Hooks
             if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
             {
                 if (rv != 0 && rv != GDI_ERROR && rop == SRCCOPY && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
-                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
                 {
                     if (!(tasflags.aviMode & 1))
                         FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);

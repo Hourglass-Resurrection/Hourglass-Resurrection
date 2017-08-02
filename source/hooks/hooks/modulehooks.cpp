@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -254,12 +254,10 @@ namespace Hooks
             //debugsplatmem(myEBP, "ebp");
 
 #if 1 // new method, get list of loaded dlls from debugger (because LdrLoadDll can load multiple dlls)
-    //_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this context
-        ThreadLocalStuff* pCurtls = 0;
+    //_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this 
         if (tlsIsSafeToUse)
         {
-            pCurtls = &tls;
-            ThreadLocalStuff& curtls = *pCurtls;
+            ThreadLocalStuff& curtls = tls;
             if (curtls.callingClientLoadLibrary || curtls.treatDLLLoadsAsClient)
             {
                 curtls.callingClientLoadLibrary = FALSE; // see MyKiUserCallbackDispatcher
@@ -275,8 +273,6 @@ namespace Hooks
             // TEST HACK
             if (WideStringContains(ModuleFileName->Buffer, "dpofeedb.dll"))
                 return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
-
-            pCurtls->callerisuntrusted++;
         }
         //if(tlsIsSafeToUse)
         //{
@@ -288,8 +284,6 @@ namespace Hooks
         //if(rv < 0)
         //	debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %S (0x%X)\n", ModuleFileName->Buffer, rv);
         UpdateLoadedOrUnloadedDllHooks();
-        if (pCurtls)
-            pCurtls->callerisuntrusted--;
         return rv;
 #else
 
@@ -508,7 +502,6 @@ namespace Hooks
     {
         ENTER(riid.Data1, rclsid.Data1);
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
         const char* newName = riidToName(chooseriid(riid, rclsid));
         LOG() << "newName = " << newName;
@@ -531,7 +524,6 @@ namespace Hooks
         if (newName)
             curtls.curThreadCreateName = oldName;
         UpdateLoadedOrUnloadedDllHooks();
-        curtls.callerisuntrusted--;
         return rv;
     }
 
@@ -547,12 +539,10 @@ namespace Hooks
         ThreadLocalStuff& curtls = tls;
         if (newName)
             curtls.curThreadCreateName = newName;
-        curtls.callerisuntrusted++;
     }
     static void PostCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, HRESULT hr, const char* oldName)
     {
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted--;
         if (SUCCEEDED(hr))
             HookCOMInterface(riid, ppv);
         //if(newName)
@@ -653,7 +643,6 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     {
         ENTER(riid.Data1);
         ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         const char* oldName = curtls.curThreadCreateName;
         const char* newName = riidToName(riid);
         if (!oldName && !newName)
@@ -665,54 +654,32 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
             HookCOMInterface(riid, ppvObject);
         if (newName)
             curtls.curThreadCreateName = oldName;
-        curtls.callerisuntrusted--;
         return rv;
     }
-
-    struct AutoUntrust
-    {
-        ThreadLocalStuff* pCurtls;
-        AutoUntrust()
-        {
-            pCurtls = ThreadLocalStuff::GetIfAllocated();
-            if (pCurtls)
-                pCurtls->callerisuntrusted++;
-        }
-        ~AutoUntrust()
-        {
-            if (pCurtls)
-                pCurtls->callerisuntrusted--;
-        }
-    };
 
     HOOK_FUNCTION(PVOID, NTAPI, RtlAllocateHeap, PVOID HeapHandle, ULONG Flags, SIZE_T Size);
     HOOKFUNC PVOID NTAPI MyRtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size)
     {
-        AutoUntrust au;
         return RtlAllocateHeap(HeapHandle, Flags, Size);
     }
     HOOK_FUNCTION(PVOID, NTAPI, RtlCreateHeap, ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters);
     HOOKFUNC PVOID NTAPI MyRtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters)
     {
-        AutoUntrust au;
         return RtlCreateHeap(Flags, HeapBase, ReserveSize, CommitSize, Lock, Parameters);
     }
     HOOK_FUNCTION(PVOID, RPC_ENTRY, NdrAllocate, PMIDL_STUB_MESSAGE pStubMsg, size_t Len);
     HOOKFUNC PVOID RPC_ENTRY MyNdrAllocate(PMIDL_STUB_MESSAGE pStubMsg, size_t Len)
     {
-        AutoUntrust au;
         return NdrAllocate(pStubMsg, Len);
     }
     HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitializeNew, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
     HOOKFUNC void RPC_ENTRY MyNdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
     {
-        AutoUntrust au;
         return NdrClientInitializeNew(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
     }
     HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitialize, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
     HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
     {
-        AutoUntrust au;
         return NdrClientInitialize(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
     }
 

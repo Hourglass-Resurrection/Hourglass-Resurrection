@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "external/d3d8.h"
@@ -1011,12 +1011,9 @@ namespace Hooks
     HOOKFUNC IDirect3D8* WINAPI MyDirect3DCreate8(UINT SDKVersion)
     {
         ENTER();
-        ThreadLocalStuff& curtls = tls;
-        curtls.callerisuntrusted++;
         IDirect3D8* rv = Direct3DCreate8(SDKVersion);
         if (SUCCEEDED(rv))
             HookCOMInterface(IID_IDirect3D8, (void**)&rv);
-        curtls.callerisuntrusted--;
         return rv;
     }
 

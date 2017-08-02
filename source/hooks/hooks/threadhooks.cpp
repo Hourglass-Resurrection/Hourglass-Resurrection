@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <map>
@@ -152,7 +152,7 @@ namespace Hooks
         ENTER(lpStartAddress, tls.curThreadCreateName);
         //cmdprintf("SHORTTRACE: 3,50");
 
-        if (tasflags.threadMode == 0 || tasflags.threadMode == 3 && !tls.curThreadCreateName || tasflags.threadMode == 4 && tls.curThreadCreateName || (tasflags.threadMode == 5 && !VerifyIsTrustedCaller(!tls.callerisuntrusted)))
+        if (tasflags.threadMode == 0 || tasflags.threadMode == 3 && !tls.curThreadCreateName || tasflags.threadMode == 4 && tls.curThreadCreateName || (tasflags.threadMode == 5 && !VerifyIsTrustedCaller()))
         {
             const char* threadTypeName = tls.curThreadCreateName;
             LOG() << "thread creation denied. name=" << (threadTypeName ? threadTypeName : "unknown_thread");
@@ -387,7 +387,6 @@ namespace Hooks
             while (true)
                 SuspendThread(hThread);
         }
-        tls.callerisuntrusted++;
         ExitThread(dwExitCode);
     }
 

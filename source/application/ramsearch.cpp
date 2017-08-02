@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // A few notes about this implementation of a RAM search window:
@@ -170,10 +170,6 @@ void RamSearchSaveUndoStateIfNotTooBig(HWND hDlg);
 static const int tooManyRegionsForUndo = 10000;
 
 
-
-bool IsInNonCurrentYetTrustedAddressSpace(DWORD address);
-
-
 void ResetMemoryRegions()
 {
 //	Clear_Sound_Buffer();
@@ -215,8 +211,8 @@ void ResetMemoryRegions()
 				//if((unsigned int)mbi.BaseAddress > 0x00400000 + 0x00800000
 				//&& ((unsigned int)mbi.BaseAddress < 0x7ff00000 || (unsigned int)mbi.BaseAddress >= 0x80000000))
 				//	continue; // 0x7f000000  ... 0x7ffb0000
-				if(!IsInNonCurrentYetTrustedAddressSpace((unsigned int)mbi.BaseAddress))
-					continue;
+				/*if(!IsInNonCurrentYetTrustedAddressSpace((unsigned int)mbi.BaseAddress))
+					continue;*/
 				//BOOL a = (mbi.State & MEM_PRIVATE);
 				//BOOL b = (mbi.State & MEM_IMAGE);
 				//BOOL c = (mbi.State & MEM_MAPPED);

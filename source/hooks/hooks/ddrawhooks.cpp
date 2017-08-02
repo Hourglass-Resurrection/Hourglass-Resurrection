@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "external/ddraw.h"
@@ -779,7 +779,7 @@ namespace Hooks
 			    if(!pBackbuffer)
 			    {
 				    rv = Unlock(pThis, lockRect);
-				    if(VerifyIsTrustedCaller(!tls.callerisuntrusted)) // needed for rescue: the beagles (must avoid setting usingSDLOrDD there, at least the way MySwapBuffers was originally) and could help avoid spurious extra frames in some other games
+				    if(VerifyIsTrustedCaller()) // needed for rescue: the beagles (must avoid setting usingSDLOrDD there, at least the way MySwapBuffers was originally) and could help avoid spurious extra frames in some other games
 					    HandleNewFrame(0, 0, pThis, pThis, (LPRECT)lockRect, (LPRECT)lockRect);
 			    }
 			    else
@@ -794,7 +794,7 @@ namespace Hooks
 				    MyBlt(pThis, (LPRECT)lockRect,pBackbuffer,(LPRECT)lockRect,0,NULL);
     #endif
 				    //cmdprintf("DEBUGPAUSE: 4");
-				    if(VerifyIsTrustedCaller(!tls.callerisuntrusted)) // needed for rescue: the beagles (must avoid setting usingSDLOrDD there, at least the way MySwapBuffers was originally) and could help avoid spurious extra frames in some other games
+				    if(VerifyIsTrustedCaller()) // needed for rescue: the beagles (must avoid setting usingSDLOrDD there, at least the way MySwapBuffers was originally) and could help avoid spurious extra frames in some other games
 					    HandleNewFrame(0, 0, pThis, pBackbuffer, (LPRECT)lockRect, (LPRECT)lockRect);
 			    }
 		    }
@@ -1683,7 +1683,7 @@ namespace Hooks
 
 		    ThreadLocalStuff& curtls = tls;
 
-		    if(VerifyIsTrustedCaller(!curtls.callerisuntrusted))
+		    if (VerifyIsTrustedCaller())
 		    {
 			    if(!a)
 				    return DDERR_INVALIDPARAMS;
@@ -1696,11 +1696,9 @@ namespace Hooks
 
 		    const char* oldName = curtls.curThreadCreateName;
 		    curtls.curThreadCreateName = "DirectDraw";
-		    curtls.callerisuntrusted++;
 
 		    HRESULT rv = m_dd->GetDeviceIdentifier(a,b);
 
-		    curtls.callerisuntrusted--;
 		    curtls.curThreadCreateName = oldName;
 		    return rv;
 	    }
@@ -1885,8 +1883,6 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirectDrawCreate(GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter)
     {
         ENTER();
-	    ThreadLocalStuff& curtls = tls;
-	    curtls.callerisuntrusted++;
 	    //debugprintf("lplpDD = 0x%X\n", lplpDD);
 	    HRESULT rv = DirectDrawCreate(lpGUID, lplpDD, pUnkOuter);
 
@@ -1894,7 +1890,6 @@ namespace Hooks
 		    HookCOMInterface(IID_IDirectDraw, (LPVOID*)lplpDD);
 	    else
 		    DEBUG_LOG() << "DirectDrawCreate FAILED, all on its own. Returned = " << rv;
-	    curtls.callerisuntrusted--;
 
 	    return rv;
     }
@@ -1904,15 +1899,12 @@ namespace Hooks
     HOOKFUNC HRESULT WINAPI MyDirectDrawCreateEx(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID riid,IUnknown FAR *pUnkOuter)
     {
 	    ENTER(riid.Data1);
-	    ThreadLocalStuff& curtls = tls;
-	    curtls.callerisuntrusted++;
 	    HRESULT rv = DirectDrawCreateEx(lpGuid, lplpDD, riid, pUnkOuter);
 
 	    if(SUCCEEDED(rv))
 		    HookCOMInterface(riid, lplpDD);
 	    else
 		    DEBUG_LOG() << "DirectDrawCreateEx FAILED, all on its own. Returned = " << rv;
-	    curtls.callerisuntrusted--;
 
 	    return rv;
     }

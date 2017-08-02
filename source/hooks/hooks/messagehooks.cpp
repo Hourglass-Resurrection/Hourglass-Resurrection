@@ -1,4 +1,4 @@
-/*  Copyright (C) 2011 nitsuja and contributors
+﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -468,7 +468,7 @@ namespace Hooks
 	    case WM_SYSCOMMAND:
 		    return MAF_BYPASSGAME | MAF_RETURN_CUSTOM;
 	    case WM_COMMAND:
-		    if(VerifyIsTrustedCaller(!tls.callerisuntrusted))
+		    if(VerifyIsTrustedCaller())
 			    return MAF_PASSTHROUGH | MAF_RETURN_OS; // hack to fix F2 command in Eternal Daughter
 		    break;
 	    default:
@@ -652,9 +652,8 @@ namespace Hooks
     // MyWndProcInternal
     LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/)
     {
-	    LONG untrusted = tls.callerisuntrusted;
 	    //untrusted = VerifyIsTrustedCaller(!untrusted) ? 0 : (untrusted ? untrusted : 1);
-	    if(/*inPauseHandler || */(untrusted  > (InSendMessage()?1:0))) // if it's the OS or pause handler calling us back,
+	    if(/*inPauseHandler || */VerifyIsTrustedCaller()) // if it's the OS or pause handler calling us back,
 	    {                                 // we can't rely on it doing so consistently across systems,
 		    if(!(maf & (MAF_INTERCEPT|MAF_BYPASSGAME)))
 		    {
@@ -946,7 +945,7 @@ namespace Hooks
                   << ") denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message " << Msg << "(" << GetWindowsMessageName(Msg)
                   << ") denied because the caller is untrusted.";
@@ -994,7 +993,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1044,7 +1043,7 @@ namespace Hooks
 			    *lpdwResult = 1;
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    if(lpdwResult)
@@ -1097,7 +1096,7 @@ namespace Hooks
 			    *lpdwResult = 1;
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    if(lpdwResult)
@@ -1148,7 +1147,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1208,7 +1207,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1270,7 +1269,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1306,7 +1305,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1341,7 +1340,7 @@ namespace Hooks
 		    //cmdprintf("SHORTTRACE: 3,50");
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1365,9 +1364,7 @@ namespace Hooks
 	    //if(tls.isFrameThread)
 	    if(tls_IsPrimaryThread() || tasflags.messageSyncMode == 2)
 	    {
-			    tls.callerisuntrusted++;
 		    BOOL rv = PostMessageW(hWnd, whitelistUserMessage(Msg), wParam, lParam);
-			    tls.callerisuntrusted--;
 		    return rv;
 	    }
 	    else
@@ -1396,7 +1393,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1422,12 +1419,10 @@ namespace Hooks
 	    //if(tls.isFrameThread)
 	    if(tls_IsPrimaryThread() || tasflags.messageSyncMode >= 2)
 	    {
-			    tls.callerisuntrusted++;
 	    //	if(tasflags.threadMode == 2 || tasflags.threadMode == 3)
 			    rv = PostMessageA(hWnd, whitelistUserMessage(Msg), wParam, lParam);
 	    //	else
 	    //		rv = SendMessageA(hWnd, Msg, wParam, lParam);
-			    tls.callerisuntrusted--;
 		    return rv;
 	    }
 	    else
@@ -1453,7 +1448,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
             LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1478,9 +1473,7 @@ namespace Hooks
 		    return 0;
 	    }
     #else
-	    tls.callerisuntrusted++;
 	    LRESULT rv = PostThreadMessageA(idThread, whitelistUserMessage(Msg), wParam, lParam);
-	    tls.callerisuntrusted--;
 	    return rv;
     #endif
     }
@@ -1494,7 +1487,7 @@ namespace Hooks
             LOG() << "message denied because it's in a reserved range.";
 		    return 1;
 	    }
-	    if(tls.callerisuntrusted)
+	    if (VerifyIsTrustedCaller())
 	    {
 		    LOG() << "message denied because the caller is untrusted.";
 		    return 1;
@@ -1519,9 +1512,7 @@ namespace Hooks
 		    return 0;
 	    }
     #else
-	    tls.callerisuntrusted++;
 	    LRESULT rv = PostThreadMessageW(idThread, whitelistUserMessage(Msg), wParam, lParam);
-	    tls.callerisuntrusted--;
 	    return rv;
     #endif
     }
@@ -1672,17 +1663,13 @@ namespace Hooks
     //		if(tasflags.threadMode == 2 /*|| tasflags.threadMode == 3*/ /*|| !tls_IsPrimaryThread()*/)
 		    if(tasflags.framerate <= 0 && tasflags.messageSyncMode != 0)
 		    {
-			    tls.callerisuntrusted++;
 			    rv = GetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-			    tls.callerisuntrusted--;
 		    }
 		    else
 		    {
     //			while(!rv /*|| !CanMessageReachGame(lpMsg)*/)
 			    {
-				    tls.callerisuntrusted++;
 				    rv = PeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, PM_REMOVE);
-				    tls.callerisuntrusted--;
 			    }
 		    }
             LOG() << "got message " << lpMsg->hwnd << ", " << lpMsg->message << " ("
@@ -1694,7 +1681,7 @@ namespace Hooks
 		    if(rv && (CanMessageReachGame(lpMsg)))
 		    {
 			    //if(!inPauseHandler)
-			    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+			    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller())
 				    tls.peekedMessage = TRUE;
 			    FinalizeWndProcMessage(lpMsg);
 			    return rv;
@@ -1780,17 +1767,13 @@ namespace Hooks
 		    BOOL rv = FALSE;
 		    if(tasflags.messageSyncMode >= 2 || (!tls_IsPrimaryThread() && tasflags.messageSyncMode != 0))
 		    {
-			    tls.callerisuntrusted++;
 			    rv = GetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-			    tls.callerisuntrusted--;
 		    }
 		    else
 		    {
 			    //while(!rv /*|| !CanMessageReachGame(lpMsg)*/)
 			    {
-				    tls.callerisuntrusted++;
 				    rv = PeekMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, PM_REMOVE);
-				    tls.callerisuntrusted--;
 				    //if(!rv)
 				    //	MySleep(1);
 			    }
@@ -1800,7 +1783,7 @@ namespace Hooks
 		    if(!rv || (CanMessageReachGame(lpMsg)))
 		    {
 			    //if(!inPauseHandler)
-			    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+			    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller())
 				    tls.peekedMessage = TRUE;
 			    FinalizeWndProcMessage(lpMsg);
 			    return rv;
@@ -1877,9 +1860,7 @@ namespace Hooks
 	    wRemoveMsg |= PM_NOYIELD; // testing
 	    while(true)
 	    {
-		    tls.callerisuntrusted++;
 		    BOOL rv = PeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-		    tls.callerisuntrusted--;
 
 		    if(!rv || (CanMessageReachGame(lpMsg)))
 		    {
@@ -1891,7 +1872,7 @@ namespace Hooks
 				    detTimer.GetTicks(TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
 			    //if(!inPauseHandler)
 			    {
-				    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+				    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller())
 					    tls.peekedMessage = TRUE;
     //				ThreadBoundary(100);
 			    }
@@ -1976,9 +1957,7 @@ namespace Hooks
 	    wRemoveMsg |= PM_NOYIELD; // testing
 	    while(true)
 	    {
-		    tls.callerisuntrusted++;
 		    BOOL rv = PeekMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-		    tls.callerisuntrusted--;
 
 		    if(!rv || (CanMessageReachGame(lpMsg)))
 		    {
@@ -1990,7 +1969,7 @@ namespace Hooks
 				    detTimer.GetTicks(TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
 			    //if(!inPauseHandler)
 			    {
-				    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller(!tls.callerisuntrusted))
+				    if(tls_IsPrimaryThread() && VerifyIsTrustedCaller())
 					    tls.peekedMessage = TRUE;
     //				ThreadBoundary(100);
 			    }
@@ -2058,18 +2037,14 @@ namespace Hooks
     HOOKFUNC LRESULT WINAPI MyDefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
 	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
-	    tls.callerisuntrusted++;
 	    LRESULT rv = DefWindowProcA(hWnd, Msg, wParam, lParam);
-	    tls.callerisuntrusted--;
 	    return rv;
     }
     HOOK_FUNCTION(LRESULT, WINAPI, DefWindowProcW, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     HOOKFUNC LRESULT WINAPI MyDefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
 	    ENTER(hWnd, Msg, GetWindowsMessageName(Msg), wParam, lParam);
-	    tls.callerisuntrusted++;
 	    LRESULT rv = DefWindowProcW(hWnd, Msg, wParam, lParam);
-	    tls.callerisuntrusted--;
 	    return rv;
     }
 

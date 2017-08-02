@@ -159,8 +159,6 @@ namespace IPC
         CMD_INPUT_BUF_REPLY,
         CMD_DLL_LOAD_INFO_BUF,
         CMD_DLL_LOAD_INFO_BUF_REPLY,
-        CMD_TRUSTED_RANGE_INFO_BUF,
-        CMD_TRUSTED_RANGE_INFO_BUF_REPLY,
         CMD_TAS_FLAGS_BUF,
         CMD_TAS_FLAGS_BUF_REPLY,
         CMD_SOUND_INFO,
@@ -197,6 +195,8 @@ namespace IPC
         CMD_DENIED_THREAD_REPLY,
         CMD_STACK_TRACE,
         CMD_STACK_TRACE_REPLY,
+        CMD_IS_TRUSTED_CALLER,
+        CMD_IS_TRUSTED_CALLER_REPLY,
     };
 
     struct CommandFrame
@@ -204,6 +204,21 @@ namespace IPC
         Command m_command;
         DWORD m_command_data_size;
         LPCVOID m_command_data;
+    };
+
+    class TrustedCaller
+    {
+    public:
+        void SetTrusted(bool is_trusted)
+        {
+            m_trusted = is_trusted;
+        }
+        bool GetTrusted()
+        {
+            return m_trusted;
+        }
+    private:
+        bool m_trusted = false;
     };
 
     class FPSInfo

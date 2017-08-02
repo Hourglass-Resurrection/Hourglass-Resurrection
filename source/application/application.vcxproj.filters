@@ -125,6 +125,9 @@
     <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp">
       <Filter>Source Files\Utils\File</Filter>
     </ClCompile>
+    <ClCompile Include="TrustedModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomDLGs.h">
@@ -246,6 +249,9 @@
     </ClInclude>
     <ClInclude Include="DbgHelp\DiaEnumIterator.h">
       <Filter>Source Files\DbgHelp</Filter>
+    </ClInclude>
+    <ClInclude Include="TrustedModule.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -152,8 +152,6 @@ bool RedrawScreen()
 
 static InfoForDebugger infoForDebugger = {};
 
-static TrustedRangeInfos trustedRangeInfos = {};
-
 TasFlags tasflags = {};
 
 PALETTEENTRY activePalette [256];
@@ -195,300 +193,19 @@ BOOL tls_IsPrimaryThread2(ThreadLocalStuff* pCurTls)
 	return s_frameThreadId ? t.isFrameThread : (gamehwnd ? t.createdFirstWindow : t.isFirstThread);
 }
 
-bool IsInRange(DWORD address, const TrustedRangeInfo& range)
+
+
+
+/*
+ * Bleh, hacky...
+ */
+bool VerifyIsTrustedCaller()
 {
-	return (DWORD)((DWORD)address - range.start) < (DWORD)(range.end - range.start);
+    IPC::TrustedCaller tc;
+    IPC::SendIPCMessage(IPC::Command::CMD_IS_TRUSTED_CALLER, &tc, sizeof(tc));
+    return tc.GetTrusted();
 }
 
-bool IsInCurrentDllAddressSpace(DWORD address)
-{
-	return IsInRange(address, trustedRangeInfos.infos[0]);
-}
-bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
-{
-	int count = trustedRangeInfos.numInfos;
-	for(int i = 1; i < std::min(count, trustedRangeInfos.numInfos); i++)
-		if(IsInRange(address, trustedRangeInfos.infos[i]))
-			return true;
-	return (address == 0);
-}
-bool IsInAnyTrustedAddressSpace(DWORD address)
-{
-	int count = trustedRangeInfos.numInfos;
-	for(int i = 0; i < std::min(count, trustedRangeInfos.numInfos); i++)
-		if(IsInRange(address, trustedRangeInfos.infos[i]))
-			return true;
-	return (address == 0);
-}
-
-__declspec(noinline) bool IsNearStackTop(DWORD address)
-{
-	DWORD top = (DWORD)&top;
-	DWORD under = address - top;
-    /*
-     * TODO: Arbitrary limit of what is near a stack top.
-     * Expect random breakage if a function in a chain that ends up
-     * calling this allocates "too much" on the stack.
-     * Stack walks should be done in Hourglass instead, using dbghelp.
-     * -- Warepire
-     */
-	return under < 0x10000;
-}
-bool IsNear(DWORD address, DWORD address2)
-{
-	int diff = address - address2;
-	return diff < 0x10000 && diff > -0x10000;
-}
-
-//void debugsplatmem(DWORD address, const char* name)
-//{
-//	char str [2048];
-//	char* pstr = str;
-//	pstr += sprintf(pstr, "%s=0x%08X", name, address);
-//	if(IsNearStackTop(address))
-//	{
-//		for(int i = 0; i <= 128; i += 4)
-//		{
-//			DWORD value = *((DWORD*)(address + i));
-//			if(value != address)
-////			if(IsNearStackTop(value) || IsInAnyTrustedAddressSpace(value))
-//			{
-//				pstr += sprintf(pstr, ", %s[%d]=0x%08X", name, i, value);
-//				if(IsNearStackTop(value))
-//				{
-//					DWORD subvalue = *((DWORD*)(value));
-//					if(IsInAnyTrustedAddressSpace(subvalue))
-//						pstr += sprintf(pstr, ", *%s[%d]=0x%08X", name, i, subvalue);
-//				}
-//			}
-//			if(!i) continue;
-//			value = *((DWORD*)(address - i));
-//			if(value != address)
-////			if(IsNearStackTop(value) || IsInAnyTrustedAddressSpace(value))
-//			{
-//				pstr += sprintf(pstr, ", %s[%d]=0x%08X", name, -i, value);
-//				if(IsNearStackTop(value))
-//				{
-//					DWORD subvalue = *((DWORD*)(value));
-//					if(IsInAnyTrustedAddressSpace(subvalue))
-//						pstr += sprintf(pstr, ", *%s[%d]=0x%08X", name, -i, subvalue);
-//				}
-//			}
-//		}
-//	}
-//	debugprintf(str);
-//}
-
-// VerifyIsTrustedCaller
-//
-// this is our last defense against unwanted code causing time to advance.
-// in some cases we're on the main thread and tls.untrusted is 0,
-// but the thing calling us is still some "random" OS-specific function in some DLL,
-// so we use this function to detect whether it's really the game's code calling us or not.
-//
-// for one example where this makes a difference:
-// when La-Mulana starts up, if threads are enabled and DirectMusic initializes successfully,
-// the directmusic synth init will call Sleep(10) some number of times,
-// which affects the timer enough to change the random enemy behavior in that game.
-// this is undesirable because:
-// - I can't be sure that DLL always does the same Sleep calls across all platforms. (it doesn't come with the game, so everyone could have a different version of it)
-// - even if it's deterministic, it still breaks sync between different thread options unnecessarily.
-// - I could hook the synth init code and set tls.untrusted, but that solution doesn't scale.
-// which is why this catch-all guard against such problems exists.
-// as hacky as it is, it probably fixes desync problems in a bunch of games.
-bool VerifyIsTrustedCaller(bool trusted)
-{
-	if(!trusted)
-		return false; // if we already know it's untrusted then there's no need to run the test.
-
-//	debugprintf("VerifyIsTrustedCaller wants to do its own stack trace!");
-//	cmdprintf("SHORTTRACE: 3,50");
-
-
-	DWORD myEBP;
-	//DWORD myESP;
-	//DWORD myEIP;
-    __asm
-    {
-    //Label:
-      mov [myEBP], ebp;
-      //mov [myESP], esp;
-      //mov eax, [Label];
-      //mov [myEIP], eax;
-    }
-
-	//debugprintf("myEBP=0x%X, myESP=0x%X, myEIP=0x%X\n", myEBP, myESP, myEIP);
-
-//	debugsplatmem(myESP, "esp");
-//	debugsplatmem(myEIP, "eip");
-
-	DWORD frame=myEBP;
-	DWORD oldFrame=0;
-	DWORD addr;//=myEIP;
-	//__asm { mov frame, ebp }
-	for(int dr=129; --dr;) // can be infinite with seemingly no issues, but I limited the loop just in case
-	{
-//		debugprintf("VerifyIsTrustedCaller: frame = 0x%08x, &frame=0x%X\n", frame, &frame);
-
-//		debugsplatmem(frame, "ebp");
-
-		if(!IsNearStackTop(frame))
-		{
-			// there was no stack frame pointer...
-			// we should explicitly use the /Oy- compiler option to avoid this
-			// (using "Omit Frame Pointers"="No" or #pragma optimize("y",off) isn't enough!)
-			// but it sometimes happens regardless (maybe the trampoline code's fault?)
-			// so anyway
-			// we try to find the next stack frame pointer and continue from there.
-			// I don't want to rely on code I'm not in control of to do the stack walk,
-			// (because determinism across different computers and OS versions is important,
-			// and because I want this function to run very quickly)
-			// but this is still probably not the most robust way of doing it...
-
-			frame = oldFrame + 4; // roll back
-			for(int i=17; --i;)
-			{
-				frame += 4;
-				//debugprintf("trying frame 0x%X", frame);
-				//if(IsNearStackTop(frame))
-				//	debugprintf("= 0x%X", *(DWORD*)frame);
-				//if(IsNearStackTop(frame) && IsNear(*(DWORD*)frame, addr))
-				if(IsNearStackTop(frame) && IsInAnyTrustedAddressSpace(*(DWORD*)frame))
-					break;
-				//debugprintf("failed");
-			}
-			frame -= 4;
-
-			if(!IsNearStackTop(frame))
-			{
-				// TODO: load debughelp StackWalk in this situation?
-				// it seems to be better at getting valid addresses without stack frame pointers.
-				// then again if it's not going to work the same on everyone's computer, it's out.
-				// for now we just give up and assume it's trusted. (assuming the reverse would break much more stuff)
-				static int errcount = 1024; // let's spew out a few errors, but not endlessly
-				if(errcount)
-				{
-					errcount--;
-					DEBUG_LOG() << "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! frame=" << frame;
-					//cmdprintf("SHORTTRACE: 3,50");
-				}
-				return true;
-			}
-
-//			debugprintf("AFTER CORRECTION:");
-//			debugsplatmem(frame, "ebp");
-//	cmdprintf("SHORTTRACE: 3,50");
-		}
-
-		addr = ((DWORD*)frame)[1]; 
-
-		////debugprintf("ebp=0x%X\n", frame);
-		////debugprintf("ebp[0]=0x%X, ebp[4]=0x%X, ebp[8]=0x%X, ebp[12]=0x%X, ebp[-4]=0x%X, ebp[-8]=0x%X, ebp[-12]=0x%X\n", ((DWORD*)frame)[0], ((DWORD*)frame)[1], ((DWORD*)frame)[2], ((DWORD*)frame)[3], ((DWORD*)frame)[-1], ((DWORD*)frame)[-2], ((DWORD*)frame)[-3]);
-		////debugprintf("esp[0]=0x%X, esp[4]=0x%X, esp[8]=0x%X, esp[12]=0x%X, esp[-4]=0x%X, esp[-8]=0x%X, esp[-12]=0x%X\n", ((DWORD*)myESP)[0], ((DWORD*)myESP)[1], ((DWORD*)myESP)[2], ((DWORD*)myESP)[3], ((DWORD*)myESP)[-1], ((DWORD*)myESP)[-2], ((DWORD*)myESP)[-3]);
-//		debugprintf("VerifyIsTrustedCaller: addr = 0x%08x, &addr=0x%X\n", addr, &addr);
-
-		if(IsInNonCurrentYetTrustedAddressSpace(addr))
-		{
-			//debugprintf("TRUSTED: 0x%08x\n", addr);
-			//cmdprintf("SHORTTRACE: 3,50");
-			return true;
-		}
-		else if(!IsInCurrentDllAddressSpace(addr))
-		{
-			//debugprintf("UNTRUSTED: 0x%08x\n", addr); 
-			//cmdprintf("SHORTTRACE: 3,50");
-			return false;
-		}
-
-		oldFrame = frame;
-		frame = *((DWORD*)frame);
-
-	}
-
-	return true;
-}
-
-
-//void ManualBacktrace()
-//{
-//	DWORD myEBP;
-//	//DWORD myESP;
-//	//DWORD myEIP;
-//    __asm
-//    {
-//    //Label:
-//      mov [myEBP], ebp;
-//      //mov [myESP], esp;
-//      //mov eax, [Label];
-//      //mov [myEIP], eax;
-//    }
-//
-//	//debugprintf("myEBP=0x%X, myESP=0x%X, myEIP=0x%X\n", myEBP, myESP, myEIP);
-//
-////	debugsplatmem(myESP, "esp");
-////	debugsplatmem(myEIP, "eip");
-//
-//	DWORD frame=myEBP;
-//	DWORD oldFrame=0;
-//	DWORD addr;//=myEIP;
-//	//__asm { mov frame, ebp }
-//	for(int dr=129; --dr;) // can be infinite with seemingly no issues, but I limited the loop just in case
-//	{
-////		debugprintf("VerifyIsTrustedCaller: frame = 0x%08x, &frame=0x%X\n", frame, &frame);
-//
-////		debugsplatmem(frame, "ebp");
-//
-//		if(!IsNearStackTop(frame))
-//		{
-//			// there was no stack frame pointer...
-//			// we should explicitly use the /Oy- compiler option to avoid this
-//			// (using "Omit Frame Pointers"="No" or #pragma optimize("y",off) isn't enough!)
-//			// but it sometimes happens regardless (maybe the trampoline code's fault?)
-//			// so anyway
-//			// we try to find the next stack frame pointer and continue from there.
-//			// I don't want to rely on code I'm not in control of to do the stack walk,
-//			// (because determinism across different computers and OS versions is important,
-//			// and because I want this function to run very quickly)
-//			// but this is still probably not the most robust way of doing it...
-//
-//			frame = oldFrame + 4; // roll back
-//			for(int i=17; --i;)
-//			{
-//				frame += 4;
-//				//debugprintf("trying frame 0x%X", frame);
-//				//if(IsNearStackTop(frame))
-//				//	debugprintf("= 0x%X", *(DWORD*)frame);
-//				//if(IsNearStackTop(frame) && IsNear(*(DWORD*)frame, addr))
-//				if(IsNearStackTop(frame) && IsInAnyTrustedAddressSpace(*(DWORD*)frame))
-//					break;
-//				//debugprintf("failed");
-//			}
-//			frame -= 4;
-//
-//			if(!IsNearStackTop(frame))
-//			{
-//				return;
-//			}
-//
-////			debugprintf("AFTER CORRECTION:");
-////			debugsplatmem(frame, "ebp");
-////	cmdprintf("SHORTTRACE: 3,50");
-//		}
-//
-//		addr = ((DWORD*)frame)[1]; 
-//
-//		////debugprintf("ebp=0x%X\n", frame);
-//		////debugprintf("ebp[0]=0x%X, ebp[4]=0x%X, ebp[8]=0x%X, ebp[12]=0x%X, ebp[-4]=0x%X, ebp[-8]=0x%X, ebp[-12]=0x%X\n", ((DWORD*)frame)[0], ((DWORD*)frame)[1], ((DWORD*)frame)[2], ((DWORD*)frame)[3], ((DWORD*)frame)[-1], ((DWORD*)frame)[-2], ((DWORD*)frame)[-3]);
-//		////debugprintf("esp[0]=0x%X, esp[4]=0x%X, esp[8]=0x%X, esp[12]=0x%X, esp[-4]=0x%X, esp[-8]=0x%X, esp[-12]=0x%X\n", ((DWORD*)myESP)[0], ((DWORD*)myESP)[1], ((DWORD*)myESP)[2], ((DWORD*)myESP)[3], ((DWORD*)myESP)[-1], ((DWORD*)myESP)[-2], ((DWORD*)myESP)[-3]);
-////		debugprintf("VerifyIsTrustedCaller: addr = 0x%08x, &addr=0x%X\n", addr, &addr);
-//
-//		cmdprintf("DEBUGTRACEADDRESS: %08X", addr);
-//
-//		oldFrame = frame;
-//		frame = *((DWORD*)frame);
-//
-//	}
-//}
 
 
 
@@ -588,7 +305,6 @@ bool pauseHandlerSuspendedSound = false;
 void SaveOrLoad(int slot, bool save)
 {
     VERBOSE_LOG() << "called.";
-	tls.callerisuntrusted++;
 	if(save && tasflags.storeVideoMemoryInSavestates)
 	{
 		Hooks::BackupVideoMemoryOfAllDDrawSurfaces();
@@ -620,7 +336,6 @@ void SaveOrLoad(int slot, bool save)
 		Hooks::DirectSound::PostResumeSound();
 		pauseHandlerSuspendedSound = false;
 	}
-	tls.callerisuntrusted--;
 }
 
 
@@ -637,7 +352,6 @@ void HandlePausedEvents()
 	if(inPauseHandler)
 		return;
 	inPauseHandler = true;
-	tls.callerisuntrusted += 2;
 
 	framecountModSkipFreq = 0; // disable frameskip when fast-forward and frame advance are used simultaneously
 
@@ -702,7 +416,6 @@ void HandlePausedEvents()
 		}
 	}
 
-	tls.callerisuntrusted -= 2;
 	inPauseHandler = false;
 }
 
@@ -1438,7 +1151,6 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
 	detTimer.OnSystemTimerRecalibrated();
 
 	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++; // avoid advancing timer here
 
 	// see MyKiUserCallbackDispatcher... to avoid hardcoding OS-specific constants, we take the chance to measure one of them here.
 	Hooks::watchForCLLApiNum = true; // a few functions like GetSystemMetrics and LoadKeyboardLayout are very likely to call ClientLoadLibrary
@@ -1480,8 +1192,6 @@ DWORD WINAPI PostDllMain(LPVOID lpParam)
         DEBUG_LOG() << "found ClientLoadLibrary ApiNumber = " << Hooks::cllApiNum << ". OS = " << tasflags.osVersionMajor << "." << tasflags.osVersionMinor;
 	}
 	curtls.callingClientLoadLibrary = FALSE;
-
-	curtls.callerisuntrusted--;
 
 	curtls.isFirstThread = true;
 
@@ -1540,10 +1250,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
             // must happen before we call Apply*Intercepts functions
             const DllLoadInfos* dll_load_infos_pointer = &Hooks::dllLoadInfos;
             IPC::SendIPCMessage(IPC::Command::CMD_DLL_LOAD_INFO_BUF, &dll_load_infos_pointer, sizeof(dll_load_infos_pointer));
-
-            // tell it where to write trusted address range info
-            const TrustedRangeInfos* trusted_range_infos_pointer = &trustedRangeInfos;
-            IPC::SendIPCMessage(IPC::Command::CMD_TRUSTED_RANGE_INFO_BUF, &trusted_range_infos_pointer, sizeof(trusted_range_infos_pointer));
 
             // tell it where to write other flags (current only movie playback flag)
             const TasFlags* tas_flags_pointer = &tasflags;
