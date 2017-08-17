@@ -76,7 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Oy- /permissive- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -108,7 +108,7 @@
       </Message>
     </CustomBuildStep>
     <ClCompile>
-      <AdditionalOptions>/Oy- /permissive- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
@@ -184,6 +184,7 @@
     <ClCompile Include="hooks\windowhooks.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\CompilerChecks.h" />
     <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="dettime.h" />
     <ClInclude Include="global.h" />

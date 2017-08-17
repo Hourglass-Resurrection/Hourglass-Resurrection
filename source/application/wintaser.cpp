@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // main EXE cpp
@@ -74,6 +74,10 @@ using namespace Config;
 #include "DirLocks.h"
 #include "ExeFileOperations.h"
 #include "Utils/File.h"
+
+#include "shared/CompilerChecks.h"
+
+ABORT_ON_NEW_COMPILER("/permissive- was disabled due to a bug in VS2017.3, re-enable it now.");
 
 #pragma warning(disable:4995)
 
