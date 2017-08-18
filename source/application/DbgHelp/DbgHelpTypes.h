@@ -10,7 +10,14 @@
 #include <string>
 #include <variant>
 
+/*
+ * This line triggers the C4455 warning erronously due to the following bug:
+ * https://connect.microsoft.com/VisualStudio/feedback/details/3049481/c4455-on-standard-string-literal-operators
+ */
+#pragma warning(push)
+#pragma warning(disable: 4455)
 using std::string_literals::operator""s;
+#pragma warning(pop)
 
 /*
  * This struct contains all basic types which have a defined size.

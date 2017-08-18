@@ -117,7 +117,7 @@ namespace
 
     DbgHelpType GetDbgHelpType(ULONGLONG length, DWORD type_tag, CComPtr<IDiaSymbol> type_info)
     {
-        DbgHelpUnknownType default_return_value = DbgHelpUnknownType(length);
+        DbgHelpUnknownType default_return_value = DbgHelpUnknownType(static_cast<size_t>(length));
 
         DWORD type;
         switch (type_tag)
@@ -158,17 +158,18 @@ namespace
                                      */
 
                                     auto basic_type = GetDbgHelpBasicType(type.GetSize(), btUInt).value();
-                                    return DbgHelpPointerType(basic_type, length);
+                                    return DbgHelpPointerType(basic_type, static_cast<size_t>(length));
                                 }
                                 else
                                 {
-                                    return DbgHelpPointerType(type, length);
+                                    return DbgHelpPointerType(type, static_cast<size_t>(length));
                                 }
                             }, type);
                         }
                         else
                         {
-                            return DbgHelpPointerType(DbgHelpUnknownType(underlying_length), length);
+                            return DbgHelpPointerType(DbgHelpUnknownType(static_cast<size_t>(underlying_length)),
+                                                      static_cast<size_t>(length));
                         }
                     }
                     else
@@ -193,7 +194,7 @@ namespace
                             }
                         }
 
-                        return DbgHelpPointerType(DbgHelpUnknownUnsizedType(name), length);
+                        return DbgHelpPointerType(DbgHelpUnknownUnsizedType(name), static_cast<size_t>(length));
                     }
                 }
             }
@@ -237,7 +238,7 @@ namespace
                     SysFreeString(name_bstr);
                 }
 
-                return DbgHelpUnknownType(length, name);
+                return DbgHelpUnknownType(static_cast<size_t>(length), name);
             }
             break;
         }
