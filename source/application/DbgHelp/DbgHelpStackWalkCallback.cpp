@@ -463,70 +463,89 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
         return std::nullopt;
     }
 
-#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
     /*
      * First, value initialize the variant we're going to read bytes into.
      */
-    class visitor
-    {
-    public:
-        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpBasicType t)
-        {
-            switch (t.m_type)
+    auto visitor = [](auto&& type) {
+        using T = std::decay_t<decltype(type)>;
+
+        auto inner = [](auto&& type) -> std::optional<IDbgHelpStackWalkCallback::ParameterValue> {
+            using T = std::decay_t<decltype(type)>;
+
+            if constexpr (std::is_same_v<T, DbgHelpPointerType>)
             {
-            case DbgHelpBasicType::BasicType::Void:
-                return std::nullopt;
-            case DbgHelpBasicType::BasicType::Char:
-                return char{};
-            case DbgHelpBasicType::BasicType::WideChar:
-                return wchar_t{};
-            case DbgHelpBasicType::BasicType::Char16:
-                return char16_t{};
-            case DbgHelpBasicType::BasicType::Char32:
-                return char32_t{};
-            case DbgHelpBasicType::BasicType::Int8:
-                return int8_t{};
-            case DbgHelpBasicType::BasicType::UnsignedInt8:
-                return uint8_t{};
-            case DbgHelpBasicType::BasicType::Int16:
-                return int16_t{};
-            case DbgHelpBasicType::BasicType::UnsignedInt16:
-                return uint16_t{};
-            case DbgHelpBasicType::BasicType::Int32:
-                return int32_t{};
-            case DbgHelpBasicType::BasicType::UnsignedInt32:
-                return uint32_t{};
-            case DbgHelpBasicType::BasicType::Int64:
-                return int64_t{};
-            case DbgHelpBasicType::BasicType::UnsignedInt64:
-                return uint64_t{};
-            case DbgHelpBasicType::BasicType::Float:
-                return float{};
-            case DbgHelpBasicType::BasicType::Double:
-                return double{};
+                return static_cast<void*>(nullptr);
             }
-        }
+            else if constexpr (std::is_same_v<T, DbgHelpUnknownType>)
+            {
+                /*
+                 * We don't get the values of unknown types.
+                 */
+                return std::nullopt;
+            }
+            else if constexpr (std::is_same_v<T, DbgHelpBasicType>)
+            {
+                switch (type.m_type)
+                {
+                case DbgHelpBasicType::BasicType::Void:
+                    return std::nullopt;
+                case DbgHelpBasicType::BasicType::Char:
+                    return char{};
+                case DbgHelpBasicType::BasicType::WideChar:
+                    return wchar_t{};
+                case DbgHelpBasicType::BasicType::Char16:
+                    return char16_t{};
+                case DbgHelpBasicType::BasicType::Char32:
+                    return char32_t{};
+                case DbgHelpBasicType::BasicType::Int8:
+                    return int8_t{};
+                case DbgHelpBasicType::BasicType::UnsignedInt8:
+                    return uint8_t{};
+                case DbgHelpBasicType::BasicType::Int16:
+                    return int16_t{};
+                case DbgHelpBasicType::BasicType::UnsignedInt16:
+                    return uint16_t{};
+                case DbgHelpBasicType::BasicType::Int32:
+                    return int32_t{};
+                case DbgHelpBasicType::BasicType::UnsignedInt32:
+                    return uint32_t{};
+                case DbgHelpBasicType::BasicType::Int64:
+                    return int64_t{};
+                case DbgHelpBasicType::BasicType::UnsignedInt64:
+                    return uint64_t{};
+                case DbgHelpBasicType::BasicType::Float:
+                    return float{};
+                case DbgHelpBasicType::BasicType::Double:
+                    return double{};
+                default:
+                    /*
+                     * VS is stupid and warns even if everything is covered.
+                     */
+                    assert(false);
+                    return std::nullopt;
+                }
+            }
+            else
+            {
+                /*
+                 * This case is handled below.
+                 */
+                assert(false);
+                return std::nullopt;
+            }
+        };
 
-        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpPointerType t)
+        if constexpr (std::is_same_v<T, DbgHelpEnumType>)
         {
-            return static_cast<void*>(nullptr);
+            return std::visit(inner, type.m_underlying_type);
         }
-
-        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpEnumType t)
+        else
         {
-            return std::visit(*this, t.m_underlying_type);
-        }
-
-        std::optional<IDbgHelpStackWalkCallback::ParameterValue> operator()(DbgHelpUnknownType t)
-        {
-            /*
-             * We don't get the values of unknown types.
-             */
-            return std::nullopt;
+            return inner(type);
         }
     };
 
-    std::optional<IDbgHelpStackWalkCallback::ParameterValue> value = std::visit(visitor(), param_info.m_type.m_type);
+    std::optional<IDbgHelpStackWalkCallback::ParameterValue> value = std::visit(visitor, param_info.m_type.m_type);
 
     /*
      * Now, read the bytes.
