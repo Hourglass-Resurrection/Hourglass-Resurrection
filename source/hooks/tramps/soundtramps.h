@@ -6,14 +6,17 @@
 #include "../intercept.h"
 #include "shared/ipc.h"
 
+struct IDirectSound;
+struct IDirectSound8;
+
 namespace Hooks
 {
     extern LastFrameSoundInfo lastFrameSoundInfo;
 
     namespace DirectSound
     {
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectSoundCreate, LPCGUID pcGuidDevice, struct IDirectSound* *ppDS, LPUNKNOWN pUnkOuter);
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectSoundCreate8, LPCGUID pcGuidDevice, struct IDirectSound8* *ppDS, LPUNKNOWN pUnkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectSoundCreate, LPCGUID pcGuidDevice, IDirectSound **ppDS, LPUNKNOWN pUnkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectSoundCreate8, LPCGUID pcGuidDevice, IDirectSound8 **ppDS, LPUNKNOWN pUnkOuter);
 
         typedef BOOL(CALLBACK *LPDSENUMCALLBACKA)(LPGUID, LPCSTR, LPCSTR, LPVOID);
         typedef BOOL(CALLBACK *LPDSENUMCALLBACKW)(LPGUID, LPCWSTR, LPCWSTR, LPVOID);

@@ -253,6 +253,9 @@
     <ClInclude Include="TrustedModule.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\CompilerChecks.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wintaser.rc" />
