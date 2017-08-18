@@ -28,7 +28,7 @@ int debugprintf(LPCWSTR fmt, ...)
 	WCHAR str[4096];
 	va_list args;
 	va_start (args, fmt);
-	int rv = vswprintf (str, fmt, args);
+	int rv = vswprintf (str, ARRAYSIZE(str), fmt, args);
 	va_end (args);
 #ifdef ANONYMIZE_PRINT_NUMS
 	{

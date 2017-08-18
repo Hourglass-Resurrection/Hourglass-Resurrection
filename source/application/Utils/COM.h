@@ -33,7 +33,7 @@ namespace Utils
         public:
             static void Init();
         private:
-            COMInstance() throw();
+            COMInstance();
             ~COMInstance();
             COMInstance(const COMInstance&) = delete;
             void operator=(const COMInstance&) = delete;

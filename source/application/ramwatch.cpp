@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -285,11 +285,11 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		// Fill in the menu text.
 		if(wcslen(rw_recent_files[x]) < 128)
 		{
-			swprintf(tmp, L"&%d. %s", ( x + 1 ) % 10, rw_recent_files[x]);
+			swprintf(tmp, ARRAYSIZE(tmp), L"&%d. %s", ( x + 1 ) % 10, rw_recent_files[x]);
 		}
 		else
 		{
-			swprintf(tmp, L"&%d. %s", ( x + 1 ) % 10, rw_recent_files[x] + wcslen( rw_recent_files[x] ) - 127);
+			swprintf(tmp, ARRAYSIZE(tmp), L"&%d. %s", ( x + 1 ) % 10, rw_recent_files[x] + wcslen( rw_recent_files[x] ) - 127);
 		}
 
 		// Insert the menu item
@@ -483,12 +483,12 @@ bool Save_Watches()
 		fputwc('\n',WatchFile);
 		wcscpy(currentWatch,Str_Tmp_RW);
 		RWAddRecentFile(currentWatch);
-		swprintf(Str_Tmp_RW,L"%d\n",WatchCount);
+		swprintf(Str_Tmp_RW, ARRAYSIZE(Str_Tmp_RW), L"%d\n", WatchCount);
 		fputws(Str_Tmp_RW,WatchFile);
 		const WCHAR DELIM = '\t';
 		for (int i = 0; i < WatchCount; i++)
 		{
-			swprintf(Str_Tmp_RW,L"%05X%c%08X%c%c%c%c%c%d%c%s\n",i,DELIM,rswatches[i].Address,DELIM,rswatches[i].Size,DELIM,rswatches[i].Type,DELIM,rswatches[i].WrongEndian,DELIM,rswatches[i].comment);
+            swprintf(Str_Tmp_RW, ARRAYSIZE(Str_Tmp_RW), L"%05X%c%08X%c%c%c%c%c%d%c%s\n", i, DELIM, rswatches[i].Address, DELIM, rswatches[i].Size, DELIM, rswatches[i].Type, DELIM, rswatches[i].WrongEndian, DELIM, rswatches[i].comment);
 			fputws(Str_Tmp_RW,WatchFile);
 		}
 		
@@ -514,12 +514,12 @@ if(currentWatch[0] == NULL) //If there is no currently loaded file, run to Save 
 		//fputc(SegaCD_Started?'1':(_32X_Started?'2':'0'),WatchFile);
 		fputwc('0',WatchFile);
 		fputwc('\n',WatchFile);
-		swprintf(Str_Tmp_RW,L"%d\n",WatchCount);
+        swprintf(Str_Tmp_RW, ARRAYSIZE(Str_Tmp_RW), L"%d\n", WatchCount);
 		fputws(Str_Tmp_RW,WatchFile);
 		const WCHAR DELIM = '\t';
 		for (int i = 0; i < WatchCount; i++)
 		{
-			swprintf(Str_Tmp_RW,L"%05X%c%08X%c%c%c%c%c%d%c%s\n",i,DELIM,rswatches[i].Address,DELIM,rswatches[i].Size,DELIM,rswatches[i].Type,DELIM,rswatches[i].WrongEndian,DELIM,rswatches[i].comment);
+            swprintf(Str_Tmp_RW, ARRAYSIZE(Str_Tmp_RW), L"%05X%c%08X%c%c%c%c%c%d%c%s\n", i, DELIM, rswatches[i].Address, DELIM, rswatches[i].Size, DELIM, rswatches[i].Type, DELIM, rswatches[i].WrongEndian, DELIM, rswatches[i].comment);
 			fputws(Str_Tmp_RW,WatchFile);
 		}
 		fclose(WatchFile);
@@ -685,7 +685,7 @@ LRESULT CALLBACK EditWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			//SetWindowPos(hDlg, NULL, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			index = (int)lParam;
-			swprintf(Str_Tmp_RW,L"%08X",rswatches[index].Address);
+            swprintf(Str_Tmp_RW, ARRAYSIZE(Str_Tmp_RW), L"%08X", rswatches[index].Address);
 			SetDlgItemText(hDlg,IDC_EDIT_COMPAREADDRESS,Str_Tmp_RW);
 			if(rswatches[index].comment != NULL)
 				SetDlgItemText(hDlg,IDC_PROMPT_EDIT,rswatches[index].comment);
@@ -961,14 +961,14 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					switch(Item->item.iSubItem)
 					{
 						case 0:
-							swprintf(num,L"%08X",rswatches[iNum].Address);
+                            swprintf(num, ARRAYSIZE(num), L"%08X", rswatches[iNum].Address);
 							Item->item.pszText = num;
 							return true;
 						case 1: {
 							RSVal rsval = rswatches[iNum].CurValue;
 							int t = rswatches[iNum].Type;
 							int size = rswatches[iNum].Size;
-							rsval.print(num, size, t);
+							rsval.print(num, ARRAYSIZE(num), size, t);
 							Item->item.pszText = num;
 						}	return true;
 						case 2:

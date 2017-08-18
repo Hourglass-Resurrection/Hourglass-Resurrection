@@ -924,7 +924,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 	if (FAILED(hr))
 	{
 		WCHAR str[MAX_PATH + 64];
-		swprintf(str, L"AVIFileOpen(\"%s\") failed!\n", filename);
+		swprintf(str, ARRAYSIZE(str), L"AVIFileOpen(\"%s\") failed!\n", filename);
 		debugprintf(L"%s", str);
 		NormalMessageBox(str, L"Error", MB_OK|MB_ICONERROR);
 		return false;

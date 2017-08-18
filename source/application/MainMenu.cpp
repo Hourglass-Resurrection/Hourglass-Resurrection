@@ -12,7 +12,7 @@ void HelperFuncInsertMenuByID(HMENU smenu, UINT pos, UINT flags, UINT_PTR id, LP
 	GetPrivateProfileStringA(language_name[Language], str, def, Str_Tmp, 1024, Language_Path);
 #endif
 	if (disableReason && (flags & (MF_DISABLED | MF_GRAYED)))
-		swprintf(Str_Tmp, L"%s (%s)", str, disableReason);
+		swprintf(Str_Tmp, ARRAYSIZE(Str_Tmp), L"%s (%s)", str, disableReason);
 	else
 		wcscpy(Str_Tmp, str);
 	wcscat(Str_Tmp, suffix);
@@ -134,10 +134,10 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	i = 0;
 
 	on = !exe_filename_only.empty() && !started;
-	swprintf(str, L"&Open Executable... %s%s%s", on ? L"(now open: \"" : L"", on ? exe_filename_only.c_str() : L"", on ? L"\")" : L"");
+	swprintf(str, ARRAYSIZE(str), L"&Open Executable... %s%s%s", on ? L"(now open: \"" : L"", on ? exe_filename_only.c_str() : L"", on ? L"\")" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (started ? MF_GRAYED : 0), ID_FILES_OPENEXE, L"\tCtrl+O", str, L"can't change while running");
 	on = !movie_filename_only.empty() && !started;
-	swprintf(str, L"&Open Movie... %s%s%s", on ? L"(now open: \"" : L"", on ? movie_filename_only.c_str() : L"", on ? L"\")" : L"");
+	swprintf(str, ARRAYSIZE(str), L"&Open Movie... %s%s%s", on ? L"(now open: \"" : L"", on ? movie_filename_only.c_str() : L"", on ? L"\")" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (started ? MF_GRAYED : 0), ID_FILES_OPENMOV, L"\tCtrl+M", str, L"can't change while running");
 
 	InsertMenuW(Files, i++, MF_SEPARATOR, NULL, NULL);
@@ -146,7 +146,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 	HelperFuncInsertMenuByID(Files, i++, Flags, ID_FILES_PLAYMOV, "\tCtrl+P", "&Play Movie...", 0);
 	HelperFuncInsertMenuByID(Files, i++, Flags | (!started?MF_GRAYED:0), ID_FILES_WATCHMOV, "", "&Watch From Beginning", "must be running");
 #endif
-	swprintf(str, started ? L"&Watch From Beginning" : L"&Play Movie %s%s%s", !movie_filename_only.empty() ? L"\"" : L"", movie_filename_only.c_str(), !movie_filename_only.empty() ? L"\"" : L"");
+	swprintf(str, ARRAYSIZE(str), started ? L"&Watch From Beginning" : L"&Play Movie %s%s%s", !movie_filename_only.empty() ? L"\"" : L"", movie_filename_only.c_str(), !movie_filename_only.empty() ? L"\"" : L"");
 	HelperFuncInsertMenuByID(Files, i++, Flags | (!(movieFileExists&&exeFileExists) ? MF_GRAYED : 0), started ? ID_FILES_WATCHMOV : ID_FILES_PLAYMOV, L"\tCtrl+P", str, movieFileExists ? L"must open an executable first" : L"must open a movie first");
 
 	InsertMenuW(Files, i++, MF_SEPARATOR, NULL, NULL);

@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // A few notes about this implementation of a RAM search window:
@@ -345,12 +345,12 @@ void CalculateItemIndices(int itemSize)
 	s_itemIndicesInvalid = FALSE;
 }
 
-bool RSVal::print(LPWSTR output, WCHAR sizeTypeID, WCHAR typeID)
+bool RSVal::print(LPWSTR output, size_t count, WCHAR sizeTypeID, WCHAR typeID)
 {
 	switch(typeID)
 	{
 	case 'f': {
-		int len = swprintf(output, L"%g", (double)*this); // don't use %f, too long
+		int len = swprintf(output, count, L"%g", (double)*this); // don't use %f, too long
 		// now, I want whole numbers to still show a .0 at the end so they look like floats.
 		// I'd check LOCALE_SDECIMAL, but sprintf doesn't seem to use the current locale's decimal separator setting anyway.
 		bool floaty = false;
@@ -368,35 +368,35 @@ bool RSVal::print(LPWSTR output, WCHAR sizeTypeID, WCHAR typeID)
 	case 's':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': output += swprintf(output, L"%d", (char)((int)*this&0xff));
+			case 'b': output += swprintf(output, count, L"%d", (char)((int)*this&0xff));
 				if((unsigned int)(((int)*this&0xff)-32) < (unsigned int)(127-32))
-					swprintf(output, L" ('%c')", (char)((int)*this&0xff));
+					swprintf(output, count, L" ('%c')", (char)((int)*this&0xff));
 				break;
-			case 'w': swprintf(output, L"%d", (short)((int)*this&0xffff)); break;
-			case 'd': swprintf(output, L"%d", (int)*this); break;
-			case 'l': swprintf(output, L"%I64d", (long long)*this); break;
+			case 'w': swprintf(output, count, L"%d", (short)((int)*this&0xffff)); break;
+			case 'd': swprintf(output, count, L"%d", (int)*this); break;
+			case 'l': swprintf(output, count, L"%I64d", (long long)*this); break;
 		}
 		break;
 	case 'u':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': output += swprintf(output, L"%u", (unsigned char)((int)*this&0xff));
+			case 'b': output += swprintf(output, count, L"%u", (unsigned char)((int)*this&0xff));
 				if((unsigned int)(((int)*this&0xff)-32) < (unsigned int)(127-32))
-					swprintf(output, L" ('%c')", (unsigned char)((int)*this&0xff));
+					swprintf(output, count, L" ('%c')", (unsigned char)((int)*this&0xff));
 				break;
-			case 'w': swprintf(output, L"%u", (unsigned short)((int)*this&0xffff)); break;
-			case 'd': swprintf(output, L"%lu", (unsigned long)(int)*this); break;
-			case 'l': swprintf(output, L"%I64u", (unsigned long long)(long long)*this); break;
+			case 'w': swprintf(output, count, L"%u", (unsigned short)((int)*this&0xffff)); break;
+			case 'd': swprintf(output, count, L"%lu", (unsigned long)(int)*this); break;
+			case 'l': swprintf(output, count, L"%I64u", (unsigned long long)(long long)*this); break;
 		}
 		break;
 	default:
 	case 'h':
 		switch(sizeTypeID)
 		{	default:
-			case 'b': swprintf(output, L"%02x", ((int)*this&0xff)); break;
-			case 'w': swprintf(output, L"%04x", ((int)*this&0xffff)); break;
-			case 'd': swprintf(output, L"%08x", (int)*this); break;
-			case 'l': swprintf(output, L"%016I64x", (long long)*this); break;
+			case 'b': swprintf(output, count, L"%02x", ((int)*this&0xff)); break;
+			case 'w': swprintf(output, count, L"%04x", ((int)*this&0xffff)); break;
+			case 'd': swprintf(output, count, L"%08x", (int)*this); break;
+			case 'l': swprintf(output, count, L"%016I64x", (long long)*this); break;
 		}
 		break;
 	}
@@ -431,7 +431,7 @@ bool RSVal::scan(LPCWSTR input, WCHAR sizeTypeID, WCHAR typeID)
 	if(strPtr[0] == '\'' && strPtr[1] && strPtr[2] == '\'')
 	{
 		if(readFloat) forceHex = true;
-		swprintf(strPtr, forceHex ? L"%X" : L"%u", (int)strPtr[1]);
+		swprintf(strPtr, inputLen - (strPtr - temp), forceHex ? L"%X" : L"%u", (int)strPtr[1]);
 	}
 	if(!forceHex && !readFloat)
 	{
@@ -1762,25 +1762,25 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						case 0:
 						{
 							int addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							swprintf(num,L"%08X",addr);
+							swprintf(num, ARRAYSIZE(num), L"%08X", addr);
 							Item->item.pszText = num;
 						}	return true;
 						case 1:
 						{
 							RSVal rsval = CALL_WITH_T_SIZE_TYPES((RSVal)GetCurValueFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							rsval.print(num, rs_type_size, rs_t);
+							rsval.print(num, ARRAYSIZE(num), rs_type_size, rs_t);
 							Item->item.pszText = num;
 						}	return true;
 						case 2:
 						{
 							RSVal rsval = CALL_WITH_T_SIZE_TYPES((RSVal)GetPrevValueFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							rsval.print(num, rs_type_size, rs_t);
+							rsval.print(num, ARRAYSIZE(num), rs_type_size, rs_t);
 							Item->item.pszText = num;
 						}	return true;
 						case 3:
 						{
 							int i = CALL_WITH_T_SIZE_TYPES(GetNumChangesFromItemIndex, rs_type_size,rs_t,noMisalign, iNum);
-							swprintf(num,L"%d",i);
+							swprintf(num, ARRAYSIZE(num), L"%d", i);
 							Item->item.pszText = num;
 						}	return true;
 						//case 4:
@@ -2209,9 +2209,9 @@ void UpdateRamSearchTitleBar(int percent)
 	if(poss <= 0)
 		wcscpy(Str_Tmp_RS,L" RAM Search");
 	else if(percent <= 0)
-		swprintf(Str_Tmp_RS, HEADER_STR STATUS_STR, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
+		swprintf(Str_Tmp_RS, ARRAYSIZE(Str_Tmp_RS), HEADER_STR STATUS_STR, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
 	else
-		swprintf(Str_Tmp_RS, PROGRESS_STR STATUS_STR, percent, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
+		swprintf(Str_Tmp_RS, ARRAYSIZE(Str_Tmp_RS), PROGRESS_STR STATUS_STR, percent, poss, poss==1?L"y":L"ies", regions, regions==1?L"":L"s");
 	SetWindowText(RamSearchHWnd, Str_Tmp_RS);
 }
 
