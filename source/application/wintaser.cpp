@@ -3673,7 +3673,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     switch (ipc_frame.m_command)
                                     {
                                     case IPC::Command::CMD_DEBUG_MESSAGE:
-                                        //debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetDebugMessage());
+                                        DebugLog() << *reinterpret_cast<const IPC::DebugMessage*>(buf.data());
                                         break;
                                     case IPC::Command::CMD_DLL_VERSION:
                                         CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));

@@ -12,6 +12,7 @@
 
 #include <sstream>
 
+#include "shared/ipc.h"
 #include "DbgHelp/DbgHelp.h"
 
 /*
@@ -21,7 +22,10 @@
 class DebugLog
 {
 public:
+    DebugLog();
     ~DebugLog();
+
+    DebugLog& operator<<(const IPC::DebugMessage& dbgmsg);
 
     template<class T>
     DebugLog& operator<<(const T& value)
@@ -29,6 +33,7 @@ public:
         m_buffer << value;
         return *this;
     }
+
 private:
     std::wostringstream m_buffer;
 };

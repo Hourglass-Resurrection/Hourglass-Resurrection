@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #pragma once
@@ -150,7 +150,6 @@ public:
         {
             return;
         }
-        m_print_message << "\n";
         IPC::SendIPCMessage(IPC::Command::CMD_DEBUG_MESSAGE, &m_print_message, sizeof(m_print_message));
     }
     DebugLog& operator=(const DebugLog&) = delete;
