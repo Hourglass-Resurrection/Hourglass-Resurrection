@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -44,7 +44,7 @@ ULONG DbgHelpLoadCallback::Release()
 
 HRESULT DbgHelpLoadCallback::NotifyDebugDir(BOOL executable, DWORD data_length, BYTE* data)
 {
-    debugprintf(L"[Hourglass][DebugSymbols] Found debug directory in %s, length=%d\n", executable ? L"executable" : L"dbg-file", data_length);
+    DebugLog() << "[Hourglass][DebugSymbols] Found debug directory in " << (executable ? "executable" : "dbg-file") << " length=" << data_length;
     return S_OK;
 }
 
@@ -52,7 +52,7 @@ HRESULT DbgHelpLoadCallback::NotifyOpenDBG(LPCOLESTR dbg_path, HRESULT result_co
 {
     if (result_code == S_OK)
     {
-        debugprintf(L"[Hourglass][DebugSymbols] Loaded dbg-file from \"%s\"\n", dbg_path);
+        DebugLog() << "[Hourglass][DebugSymbols] Loaded dbg-file from \"" << dbg_path << "\"";
     }
     return S_OK;
 }
@@ -61,7 +61,7 @@ HRESULT DbgHelpLoadCallback::NotifyOpenPDB(LPCOLESTR pdb_path, HRESULT result_co
 {
     if (result_code == S_OK)
     {
-        debugprintf(L"[Hourglass][DebugSymbols] Loaded pdb-file from \"%s\"\n", pdb_path);
+        DebugLog() << "[Hourglass][DebugSymbols] Loaded pdb-file from \"" << pdb_path << "\"";
     }
     return S_OK;
 }

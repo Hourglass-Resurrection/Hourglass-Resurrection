@@ -1,82 +1,33 @@
-#include <windows.h>
+/*
+* Copyright (c) 2017- Hourglass Resurrection Team
+* Copyright (c) 2011 nitsuja and contributors
+* Hourglass Resurrection is licensed under GPL v2.
+* Refer to the file COPYING.txt in the project root.
+*/
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+#include <fstream>
 #include <sstream>
 
 #include "logging.h"
 
-#include <stdio.h>
-//#include "../shared/logcat.h"
 #include "shared/ipc.h"
 #include "Config.h"
-//#define ANONYMIZE_PRINT_NUMS // for simplifying diffs (debugging)
 
 #include "DbgHelp/DbgHelp.h"
 
-FILE* debuglogfile = NULL;
+namespace
+{
+    std::wofstream gs_debuglogfile;
 
-CRITICAL_SECTION g_debugPrintCS;
-
-//extern TasFlags localTASflags;
+    CRITICAL_SECTION gs_debug_print_cs;
+}
 
 void InitDebugCriticalSection()
 {
-	InitializeCriticalSection(&g_debugPrintCS);
-}
-
-int debugprintf(LPCWSTR fmt, ...)
-{
-	WCHAR str[4096];
-	va_list args;
-	va_start (args, fmt);
-	int rv = vswprintf (str, ARRAYSIZE(str), fmt, args);
-	va_end (args);
-#ifdef ANONYMIZE_PRINT_NUMS
-	{
-		char* pstr = str;
-		while(char c = *pstr)
-		{
-			if(c == '0')
-			{
-				while(char c2 = *pstr)
-				{
-					if(c2 >= '0' && c2 <= '9'
-					|| c2 >= 'a' && c2 <= 'f'
-					|| c2 >= 'A' && c2 <= 'F'
-					|| c2 == 'x' || c2 == 'X')
-					{
-						*pstr = 'X';
-					}
-					else
-					{
-						break;
-					}
-					pstr++;
-				}
-			}
-			pstr++;
-		}
-	}
-#endif
-    if (IsDebuggerPresent())
-    {
-        OutputDebugStringW(str);
-    }
-	EnterCriticalSection(&g_debugPrintCS);
-    if (!debuglogfile)
-    {
-        debuglogfile = fopen("hourglasslog.txt", "w");
-        if (debuglogfile)
-        {
-            fwide(debuglogfile, 1);
-        }
-    }
-	if(debuglogfile)
-	{
-		fputws(str, debuglogfile);
-		fflush(debuglogfile);
-	}
-	LeaveCriticalSection(&g_debugPrintCS);
-	return rv;
+	InitializeCriticalSection(&gs_debug_print_cs);
 }
 
 void PrintLastError(LPCWSTR lpszFunction, DWORD dw)
@@ -89,7 +40,7 @@ void PrintLastError(LPCWSTR lpszFunction, DWORD dw)
 		NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPWSTR)&lpMsgBuf, 0, NULL );
 
-	debugprintf(L"%s failed, error %d: %s", lpszFunction, dw, lpMsgBuf);
+    DebugLog() << lpszFunction << " failed, error " << dw << ": " << lpMsgBuf;
     LocalFree(lpMsgBuf);
 }
 
@@ -169,11 +120,30 @@ IDbgHelpStackWalkCallback::Action PrintStackTrace(IDbgHelpStackWalkCallback& dat
             oss << L'?';
         }
 
-        oss << L'\n';
-
-        debugprintf(L"%s", oss.str().c_str());
+        DebugLog() << oss.str();
 
         return IDbgHelpStackWalkCallback::Action::CONTINUE;
     };
     return dummy();
 };
+
+// TODO: Break filewriting out into it's own globally set function that can be replaced.
+DebugLog::~DebugLog()
+{
+    m_buffer << L"\n";
+    if (IsDebuggerPresent())
+    {
+        OutputDebugStringW(m_buffer.str().c_str());
+    }
+    EnterCriticalSection(&gs_debug_print_cs);
+    if (!gs_debuglogfile.is_open())
+    {
+        gs_debuglogfile.open("hourglasslog.txt", std::wifstream::out);
+    }
+    if (gs_debuglogfile.is_open())
+    {
+        gs_debuglogfile << m_buffer.str();
+        gs_debuglogfile.flush();
+    }
+    LeaveCriticalSection(&gs_debug_print_cs);
+}

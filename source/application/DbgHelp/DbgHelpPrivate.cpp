@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -46,11 +46,11 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     m_loaded_modules[module_base].m_module_name = exec;
     m_loaded_modules[module_base].m_module_size = module_size_in_ram;
 
-    debugprintf(L"[Hourglass][DebugSymbols] Attempting to load symbols for \"%s\"\n", exec.c_str());
+    DebugLog() << "[Hourglass][DebugSymbols] Attempting to load symbols for \"" << exec << "\"";
 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
-        debugprintf(L"[Hourglass][DebugSymbols] No symbols found, using export table as symbols.\n");
+        DebugLog() << "[Hourglass][DebugSymbols] No symbols found, using export table as symbols.";
         m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable(module_base);
         return true;
     }
@@ -81,7 +81,7 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
         }
         else if (rv != S_FALSE)
         {
-            debugprintf(L"symbol->get_platform failed with 0x%X", rv);
+            DebugLog() << "symbol->get_platform failed with " << std::hex << rv;
             return false;
         }
     }

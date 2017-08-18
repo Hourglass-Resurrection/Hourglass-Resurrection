@@ -194,7 +194,7 @@ namespace Config{
         else
         {
             Save_Config(config_file_name.c_str());
-            debugprintf(L"config saved in \"%s\".\n", config_file_name);
+            DebugLog() << "config saved as " << config_file_name;
             return 1;
         }
 	}
@@ -253,10 +253,10 @@ namespace Config{
 
 		// Reeeeeeeeeeeeally weird code...
 		static bool first = true;
-		if(first)
-			first = false;
-		else
-			debugprintf(L"loaded config from \"%S\".\n", Conf_File);
+        if (first)
+            first = false;
+        else
+            DebugLog() << "loaded config from " << Conf_File;
 
 		return 1;
 	}

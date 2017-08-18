@@ -6,29 +6,17 @@
 #include "CustomDLGs.h"
 #include "logging.h"
 
-#ifdef _DEBUG
-	#define _DIRLOCKDEBUG
-#endif
-
-#ifdef _DIRLOCKDEBUG
-	#define dirlockdebug debugprintf
-	#define DirLockPrintLastError PrintLastError
-#else
-	#define dirlockdebug(...) ((void)0)
-	#define DirLockPrintLastError(...) ((void)0)
-#endif
-
 static std::map<LockTypes, HANDLE> locks;
 
 static LPCWSTR LockTypesToString[] = { L"Movie", L"SaveState", };
 
 bool LockDirectory(LPCWSTR directory, LockTypes type)
 {
-	dirlockdebug(L"DirLocking: Locking directory '%s' for %ss.\n", directory, LockTypesToString[(unsigned int)type]);
+    VerboseDebugLog() << "DirLocking: Locking directory '" << directory << "' for " << LockTypesToString[(unsigned int)type] << "s.";
 	// A different directory is already locked, since we will no longer need to hang on to that directory, we'll just Unlock it.
 	if(locks.find(type) != locks.end()) 
 	{
-		dirlockdebug(L"DirLocking: Found existing lock when locking directory for %s\n.", LockTypesToString[(unsigned int)type]);
+        VerboseDebugLog() << "DirLocking: Found existing lock when locking directory for " << LockTypesToString[(unsigned int)type];
 		UnlockDirectory(type);
 	}
 
@@ -39,7 +27,7 @@ bool LockDirectory(LPCWSTR directory, LockTypes type)
 	HANDLE rv = CreateFileW(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), NULL);
 	if(rv == INVALID_HANDLE_VALUE)
 	{
-		DirLockPrintLastError(L"DirLocking: CreateFile", GetLastError());
+		PrintLastError(L"DirLocking: CreateFile", GetLastError());
 		// Locking directory failed, issue an error-message and stop.
 		WCHAR str[1024];
 		swprintf(str, ARRAYSIZE(str), L"Locking the directory '%s' for %ss failed\nPlease make sure that Hourglass has rights to create files in this directory or choose another directory", directory, LockTypesToString[(unsigned int)type]);
@@ -52,7 +40,7 @@ bool LockDirectory(LPCWSTR directory, LockTypes type)
 
 void UnlockAllDirectories()
 {
-	dirlockdebug(L"DirLocking: Releasing all locked directories.\n");
+    VerboseDebugLog() << "DirLocking: Releasing all locked directories.";
 	for(std::map<LockTypes,HANDLE>::iterator i = locks.begin(); i != locks.end(); ++i)
 	{
 		CloseHandle(i->second);
@@ -61,11 +49,11 @@ void UnlockAllDirectories()
 
 void UnlockDirectory(LockTypes type)
 {
-	dirlockdebug(L"DirLocking: Unlocking directory for %ss.\n", LockTypesToString[(unsigned int)type]);
+	VerboseDebugLog() << "DirLocking: Unlocking directory for " << LockTypesToString[(unsigned int)type] << "s.";
 	std::map<LockTypes,HANDLE>::iterator it = locks.find(type);
 	if(it == locks.end())
 	{
-		dirlockdebug(L"DirLocking: ERROR: Couldn't find a locked directory for %ss.\n", LockTypesToString[(unsigned int)type]);
+        VerboseDebugLog() << "DirLocking: ERROR: Couldn't find a locked directory for " << LockTypesToString[(unsigned int)type] << "s.";
 		return; // Directory is not locked, this should never happen...
 	}
 	CloseHandle(it->second);
