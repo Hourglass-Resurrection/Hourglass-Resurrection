@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright(c) 2015- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -19,7 +19,7 @@ namespace
     BOOL SetPrivateProfileIntW(LPCWSTR app_name, LPCWSTR key_name, INT value, LPCWSTR filename)
     {
         WCHAR tmp_str[48];
-        swprintf(tmp_str, L"%d", value);
+        swprintf(tmp_str, ARRAYSIZE(tmp_str), L"%d", value);
         return WritePrivateProfileStringW(app_name, key_name, tmp_str, filename);
     }
 }
@@ -135,7 +135,7 @@ namespace Config{
         }
         else
         {
-            swprintf(Conf_File, L"%s\\%s", this_process_path.c_str(), filename);
+            swprintf(Conf_File, ARRAYSIZE(Conf_File), L"%s\\%s", this_process_path.c_str(), filename);
         }
 
         WritePrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), Conf_File);
@@ -154,10 +154,10 @@ namespace Config{
 
         SetPrivateProfileIntW(L"Debug", L"Load Debug Tracing", traceEnabled, Conf_File);
 
-        swprintf(Str_Tmp, L"%d", AutoRWLoad);
+        swprintf(Str_Tmp, ARRAYSIZE(Str_Tmp), L"%d", AutoRWLoad);
         WritePrivateProfileStringW(L"Watches", L"AutoLoadWatches", Str_Tmp, Conf_File);
 
-        swprintf(Str_Tmp, L"%d", RWSaveWindowPos);
+        swprintf(Str_Tmp, ARRAYSIZE(Str_Tmp), L"%d", RWSaveWindowPos);
         WritePrivateProfileStringW(L"Watches", L"SaveWindowPosition", Str_Tmp, Conf_File);
 
         if (RWSaveWindowPos)
@@ -168,7 +168,7 @@ namespace Config{
 
         for (int i = 0; i < MAX_RECENT_WATCHES; i++)
         {
-            swprintf(Str_Tmp, L"Recent Watch %d", i + 1);
+            swprintf(Str_Tmp, ARRAYSIZE(Str_Tmp), L"Recent Watch %d", i + 1);
             WritePrivateProfileStringW(L"Watches", Str_Tmp, &rw_recent_files[i][0], Conf_File);
         }
 
@@ -210,7 +210,7 @@ namespace Config{
 		if(*filename && filename[1] == ':')
 			wcscpy(Conf_File, filename);
 		else
-			swprintf(Conf_File, L"%s\\%s", this_process_path.c_str(), filename);
+			swprintf(Conf_File, ARRAYSIZE(Conf_File), L"%s\\%s", this_process_path.c_str(), filename);
 
 		GetPrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), temp_str, MAX_PATH, Conf_File);
         exe_filename = temp_str;
@@ -238,7 +238,7 @@ namespace Config{
 		for(int i = 0; i < MAX_RECENT_WATCHES; i++)
 		{
 			WCHAR str[256];
-			swprintf(str, L"Recent Watch %d", i+1);
+			swprintf(str, ARRAYSIZE(str), L"Recent Watch %d", i+1);
 			GetPrivateProfileStringW(L"Watches", str, L"", &rw_recent_files[i][0], 1024, Conf_File);
 		}
 

@@ -614,7 +614,7 @@ void UpdateFrameCountDisplay(int frameCount, int frequency);
 void UpdateRerecordCountDisplay()
 {
     WCHAR rr_count[256];
-    swprintf(rr_count, L"%u", movie.rerecordCount);
+    swprintf(rr_count, ARRAYSIZE(rr_count), L"%u", movie.rerecordCount);
     WCHAR old_rr_count[256];
     GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_RERECORDS), old_rr_count, 256);
     if (wcscmp(rr_count, old_rr_count))
@@ -1074,7 +1074,7 @@ int LoadMovie(const std::wstring& filename)
 		if(movie.version != VERSION)
 		{
             WCHAR str[1024];
-			swprintf(str,
+			swprintf(str, ARRAYSIZE(str),
 			L"This movie was recorded using a different main version of Hourglass Resurrection.\n"
 			L"\n"
 			L"Movie's version: %u\n"
@@ -1099,7 +1099,7 @@ int LoadMovie(const std::wstring& filename)
 		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
 		{
 			WCHAR str[1024];
-			swprintf(str, L"This movie was probably recorded using a different exe.\n\n"
+			swprintf(str, ARRAYSIZE(str), L"This movie was probably recorded using a different exe.\n\n"
 						 L"Movie's exe's md5: %X%X%X%X, size: %d\n"
 						 L"Current exe's md5: %X%X%X%X, size: %lld\n\n"
 						 L"Playing the movie with current exe may lead to the movie desyncing.\n"
@@ -1115,7 +1115,7 @@ int LoadMovie(const std::wstring& filename)
 		if(movie.fps != localTASflags.framerate)
 		{
 			WCHAR str[1024];
-			swprintf(str, L"This movie was recorded using a different fps.\n\n"
+			swprintf(str, ARRAYSIZE(str), L"This movie was recorded using a different fps.\n\n"
 						 L"Movie's fps: %d\nCurrent fps: %d\n\n"
 						 L"Playing the movie with current fps may lead to the movie desyncing.\n"
 						 L"Do you want to use the movies fps instead?\n"
@@ -1127,14 +1127,14 @@ int LoadMovie(const std::wstring& filename)
 				localTASflags.framerate = movie.fps;
 				// Also update the window text.
 				WCHAR fpstext[256];
-				swprintf(fpstext, L"%d", localTASflags.framerate);
+				swprintf(fpstext, ARRAYSIZE(fpstext), L"%d", localTASflags.framerate);
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
 			}
 		}
 		if(movie.it != localTASflags.initialTime)
 		{
 			WCHAR str[1024];
-			swprintf(str, L"This movie was recorded using a different initial time.\n\n"
+			swprintf(str, ARRAYSIZE(str), L"This movie was recorded using a different initial time.\n\n"
 						 L"Movie's initial time: %d\n"
 						 L"Current initial time: %d\n\n"
 						 L"Playing the movie with current initial time may lead to the movie desyncing.\n"
@@ -1147,14 +1147,14 @@ int LoadMovie(const std::wstring& filename)
 				localTASflags.initialTime = movie.it;
 				// Also update the window text.
 				WCHAR ittext[256];
-				swprintf(ittext, L"%d", localTASflags.initialTime);
+				swprintf(ittext, ARRAYSIZE(ittext), L"%d", localTASflags.initialTime);
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), ittext);
 			}
 		}
 		if(wcscmp(movie.commandline, command_line.c_str()) != 0)
 		{
 			WCHAR str[1024];
-			swprintf(str, L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, command_line.c_str());
+			swprintf(str, ARRAYSIZE(str), L"This movie was recorded using a different command line.\n\nMovie's command line: %s\nCurrent command line: %s\n\nPlaying the movie with current command line may lead to the movie desyncing.\nDo you want to use the movies command line instead?\n(Click \"Yes\" to use the movies command line, \"No\" to use current command line)", movie.commandline, command_line.c_str());
 			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
 			if(result == IDYES)
 			{
@@ -1438,7 +1438,7 @@ static void RecoverStaleState(int slot)
 	WCHAR str [2048];
 	if(bestStateToUse <= -2)
 	{
-		swprintf(str,
+		swprintf(str, ARRAYSIZE(str),
 			L"Warning: The savestate you are trying to load has gone stale.\n"
 			L"The only way to recover it is by playing the movie file within it.\n"
 			L"Attempt to recover the savestate by playing the movie from the beginning?\n"
@@ -1448,7 +1448,7 @@ static void RecoverStaleState(int slot)
 	}
 	else if(bestStateToUse == -1)
 	{
-		swprintf(str,
+		swprintf(str, ARRAYSIZE(str),
 			L"Warning: The savestate you are trying to load has gone stale.\n"
 			L"The only way to recover it is by playing the movie file within it.\n"
 			L"Attempt to recover the savestate by continuing the movie from the current state?\n"
@@ -1457,7 +1457,7 @@ static void RecoverStaleState(int slot)
 	}
 	else
 	{
-		swprintf(str,
+		swprintf(str, ARRAYSIZE(str),
 			L"Warning: The savestate you are trying to load has gone stale.\n"
 			L"The only way to recover it is by playing the movie file within it.\n"
 			L"Attempt to recover the savestate by continuing the movie from savestate %d?\n"
@@ -1738,7 +1738,7 @@ void LoadGameStatePhase2(int slot)
 			{
 				warned = true;
 				WCHAR str [1024];
-				swprintf(str, L"Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
+				swprintf(str, ARRAYSIZE(str), L"Warning: Loaded state is at frame %d, but current movie is only %d frames long.\n"
 					L"You should load a different savestate before continuing, or switch to read+write and reload it."
 					, state.movie.currentFrame, static_cast<int>(movie.frames.size()));
 				CustomMessageBox(str, L"Movie End Warning", MB_OK | MB_ICONWARNING);
@@ -1759,7 +1759,7 @@ void LoadGameStatePhase2(int slot)
 					{
 						warned = true;
 						WCHAR str [1024];
-						swprintf(str, L"Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
+						swprintf(str, ARRAYSIZE(str), L"Warning: Loaded state's movie input does not match current movie input on frame %d.\n"
 							L"This can cause a desync. You should load a different savestate before continuing.", i);
 						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
@@ -2280,7 +2280,7 @@ void UpdateGeneralInfoDisplay()
 //			if(strcmp(str,str2))
 //				SetWindowText(GetDlgItem(hWnd, IDC_TIMEINFO_LABEL), str);
 //#endif
-			swprintf(str, L"%d", localGeneralInfoFromDll.ticks);
+			swprintf(str, ARRAYSIZE(str), L"%d", localGeneralInfoFromDll.ticks);
 			GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str2, 256);
 			if(wcscmp(str,str2))
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
@@ -2334,14 +2334,14 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 			if(frameCount != displayedFrameCount)
 			{
 				WCHAR str [256];
-				swprintf(str, L"%d", frameCount);
+				swprintf(str, ARRAYSIZE(str), L"%d", frameCount);
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_CURFRAME), str);
 				displayedFrameCount = frameCount;
 			}
 			if(maxcount != displayedMaxFrameCount)
 			{
 				WCHAR str [256];
-				swprintf(str, L"%d", maxcount);
+				swprintf(str, ARRAYSIZE(str), L"%d", maxcount);
 				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_MAXFRAME), str);
 				displayedMaxFrameCount = maxcount;
 			}
@@ -2356,7 +2356,7 @@ void UpdateFrameCountDisplay(int frameCount, int frequency)
 					int maxhours = maxcount / (60*60 * localTASflags.framerate);
 
 					WCHAR str [256];
-					swprintf(str, L"%dh %dm %02.2fs   /   %dh %dm %02.2fs",
+					swprintf(str, ARRAYSIZE(str), L"%dh %dm %02.2fs   /   %dh %dm %02.2fs",
 						hours, minutes, seconds,  maxhours, maxminutes, maxseconds);
 					SetWindowTextW(GetDlgItem(hWnd, IDC_STATIC_MOVIETIME), str);
 				}
@@ -2631,7 +2631,7 @@ void DoPow2Logic(int frameCount)
 					{
 						s_firstTimerDesyncWarnedFrame = frameCount;
 						WCHAR str [256];
-						swprintf(str, L"DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
+						swprintf(str, ARRAYSIZE(str), L"DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
 						debugprintf(L"%s\n", str);
 						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
@@ -2728,7 +2728,7 @@ void ResumeAllExcept(int ignoreThreadID)
 void ReceiveFrameRate(IPC::FPSInfo& fps_info)
 {
     WCHAR str[128];
-	swprintf(str, L"Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
+	swprintf(str, ARRAYSIZE(str), L"Current FPS: %.1f / %.1f", fps_info.GetFPS(), fps_info.GetLogicalFPS());
 	LPCWSTR pStr = str;
 	if(wcslen(str) > 24)
 		pStr += 8; // omit "Current" if the string is getting too long
@@ -3340,7 +3340,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		if(error == ERROR_ELEVATION_REQUIRED)
 		{
 			WCHAR str [1024];
-			swprintf(str,
+			swprintf(str, ARRAYSIZE(str),
 				L"ERROR: Admin privileges are required to run \"%s\" on this system.\n"
 				L"Hourglass doesn't have high enough privileges to launch the game.\n"
 				L"Try closing Hourglass and then opening it with \"Run as administrator\".", exe_filename.c_str());
@@ -4150,7 +4150,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							static LPCWSTR dsounddisablemsg = L"Or choose \"Sound > Disable DirectSound Creation\" if the game doesn't work without Multithreading on.\n";
 							static LPCWSTR dsounddisablemsg2 = L"If this happens sometimes randomly, try choosing \"Sound > Disable DirectSound Creation\".\n";
 							WCHAR msg [8096];
-							swprintf(msg, L"%s%s%s%s%s", mainmsg,
+							swprintf(msg, ARRAYSIZE(msg), L"%s%s%s%s%s", mainmsg,
 								(localTASflags.fastForward && (localTASflags.fastForwardFlags & FFMODE_WAITSKIP)) ? waitskipmsg : L"",
 								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2)) ? multidisablemsg : L"",
 								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg : L"",
@@ -5022,9 +5022,9 @@ static void EnableDisablePlayRecordButtons(HWND hDlg)
 		UpdateFrameCountDisplay(movie.currentFrame, 1);
 
 		WCHAR str [256];
-		swprintf(str, L"%u", localTASflags.initialTime);
+		swprintf(str, ARRAYSIZE(str), L"%u", localTASflags.initialTime);
 		SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
-		swprintf(str, L"%d", localTASflags.framerate);
+		swprintf(str, ARRAYSIZE(str), L"%d", localTASflags.framerate);
 		SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 
 		tasFlagsDirty = true;
@@ -5301,7 +5301,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_INITDIALOG:
         {
             WCHAR title[256];
-			swprintf(title, L"Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
+			swprintf(title, ARRAYSIZE(title), L"Hourglass-Resurrection v%d.%d", VERSION, MINORVERSION);
 #ifdef _DEBUG
 			wcscat(title, L" (debug build)");
 #endif
@@ -5312,11 +5312,11 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_SHOWWINDOW:
  			{
 				WCHAR str [256];
-				swprintf(str, L"%d", localTASflags.framerate);
+				swprintf(str, ARRAYSIZE(str), L"%d", localTASflags.framerate);
 				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 
 				localTASflags.initialTime = /*timeGetTime()*/6000;
-				swprintf(str, L"%d", localTASflags.initialTime);
+				swprintf(str, ARRAYSIZE(str), L"%d", localTASflags.initialTime);
 				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_SYSTEMCLOCK), str);
 
 				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_CURFRAME), L"0");
@@ -6148,7 +6148,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 									int result = CustomMessageBox(L"If you are in the middle of recording or playing a movie,\nchanging the game's framerate might cause desync in some games.\nBe careful.", L"Warning", MB_OKCANCEL | MB_ICONWARNING);
 									if(result == IDCANCEL)
 									{
-										swprintf(str, L"%d", localTASflags.framerate);
+										swprintf(str, ARRAYSIZE(str), L"%d", localTASflags.framerate);
 										SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), str);
 										warnedAboutFrameRateChange = false; // must be true above this to avoid infinite warnings
 										break;
@@ -6431,7 +6431,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						if(!exeFileExists) // Extra check, do we need it?
 						{
 							WCHAR str[1024];
-							swprintf(str, L"The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exe_filename.c_str());
+							swprintf(str, ARRAYSIZE(str), L"The exe file \'%s\' does not exist, please check that it has not been renamed or moved.", exe_filename.c_str());
 							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
@@ -6446,7 +6446,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						else
 						{
 							WCHAR str[1024];
-							swprintf(str, L"Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exe_filename.c_str());
+							swprintf(str, ARRAYSIZE(str), L"Determinating the default thread stack size failed!\nVerify that '%s' a valid Win32 executable.", exe_filename.c_str());
 							CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 							recursing = false;
 							break;
@@ -6465,35 +6465,35 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								BOOL newLagskip;
 								int newRunDllLast = 0;
 								std::wstring fname = GetExeFilenameWithoutPath();
-								if(!wcsicmp(fname.c_str(), L"Doukutsu.exe")
-								|| !wcsicmp(fname.c_str(), L"dxIka.exe")
-								|| !wcsicmp(fname.c_str(), L"nothing.exe")
-								|| !wcsnicmp(fname.c_str(), L"iwbtgbeta", wcslen(L"iwbtgbeta")-1)
-								|| !wcsicmp(fname.c_str(), L"i_wanna_be_the_GB.exe")
+								if(!_wcsicmp(fname.c_str(), L"Doukutsu.exe")
+								|| !_wcsicmp(fname.c_str(), L"dxIka.exe")
+								|| !_wcsicmp(fname.c_str(), L"nothing.exe")
+								|| !_wcsnicmp(fname.c_str(), L"iwbtgbeta", wcslen(L"iwbtgbeta")-1)
+								|| !_wcsicmp(fname.c_str(), L"i_wanna_be_the_GB.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = false;
 								}
-								else if(!wcsicmp(fname.c_str(), L"Lyle in Cube Sector.exe")
-								|| !wcsicmp(fname.c_str(), L"Eternal Daughter.exe")
-								|| !wcsicmp(fname.c_str(), L"Geoffrey The Fly.exe")
+								else if(!_wcsicmp(fname.c_str(), L"Lyle in Cube Sector.exe")
+								|| !_wcsicmp(fname.c_str(), L"Eternal Daughter.exe")
+								|| !_wcsicmp(fname.c_str(), L"Geoffrey The Fly.exe")
 								)
 								{
 									newFramerate = 50; newLagskip = true;
 								}
-								else if(!wcsicmp(fname.c_str(), L"herocore.exe"))
+								else if(!_wcsicmp(fname.c_str(), L"herocore.exe"))
 								{
 									newFramerate = 40; newLagskip = false;
 								}
-								else if(!wcsicmp(fname.c_str(), L"iji.exe"))
+								else if(!_wcsicmp(fname.c_str(), L"iji.exe"))
 								{
 									newFramerate = 30; newLagskip = false;
 								}
-								else if(!wcsicmp(fname.c_str(), L"lamulana.exe"))
+								else if(!_wcsicmp(fname.c_str(), L"lamulana.exe"))
 								{
 									newFramerate = 60; newLagskip = true;
 								}
-								else if(!wcsicmp(fname.c_str(), L"NinjaSenki.exe"))
+								else if(!_wcsicmp(fname.c_str(), L"NinjaSenki.exe"))
 								{
 									newFramerate = 60; newLagskip = false;
 
@@ -6505,7 +6505,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 										tasFlagsDirty = true;
 									}
 								}
-								else if(!wcsicmp(fname.c_str(), L"RotateGear.exe"))
+								else if(!_wcsicmp(fname.c_str(), L"RotateGear.exe"))
 								{
 									newFramerate = 60; newLagskip = false; newRunDllLast = true;
 								}
@@ -6517,7 +6517,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								{
 									tasFlagsDirty = true;
 									WCHAR str [32];
-									swprintf(str, L"%d", newFramerate);
+									swprintf(str, ARRAYSIZE(str), L"%d", newFramerate);
 									SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FPS), str);
 								}
 								if(newLagskip != advancePastNonVideoFrames && (!advancePastNonVideoFramesConfigured || !advancePastNonVideoFrames))
@@ -6646,15 +6646,15 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						LPWSTR dot = wcsrchr(filename, '.');
 						if(slash<dot)
 						{
-							if(!wcsicmp(dot, L".exe")) // executable (game)
+							if(!_wcsicmp(dot, L".exe")) // executable (game)
 							{
 								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), filename);
 							}
-							else if(!wcsnicmp(dot, L".hgr", 4)) // windows TAS file (input movie)
+							else if(!_wcsnicmp(dot, L".hgr", 4)) // windows TAS file (input movie)
 							{
 								SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), filename);
 							}
-							else if(!wcsicmp(dot, L".cfg"))
+							else if(!_wcsicmp(dot, L".cfg"))
 							{
 								Load_Config(filename);
 							}

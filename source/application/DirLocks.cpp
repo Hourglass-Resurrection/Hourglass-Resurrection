@@ -42,7 +42,7 @@ bool LockDirectory(LPCWSTR directory, LockTypes type)
 		DirLockPrintLastError(L"DirLocking: CreateFile", GetLastError());
 		// Locking directory failed, issue an error-message and stop.
 		WCHAR str[1024];
-		swprintf(str, L"Locking the directory '%s' for %ss failed\nPlease make sure that Hourglass has rights to create files in this directory or choose another directory", directory, LockTypesToString[(unsigned int)type]);
+		swprintf(str, ARRAYSIZE(str), L"Locking the directory '%s' for %ss failed\nPlease make sure that Hourglass has rights to create files in this directory or choose another directory", directory, LockTypesToString[(unsigned int)type]);
 		CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 		return false;
 	}

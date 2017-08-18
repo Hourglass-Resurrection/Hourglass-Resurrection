@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 
 #include "Movie.h" // <vector> included through Movie.h
 
@@ -71,7 +71,7 @@ Movie::Movie()
 		if (!file) // New file also failed OR first file failed for some other reason
 		{
 			WCHAR str[1024];
-			swprintf(str, L"Saving movie data to \"%s\" failed.\nReason: %S", filename, strerror(errno));
+			swprintf(str, ARRAYSIZE(str), L"Saving movie data to \"%s\" failed.\nReason: %S", filename, strerror(errno));
 			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
@@ -179,7 +179,7 @@ Movie::Movie()
 	if(!file)
 	{
 		WCHAR str[1024];
-		swprintf(str, L"The movie file '%s' could not be opened.\nReason: %S", filename, strerror(errno));
+		swprintf(str, ARRAYSIZE(str), L"The movie file '%s' could not be opened.\nReason: %S", filename, strerror(errno));
 		CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
 		return false;
 	}
@@ -191,7 +191,7 @@ Movie::Movie()
 	{
 		fclose(file);
 		WCHAR str[1024];
-		swprintf(str, L"The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
+		swprintf(str, ARRAYSIZE(str), L"The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
 		CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 		return false;
 	}
@@ -211,7 +211,7 @@ Movie::Movie()
 		{
 			fclose(file);
 			WCHAR str[1024];
-			swprintf(str, L"The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			swprintf(str, ARRAYSIZE(str), L"The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
 			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
@@ -259,7 +259,7 @@ Movie::Movie()
 				delete[] author; // Prevent memory leak
 			}
 			WCHAR str[1024];
-			swprintf(str, L"The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
+			swprintf(str, ARRAYSIZE(str), L"The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
 			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
 			return false;
 		}
