@@ -1100,11 +1100,11 @@ int LoadMovie(const std::wstring& filename)
 		{
 			WCHAR str[1024];
 			swprintf(str, ARRAYSIZE(str), L"This movie was probably recorded using a different exe.\n\n"
-						 L"Movie's exe's md5: %X%X%X%X, size: %d\n"
+						 L"Movie's exe's md5: %X%X%X%X, size: %lld\n"
 						 L"Current exe's md5: %X%X%X%X, size: %lld\n\n"
 						 L"Playing the movie with current exe may lead to the movie desyncing.\n"
 						 L"Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
-						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], static_cast<int>(movie.fsize), 
+						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], movie.fsize,
 						 temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
 			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
 			if(result == IDNO)

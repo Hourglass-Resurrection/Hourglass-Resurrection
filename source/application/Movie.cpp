@@ -123,8 +123,8 @@ Movie::Movie()
 	// MD5 checksum
 	fwrite(&movie.fmd5, 4, 4, file);
 
-	unsigned int fsize = movie.fsize;
-	fwrite(&fsize, 4, 1, file);
+	LONGLONG fsize = movie.fsize;
+	fwrite(&fsize, sizeof(fsize), 1, file);
 
 	fwrite(&movie.desyncDetectionTimerValues, 16, 4, file);
 
@@ -232,8 +232,8 @@ Movie::Movie()
 	unsigned int fmd5[4] = { 0 };
 	fread(fmd5, 4, 4, file);
 
-	unsigned int fsize = 0;
-	fread(&fsize, 4, 1, file);
+	LONGLONG fsize = 0;
+	fread(&fsize, sizeof(fsize), 1, file);
 
 	int desyncDetectionTimerValues[16];
 	fread(&desyncDetectionTimerValues, 16, 4, file);
