@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 
 #include <sstream>
 
@@ -129,53 +129,31 @@ IDbgHelpStackWalkCallback::Action PrintStackTrace(IDbgHelpStackWalkCallback& dat
              */
             if (parameter.m_value.has_value())
             {
-#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
-                class visitor
-                {
-                    std::wostringstream& m_oss;
+                std::visit([&oss](auto&& value) {
+                    using T = std::decay_t<decltype(value)>;
 
-                public:
-                    visitor(std::wostringstream& oss) : m_oss(oss) {}
-
-                    /*
-                     * Print chars.
-                     */
-                    void operator()(char value)
+                    if constexpr (std::is_same_v<T, char>
+                               || std::is_same_v<T, wchar_t>
+                               || std::is_same_v<T, char16_t>
+                               || std::is_same_v<T, char32_t>)
                     {
-                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                        /*
+                         * Print the characters.
+                         */
+                        oss << static_cast<int>(value) << L" \'" << value << L'\'';
                     }
-
-                    void operator()(wchar_t value)
+                    else if constexpr (std::is_same_v<T, void*>)
                     {
-                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                        /*
+                         * Pointers ignore showbase.
+                         */
+                        oss << L"0x" << value;
                     }
-
-                    void operator()(char16_t value)
+                    else
                     {
-                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                        oss << value;
                     }
-
-                    void operator()(char32_t value)
-                    {
-                        m_oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                    }
-
-                    /*
-                     * Pointers ignore showbase.
-                     */
-                    void operator()(void* value)
-                    {
-                        m_oss << L"0x" << value;
-                    }
-
-                    template<typename T>
-                    void operator()(T value)
-                    {
-                        m_oss << value;
-                    }
-                };
-
-                std::visit(visitor(oss), parameter.m_value.value());
+                }, parameter.m_value.value());
             }
 
             ++arg_number;
