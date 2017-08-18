@@ -17,4 +17,6 @@ Helping
 -------
 Hourglass-Resurrection is a big project, and as the original developer is no longer working on it, much of the code is not yet fully understood. There is still a lot of work to do, so any help you can offer is welcome. You don't have to be an expert coder to do this! Testing stability and functionality is just as welcome, just be detailed in the issue reports! Again, please refer to the [Hourglass section on TASVideos.org](http://tasvideos.org/forum/viewforum.php?f=61) for more information.
 
+For code contributions, please refer to the `CONTRIBUTING.md` file.
+
 We're also on IRC: #hourglass at irc.freenode.net. 
