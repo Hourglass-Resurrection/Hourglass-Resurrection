@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <string>
 #include <variant>
 
@@ -73,6 +74,9 @@ public:
             return L"float"s;
         case BasicType::Double:
             return L"double"s;
+        default:
+            assert(false);
+            return 0;
         }
     }
 
@@ -110,6 +114,9 @@ public:
             return sizeof(float);
         case BasicType::Double:
             return sizeof(double);
+        default:
+            assert(false);
+            return 0;
         }
     }
 };

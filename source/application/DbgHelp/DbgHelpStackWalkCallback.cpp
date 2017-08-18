@@ -518,9 +518,6 @@ DbgHelpStackWalkCallback::GetParameterValue(const ParamInfo& param_info)
                 case DbgHelpBasicType::BasicType::Double:
                     return double{};
                 default:
-                    /*
-                     * VS is stupid and warns even if everything is covered.
-                     */
                     assert(false);
                     return std::nullopt;
                 }
