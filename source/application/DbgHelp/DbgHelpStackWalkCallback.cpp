@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -144,48 +144,27 @@ namespace
                         DWORD underlying_type_tag;
                         if (underlying_type->get_symTag(&underlying_type_tag) == S_OK)
                         {
-                            /*
-                             * This complicated std::visit() expression converts DbgHelpType
-                             * to DbgHelpBasicType or DbgHelpUnknownType.
-                             * -- YaLTeR
-                             */
+                            auto type = GetDbgHelpType(underlying_length, underlying_type_tag, underlying_type).m_type;
 
-#pragma message(__FILE__ ": TODO: change to constexpr-if lambdas when they are supported (VS2017 Preview 3)")
-                            class visitor
-                            {
-                                size_t m_length;
+                            return std::visit([&length](auto&& type) {
+                                using T = std::decay_t<decltype(type)>;
 
-                            public:
-                                visitor(size_t length) : m_length(length) {}
-
-                                DbgHelpPointerType operator()(DbgHelpBasicType t)
-                                {
-                                    return DbgHelpPointerType(t, m_length);
-                                }
-
-                                DbgHelpPointerType operator()(DbgHelpPointerType t)
+                                if constexpr (std::is_same_v<T, DbgHelpPointerType>)
                                 {
                                     /*
                                      * TODO: this is here until multi-level pointers are supported.
                                      * Treat the underlying pointer as an unsigned integer.
                                      * -- YaLTeR
                                      */
-                                    return DbgHelpPointerType(GetDbgHelpBasicType(t.GetSize(), btUInt).value(), m_length);
-                                }
 
-                                DbgHelpPointerType operator()(DbgHelpUnknownType t)
+                                    auto basic_type = GetDbgHelpBasicType(type.GetSize(), btUInt).value();
+                                    return DbgHelpPointerType(basic_type, length);
+                                }
+                                else
                                 {
-                                    return DbgHelpPointerType(t, m_length);
+                                    return DbgHelpPointerType(type, length);
                                 }
-
-                                DbgHelpPointerType operator()(DbgHelpEnumType t)
-                                {
-                                    return DbgHelpPointerType(t, m_length);
-                                }
-                            };
-
-                            return std::visit(visitor(length),
-                                GetDbgHelpType(underlying_length, underlying_type_tag, underlying_type).m_type);
+                            }, type);
                         }
                         else
                         {
