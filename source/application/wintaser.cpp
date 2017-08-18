@@ -6385,11 +6385,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
                         if (!movie_file_name.empty())
                         {
-                            // As SaveMovie actually modifies the contents of the passed string, we
-                            // can't just pass the const .c_str() result
-                            WCHAR c_file_name[FILENAME_MAX];
-                            movie_file_name.copy(c_file_name, movie_file_name.length());
-                            SaveMovie(c_file_name);
+                            SaveMovie(movie_file_name);
                         }
 
                         // If we had to pause earlier, unpause now.
