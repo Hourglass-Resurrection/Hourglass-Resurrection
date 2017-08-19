@@ -30,6 +30,12 @@
     <Filter Include="Source Files\Utils">
       <UniqueIdentifier>{73785f56-4309-4fed-b86c-ac56057f350b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Exceptions">
+      <UniqueIdentifier>{551a5e3d-1d97-4c90-b837-310eab3a90a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Thread">
+      <UniqueIdentifier>{a9554fd0-cd89-4fdc-ad98-782257099fe9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomDLGs.cpp">
@@ -127,6 +133,12 @@
     </ClCompile>
     <ClCompile Include="TrustedModule.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Exceptions\WindowsExceptionsHandler.cpp">
+      <Filter>Source Files\Utils\Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Thread\Thread.cpp">
+      <Filter>Source Files\Utils\Thread</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +267,12 @@
     </ClInclude>
     <ClInclude Include="..\shared\CompilerChecks.h">
       <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Exceptions.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Thread.h">
+      <Filter>Source Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

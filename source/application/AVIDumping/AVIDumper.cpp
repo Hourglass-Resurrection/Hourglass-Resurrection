@@ -31,6 +31,9 @@
 #include "AudioConverterStream.h"
 #include "WaitableBool.h"
 
+#include "application/Utils/Exceptions.h"
+#include "application/Utils/Thread.h"
+
 extern bool tasFlagsDirty;
 
 // TODO: Eliminate this
@@ -69,11 +72,11 @@ HRESULT SafeAVIStreamWrite(PAVISTREAM pavi, LONG lStart, LONG lSamples, LPVOID l
 {
 	HRESULT hr;
 
-	__try
+	try
 	{
 		hr = AVIStreamWrite(pavi, lStart, lSamples, lpBuffer, cbBuffer, dwFlags, plSampWritten, plBytesWritten);
 	} 
-	__except(EXCEPTION_EXECUTE_HANDLER)
+	catch (const Utils::Exceptions::WindowsException&)
 	{
 		hr = E_POINTER;
 	}
@@ -152,9 +155,9 @@ struct AviFrameQueue
 		}
 
 		threadDone = false;
-		thread = CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputVideoThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
+		thread = Utils::Thread::CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputVideoThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
 		SetThreadPriority(thread, THREAD_PRIORITY_HIGHEST);
-		threadAudio = CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputAudioThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
+		threadAudio = Utils::Thread::CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputAudioThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
 		SetThreadPriority(threadAudio, THREAD_PRIORITY_ABOVE_NORMAL);
 		m_disableFills = false;
 		ResumeThread(thread);

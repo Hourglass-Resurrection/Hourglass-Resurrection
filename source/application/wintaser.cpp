@@ -73,7 +73,9 @@ using namespace Config;
 #include "CPUinfo.h"
 #include "DirLocks.h"
 #include "ExeFileOperations.h"
+#include "Utils/Exceptions.h"
 #include "Utils/File.h"
+#include "Utils/Thread.h"
 
 #include "shared/CompilerChecks.h"
 
@@ -2985,12 +2987,16 @@ static void CloseThreadHandles(HANDLE threadHandleToNotClose, HANDLE hProcess)
 				continue;
 			debugprintf(L"Closing thread handle 0x%X\n", handle);
 #ifndef _DEBUG
-			__try {
+            try
+            {
 #endif
-				CloseHandle(handle); // if we get a EXCEPTION_INVALID_HANDLE exception here that's really bad... maybe the LdrLoadDll hook is doing too much and so we got debugging events with wrong thread handles... or maybe we called CloseHandle on the wrong things in the debug event handlers here
+                CloseHandle(handle); // if we get a EXCEPTION_INVALID_HANDLE exception here that's really bad... maybe the LdrLoadDll hook is doing too much and so we got debugging events with wrong thread handles... or maybe we called CloseHandle on the wrong things in the debug event handlers here
 #ifndef _DEBUG
-			} __except(EXCEPTION_EXECUTE_HANDLER) {
-			}
+            }
+            catch (const Utils::Exceptions::WindowsException& e)
+            {
+                debugprintf(L"Exception while closing thread 0x%X: %S\n", handle, e.what());
+            }
 #endif
 		}
 		hGameThreads.clear();
@@ -4551,7 +4557,7 @@ void OnAfterDebugThreadExit()
 
 	// let's run this cleanup code on a separate thread to keep the rest of the ui responsive
 	// in case it happens to take a long time (it shouldn't, but who knows when it comes to deallocating memory)
-	hAfterDebugThreadExitThread = CreateThread(NULL, 0, AfterDebugThreadExitThread, NULL, 0, NULL);
+	hAfterDebugThreadExitThread = Utils::Thread::CreateThread(NULL, 0, AfterDebugThreadExitThread, NULL, 0, NULL);
 }
 
 
@@ -4783,6 +4789,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	Load_Config();
 
+    Utils::Exceptions::InitWindowsExceptionsHandler();
     Utils::COM::COMInstance::Init();
 
     DbgHelp::Init();
@@ -4837,7 +4844,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 		//if(!debuggerThread && (GetAsyncKeyState('G') & 0x8000))
 		//{
-		//	debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
+		//	debuggerThread = Utils::Thread::CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 		//}
 
 		if(!started/* && GetActiveWindow() == hWnd*/)
@@ -6236,7 +6243,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
                             command_line = commandline;
                         }
-						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
+						debuggerThread = Utils::Thread::CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
 
@@ -6258,7 +6265,7 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline, ARRAYSIZE(commandline));
                             command_line = commandline;
                         }
-						debuggerThread = CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
+						debuggerThread = Utils::Thread::CreateThread(NULL, 0, DebuggerThreadFunc, NULL, 0, NULL);
 					}
 					break;
 
