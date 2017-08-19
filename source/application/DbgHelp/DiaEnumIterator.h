@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2017- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -102,10 +102,10 @@ namespace DiaEnumIteratorImpl
             GetNextItem();
         }
 
-        inline const CComPtr<item_type>& operator++()
+        inline const DiaEnumIterator<Enumerator>& operator++()
         {
             GetNextItem();
-            return m_last_item;
+            return *this;
         }
 
         inline const CComPtr<item_type>& operator*()
