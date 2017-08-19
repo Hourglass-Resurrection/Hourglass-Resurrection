@@ -176,6 +176,7 @@
     <ClCompile Include="inject\process.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\Alignment.h" />
     <ClInclude Include="..\shared\CompilerChecks.h" />
     <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="AVIDumping\AudioConverterStream.h" />

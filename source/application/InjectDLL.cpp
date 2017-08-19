@@ -22,7 +22,7 @@ bool InjectDLLIntoIDT(DWORD dwInjectProcessID, HANDLE hInjectProcess, HANDLE hIn
 	}
 	catch(const std::runtime_error &e)
 	{
-		debugprintf(L"Failed to inject DLL \"%s\" into process id 0x%X IAT: %S\n", dllPath, dwInjectProcessID, e.what());
+        DebugLog() << "Failed to inject DLL \"" << dllPath << "\" into process id " << std::hex << dwInjectProcessID << " IAT: " << e.what();
 		return false;
 	}
 	return true;
@@ -69,7 +69,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 
 	if(injected)
 	{
-		debugprintf(L"Injecting \"%s\" by IAT (method %d) apparently succeeded.\n", dllPath, runDllLast?2:1);
+        DebugLog() << "Injecting \"" << dllPath << "\" by IAT (method " << (runDllLast ? 2 : 1) << ") apparently succeeded.";
 		info->injectIsAsyncReady = TRUE;
 		goto done;
 	}
@@ -79,7 +79,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 		terminateRequest = true;
 		if(hProcess != NULL)
 		{
-			debugprintf(L"Injection failed...\n");
+			DebugLog() << "Injection failed...";
 			CustomMessageBox(L"Injection failed...\nYou can (hopefully) find more information in the debug log .txt file.", L"Error", MB_OK | MB_ICONERROR);
 		}
 		else
@@ -89,7 +89,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 	}
 	else // Why is this here??
 	{
-		debugprintf(L"Injection probably succeeded (0x%X)...\n", exitCode);
+        DebugLog() << "Injection probably succeeded (" << std::hex << exitCode << ")...";
 	}
 
 done:

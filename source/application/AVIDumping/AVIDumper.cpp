@@ -51,20 +51,9 @@ static HANDLE captureProcess = NULL;
 
 WCHAR avifilename[MAX_PATH + 1];
 
-#define avidebugprintf verbosedebugprintf
-
-#ifdef _DEBUG
-#define _AVIDEBUG
-#endif
-
-#if defined(_AVIDEBUG) || 0 //1
-	#define verbosedebugprintf debugprintf
-
-	#include "../Movie.h"
-	extern Movie movie;
-#else
-	#define verbosedebugprintf(...) ((void)0)
-#endif
+// Hacky...
+#include "../Movie.h"
+extern Movie movie;
 
 AudioConverterStream* audioConverterStream = NULL;
 
@@ -191,7 +180,7 @@ struct AviFrameQueue
 
 		if (exitCode == STILL_ACTIVE)
 		{
-			debugprintf(L"WARNING: had to force terminate AVI video thread\n");
+            DebugLog() << "WARNING: had to force terminate AVI video thread";
 			if(IsDebuggerPresent())
 			{
 				_asm{int 3}
@@ -217,7 +206,7 @@ struct AviFrameQueue
 
 		if (exitCode == STILL_ACTIVE)
 		{
-			debugprintf(L"WARNING: had to force terminate AVI audio thread\n");
+            DebugLog() << "WARNING: had to force terminate AVI audio thread";
 
 			if (IsDebuggerPresent())
 			{
@@ -250,7 +239,7 @@ struct AviFrameQueue
 		}
 
 		Slot& slot = m_slots[m_nextWrite];
-		avidebugprintf(L"FillFrame: slot %d, movie frame %d\n", m_nextWrite, movie.currentFrame);
+        VerboseDebugLog() << "FillFrame: slot " << m_nextWrite << ", movie frame " << movie.currentFrame;
 		m_nextWrite++;
 		m_nextWrite %= numSlots;
 
@@ -282,12 +271,10 @@ struct AviFrameQueue
 
 #ifdef _DEBUG
 		DWORD time2 = timeGetTime();
-		debugprintf(L"AVI: reading pixel data took %d ticks\n", (int)(time2-time1));
+        DebugLog() << "AVI: reading pixel data took " << (time2 - time1) << " ticks";
 #endif
 
-#ifdef _AVIDEBUG
 		slot.framecount = movie.currentFrame;
-#endif
 
 		const int aviPixelsSize = width * height * (24 / 8) + 8;
 		ReserveBuffer(slot.aviPixels, slot.aviPixelsAllocated, aviPixelsSize);
@@ -389,15 +376,13 @@ struct AviFrameQueue
 
 		Slot& prevSlot = m_slots[(numSlots+m_nextWrite-1)%numSlots];
 		Slot& slot = m_slots[m_nextWrite];
-		avidebugprintf(L"RefillFrame: slot %d, movie frame %d\n", m_nextWrite, movie.currentFrame);
+        VerboseDebugLog() << "RefillFrame: slot " << m_nextWrite << ", movie frame " << movie.currentFrame;
 		m_nextWrite++;
 		m_nextWrite %= numSlots;
 
 		slot.hasProcessedVideo.WaitUntilFalse();
 
-#ifdef _AVIDEBUG
 		slot.framecount = movie.currentFrame;
-#endif
 
 		const int aviPixelsSize = prevSlot.aviPixelsAllocated;
 		ReserveBuffer(slot.aviPixels, slot.aviPixelsAllocated, aviPixelsSize);
@@ -446,7 +431,7 @@ struct AviFrameQueue
 
 
 		Slot& slot = m_slots[m_nextWriteAudio];
-		avidebugprintf(L"FillAudioFrame: slot %d, movie frame %d\n", m_nextWriteAudio, movie.currentFrame);
+        VerboseDebugLog() << "FillAudioFrame: slot " << m_nextWriteAudio << ", movie frame " << movie.currentFrame;
 		m_nextWriteAudio++;
 		m_nextWriteAudio %= numSlots;
 
@@ -489,7 +474,7 @@ struct AviFrameQueue
 		}
 
 		Slot& slot = m_slots[m_nextWriteAudio];
-		avidebugprintf(L"FillEmptyAudioFrame: slot %d, movie frame %d\n", m_nextWriteAudio, movie.currentFrame);
+        VerboseDebugLog() << "FillEmptyAudioFrame: slot " << m_nextWriteAudio << ", movie frame " << movie.currentFrame;
 		m_nextWriteAudio++;
 		m_nextWriteAudio %= numSlots;
 
@@ -574,11 +559,11 @@ struct AviFrameQueue
 
 #ifdef _DEBUG
 						DWORD time2 = timeGetTime();
-						debugprintf(L"AVI: video codec took %d ticks\n", (int)(time2-time1));
+                        DebugLog() << "AVI: video codec took " << (time2 - time1) << " ticks";
 #endif
 						if (FAILED(hr))
 						{ 
-							debugprintf(L"AVIStreamWrite failed! (0x%X)\n", hr);
+                            DebugLog() << "AVIStreamWrite failed! (" << std::hex << hr << ")";
 							NormalMessageBox(L"AVIStreamWrite failed! (Sorry... try restarting this program and/or choosing a different codec.)\n", L"Error", MB_OK|MB_ICONERROR);
 							CloseAVI();
 							Config::localTASflags.aviMode = 0;
@@ -608,7 +593,7 @@ struct AviFrameQueue
 						requestedAviSplitCount = aviSplitCount + 1;
 					}
 
-					avidebugprintf(L"Output:    slot %d, movie frame %d, video frame %d\n", slotNum, framecount, aviFrameCount);
+                    VerboseDebugLog() << "Output:    slot " << slotNum << ", movie frame " << framecount << ", video frame " << aviFrameCount;
 				}
 			}
 
@@ -648,7 +633,7 @@ struct AviFrameQueue
 						HRESULT hr = SafeAVIStreamWrite(aviSoundStream, aviSoundSampleCount, audioFrameSamples, output.m_buffer, audioFrameSize, 0, nullptr, &bytesWritten);
 						if (FAILED(hr))
 						{ 
-							debugprintf(L"AVIStreamWrite(audio) failed! (0x%X)\n", hr);
+                            DebugLog() << "AVIStreamWrite(audio) failed! (" << std::hex << hr << ")";
 							NormalMessageBox(L"AVIStreamWrite(audio) failed!\n", L"Error", MB_OK|MB_ICONERROR);
 							CloseAVI();
 							Config::localTASflags.aviMode = 0;
@@ -679,7 +664,7 @@ struct AviFrameQueue
 						requestedAviSplitCount = aviSplitCount + 1;
 					}
 
-					avidebugprintf(L"Output:    slot %d, movie frame %d, audio frame %d\n", slotNum, framecount, aviSoundFrameCount);
+                    VerboseDebugLog() << "Output:    slot " << slotNum << ", movie frame " << framecount << ", audio frame " << aviSoundFrameCount;
 				}
 			}
 
@@ -912,7 +897,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 
 	oldIsBasicallyEmpty = false;
 
-	debugprintf(__FUNCTIONW__ L"(filename=\"%S\", width=%d, height=%d, bpp=%d, fps=%d)\n", filename, width, height, bpp, fps);
+    DebugLog() << __FUNCTIONW__ << "(filename=\"" << filename << "\", width=" << width << ", height=" << height << ", bpp=" << bpp << ", fps=" << fps << ")";
 
 	AutoCritSect cs(&s_aviCS);
 
@@ -927,8 +912,8 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 	if (FAILED(hr))
 	{
 		WCHAR str[MAX_PATH + 64];
-		swprintf(str, ARRAYSIZE(str), L"AVIFileOpen(\"%s\") failed!\n", filename);
-		debugprintf(L"%s", str);
+		swprintf(str, ARRAYSIZE(str), L"AVIFileOpen(\"%s\") failed!", filename);
+		DebugLog() << str;
 		NormalMessageBox(str, L"Error", MB_OK|MB_ICONERROR);
 		return false;
 	}
@@ -956,7 +941,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
 		hr = AVIFileCreateStream(aviFile, &aviStream, &streamInfo);
 		if (FAILED(hr))
 		{ 
-			debugprintf(L"AVIFileCreateStream failed!\n");
+			DebugLog() << "AVIFileCreateStream failed!";
 			NormalMessageBox(L"AVIFileCreateStream failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			CloseAVI();
 			return false;
@@ -980,7 +965,7 @@ chooseAnotherFormat:
 		hr = AVIMakeCompressedStream(&aviCompressedStream, aviStream, pOptions, NULL);
 		if (FAILED(hr))
 		{ 
-			debugprintf(L"AVIMakeCompressedStream failed! (0x%X)\n", hr);
+			DebugLog() << "AVIMakeCompressedStream failed! (" << std::hex << hr << ")";
 			NormalMessageBox(L"AVIMakeCompressedStream failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			goto chooseAnotherFormat;
 		}
@@ -998,7 +983,7 @@ chooseAnotherFormat:
 		hr = AVIStreamSetFormat(aviCompressedStream, 0, &bmpInfo, sizeof(bmpInfo));
 		if (FAILED(hr))
 		{ 
-			debugprintf(L"AVIStreamSetFormat failed! (0x%X)\n", hr);
+            DebugLog() << "AVIStreamSetFormat failed! (" << std::hex << hr << ")";
 			NormalMessageBox(L"AVIStreamSetFormat failed!\n", L"Error", MB_OK|MB_ICONERROR);
 			AVIStreamClose(aviCompressedStream);
 			aviCompressedStream = NULL;
@@ -1163,7 +1148,7 @@ int OpenAVIAudioStream()
 			if (audioConverterStream->m_failed)
 			{
 				// try again
-				debugprintf(L"AudioConverterStream() failed!\n");
+                DebugLog() << "AudioConverterStream() failed!";
 				NormalMessageBox(L"Couldn't find a valid conversion sequence.\nTry a different audio codec.\n", L"Error", MB_OK|MB_ICONERROR);
 				delete audioConverterStream;
 				audioConverterStream = NULL;
@@ -1185,7 +1170,7 @@ int OpenAVIAudioStream()
 		HRESULT hr = AVIFileCreateStreamW(aviFile, &aviSoundStream, &streamInfo);
 		if (FAILED(hr))
 		{ 
-			debugprintf(L"AVIFileCreateStream(audio) failed!\n");
+            DebugLog() << "AVIFileCreateStream(audio) failed!";
 			NormalMessageBox(L"AVIFileCreateStream(audio) failed!\nCapture will continue without audio\n", L"Error", MB_OK|MB_ICONERROR);
 			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;
@@ -1195,7 +1180,7 @@ int OpenAVIAudioStream()
 		hr = AVIStreamSetFormat(aviSoundStream, 0, outputFormat, outputFormatSize);
 		if (FAILED(hr))
 		{ 
-			debugprintf(L"AVIStreamSetFormat(audio) failed!\n");
+            DebugLog() << "AVIStreamSetFormat(audio) failed!";
 			NormalMessageBox(L"AVIStreamSetFormat(audio) failed!\nCapture will continue without audio\n", L"Error", MB_OK|MB_ICONERROR);
 			Config::localTASflags.aviMode &= ~2;
 			tasFlagsDirty = true;

@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #pragma once
@@ -9,6 +9,7 @@
 #include <array>
 #include <string>
 
+#include "Alignment.h"
 #include "logcat.h"
 #include <mmsystem.h>
 
@@ -344,66 +345,115 @@ namespace IPC
     class DebugMessage
     {
     public:
+        struct Message
+        {
+            DWORD type;
+            DWORD length;
+            BYTE data[1];
+            Message(const Message&) = delete;
+            void operator=(const Message&) = delete;
+            DWORD size() const
+            {
+                return AlignValueTo<4>((sizeof(DWORD) * 2) + length);
+            }
+        };
+
+        class Iterator
+        {
+        public:
+            Iterator(const Message* msg) :
+                m_msg(msg)
+            {
+            }
+
+            const Iterator& operator++()
+            {
+                m_msg = reinterpret_cast<const Message*>(reinterpret_cast<const BYTE*>(m_msg) + m_msg->size());
+                return *this;
+            }
+            const Message& operator*()
+            {
+                return *m_msg;
+            }
+            bool operator!=(const Iterator& rhs)
+            {
+                return m_msg != rhs.m_msg;
+            }
+
+        private:
+            const Message* m_msg;
+        };
+
         DebugMessage() :
             m_pos(0)
         {
-            m_message[0] = L'\0';
+            memset(m_message, 0, sizeof(m_message));
         }
-        LPCWSTR GetDebugMessage() const
+
+        const Iterator begin() const
         {
-            return m_message;
+            return Iterator(reinterpret_cast<const Message*>(&m_message[0]));
         }
+        const Iterator end() const
+        {
+            return Iterator(reinterpret_cast<const Message*>(&m_message[m_pos]));
+        }
+
         template<class T>
         DebugMessage& operator<<(const T& value)
         {
-            WCHAR format[16];
-            /*
-             * Build format string based on size of T.
-             */
-            swprintf(format, ARRAYSIZE(format), L"0x%%0%d%sX", sizeof(T) * 2, sizeof(T) > 4 ? L"I64" : L"l");
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, format, value);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('X', sizeof(value), &value);
             return *this;
         }
         template<class T>
         DebugMessage& operator<<(T* value)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"0x%p", value);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('p', sizeof(value), &value);
             return *this;
         }
         DebugMessage& operator<<(const float& value)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%g", value);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('g', sizeof(value), &value);
             return *this;
         }
         DebugMessage& operator<<(const double& value)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%g", value);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('g', sizeof(value), &value);
             return *this;
         }
         DebugMessage& operator<<(const bool& value)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", value ? L"true" : L"false");
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('b', sizeof(value), &value);
             return *this;
         }
         DebugMessage& operator<<(LPCSTR str)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%S", str);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('S', (strlen(str) + 1) * sizeof(str[0]), str);
             return *this;
         }
         DebugMessage& operator<<(LPCWSTR str)
         {
-            m_pos += swprintf(m_message + m_pos, ARRAYSIZE(m_message) - m_pos, L"%s", str);
-            m_pos = std::min(m_pos, ARRAYSIZE(m_message));
+            FillMessage('s', (wcslen(str) + 1) * sizeof(str[0]), str);
             return *this;
         }
     private:
-        WCHAR m_message[4096];
+        void FillMessage(DWORD type, DWORD length, const void* data)
+        {
+            /*
+             * TODO: This isn't great...
+             */
+            if (m_pos >= ARRAYSIZE(m_message) - AlignValueTo<4>((sizeof(DWORD) * 2) + length))
+            {
+                return;
+            }
+            Message* msg = reinterpret_cast<Message*>(&m_message[m_pos]);
+            msg->type = type;
+            msg->length = length;
+            memcpy(msg->data, data, length);
+            m_pos += msg->size();
+        }
+
+        BYTE m_message[8192];
         size_t m_pos;
     };
 }

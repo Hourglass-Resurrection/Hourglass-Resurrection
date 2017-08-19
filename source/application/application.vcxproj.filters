@@ -274,6 +274,9 @@
     <ClInclude Include="Utils\Thread.h">
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\Alignment.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wintaser.rc" />

@@ -135,17 +135,6 @@ TasFlags localTASflags =
 };
 */
 
-#if defined(_DEBUG) && 0//1
-	#define verbosedebugprintf debugprintf
-#else
-	#if _MSC_VER > 1310
-		#define verbosedebugprintf(...) ((void)0)
-	#else
-		#define verbosedebugprintf() ((void)0)
-		#pragma warning(disable:4002)
-	#endif
-#endif
-
 //#define DEBUG_THREADS
 
 
@@ -216,7 +205,7 @@ static const int s_safeSleepPerIter = 10;
  */
 void DetectWindowsVersion(int *major, int *minor)
 {
-    debugprintf(L"Detecting Windows version...\n");
+    DebugLog() << "Detecting Windows version...";
     WCHAR filename[MAX_PATH + 1];
     UINT value = GetWindowsDirectoryW(filename, MAX_PATH);
     if (value != 0)
@@ -228,7 +217,7 @@ void DetectWindowsVersion(int *major, int *minor)
         }
 
         wcscat(filename, L"\\System32\\kernel32.dll");
-        debugprintf(L"Using file '%s' for the detection.\n", filename);
+        DebugLog() << "Using file '" << filename << "' for the detection.";
 
         UINT size = 0;
 
@@ -265,7 +254,7 @@ void DetectWindowsVersion(int *major, int *minor)
 
                         delete[] ver_info; // We no longer need to hold on to this.
 						
-                        debugprintf(L"Detection succeeded, detected version %d.%d\n", *major, *minor);
+                        DebugLog() << "Detection succeeded, detected version " << *major << "." << *minor;
                         return;
 					}
 				}
@@ -273,7 +262,7 @@ void DetectWindowsVersion(int *major, int *minor)
 			delete [] ver_info; // Destroy this if we failed, we cannot have a memory leak now can we?
 		}
 	}
-    debugprintf(L"Failed to determinate Windows version, using old unsafe method...\n");
+    DebugLog() << "Failed to determinate Windows version, using old unsafe method...\n";
 
     OSVERSIONINFOW osvi = { sizeof(OSVERSIONINFOW) };
     GetVersionExW(&osvi);
@@ -987,7 +976,7 @@ void CheckSrcDllVersion(DWORD version)
 			str = L"Wrong version detected: This hourglass.exe is too old compared to hooks.dll.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
 		else
 			str = L"Wrong version detected: hooks.dll is too old compared to this hourglass.exe.\nPlease make sure you have extracted Hourglass properly.\nThe files that came with hourglass.exe must stay together with it.";
-		debugprintf(L"%s\n", str);
+		DebugLog() << str;
 		CustomMessageBox(str, L"Version Problem", MB_OK | MB_ICONWARNING);
 	}
 }
@@ -1198,7 +1187,7 @@ void SaveGameStatePhase2(int slot)
 
 	if(finished && !recoveringStale)
 	{
-		debugprintf(L"DESYNC WARNING: tried to save state while movie was \"Finished\"\n");
+		DebugLog() << "DESYNC WARNING: tried to save state while movie was \"Finished\"";
 		LPCWSTR str = L"Warning: The movie is in \"Finished\" status.\n"
 			L"This means that any input you entered after the movie became \"Finished\" was lost.\n"
 			L"Any state saved now will contain a movie that immediately desyncs at that point.\n"
@@ -1208,7 +1197,7 @@ void SaveGameStatePhase2(int slot)
 			return;
 	}
 
-	debugprintf(L"SAVED STATE %d\n", slot);
+    DebugLog() << "SAVED STATE " << slot;
 
 	slot %= maxNumSavestates;
 	if(slot < 0)
@@ -1232,14 +1221,14 @@ void SaveGameStatePhase2(int slot)
 				continue;
 			thread.suspendCount = GetThreadSuspendCount(thread.handle);
 			if(thread.suspendCount == -1)
-				debugprintf(L"ERROR: Failed to suspend thread?? hThread=0x%X, lastError=0x%X\n", thread.handle, GetLastError());
+				DebugLog() << "ERROR: Failed to suspend thread?? hThread=" << std::hex << thread.handle << ", lastError=" << GetLastError();
 			else
 			{
 				thread.context.ContextFlags = CONTEXT_ALL;
 				if(GetThreadContext(thread.handle, &thread.context))
 					state.threads.push_back(thread);
 				else
-					debugprintf(L"ERROR: Failed to save thread?? hThread=0x%X, lastError=0x%X\n", thread.handle, GetLastError());
+					DebugLog() << "ERROR: Failed to save thread?? hThread=" << std::hex << thread.handle << ", lastError=" << GetLastError();
 			}
 		}
 	}
@@ -1306,8 +1295,8 @@ void SaveGameStatePhase2(int slot)
 				}
 				else
 				{
-					verbosedebugprintf(L"WARNING: couldn't save memory: baseAddress=0x%X, regionSize=0x%X, lastError=0x%X\n",
-						mbi.BaseAddress, mbi.RegionSize, GetLastError());
+                    VerboseDebugLog() << "WARNING: couldn't save memory: baseAddress=" << std::hex << mbi.BaseAddress
+                                      << ", regionSize=" << mbi.RegionSize << ", lastError=" << GetLastError();
 
 					//// print the callstack of all threads
 					//std::map<DWORD,ThreadInfo>::iterator iter;
@@ -1381,7 +1370,7 @@ void SaveGameStatePhase2(int slot)
 				datahandle.userdata++;
 			}
 		}
-		debugprintf(L"%d savestates, %g MB logical, %g MB actual\n", numValidStates, totalBytes/(float)(1024*1024), totalUniqueBytes/(float)(1024*1024));
+        DebugLog() << numValidStates << " savestates, " << (totalBytes / (float)(1024 * 1024)) << " MB logical, " << (totalUniqueBytes / (float)(1024 * 1024)) << " MB actual";
 	}
 
 }
@@ -1516,7 +1505,7 @@ void LoadGameStatePhase2(int slot)
 	SaveState& state = savestates[slot];
 	if(!state.valid)
 	{
-		debugprintf(L"NO STATE %d TO LOAD\n", slot);
+        DebugLog() << "NO STATE " << slot << " TO LOAD";
 		localTASflags.stateLoaded = -1;
 		SendTASFlags();
 		return;
@@ -1541,10 +1530,10 @@ void LoadGameStatePhase2(int slot)
 		}
 	}
 
-	if(!wasRecoveringStale)
-		debugprintf(L"LOADED STATE %d\n", slot);
-	else
-		debugprintf(L"RECOVERING STATE %d\n", slot);
+    if (!wasRecoveringStale)
+        DebugLog() << "LOADED STATE " << slot;
+    else
+        DebugLog() << "RECOVERING STATE " << slot;
 
 
 	// OK, this is going to be way harder than saving the state,
@@ -1595,13 +1584,13 @@ void LoadGameStatePhase2(int slot)
 					//hGameThreads[thread.id] = thread.handle;
 
 					//debugprintf("LOAD HAD TO CREATE THREAD: id=0x%X, handle=0x%X\n", thread.id, thread.handle);
-					debugprintf(L"FAILED TO LOAD THREAD: id=0x%X, handle=0x%X\n", thread.id, thread.handle);
+                    DebugLog() << "FAILED TO LOAD THREAD: id=" << std::hex << thread.id << ", handle=" << thread.handle;
 				}
 
 				//if(thread.suspendCount)
 				//	continue;
 
-				verbosedebugprintf(L"Loaded thread: handle=0x%X, id=0x%X, suspendcount=0x%X\n", thread.handle, thread.id, thread.suspendCount);
+                VerboseDebugLog() << "Loaded thread: handle=" << std::hex << thread.handle << ", id=" << thread.id << ", suspendcount=" << thread.suspendCount;
 
 				// now we can simply load into it
 				SetThreadContext(thread.handle, &thread.context);
@@ -1644,10 +1633,10 @@ void LoadGameStatePhase2(int slot)
 				//if((DWORD)mbi.BaseAddress >= 0x1890000)
 				//	continue;
 
-				verbosedebugprintf(
-				"LMEM: BaseAddress=0x%X, AllocationBase=0x%X, AllocationProtect=0x%X, RegionSize=0x%X, State=0x%X, Protect=0x%X, Type=0x%X\n",
-				mbi.BaseAddress,  mbi.AllocationBase,  mbi.AllocationProtect,  mbi.RegionSize,  mbi.State,  mbi.Protect,  mbi.Type
-				);
+                VerboseDebugLog() << "LMEM: BaseAddress=" << std::hex << mbi.BaseAddress << ", AllocationBase="
+                                  << mbi.AllocationBase << ", AllocationProtect=" << mbi.AllocationProtect
+                                  << ", RegionSize=" << mbi.RegionSize << ", State=" << mbi.State << ", Protect="
+                                  << mbi.Protect << ", Type=" << mbi.Type;
 
 				// we could check whether we need to allocate the region,
 				// but VirtualAlloc allows for commit regions to overlap with existing regions
@@ -1670,16 +1659,16 @@ void LoadGameStatePhase2(int slot)
 				//}
 	//			void* allocAddr = VirtualAllocEx(hGameProcess, mbi.BaseAddress, mbi.RegionSize, (mbi.State == MEM_COMMIT) ? (MEM_COMMIT|MEM_RESERVE) : mbi.State, mbi.Protect);
 				if(allocAddr != mbi.BaseAddress && !(mbi.Type & MEM_IMAGE))
-					debugprintf(L"FAILED TO COMMIT MEMORY REGION: BaseAddress=0x%08X, AllocationBase=0x%08X, RegionSize=0x%X, ResultAddress=0x%X, LastError=0x%X\n", mbi.BaseAddress, mbi.AllocationBase, mbi.RegionSize, allocAddr, GetLastError());
+                    DebugLog() << "FAILED TO COMMIT MEMORY REGION: BaseAddress=" << std::hex << mbi.BaseAddress << ", AllocationBase=" << mbi.AllocationBase << ", RegionSize=" << mbi.RegionSize << ", ResultAddress=" << allocAddr << ", LastError=" << GetLastError();
 				DWORD dwOldProtect = 0;
 				BOOL protectResult = VirtualProtectEx(hGameProcess, mbi.BaseAddress, mbi.RegionSize, mbi.Protect & ~PAGE_GUARD, &dwOldProtect); 
-				if(!protectResult )//&& !(mbi.Type & MEM_IMAGE))
-					debugprintf(L"FAILED TO PROTECT MEMORY REGION: BaseAddress=0x%08X, RegionSize=0x%X, LastError=0x%X\n", mbi.BaseAddress, mbi.RegionSize, GetLastError());
+                if (!protectResult)//&& !(mbi.Type & MEM_IMAGE))
+                    DebugLog() << "FAILED TO PROTECT MEMORY REGION: BaseAddress=" << std::hex << mbi.BaseAddress << ", RegionSize=" << mbi.RegionSize << ", LastError=" << GetLastError();
 
 				SIZE_T bytesWritten = 0;
 				BOOL writeResult = WriteProcessMemory(hGameProcess, mbi.BaseAddress, region.data, mbi.RegionSize, &bytesWritten);
-				if(!writeResult )//&& !(mbi.Type & MEM_IMAGE))
-					debugprintf(L"FAILED TO WRITE MEMORY REGION: BaseAddress=0x%08X, RegionSize=0x%X, LastError=0x%X\n", mbi.BaseAddress, mbi.RegionSize, GetLastError());
+                if (!writeResult)//&& !(mbi.Type & MEM_IMAGE))
+                    DebugLog() << "FAILED TO WRITE MEMORY REGION: BaseAddress=" << std::hex << mbi.BaseAddress << ", RegionSize=" << mbi.RegionSize << ", LastError=" << GetLastError();
 
 				if(mbi.Protect & PAGE_GUARD)
 					VirtualProtectEx(hGameProcess, mbi.BaseAddress, mbi.RegionSize, mbi.Protect, &dwOldProtect); 
@@ -1734,7 +1723,7 @@ void LoadGameStatePhase2(int slot)
 		if(state.movie.currentFrame > (int)movie.frames.size())
 		{
 			finished = true;
-			debugprintf(L"MOVIE END WARNING: loaded movie frame %d comes after end of current movie length %d\n", state.movie.currentFrame, movie.frames.size());
+            DebugLog() << "MOVIE END WARNING: loaded movie frame " << state.movie.currentFrame << " comes after end of current movie length " << movie.frames.size();
 			bool warned = false;
 			if(!warned)
 			{
@@ -1756,7 +1745,7 @@ void LoadGameStatePhase2(int slot)
 			{
 				if(memcmp(&movie.frames[i], &state.movie.frames[i], sizeof(MovieFrame)))
 				{
-					debugprintf(L"DESYNC WARNING: loaded movie has mismatch on frame %d\n", i);
+					DebugLog() << "DESYNC WARNING: loaded movie has mismatch on frame " << i;
 					if(!warned)
 					{
 						warned = true;
@@ -1822,7 +1811,7 @@ void SendCommand()
 		tempCommandSlot[0] = 0;
 		SIZE_T bytesRead = 0;
 		ReadProcessMemory(hGameProcess, remoteCommandSlot, tempCommandSlot, sizeof(tempCommandSlot), &bytesRead);
-		debugprintf(__FUNCTIONW__ L" ERROR!!! overwrote earlier command before it executed. replaced \"%S\" with \"%S\".\n", tempCommandSlot, localCommandSlot);
+        DebugLog() << __FUNCTIONW__ << " ERROR!!! overwrote earlier command before it executed. replaced \"" << tempCommandSlot << "\" with \"" << localCommandSlot << "\".";
 		if(IsDebuggerPresent())
 		{
 			_asm{int 3} // note: this is continuable
@@ -1979,13 +1968,13 @@ void RecordLocalInputs()
 	if(movie.currentFrame == movie.frames.size())
 	{
 		movie.frames.push_back(frame);
-		verbosedebugprintf(L"RECORD: wrote to movie frame %d\n", movie.currentFrame);
+        VerboseDebugLog() << "RECORD: wrote to movie frame " << movie.currentFrame;
 		unsavedMovieData = true;
 	}
 	else if(!finished)
 	{
 		finished = true;
-		debugprintf(L"RECORDING STOPPED because %d != %d\n", movie.currentFrame, (int)movie.frames.size());
+        DebugLog() << "RECORDING STOPPED because " << movie.currentFrame << " != " << movie.frames.size();
 	}
 }
 
@@ -1997,7 +1986,7 @@ void InjectCurrentMovieFrame() // playback ... or recording, now
 		if(!finished)
 		{
 			finished = true;
-			debugprintf(L"MOVIE END (%d >= %d)\n", movie.currentFrame, (int)movie.frames.size());
+            DebugLog() << "MOVIE END (" << movie.currentFrame << " >= " << movie.frames.size() << ")";
 			mainMenuNeedsRebuilding = true;
 			// let's clear the key input when the movie is finished
 			// to prevent potentially weird stuff from holding the last frame's buttons forever
@@ -2010,12 +1999,12 @@ void InjectCurrentMovieFrame() // playback ... or recording, now
 	}
 
 	MovieFrame frame = movie.frames[movie.currentFrame];
-	verbosedebugprintf("injecting movie frame %d\n", movie.currentFrame);
+    VerboseDebugLog() << "injecting movie frame " << movie.currentFrame;
 
 	SIZE_T bytesWritten = 0;
 	if(!WriteProcessMemory(hGameProcess, remoteInputs, &frame.inputs, sizeof(CurrentInput), &bytesWritten))
 	{
-		debugprintf(L"failed to write input!!\n");
+        DebugLog() << "failed to write input!!";
 	}
 
 	// advance to next frame
@@ -2634,7 +2623,7 @@ void DoPow2Logic(int frameCount)
 						s_firstTimerDesyncWarnedFrame = frameCount;
 						WCHAR str [256];
 						swprintf(str, ARRAYSIZE(str), L"DESYNC DETECTED: on frame %d, your timer = %d but movie's timer = %d.\nThat means this playback of the movie desynced somewhere between frames %d and %d.", frameCount, localGeneralInfoFromDll.ticks, movieTime, frameCount, frameCount>>1);
-						debugprintf(L"%s\n", str);
+						DebugLog() << str;
 						CustomMessageBox(str, L"Desync Warning", MB_OK | MB_ICONWARNING);
 					}
 					movie.desyncDetectionTimerValues[which] = localGeneralInfoFromDll.ticks;
@@ -2698,8 +2687,8 @@ void SuspendAllExcept(int ignoreThreadID)
 	if(!ok)
 	{
 		static int first = 1;
-		if(first && ignoreThreadID)
-			debugprintf(L"ERROR: suspendall failed to find requesting thread id=0x%X in list.\n", ignoreThreadID);
+        if (first && ignoreThreadID)
+            DebugLog() << "ERROR: suspendall failed to find requesting thread id=" << std::hex << ignoreThreadID << " in list.";
 		first = 0;
 	}
 }
@@ -2721,8 +2710,8 @@ void ResumeAllExcept(int ignoreThreadID)
 	if(!ok)
 	{
 		static int first = 1;
-		if(first)
-			debugprintf(L"ERROR: resumeall failed to find requesting thread id=0x%X in list.\n", ignoreThreadID);
+        if (first)
+            DebugLog() << "ERROR: resumeall failed to find requesting thread id=" << std::hex << ignoreThreadID << " in list.";
 		first = 0;
 	}
 }
@@ -2842,43 +2831,37 @@ static std::wstring AbsolutifyPath(const std::wstring& path)
 	return NormalizePath(buffer);
 }
 
-LPCWSTR ExceptionCodeToDescription(DWORD code)
+std::wstring ExceptionCodeToDescription(DWORD code)
 {
-	switch(code & (DWORD)0xCFFFFFFF)
-	{
-		// custom/nonstandard/undocumented exceptions
-		case /*DELPHI_RUNTIME_ERROR*/(DWORD)0x0EEDFADE: return L"Delphi runtime error.";
-		case /*EXCEPTION_MSVC*/(DWORD)0xC06D7363: return L"exception inserted by Visual C++, often used for SEH";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0524F54: return L"EXCEPTION_COMPLUS (ROT)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434352: return L"EXCEPTION_COMPLUS (CCR)";
-		case /*EXCEPTION_COMPLUS*/(DWORD)0xC0434F4D: return L"EXCEPTION_COMPLUS (COM)";
-		case /*EXCEPTION_HIJACK*/(DWORD)0xC0434F4E: return L"Resuming thread after garbage collection.";
-		case /*EXCEPTION_SOFTSO*/(DWORD)0xC053534F: return L"Stack overflow in managed code.";
-		case /*EXCEPTION_EXX*/(DWORD)0xC0455858: return L"SetupThread PInvoke failure.";
-		case (DWORD)0xC0440001: return L"D runtime Win32 exception";
-		default:
-			LPVOID lpMessageBuffer;
-			HMODULE Hand = LoadLibraryW(L"NTDLL.DLL");
+    switch (code & 0xCFFFFFFF)
+    {
+    /*
+     *custom/nonstandard/undocumented exceptions
+     */
+    case /*DELPHI_RUNTIME_ERROR*/0x0EEDFADE: return L"Delphi runtime error.";
+    case /*EXCEPTION_MSVC*/0xC06D7363: return L"exception inserted by Visual C++, often used for SEH";
+    case /*EXCEPTION_COMPLUS*/0xC0524F54: return L"EXCEPTION_COMPLUS (ROT)";
+    case /*EXCEPTION_COMPLUS*/0xC0434352: return L"EXCEPTION_COMPLUS (CCR)";
+    case /*EXCEPTION_COMPLUS*/0xC0434F4D: return L"EXCEPTION_COMPLUS (COM)";
+    case /*EXCEPTION_HIJACK*/0xC0434F4E: return L"Resuming thread after garbage collection.";
+    case /*EXCEPTION_SOFTSO*/0xC053534F: return L"Stack overflow in managed code.";
+    case /*EXCEPTION_EXX*/0xC0455858: return L"SetupThread PInvoke failure.";
+    case 0xC0440001: return L"D runtime Win32 exception";
+    default:
+        std::wstring msg;
+        LPWSTR lpMessageBuffer;
+        HMODULE Hand = LoadLibraryW(L"NTDLL.DLL");
    
-			FormatMessageW(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_FROM_HMODULE,
-				Hand,
-				code,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPWSTR) &lpMessageBuffer,
-				0,
-				NULL );
+        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE,
+                       Hand, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&lpMessageBuffer),
+                       0, nullptr);
 
-			FreeLibrary(Hand);
+        FreeLibrary(Hand);
 
-            /*
-             * TODO: Memleak
-             * -- Warepire
-             */
-			return (LPWSTR)lpMessageBuffer;
-	}
+        msg = lpMessageBuffer;
+        LocalFree(lpMessageBuffer);
+        return msg;
+    }
 }
 
 
@@ -2985,7 +2968,7 @@ static void CloseThreadHandles(HANDLE threadHandleToNotClose, HANDLE hProcess)
 			HANDLE handle = iter->second;
 			if(handle == threadHandleToNotClose)
 				continue;
-			debugprintf(L"Closing thread handle 0x%X\n", handle);
+            DebugLog() << "Closing thread handle " << std::hex << handle;
 #ifndef _DEBUG
             try
             {
@@ -2995,7 +2978,7 @@ static void CloseThreadHandles(HANDLE threadHandleToNotClose, HANDLE hProcess)
             }
             catch (const Utils::Exceptions::WindowsException& e)
             {
-                debugprintf(L"Exception while closing thread 0x%X: %S\n", handle, e.what());
+                DebugLog() << "Exception while closing thread " << std::hex << handle << ": " << e.what();
             }
 #endif
 		}
@@ -3070,7 +3053,7 @@ static void DebuggerThreadFuncCleanup(HANDLE threadHandleToClose, HANDLE hProces
 	//		AdjustPrivileges(threadHandleToClose, FALSE);
 	//		ResumeThread(threadHandleToClose);
 
-		debugprintf(L"Closing thread handle 0x%X\n", threadHandleToClose);
+		DebugLog() << "Closing thread handle " << std::hex << threadHandleToClose;
 		CloseHandle(threadHandleToClose);
 	}
 
@@ -3141,12 +3124,12 @@ static void HandleThreadExitEvent(DEBUG_EVENT& de, PROCESS_INFORMATION& processI
 	if(found != hGameThreads.end())
 	{
 		HANDLE hThread = found->second;
-		debugprintf(L"STOPPED THREAD: id=0x%X, handle=0x%X, name=%S\n", de.dwThreadId, hThread, found->second.name);
+        DebugLog() << "STOPPED THREAD: id=" << std::hex << de.dwThreadId << ", handle=" << hThread << ", name=" << found->second.name;
 		hGameThreads.erase(found);
 	}
 	else
 	{
-		debugprintf(L"STOPPED THREAD: id=0x%X, handle=unknown\n", de.dwThreadId);
+        DebugLog() << "STOPPED THREAD: id=" << std::hex << de.dwThreadId << ", handle=unknown";
 	}
 
 	std::vector<DWORD>::iterator found2 = std::find(gameThreadIdList.begin(), gameThreadIdList.end(), de.dwThreadId);
@@ -3324,7 +3307,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 		debugprintf("failed to enable full debug privileges...\n");
 	}*/
 
-	debugprintf(L"creating process \"%s\"...\n", exe_filename.c_str());
+    DebugLog() << "creating process \"" << exe_filename << "\"...";
 	//debugprintf("initial directory = \"%s\"...\n", initialDirectory);
 	BOOL created = CreateProcessW(exe_filename.c_str(), // application name
 		cmdline.data(), // commandline arguments
@@ -3355,7 +3338,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	}
 
 	hGameProcess = processInfo.hProcess;
-	debugprintf(L"done creating process, got handle 0x%X, PID = %d.\n", hGameProcess, processInfo.dwProcessId);
+    DebugLog() << "done creating process, got handle " << std::hex << hGameProcess << ", PID = " << processInfo.dwProcessId << ".";
 
 	// If we're set to capture before the game is launched, hGameProcess needs to be registered ASAP with AVI Dumper after it's been created so that we can begin capture immediately.
 	if(localTASflags.aviMode > 0)
@@ -3489,7 +3472,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 	//debugprintf("INITIAL THREAD: 0x%X\n", processInfo.hThread);
 
-	debugprintf(L"attempting injection...\n");
+    DebugLog() << "attempting injection...";
 
 	injected_dll_path = this_process_path + L"\\hooks.dll";
 
@@ -3497,7 +3480,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	{
 		InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
 
-		debugprintf(L"done injection. starting game thread\n");
+        DebugLog() << "done injection. starting game thread.";
 	}
 
 	bool askedToRestartAboutBadThreadId = false;
@@ -3533,7 +3516,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	//bool redalert = false;
 	lastFrameAdvanceKeyUnheldTime = timeGetTime();
 
-	debugprintf(L"entering debugger loop\n");
+    DebugLog() << "entering debugger loop.";
 	DEBUG_EVENT de;
 
 	bool terminated = false;
@@ -3581,8 +3564,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			//}
 
 			LeaveCriticalSection(&g_processMemCS);
-			if(de.dwDebugEventCode != 8)
-				verbosedebugprintf("WaitForDebugEvent. received debug event: %X\n", de.dwDebugEventCode);
+            if (de.dwDebugEventCode != 8)
+                VerboseDebugLog() << "WaitForDebugEvent. received debug event: " << std::hex << de.dwDebugEventCode;
 
             static LPVOID ipc_address_in_process = nullptr;
 
@@ -3614,7 +3597,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							exceptionPrintingPaused--;
 						else if(MessagePrefixMatch("DEBUGPAUSE"))
 						{
-							debugprintf(L"DEBUGPAUSE: %S",pstr);
+                            DebugLog() << "DEBUGPAUSE: " << pstr;
 							paused = true;
 							temporaryUnpause = false;
 							CheckDialogChanges(-1);
@@ -3626,7 +3609,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						}
 						else
 						{
-							debugprintf(L"UNKNOWN MESSAGE: %S\n",pstr); // unhandled message
+                            DebugLog() << "UNKNOWN MESSAGE: " << pstr; // unhandled message
 						}
 
 #undef MessagePrefixMatch
@@ -3639,7 +3622,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			case EXCEPTION_DEBUG_EVENT:
 			{
 #pragma region EXCEPTION_DEBUG_EVENT
-				verbosedebugprintf(L"exception code: 0x%X\n", de.u.Exception.ExceptionRecord.ExceptionCode);
+                VerboseDebugLog() << "exception code: " << std::hex << de.u.Exception.ExceptionRecord.ExceptionCode;
 
 				if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT)
 				{
@@ -3647,7 +3630,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					int index = GetBreakpointIndex(address, de.dwThreadId);
 					if(index != -1)
 					{
-						debugprintf(L"hit custom breakpoint at address = 0x%X\n", address);
+                        DebugLog() << "hit custom breakpoint at address = " << std::hex << address;
 						if(address == entrypoint)
 						{
 							RemoveBreakpoint(address, de.dwThreadId, /*GetProcessHandle(processInfo,de)*/hGameProcess);
@@ -3657,7 +3640,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							// suspend main thread until PostDllMain finishes
 							if(!postDllMainDone)
 							{
-								debugprintf(L"suspending main thread until PostDllMain finishes...\n");
+                                DebugLog() << "suspending main thread until PostDllMain finishes...";
 								SuspendThread(processInfo.hThread);
 								mainThreadWaitingForPostDllMain = true;
 							}
@@ -3690,7 +3673,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     switch (ipc_frame.m_command)
                                     {
                                     case IPC::Command::CMD_DEBUG_MESSAGE:
-                                        debugprintf(L"%s", reinterpret_cast<IPC::DebugMessage*>(buf.data())->GetDebugMessage());
+                                        DebugLog() << *reinterpret_cast<const IPC::DebugMessage*>(buf.data());
                                         break;
                                     case IPC::Command::CMD_DLL_VERSION:
                                         CheckSrcDllVersion(*reinterpret_cast<DWORD*>(buf.data()));
@@ -3731,7 +3714,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
+                                                DebugLog() << "Tracing thread (id=" << std::hex << found->first << ") (name=" << found->second.name << ")";
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
@@ -3740,7 +3723,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                         postDllMainDone = true;
                                         if (mainThreadWaitingForPostDllMain)
                                         {
-                                            debugprintf(L"resuming main thread...\n");
+                                            DebugLog() << "resuming main thread...";
                                             ResumeThread(processInfo.hThread);
                                             mainThreadWaitingForPostDllMain = false;
                                         }
@@ -3763,7 +3746,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                             std::map<DWORD, ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
                                             if (found != hGameThreads.end())
                                             {
-                                                debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
+                                                DebugLog() << "Tracing thread (id=" << std::hex << found->first << ") (name=" << found->second.name << ")";
                                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
                                             }
                                         }
@@ -3841,7 +3824,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 #ifdef _DEBUG
                                             if (s_lastFrameCount <= 1 && !requestedCommandReenter)
                                             {
-                                                debugprintf(L"On Frame %d: \n", s_lastFrameCount);
+                                                DebugLog() << "On Frame " << s_lastFrameCount << ":";
                                                 // print the callstack of all threads
 
                                                 int numThreads = gameThreadIdList.size();
@@ -3850,7 +3833,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                                     DWORD threadId = gameThreadIdList[i];
                                                     ThreadInfo& info = hGameThreads[threadId];
                                                     HANDLE hThread = info.handle;
-                                                    debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, info.name);
+                                                    DebugLog() << "Tracing thread (id=" << std::hex << threadId << ") (name=" << info.name << ")";
                                                     DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
                                                 }
                                             }
@@ -3901,18 +3884,17 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					{
 						if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_ACCESS_VIOLATION) // 0xC0000005
 						{
-							debugprintf(L"exception 0x%X (at 0x%08X): attempt to %s memory at 0x%08X\n",
-								de.u.Exception.ExceptionRecord.ExceptionCode,
-								de.u.Exception.ExceptionRecord.ExceptionAddress,
-								de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0 ? L"read" : (de.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 ? L"write" : L"hack"),
-								de.u.Exception.ExceptionRecord.ExceptionInformation[1]);
+                            EXCEPTION_RECORD& r = de.u.Exception.ExceptionRecord;
+                            DebugLog() << "exception " << std::hex << r.ExceptionCode << " (at "
+                                       << r.ExceptionAddress << "): attempt to "
+                                       << (r.ExceptionInformation[0] == 0 ? "read" : (r.ExceptionInformation[0] == 1 ? "write" : "hack"))
+                                       << " memory at " << r.ExceptionInformation[1];
 						}
 						else if(couldBeSerious)
 						{
-							debugprintf(L"exception 0x%X (at 0x%08X): %s\n",
-								de.u.Exception.ExceptionRecord.ExceptionCode,
-								de.u.Exception.ExceptionRecord.ExceptionAddress,
-								ExceptionCodeToDescription(de.u.Exception.ExceptionRecord.ExceptionCode));
+                            EXCEPTION_RECORD& r = de.u.Exception.ExceptionRecord;
+                            DebugLog() << "exception " << std::hex << r.ExceptionCode << " (at " << r.ExceptionAddress
+                                       << "): " << ExceptionCodeToDescription(r.ExceptionCode);
 						}
 
 						//HANDLE hProcess = GetProcessHandle(processInfo,de); 
@@ -3923,7 +3905,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 							std::map<DWORD,ThreadInfo>::iterator found = hGameThreads.find(de.dwThreadId);
 							if(found != hGameThreads.end())
 							{
-								debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", found->first, found->second.name);
+                                DebugLog() << "Tracing thread (id=" << std::hex << found->first << ") (name=" << found->second.name << ")";
                                 DbgHelp::StackWalk(de.dwProcessId, found->second.handle, PrintStackTrace);
 							}
 						}
@@ -3939,7 +3921,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								if(threadId == de.dwThreadId)
 									continue;
 								ThreadInfo& info = hGameThreads[threadId];
-								debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, info.name);
+                                DebugLog() << "Tracing thread (id=" << std::hex << threadId << ") (name=" << info.name << ")";
                                 DbgHelp::StackWalk(de.dwProcessId, info.handle, PrintStackTrace);
 							}
 
@@ -3990,10 +3972,10 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								threadInfo.name[63] = '\0';
 								ASSERT(threadInfo.handle);
 								hGameThreads[threadId] = threadInfo;
-								if(*oldName)
-									debugprintf(L"got name for thread id=0x%X: \"%S\" (was \"%S\")\n", threadId, threadInfo.name, oldName);
-								else
-									debugprintf(L"got name for thread id=0x%X: \"%S\"\n", threadId, threadInfo.name);
+                                if (*oldName)
+                                    DebugLog() << "got name for thread id=" << std::hex << threadId << ": \"" << threadInfo.name << "\" (was \"" << oldName << "\")";
+                                else
+                                    DebugLog() << "got name for thread id=" << std::hex << threadId << ": \"" << threadInfo.name << "\"";
 //								if(strstr(threadInfo.name, "FrameThread"))
 //									hasMainThread = true;
 							}
@@ -4004,7 +3986,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								HANDLE hProcess = GetProcessHandle(processInfo,de);
 								ReadProcessMemory(hProcess, (void*)nameInfo->szName, threadInfo.name, 64, &bytesRead);
 								threadInfo.name[63] = '\0';
-								debugprintf(L"got name for as-yet-invalid thread id=0x%X: \"%S\"\n", threadId, threadInfo.name);
+                                DebugLog() << "got name for as-yet-invalid thread id=" << std::hex << threadId << ": \"" << threadInfo.name << "\"";
 								danglingThreadNameId = threadId;
 								strcpy(danglingThreadName, threadInfo.name);
 //								if(strstr(threadInfo.name, "FrameThread"))
@@ -4162,7 +4144,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && !(localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg : L"",
 								(s_lastFrameCount > 30 && localTASflags.threadMode != 0 && (localTASflags.aviMode & 2) && !(localTASflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND)) ? dsounddisablemsg2 : L""
 							);
-							debugprintf(L"%s", msg);
+							DebugLog() << msg;
 #ifndef _DEBUG
 							if(!skipDialog)
 								CustomMessageBox(msg, L"CRASH", MB_OK|MB_ICONERROR);
@@ -4201,7 +4183,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					if(dll_base_to_filename[de.u.LoadDll.lpBaseOfDll].length() == 0)
 					{
 						std::wstring filename = GetFileNameFromFileHandle(de.u.LoadDll.hFile);
-						debugprintf(L"LOADED DLL: %s\n", filename.c_str());
+                        DebugLog() << "LOADED DLL: " << filename;
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
                         TrustedModule::OnLoad(de.dwProcessId, filename.c_str());
 						AddAndSendDllInfo(filename.c_str(), true, hProcess);
@@ -4239,7 +4221,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					//HANDLE hFile = dllBaseToHandle[de.u.UnloadDll.lpBaseOfDll];
 					//GetFileNameFromFileHandle(hFile, filename);
 					LPCWSTR filename = dll_base_to_filename[de.u.UnloadDll.lpBaseOfDll].c_str();
-					debugprintf(L"UNLOADED DLL: %s\n", filename);
+					DebugLog() << "UNLOADED DLL: " << filename;
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
                     TrustedModule::OnUnload(de.dwProcessId, filename);
 					AddAndSendDllInfo(filename, false, hProcess);
@@ -4257,7 +4239,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			case CREATE_THREAD_DEBUG_EVENT:
 				{
 #pragma region CREATE_THREAD_DEBUG_EVENT
-					debugprintf(L"STARTED THREAD: id=0x%X, handle=0x%X\n", de.dwThreadId, de.u.CreateThread.hThread);
+                DebugLog() << "STARTED THREAD: id=" << std::hex << de.dwThreadId << ", handle=" << de.u.CreateThread.hThread;
 
 			// print the status and callstack of all threads
 			std::map<DWORD,ThreadInfo>::iterator iter;
@@ -4270,8 +4252,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				ASSERT(suspendCount == GetThreadSuspendCount(threadInfo.handle));
 				//int waitCount = threadInfo.waitingCount;
 				//debugprintf("thread status: id=0x%X, handle=0x%X, suspend=%d, wait=%d, name=%s\n", threadId, hThread, suspendCount, waitCount, threadInfo.name);
-				debugprintf(L"thread status: id=0x%X, handle=0x%X, suspend=%d, name=%S\n", threadId, hThread, suspendCount, threadInfo.name);
-				debugprintf(L"Tracing thread (id=0x%X) (name=%S)\n", threadId, threadInfo.name);
+                DebugLog() << "thread status: id=" << std::hex << threadId << ", handle=" << hThread << ", suspend=" << std::dec << suspendCount << ", name=" << threadInfo.name;
+                DebugLog() << "Tracing thread (id=" << std::hex << threadId << ") (name=" << threadInfo.name << ")";
                 DbgHelp::StackWalk(de.dwProcessId, hThread, PrintStackTrace);
 			}
 
@@ -4313,7 +4295,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						filename = GetFileNameFromFileHandle(de.u.CreateProcessInfo.hFile);
 
 //					debugprintf("CREATE_PROCESS_DEBUG_EVENT: 0x%X\n", de.u.CreateProcessInfo.lpBaseOfImage);
-					debugprintf(L"CREATED PROCESS: %s\n", filename.c_str());
+                    DebugLog() << "CREATED PROCESS: " << filename;
                     sub_exe_filename = filename;
                     DbgHelp::AddProcess(de.u.CreateProcessInfo.hProcess, de.dwProcessId);
                     TrustedModule::OnLoad(de.dwProcessId, filename);
@@ -4326,7 +4308,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					if(entrypoint/* && movie.version >= 70*/)
 					{
 						AddBreakpoint(entrypoint, de.dwThreadId, de.u.CreateProcessInfo.hProcess);
-						debugprintf(L"entrypoint = 0x%X\n", entrypoint);
+                        DebugLog() << "entrypoint = " << std::hex << entrypoint;
 					}
 
 //					if(threadMode == 3)
@@ -4361,11 +4343,11 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 
 //						CloseHandle(hGameProcess);
 						hGameProcess = processInfo.hProcess;
-						debugprintf(L"switched to child process, handle 0x%X, PID = %d.\n", hGameProcess, processInfo.dwProcessId);
+                        DebugLog() << "switched to child process, handle " << std::hex << hGameProcess << ", PID = " << processInfo.dwProcessId << ".";
 						PrintPrivileges(hGameProcess);
-						debugprintf(L"attempting injection...\n");
+                        DebugLog() << "attempting injection...";
 						InjectDll(processInfo.hProcess, processInfo.dwProcessId, processInfo.hThread, processInfo.dwThreadId, injected_dll_path.c_str(), runDllLast!=0);
-						debugprintf(L"done injection. continuing...\n");
+                        DebugLog() << "done injection. continuing...";
 					}
 
 					allProcessInfos.push_back(processInfo);
@@ -4417,7 +4399,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 				}
 				break;
 			case RIP_EVENT: // I've never encountered a rip event, but I might as well log it in case it happens.
-				debugprintf(L"RIP: err=0x%X, type=0x%X\n", de.u.RipInfo.dwError, de.u.RipInfo.dwType);
+                DebugLog() << "RIP: err=" << std::hex << de.u.RipInfo.dwError << ", type=" << de.u.RipInfo.dwType;;
 				break;
 			}
 
@@ -6440,11 +6422,11 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							break;
 						}
 
-						debugprintf(L"Attempting to determinate default thread stack size for the game...\n");
+                        DebugLog() << "Attempting to determinate default thread stack size for the game...";
 						localTASflags.threadStackSize = GetWin32ExeDefaultStackSize(exe_filename.c_str());
 						if(localTASflags.threadStackSize != 0)
 						{
-							debugprintf(L"Detecting the default stack size succeeded, size is: %u bytes\n", localTASflags.threadStackSize);
+                            DebugLog() << "Detecting the default stack size succeeded, size is: " << localTASflags.threadStackSize << " bytes.";
 						}
 						else
 						{
