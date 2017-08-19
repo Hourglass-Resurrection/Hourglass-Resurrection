@@ -7,6 +7,8 @@
 
 #include "catch.hpp"
 
+#include "hourglass.h"
+
 namespace BinaryTests
 {
     namespace filesystem = std::experimental::filesystem;
@@ -52,14 +54,13 @@ namespace BinaryTests
                 SECTION( test.first.filename().string() )
                 {
                     const auto exe_filename = test.first.filename().replace_extension("exe");
-                    const auto exe_path = test.first / exe_filename;
+                    const auto exe_path = gs_base_path / TEMP_DIR_NAME / exe_filename;
 
                     for (const auto& input_pair : test.second)
                     {
                         SECTION( input_pair.input.filename().string() )
                         {
-                            std::wcout << L"Running hourglass on " << exe_filename << L" with " << input_pair.input.filename() << L'\n';
-
+                            Hourglass::Run(exe_path, input_pair.input);
                             REQUIRE( 1 == 1 );
                         }
                     }
@@ -68,14 +69,9 @@ namespace BinaryTests
         }
     }
 
-    void DiscoverTests()
+    void DiscoverTests(const filesystem::path& base_path)
     {
-        WCHAR test_runner_exe_filename[MAX_PATH];
-        GetModuleFileNameW(nullptr, test_runner_exe_filename, ARRAYSIZE(test_runner_exe_filename));
-        std::wcout << L"Test runner .exe filename: " << test_runner_exe_filename << L'\n';
-
-        const filesystem::path test_runner_exe_path(test_runner_exe_filename);
-        gs_base_path = test_runner_exe_path.parent_path().parent_path();
+        gs_base_path = base_path;
 
         const filesystem::path input_path = gs_base_path / "input";
 

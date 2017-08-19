@@ -1,6 +1,7 @@
 #pragma once
+#include <filesystem>
 
 namespace BinaryTests
 {
-    void DiscoverTests();
+    void DiscoverTests(const std::experimental::filesystem::path& base_path);
 }
