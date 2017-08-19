@@ -13,6 +13,7 @@ namespace Hooks
     HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, timeGetSystemTime, LPMMTIME pmmt, UINT cbmmt);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTime, LPSYSTEMTIME lpSystemTime);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTimeAsFileTime, LPFILETIME lpSystemTimeAsFileTime);
+    HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTimePreciseAsFileTime, LPFILETIME lpSystemTimeAsFileTime);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetLocalTime, LPSYSTEMTIME lpSystemTime);
     HOOK_FUNCTION_DECLARE(NTSTATUS, NTAPI, NtQuerySystemTime, PLARGE_INTEGER SystemTime);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, QueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount);

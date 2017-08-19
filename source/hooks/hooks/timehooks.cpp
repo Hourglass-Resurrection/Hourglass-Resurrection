@@ -312,6 +312,12 @@ namespace Hooks
             //lpSystemTimeAsFileTime->dwLowDateTime = 0xC39A9DC8;
             //lpSystemTimeAsFileTime->dwHighDateTime = 0x1C9FDDC;
     }
+    HOOK_FUNCTION(VOID, WINAPI, GetSystemTimePreciseAsFileTime, LPFILETIME lpSystemTimeAsFileTime);
+    HOOKFUNC VOID WINAPI MyGetSystemTimePreciseAsFileTime(LPFILETIME lpSystemTimeAsFileTime)
+    {
+        ENTER(lpSystemTimeAsFileTime);
+        *lpSystemTimeAsFileTime = detTimer.GetFileTime();
+    }
     HOOK_FUNCTION(VOID, WINAPI, GetSystemTime, LPSYSTEMTIME lpSystemTime);
     HOOKFUNC VOID WINAPI MyGetSystemTime(LPSYSTEMTIME lpSystemTime)
     {
@@ -460,6 +466,7 @@ namespace Hooks
             MAKE_INTERCEPT(1, NTDLL, NtQueryPerformanceCounter),
             MAKE_INTERCEPT(1, KERNEL32, GetSystemTime),
             MAKE_INTERCEPT(1, KERNEL32, GetSystemTimeAsFileTime),
+            MAKE_INTERCEPT(1, KERNEL32, GetSystemTimePreciseAsFileTime),
             MAKE_INTERCEPT(1, KERNEL32, GetLocalTime),
             MAKE_INTERCEPT(1, KERNEL32, GetTickCount),
             MAKE_INTERCEPT(1, KERNEL32, GetSystemTimes),
