@@ -25,11 +25,11 @@ namespace D3D
         params.hDeviceWindow = hwnd;
 
         HRESULT result = gs_d3d->CreateDevice(D3DADAPTER_DEFAULT,
-                                             D3DDEVTYPE_HAL,
-                                             hwnd,
-                                             D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-                                             &params,
-                                             &gs_device);
+                                              D3DDEVTYPE_HAL,
+                                              hwnd,
+                                              D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+                                              &params,
+                                              &gs_device);
 
         if (FAILED(result))
         {
