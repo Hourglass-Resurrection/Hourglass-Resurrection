@@ -77,6 +77,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
@@ -119,6 +120,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
@@ -143,6 +145,7 @@
     <ClCompile Include="AVIDumping\WaitableBool.cpp" />
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
     <ClCompile Include="TrustedModule.cpp" />
+    <ClCompile Include="Utils\Exceptions\WindowsExceptionsHandler.cpp" />
     <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp" />
     <ClCompile Include="Utils\File\FileDialog.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -167,6 +170,7 @@
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
     <ClCompile Include="Utils\COM.cpp" />
+    <ClCompile Include="Utils\Thread\Thread.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
     <ClCompile Include="inject\process.cpp" />
@@ -212,8 +216,10 @@
     <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="TrustedModule.h" />
+    <ClInclude Include="Utils\Exceptions.h" />
     <ClInclude Include="Utils\File.h" />
     <ClInclude Include="Utils\COM.h" />
+    <ClInclude Include="Utils\Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico" />
