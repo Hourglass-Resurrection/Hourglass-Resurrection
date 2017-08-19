@@ -13,6 +13,7 @@ namespace TimeStats
         long long gs_last_us_chrono_high_resolution;
         long long gs_last_us_query_performance_counter;
         long long gs_last_us_get_system_time;
+        long long gs_last_us_get_system_time_precise;
 
         long long CurrentUSChronoSystem()
         {
@@ -47,6 +48,19 @@ namespace TimeStats
         {
             FILETIME filetime;
             GetSystemTimeAsFileTime(&filetime);
+
+            ULARGE_INTEGER large;
+            large.HighPart = filetime.dwHighDateTime;
+            large.LowPart = filetime.dwLowDateTime;
+
+            // large.QuadPart is in 100s of nanoseconds.
+            return large.QuadPart / 10;
+        }
+
+        long long CurrentUSGetSystemTimePreciseAsFileTime()
+        {
+            FILETIME filetime;
+            GetSystemTimePreciseAsFileTime(&filetime);
 
             ULARGE_INTEGER large;
             large.HighPart = filetime.dwHighDateTime;
@@ -122,6 +136,18 @@ namespace TimeStats
 
             gs_last_us_get_system_time = current_us_get_system_time;
         }
+
+        {
+            long long current_us_get_system_time_precise = CurrentUSGetSystemTimePreciseAsFileTime();
+            Logger::Write(L"    GetSystemTimePreciseAsFileTime: " + std::to_wstring(current_us_get_system_time_precise) + L"us");
+
+            if (gs_frame_counter > 1)
+                Logger::Write(L" (frametime: " + std::to_wstring(current_us_get_system_time_precise - gs_last_us_get_system_time_precise) + L"us)");
+
+            Logger::WriteLine(L"");
+
+            gs_last_us_get_system_time_precise = current_us_get_system_time_precise;
+        }
     }
 
     void PostRender()
@@ -132,6 +158,7 @@ namespace TimeStats
         Logger::WriteLine(L"    std::chrono high_resolution_clock: " + std::to_wstring(CurrentUSChronoHighResolution()) + L"us");
         Logger::WriteLine(L"    QueryPerformanceCounter: " + std::to_wstring(CurrentUSQueryPerformanceCounter()) + L"us");
         Logger::WriteLine(L"    GetSystemTimeAsFileTime: " + std::to_wstring(CurrentUSGetSystemTimeAsFileTime()) + L"us");
+        Logger::WriteLine(L"    GetSystemTimePreciseAsFileTime: " + std::to_wstring(CurrentUSGetSystemTimePreciseAsFileTime()) + L"us");
         Logger::WriteLine(L"");
     }
 }
