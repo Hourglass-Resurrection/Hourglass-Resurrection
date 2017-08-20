@@ -76,6 +76,7 @@ using namespace Config;
 #include "Utils/Exceptions.h"
 #include "Utils/File.h"
 #include "Utils/Thread.h"
+#include "Utils/Arguments.h"
 
 #include "shared/CompilerChecks.h"
 
@@ -4717,6 +4718,15 @@ DWORD GetErrorModeXP()
 	return prev;
 }
 
+void SetOptionsFromArguments()
+{
+    if (Arguments::g_args.m_game_filename.has_value())
+        exe_filename = Arguments::g_args.m_game_filename.value();
+
+    if (Arguments::g_args.m_movie_filename.has_value())
+        movie_filename = Arguments::g_args.m_movie_filename.value();
+}
+
 
 //HACCEL hAccelTable = NULL;
 
@@ -4725,6 +4735,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                       LPTSTR    lpCmdLine,
                       int       nCmdShow)
 {
+    Arguments::Parse(lpCmdLine);
+
     {
         WCHAR path[MAX_PATH + 1];
         GetCurrentDirectoryW(MAX_PATH, path);
@@ -4770,6 +4782,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	InitRamSearch();
 
 	Load_Config();
+    SetOptionsFromArguments();
 
     Utils::Exceptions::InitWindowsExceptionsHandler();
     Utils::COM::COMInstance::Init();
@@ -5332,10 +5345,22 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				movienameCustomized = false;
 				// As they start blank, we have no interest in updating these if the filenames
 				// are empty. This prevents messages about file '' not existing.
+
+                /*
+                 * Hack until this is rewritten.
+                 * -- YaLTeR
+                 */
+                std::wstring movie_filename_backup = movie_filename;
+
 				if (!path.empty())
 					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path.c_str());
-				if (!movie_filename.empty())
+
+                if (!movie_filename_backup.empty())
+                    movie_filename = movie_filename_backup;
+
+                if (!movie_filename.empty())
 					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), movie_filename.c_str());
+
 				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), command_line.c_str());
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));

@@ -146,6 +146,7 @@
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
     <ClCompile Include="TrustedModule.cpp" />
     <ClCompile Include="Utils\Exceptions\WindowsExceptionsHandler.cpp" />
+    <ClCompile Include="Utils\Arguments.cpp" />
     <ClCompile Include="Utils\File\ExecutableFileHeaders.cpp" />
     <ClCompile Include="Utils\File\FileDialog.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="TrustedModule.h" />
     <ClInclude Include="Utils\Exceptions.h" />
+    <ClInclude Include="Utils\Arguments.h" />
     <ClInclude Include="Utils\File.h" />
     <ClInclude Include="Utils\COM.h" />
     <ClInclude Include="Utils\Thread.h" />
