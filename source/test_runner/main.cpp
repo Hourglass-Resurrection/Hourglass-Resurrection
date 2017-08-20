@@ -10,7 +10,7 @@
 #include <fcntl.h>
 
 #define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include "Catch/catch.hpp"
 
 #include "binary_tests.h"
 #include "hourglass.h"

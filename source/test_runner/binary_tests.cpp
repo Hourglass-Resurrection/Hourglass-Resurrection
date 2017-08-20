@@ -12,7 +12,7 @@
 
 #include "windows.h"
 
-#include "catch.hpp"
+#include "Catch/catch.hpp"
 
 #include "hourglass.h"
 
