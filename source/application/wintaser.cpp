@@ -3828,6 +3828,20 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     case IPC::Command::CMD_FRAME_BOUNDARY:
                                         {
                                             FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
+
+                                            /*
+                                             * Once again, huge hack until the GUI code rewrite.
+                                             * -- YaLTeR
+                                             */
+                                            if (Arguments::g_args.m_quit_on_movie_end && finished)
+                                            {
+                                                /*
+                                                 * Doesn't this resume the game process for a little bit?
+                                                 * That's undesired.
+                                                 */
+                                                terminateRequest = true;
+                                            }
+
 #ifdef _DEBUG
                                             if (s_lastFrameCount <= 1 && !requestedCommandReenter)
                                             {
@@ -4533,6 +4547,9 @@ static DWORD WINAPI AfterDebugThreadExitThread(LPVOID lpParam)
 	CheckDialogChanges(0); // update dialog to reflect movie being closed
 
 	hAfterDebugThreadExitThread = NULL;
+
+    if (Arguments::g_args.m_quit_on_movie_end)
+        PostMessageW(hWnd, WM_CLOSE, 0, 0);
 
 	return 0;
 }
