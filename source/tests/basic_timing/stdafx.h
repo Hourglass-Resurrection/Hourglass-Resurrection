@@ -16,8 +16,6 @@
 #include <memory.h>
 #include <tchar.h>
 
-#include <d3d9.h>
-
 #include <chrono>
 #include <fstream>
 #include <string>

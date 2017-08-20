@@ -5,7 +5,6 @@
  */
 
 #include "stdafx.h"
-#include "d3d_stuff.h"
 #include "logger.h"
 #include "time_stats.h"
 #include "basictiming.h"
@@ -17,9 +16,12 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+static uint32_t gs_pixel = 0x000000CC;
+static BITMAPINFO gs_bitmap_info;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
+HWND                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
@@ -39,22 +41,37 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
+    HWND hWnd = InitInstance(hInstance, nCmdShow);
+    if (!hWnd)
     {
         return FALSE;
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_BASICTIMING));
 
+    {
+        BITMAPINFOHEADER& header = gs_bitmap_info.bmiHeader;
+        header.biSize = sizeof(header);
+        header.biWidth = 1;
+        header.biHeight = 1;
+        header.biPlanes = 1;
+        header.biBitCount = 32;
+        header.biCompression = BI_RGB;
+    }
+
     TimeStats::Initialize();
 
     MSG msg;
 
     // Main message loop:
-    while (true)
+    bool running = true;
+    while (running)
     {
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
+            if (msg.message == WM_QUIT)
+                running = false;
+
             if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
             {
                 TranslateMessage(&msg);
@@ -62,15 +79,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             }
         }
 
-        if (msg.message == WM_QUIT)
-            break;
-
         TimeStats::PreRender();
-        D3D::RenderFrame();
+
+        HDC hdc = GetDC(hWnd);
+        RECT client_rect;
+        GetClientRect(hWnd, &client_rect);
+        StretchDIBits(hdc,
+                      0, 0, client_rect.right, client_rect.bottom,
+                      0, 0, 1, 1,
+                      &gs_pixel,
+                      &gs_bitmap_info,
+                      DIB_RGB_COLORS,
+                      SRCCOPY);
+        /*
+         * Force a Hourglass frame boundary.
+         */
+        SwapBuffers(hdc);
+        ReleaseDC(hWnd, hdc);
+
         TimeStats::PostRender();
     }
-
-    D3D::Shutdown();
 
     return (int) msg.wParam;
 }
@@ -113,7 +141,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
@@ -122,49 +150,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    if (!hWnd)
    {
-      return FALSE;
+      return nullptr;
    }
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   try
-   {
-       D3D::Initialize(hWnd);
-   }
-   catch (const D3D::Error::CreateD3D&)
-   {
-       Logger::WriteLine(L"Error in Direct3DCreate9().");
-       return FALSE;
-   }
-   catch (const D3D::Error::CreateDevice& e)
-   {
-       std::wstring error_string;
-
-       switch (e.m_return_code)
-       {
-       case D3DERR_DEVICELOST:
-           error_string = L"D3DERR_DEVICELOST";
-           break;
-       case D3DERR_INVALIDCALL:
-           error_string = L"D3DERR_INVALIDCALL";
-           break;
-       case D3DERR_NOTAVAILABLE:
-           error_string = L"D3DERR_NOTAVAILABLE";
-           break;
-       case D3DERR_OUTOFVIDEOMEMORY:
-           error_string = L"D3DERR_OUTOFVIDEOMEMORY";
-           break;
-       default:
-           error_string = std::to_wstring(e.m_return_code);
-           break;
-       }
-
-       Logger::WriteLine(L"Error in CreateDevice(): " + error_string + L'.');
-       return FALSE;
-   }
-
-   return TRUE;
+   return hWnd;
 }
 
 //
@@ -202,7 +194,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
+
+            RECT client_rect;
+            GetClientRect(hWnd, &client_rect);
+
+            StretchDIBits(hdc,
+                          0, 0, client_rect.right, client_rect.bottom,
+                          0, 0, 1, 1,
+                          &gs_pixel,
+                          &gs_bitmap_info,
+                          DIB_RGB_COLORS,
+                          SRCCOPY);
+
             EndPaint(hWnd, &ps);
         }
         break;
