@@ -21,6 +21,8 @@ namespace TimeStats
         long long gs_last_us_get_system_time;
         long long gs_last_us_get_system_time_precise;
 
+        void(__stdcall *GetSystemTimePreciseAsFileTime)(LPFILETIME lpSystemTimeAsFileTime);
+
         long long CurrentUSChronoSystem()
         {
             auto now = std::chrono::system_clock::now();
@@ -75,6 +77,19 @@ namespace TimeStats
             // large.QuadPart is in 100s of nanoseconds.
             return large.QuadPart / 10;
         }
+    }
+
+    void Initialize()
+    {
+        HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+        GetSystemTimePreciseAsFileTime = reinterpret_cast<void(__stdcall *)(LPFILETIME)>(
+            GetProcAddress(kernel32, "GetSystemTimePreciseAsFileTime"));
+
+        /*
+         * Fallback for Windows 7 where this function did not exist yet.
+         */
+        if (!GetSystemTimePreciseAsFileTime)
+            GetSystemTimePreciseAsFileTime = GetSystemTimeAsFileTime;
     }
 
     void PreRender()

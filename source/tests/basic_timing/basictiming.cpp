@@ -46,6 +46,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_BASICTIMING));
 
+    TimeStats::Initialize();
+
     MSG msg;
 
     // Main message loop:

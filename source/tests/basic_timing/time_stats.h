@@ -8,6 +8,7 @@
 
 namespace TimeStats
 {
+    void Initialize();
     void PreRender();
     void PostRender();
 }
