@@ -4803,6 +4803,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	CheckDialogChanges(0);
 
+    /*
+     * Yes, this is ridiculous, but I don't immediately see a good way of doing this otherwise.
+     * The GUI desperately needs a rewrite.
+     * -- YaLTeR
+     */
+    if (Arguments::g_args.m_play)
+        SendDlgItemMessageW(hWnd, IDC_BUTTON_PLAY, BM_CLICK, 0, 0);
+
 //	atexit(PrepareForExit);
 
 	// Main message loop:
