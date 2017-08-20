@@ -47,8 +47,6 @@ namespace BinaryTests
 
         TEST_CASE( "binary tests" )
         {
-            TempDir temp_dir;
-
             for (const auto& test : gs_tests)
             {
                 SECTION( test.first.filename().string() )
@@ -60,8 +58,10 @@ namespace BinaryTests
                     {
                         SECTION( input_pair.input.filename().string() )
                         {
-                            Hourglass::Run(exe_path, input_pair.input);
-                            REQUIRE( 1 == 1 );
+                            TempDir temp_dir;
+                            CopyContentsToTempDir(test.first);
+
+                            REQUIRE_NOTHROW( Hourglass::Run(exe_path, input_pair.input) );
                         }
                     }
                 }
