@@ -161,7 +161,9 @@ namespace BinaryTests
 
         const filesystem::path input_path = gs_base_path / "input";
 
-        // Find all folders in bin/.
+        /*
+         * Find all folders in bin/.
+         */
         for (auto&& entry : filesystem::directory_iterator(gs_base_path / "bin"))
         {
             if (filesystem::is_directory(entry))
@@ -170,7 +172,9 @@ namespace BinaryTests
 
                 std::wcout << L"Discovered binary test folder: " << path.filename() << L'\n';
 
-                // Make sure that the .exe exists.
+                /*
+                 * Make sure that the .exe exists.
+                 */
                 const auto exe_filename = path.filename().replace_extension("exe");
                 if (!filesystem::exists(path / exe_filename))
                 {
@@ -178,7 +182,9 @@ namespace BinaryTests
                     continue;
                 }
 
-                // Find all corresponding input/logfile pairs in input/<folder>/.
+                /*
+                 * Find all corresponding input/logfile pairs in input/<folder>/.
+                 */
                 for (auto&& input : filesystem::directory_iterator(input_path / path.filename()))
                 {
                     auto input_path = input.path();
@@ -187,7 +193,9 @@ namespace BinaryTests
                     {
                         auto log_path = filesystem::path(input_path).replace_extension("log");
 
-                        // For every input file, check if the log file exists with the same stem.
+                        /*
+                         * For every input file, check if the log file exists with the same stem.
+                         */
                         if (!filesystem::exists(log_path))
                         {
                             std::wcout << L"\tNo log file found for " << input_path.filename() << L"! Ignoring.\n";
