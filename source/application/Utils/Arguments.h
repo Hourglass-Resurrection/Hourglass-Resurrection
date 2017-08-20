@@ -20,6 +20,7 @@ namespace Arguments
         std::optional<std::wstring> m_movie_filename;
         bool m_play;
         bool m_quit_on_movie_end;
+        bool m_ignore_md5;
     };
 
     extern Arguments g_args;

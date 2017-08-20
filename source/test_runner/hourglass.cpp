@@ -34,7 +34,7 @@ namespace Hourglass
         std::wstring commandline = L'"' + gs_hourglass_exe.wstring()
                                  + L"\" --game \"" + exe.wstring()
                                  + L"\" --movie \"" + input.wstring()
-                                 + L"\" --play";
+                                 + L"\" --ignore-md5 --play --quit-on-movie-end";
 
         std::wcout << commandline << L'\n';
 

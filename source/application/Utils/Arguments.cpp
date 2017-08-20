@@ -28,6 +28,10 @@ namespace Arguments
                 {
                     g_args.m_quit_on_movie_end = true;
                 }
+                else if (arg == L"--ignore-md5")
+                {
+                    g_args.m_ignore_md5 = true;
+                }
                 else if (arg == L"--game" && i + 1 < argc)
                 {
                     g_args.m_game_filename = argv[++i];
