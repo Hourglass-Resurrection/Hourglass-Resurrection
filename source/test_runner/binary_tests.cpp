@@ -159,7 +159,7 @@ namespace BinaryTests
     {
         gs_base_path = base_path;
 
-        const filesystem::path input_path = gs_base_path / "input";
+        const filesystem::path input_path = gs_base_path.parent_path().parent_path().parent_path() / "test_input";
 
         /*
          * Find all folders in bin/.
