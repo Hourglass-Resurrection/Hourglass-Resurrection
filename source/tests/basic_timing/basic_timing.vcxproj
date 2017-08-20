@@ -153,9 +153,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="basictiming.h" />
     <ClInclude Include="d3d_stuff.h" />
     <ClInclude Include="logger.h" />
