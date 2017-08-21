@@ -1112,22 +1112,12 @@ int LoadMovie(const std::wstring& filename)
 
 		if(movie.fps != localTASflags.framerate)
 		{
-			//WCHAR str[1024];
-			//swprintf(str, ARRAYSIZE(str), L"This movie was recorded using a different fps.\n\n"
-			//			 L"Movie's fps: %d\nCurrent fps: %d\n\n"
-			//			 L"Playing the movie with current fps may lead to the movie desyncing.\n"
-			//			 L"Do you want to use the movies fps instead?\n"
-			//			 L"(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
-			//			 static_cast<int>(movie.fps), localTASflags.framerate);
-			//int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
-			//if(result == IDYES)
-			//{
-				localTASflags.framerate = movie.fps;
-				// Also update the window text.
-				WCHAR fpstext[256];
-				swprintf(fpstext, ARRAYSIZE(fpstext), L"%d", localTASflags.framerate);
-				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
-			//}
+            localTASflags.framerate = movie.fps;
+
+            // Also update the window text.
+            WCHAR fpstext[256];
+            swprintf(fpstext, ARRAYSIZE(fpstext), L"%d", localTASflags.framerate);
+            SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
 		}
 		if(movie.it != localTASflags.initialTime)
 		{
