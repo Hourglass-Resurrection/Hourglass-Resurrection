@@ -18,6 +18,7 @@
 #include <atlcom.h>
 #include <DIA SDK/include/dia2.h>
 
+#include "application/Utils/COM.h"
 #include "DbgHelp.h"
 
 class DbgHelpPrivate
@@ -31,7 +32,7 @@ public:
         std::map<DWORD64, std::wstring> m_module_exports_table;
     };
 
-    DbgHelpPrivate(HANDLE process);
+    DbgHelpPrivate(const Utils::COM::COMLibrary& dia, HANDLE process);
     ~DbgHelpPrivate();
 
     bool LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path);
@@ -40,6 +41,8 @@ public:
     HANDLE GetProcess() const;
     const ModuleData* GetModuleData(ULONGLONG virtual_address) const;
 private:
+    const Utils::COM::COMLibrary& m_dia;
+
     HANDLE m_process;
     /*
      * It's not possible to safely get the full path of the loaded module once we're in a

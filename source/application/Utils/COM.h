@@ -16,6 +16,8 @@ namespace Utils
 {
     namespace COM
     {
+        using DllGetClassObject_t = HRESULT(__stdcall *)(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+
         template<class T>
         CComPtr<T> CreateCOMPtr(REFIID class_id)
         {
@@ -39,6 +41,45 @@ namespace Utils
             void operator=(const COMInstance&) = delete;
 
             static bool ms_initialized;
+        };
+
+        class COMLibrary
+        {
+        public:
+            COMLibrary();
+            ~COMLibrary();
+
+            void Load(LPCWSTR name);
+
+            template<class T>
+            inline HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, T* ppv) const
+            {
+                return m_dll_get_class_object(rclsid, riid, reinterpret_cast<LPVOID*>(ppv));
+            }
+
+            template<class T>
+            CComPtr<T> CreateCOMPtr(REFIID class_id) const
+            {
+                CComPtr<IClassFactory> factory;
+                if (DllGetClassObject(class_id, IID_IClassFactory, &factory) != S_OK)
+                {
+                    throw std::exception("The requested class is not present in this library!");
+                }
+
+                CComPtr<T> result;
+                if (factory->CreateInstance(nullptr,
+                                            __uuidof(T),
+                                            reinterpret_cast<LPVOID*>(&result)) != S_OK)
+                {
+                    throw std::exception("Error creating a class instance!");
+                }
+
+                return result;
+            }
+
+        private:
+            HMODULE m_handle;
+            DllGetClassObject_t m_dll_get_class_object;
         };
     }
 }
