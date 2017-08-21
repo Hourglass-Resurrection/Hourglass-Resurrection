@@ -5,6 +5,7 @@
  */
 
 #pragma once
+
 #include <filesystem>
 
 namespace BinaryTests
