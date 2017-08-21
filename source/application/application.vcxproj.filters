@@ -140,6 +140,9 @@
     <ClCompile Include="Utils\Thread\Thread.cpp">
       <Filter>Source Files\Utils\Thread</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\Arguments.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomDLGs.h">
@@ -276,6 +279,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\Alignment.h">
       <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Arguments.h">
+      <Filter>Source Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

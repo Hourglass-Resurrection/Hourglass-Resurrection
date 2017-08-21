@@ -76,6 +76,7 @@ using namespace Config;
 #include "Utils/Exceptions.h"
 #include "Utils/File.h"
 #include "Utils/Thread.h"
+#include "Utils/Arguments.h"
 
 #include "shared/CompilerChecks.h"
 
@@ -1085,42 +1086,38 @@ int LoadMovie(const std::wstring& filename)
 			}
 			movie.version = VERSION;
 		}
-		unsigned int temp_md5[4];
-		CalcFileMD5Cached(exe_filename.c_str(), temp_md5);
-		if(memcmp(movie.fmd5, temp_md5, 4*4) != 0)
-		{
-			WCHAR str[1024];
-			swprintf(str, ARRAYSIZE(str), L"This movie was probably recorded using a different exe.\n\n"
-						 L"Movie's exe's md5: %X%X%X%X, size: %lld\n"
-						 L"Current exe's md5: %X%X%X%X, size: %lld\n\n"
-						 L"Playing the movie with current exe may lead to the movie desyncing.\n"
-						 L"Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
-						 movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], movie.fsize,
-						 temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
-			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
-			if(result == IDNO)
-			{
-				return -1;
-			}
-		}
+
+        if (!Arguments::g_args.m_ignore_md5)
+        {
+            unsigned int temp_md5[4];
+            CalcFileMD5Cached(exe_filename.c_str(), temp_md5);
+            if (memcmp(movie.fmd5, temp_md5, 4 * 4) != 0)
+            {
+                WCHAR str[1024];
+                swprintf(str, ARRAYSIZE(str),
+                         L"This movie was probably recorded using a different exe.\n\n"
+                         L"Movie's exe's md5: %X%X%X%X, size: %lld\n"
+                         L"Current exe's md5: %X%X%X%X, size: %lld\n\n"
+                         L"Playing the movie with current exe may lead to the movie desyncing.\n"
+                         L"Do you want to continue?\n(Click \"Yes\" to continue, \"No\" to abort)",
+                         movie.fmd5[0], movie.fmd5[1], movie.fmd5[2], movie.fmd5[3], movie.fsize,
+                         temp_md5[0], temp_md5[1], temp_md5[2], temp_md5[3], CalcExeFilesize());
+                int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2));
+                if (result == IDNO)
+                {
+                    return -1;
+                }
+            }
+        }
+
 		if(movie.fps != localTASflags.framerate)
 		{
-			WCHAR str[1024];
-			swprintf(str, ARRAYSIZE(str), L"This movie was recorded using a different fps.\n\n"
-						 L"Movie's fps: %d\nCurrent fps: %d\n\n"
-						 L"Playing the movie with current fps may lead to the movie desyncing.\n"
-						 L"Do you want to use the movies fps instead?\n"
-						 L"(Click \"Yes\" to use the movies fps, \"No\" to use current fps)",
-						 static_cast<int>(movie.fps), localTASflags.framerate);
-			int result = CustomMessageBox(str, L"Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1));
-			if(result == IDYES)
-			{
-				localTASflags.framerate = movie.fps;
-				// Also update the window text.
-				WCHAR fpstext[256];
-				swprintf(fpstext, ARRAYSIZE(fpstext), L"%d", localTASflags.framerate);
-				SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
-			}
+            localTASflags.framerate = movie.fps;
+
+            // Also update the window text.
+            WCHAR fpstext[256];
+            swprintf(fpstext, ARRAYSIZE(fpstext), L"%d", localTASflags.framerate);
+            SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_FPS), fpstext);
 		}
 		if(movie.it != localTASflags.initialTime)
 		{
@@ -3821,6 +3818,20 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     case IPC::Command::CMD_FRAME_BOUNDARY:
                                         {
                                             FrameBoundary(*reinterpret_cast<IPC::FrameBoundaryInfo*>(buf.data()), de.dwThreadId);
+
+                                            /*
+                                             * Once again, huge hack until the GUI code rewrite.
+                                             * -- YaLTeR
+                                             */
+                                            if (Arguments::g_args.m_quit_on_movie_end && finished)
+                                            {
+                                                /*
+                                                 * Doesn't this resume the game process for a little bit?
+                                                 * That's undesired.
+                                                 */
+                                                terminateRequest = true;
+                                            }
+
 #ifdef _DEBUG
                                             if (s_lastFrameCount <= 1 && !requestedCommandReenter)
                                             {
@@ -4527,6 +4538,9 @@ static DWORD WINAPI AfterDebugThreadExitThread(LPVOID lpParam)
 
 	hAfterDebugThreadExitThread = NULL;
 
+    if (Arguments::g_args.m_quit_on_movie_end)
+        PostMessageW(hWnd, WM_CLOSE, 0, 0);
+
 	return 0;
 }
 
@@ -4717,6 +4731,15 @@ DWORD GetErrorModeXP()
 	return prev;
 }
 
+void SetOptionsFromArguments()
+{
+    if (Arguments::g_args.m_game_filename.has_value())
+        exe_filename = Arguments::g_args.m_game_filename.value();
+
+    if (Arguments::g_args.m_movie_filename.has_value())
+        movie_filename = Arguments::g_args.m_movie_filename.value();
+}
+
 
 //HACCEL hAccelTable = NULL;
 
@@ -4725,6 +4748,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                       LPTSTR    lpCmdLine,
                       int       nCmdShow)
 {
+    Arguments::Parse(lpCmdLine);
+
     {
         WCHAR path[MAX_PATH + 1];
         GetCurrentDirectoryW(MAX_PATH, path);
@@ -4770,6 +4795,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	InitRamSearch();
 
 	Load_Config();
+    SetOptionsFromArguments();
 
     Utils::Exceptions::InitWindowsExceptionsHandler();
     Utils::COM::COMInstance::Init();
@@ -4789,6 +4815,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	PrintPrivileges(GetCurrentProcess());
 
 	CheckDialogChanges(0);
+
+    /*
+     * Yes, this is ridiculous, but I don't immediately see a good way of doing this otherwise.
+     * The GUI desperately needs a rewrite.
+     * -- YaLTeR
+     */
+    if (Arguments::g_args.m_play)
+        SendDlgItemMessageW(hWnd, IDC_BUTTON_PLAY, BM_CLICK, 0, 0);
 
 //	atexit(PrepareForExit);
 
@@ -5332,10 +5366,22 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				movienameCustomized = false;
 				// As they start blank, we have no interest in updating these if the filenames
 				// are empty. This prevents messages about file '' not existing.
+
+                /*
+                 * Hack until this is rewritten.
+                 * -- YaLTeR
+                 */
+                std::wstring movie_filename_backup = movie_filename;
+
 				if (!path.empty())
 					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_EXE), path.c_str());
-				if (!movie_filename.empty())
+
+                if (!movie_filename_backup.empty())
+                    movie_filename = movie_filename_backup;
+
+                if (!movie_filename.empty())
 					SetWindowTextAndScrollRight(GetDlgItem(hDlg, IDC_TEXT_MOVIE), movie_filename.c_str());
+
 				SetWindowTextW(GetDlgItem(hDlg, IDC_EDIT_COMMANDLINE), command_line.c_str());
 				movienameCustomized = false;
 				SetFocus(GetDlgItem(hDlg, IDC_BUTTON_RECORD));

@@ -1,0 +1,757 @@
+Frame 1 pre render:
+    std::chrono system_clock: -4438714190207206us
+    std::chrono steady_clock: 6000000us
+    std::chrono high_resolution_clock: 6000000us
+    QueryPerformanceCounter: 6000000us
+    GetSystemTimeAsFileTime: 7205759409792793us
+    GetSystemTimePreciseAsFileTime: 7205759409792793us
+Frame 1 post render:
+    std::chrono system_clock: -4438714190191206us
+    std::chrono steady_clock: 6015999us
+    std::chrono high_resolution_clock: 6015999us
+    QueryPerformanceCounter: 6015999us
+    GetSystemTimeAsFileTime: 7205759409808793us
+    GetSystemTimePreciseAsFileTime: 7205759409808793us
+
+Frame 2 pre render:
+    std::chrono system_clock: -4438714190191206us (frametime: 16000us)
+    std::chrono steady_clock: 6015999us (frametime: 15999us)
+    std::chrono high_resolution_clock: 6015999us (frametime: 15999us)
+    QueryPerformanceCounter: 6015999us (frametime: 15999us)
+    GetSystemTimeAsFileTime: 7205759409808793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759409808793us (frametime: 16000us)
+Frame 2 post render:
+    std::chrono system_clock: -4438714190174206us
+    std::chrono steady_clock: 6032999us
+    std::chrono high_resolution_clock: 6032999us
+    QueryPerformanceCounter: 6032999us
+    GetSystemTimeAsFileTime: 7205759409825793us
+    GetSystemTimePreciseAsFileTime: 7205759409825793us
+
+Frame 3 pre render:
+    std::chrono system_clock: -4438714190174206us (frametime: 17000us)
+    std::chrono steady_clock: 6032999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6032999us (frametime: 17000us)
+    QueryPerformanceCounter: 6032999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409825793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409825793us (frametime: 17000us)
+Frame 3 post render:
+    std::chrono system_clock: -4438714190157206us
+    std::chrono steady_clock: 6049999us
+    std::chrono high_resolution_clock: 6049999us
+    QueryPerformanceCounter: 6049999us
+    GetSystemTimeAsFileTime: 7205759409842793us
+    GetSystemTimePreciseAsFileTime: 7205759409842793us
+
+Frame 4 pre render:
+    std::chrono system_clock: -4438714190157206us (frametime: 17000us)
+    std::chrono steady_clock: 6049999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6049999us (frametime: 17000us)
+    QueryPerformanceCounter: 6049999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409842793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409842793us (frametime: 17000us)
+Frame 4 post render:
+    std::chrono system_clock: -4438714190141206us
+    std::chrono steady_clock: 6065999us
+    std::chrono high_resolution_clock: 6065999us
+    QueryPerformanceCounter: 6065999us
+    GetSystemTimeAsFileTime: 7205759409858793us
+    GetSystemTimePreciseAsFileTime: 7205759409858793us
+
+Frame 5 pre render:
+    std::chrono system_clock: -4438714190141206us (frametime: 16000us)
+    std::chrono steady_clock: 6065999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6065999us (frametime: 16000us)
+    QueryPerformanceCounter: 6065999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759409858793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759409858793us (frametime: 16000us)
+Frame 5 post render:
+    std::chrono system_clock: -4438714190124206us
+    std::chrono steady_clock: 6082999us
+    std::chrono high_resolution_clock: 6082999us
+    QueryPerformanceCounter: 6082999us
+    GetSystemTimeAsFileTime: 7205759409875793us
+    GetSystemTimePreciseAsFileTime: 7205759409875793us
+
+Frame 6 pre render:
+    std::chrono system_clock: -4438714190124206us (frametime: 17000us)
+    std::chrono steady_clock: 6082999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6082999us (frametime: 17000us)
+    QueryPerformanceCounter: 6082999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409875793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409875793us (frametime: 17000us)
+Frame 6 post render:
+    std::chrono system_clock: -4438714190107206us
+    std::chrono steady_clock: 6099999us
+    std::chrono high_resolution_clock: 6099999us
+    QueryPerformanceCounter: 6099999us
+    GetSystemTimeAsFileTime: 7205759409892793us
+    GetSystemTimePreciseAsFileTime: 7205759409892793us
+
+Frame 7 pre render:
+    std::chrono system_clock: -4438714190107206us (frametime: 17000us)
+    std::chrono steady_clock: 6099999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6099999us (frametime: 17000us)
+    QueryPerformanceCounter: 6099999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409892793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409892793us (frametime: 17000us)
+Frame 7 post render:
+    std::chrono system_clock: -4438714190091206us
+    std::chrono steady_clock: 6115999us
+    std::chrono high_resolution_clock: 6115999us
+    QueryPerformanceCounter: 6115999us
+    GetSystemTimeAsFileTime: 7205759409908793us
+    GetSystemTimePreciseAsFileTime: 7205759409908793us
+
+Frame 8 pre render:
+    std::chrono system_clock: -4438714190091206us (frametime: 16000us)
+    std::chrono steady_clock: 6115999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6115999us (frametime: 16000us)
+    QueryPerformanceCounter: 6115999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759409908793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759409908793us (frametime: 16000us)
+Frame 8 post render:
+    std::chrono system_clock: -4438714190074206us
+    std::chrono steady_clock: 6132999us
+    std::chrono high_resolution_clock: 6132999us
+    QueryPerformanceCounter: 6132999us
+    GetSystemTimeAsFileTime: 7205759409925793us
+    GetSystemTimePreciseAsFileTime: 7205759409925793us
+
+Frame 9 pre render:
+    std::chrono system_clock: -4438714190074206us (frametime: 17000us)
+    std::chrono steady_clock: 6132999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6132999us (frametime: 17000us)
+    QueryPerformanceCounter: 6132999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409925793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409925793us (frametime: 17000us)
+Frame 9 post render:
+    std::chrono system_clock: -4438714190057206us
+    std::chrono steady_clock: 6149999us
+    std::chrono high_resolution_clock: 6149999us
+    QueryPerformanceCounter: 6149999us
+    GetSystemTimeAsFileTime: 7205759409942793us
+    GetSystemTimePreciseAsFileTime: 7205759409942793us
+
+Frame 10 pre render:
+    std::chrono system_clock: -4438714190057206us (frametime: 17000us)
+    std::chrono steady_clock: 6149999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6149999us (frametime: 17000us)
+    QueryPerformanceCounter: 6149999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409942793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409942793us (frametime: 17000us)
+Frame 10 post render:
+    std::chrono system_clock: -4438714190041206us
+    std::chrono steady_clock: 6165999us
+    std::chrono high_resolution_clock: 6165999us
+    QueryPerformanceCounter: 6165999us
+    GetSystemTimeAsFileTime: 7205759409958793us
+    GetSystemTimePreciseAsFileTime: 7205759409958793us
+
+Frame 11 pre render:
+    std::chrono system_clock: -4438714190041206us (frametime: 16000us)
+    std::chrono steady_clock: 6165999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6165999us (frametime: 16000us)
+    QueryPerformanceCounter: 6165999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759409958793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759409958793us (frametime: 16000us)
+Frame 11 post render:
+    std::chrono system_clock: -4438714190024206us
+    std::chrono steady_clock: 6182999us
+    std::chrono high_resolution_clock: 6182999us
+    QueryPerformanceCounter: 6182999us
+    GetSystemTimeAsFileTime: 7205759409975793us
+    GetSystemTimePreciseAsFileTime: 7205759409975793us
+
+Frame 12 pre render:
+    std::chrono system_clock: -4438714190024206us (frametime: 17000us)
+    std::chrono steady_clock: 6182999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6182999us (frametime: 17000us)
+    QueryPerformanceCounter: 6182999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759409975793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409975793us (frametime: 17000us)
+Frame 12 post render:
+    std::chrono system_clock: -4438714190007206us
+    std::chrono steady_clock: 6200000us
+    std::chrono high_resolution_clock: 6200000us
+    QueryPerformanceCounter: 6200000us
+    GetSystemTimeAsFileTime: 7205759409992793us
+    GetSystemTimePreciseAsFileTime: 7205759409992793us
+
+Frame 13 pre render:
+    std::chrono system_clock: -4438714190007206us (frametime: 17000us)
+    std::chrono steady_clock: 6200000us (frametime: 17001us)
+    std::chrono high_resolution_clock: 6200000us (frametime: 17001us)
+    QueryPerformanceCounter: 6200000us (frametime: 17001us)
+    GetSystemTimeAsFileTime: 7205759409992793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759409992793us (frametime: 17000us)
+Frame 13 post render:
+    std::chrono system_clock: -4438714189991206us
+    std::chrono steady_clock: 6215999us
+    std::chrono high_resolution_clock: 6215999us
+    QueryPerformanceCounter: 6215999us
+    GetSystemTimeAsFileTime: 7205759410008793us
+    GetSystemTimePreciseAsFileTime: 7205759410008793us
+
+Frame 14 pre render:
+    std::chrono system_clock: -4438714189991206us (frametime: 16000us)
+    std::chrono steady_clock: 6215999us (frametime: 15999us)
+    std::chrono high_resolution_clock: 6215999us (frametime: 15999us)
+    QueryPerformanceCounter: 6215999us (frametime: 15999us)
+    GetSystemTimeAsFileTime: 7205759410008793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410008793us (frametime: 16000us)
+Frame 14 post render:
+    std::chrono system_clock: -4438714189974206us
+    std::chrono steady_clock: 6232999us
+    std::chrono high_resolution_clock: 6232999us
+    QueryPerformanceCounter: 6232999us
+    GetSystemTimeAsFileTime: 7205759410025793us
+    GetSystemTimePreciseAsFileTime: 7205759410025793us
+
+Frame 15 pre render:
+    std::chrono system_clock: -4438714189974206us (frametime: 17000us)
+    std::chrono steady_clock: 6232999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6232999us (frametime: 17000us)
+    QueryPerformanceCounter: 6232999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410025793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410025793us (frametime: 17000us)
+Frame 15 post render:
+    std::chrono system_clock: -4438714189957206us
+    std::chrono steady_clock: 6249999us
+    std::chrono high_resolution_clock: 6249999us
+    QueryPerformanceCounter: 6249999us
+    GetSystemTimeAsFileTime: 7205759410042793us
+    GetSystemTimePreciseAsFileTime: 7205759410042793us
+
+Frame 16 pre render:
+    std::chrono system_clock: -4438714189957206us (frametime: 17000us)
+    std::chrono steady_clock: 6249999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6249999us (frametime: 17000us)
+    QueryPerformanceCounter: 6249999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410042793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410042793us (frametime: 17000us)
+Frame 16 post render:
+    std::chrono system_clock: -4438714189941206us
+    std::chrono steady_clock: 6265999us
+    std::chrono high_resolution_clock: 6265999us
+    QueryPerformanceCounter: 6265999us
+    GetSystemTimeAsFileTime: 7205759410058793us
+    GetSystemTimePreciseAsFileTime: 7205759410058793us
+
+Frame 17 pre render:
+    std::chrono system_clock: -4438714189941206us (frametime: 16000us)
+    std::chrono steady_clock: 6265999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6265999us (frametime: 16000us)
+    QueryPerformanceCounter: 6265999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410058793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410058793us (frametime: 16000us)
+Frame 17 post render:
+    std::chrono system_clock: -4438714189924206us
+    std::chrono steady_clock: 6282999us
+    std::chrono high_resolution_clock: 6282999us
+    QueryPerformanceCounter: 6282999us
+    GetSystemTimeAsFileTime: 7205759410075793us
+    GetSystemTimePreciseAsFileTime: 7205759410075793us
+
+Frame 18 pre render:
+    std::chrono system_clock: -4438714189924206us (frametime: 17000us)
+    std::chrono steady_clock: 6282999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6282999us (frametime: 17000us)
+    QueryPerformanceCounter: 6282999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410075793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410075793us (frametime: 17000us)
+Frame 18 post render:
+    std::chrono system_clock: -4438714189907206us
+    std::chrono steady_clock: 6299999us
+    std::chrono high_resolution_clock: 6299999us
+    QueryPerformanceCounter: 6299999us
+    GetSystemTimeAsFileTime: 7205759410092793us
+    GetSystemTimePreciseAsFileTime: 7205759410092793us
+
+Frame 19 pre render:
+    std::chrono system_clock: -4438714189907206us (frametime: 17000us)
+    std::chrono steady_clock: 6299999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6299999us (frametime: 17000us)
+    QueryPerformanceCounter: 6299999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410092793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410092793us (frametime: 17000us)
+Frame 19 post render:
+    std::chrono system_clock: -4438714189891206us
+    std::chrono steady_clock: 6315999us
+    std::chrono high_resolution_clock: 6315999us
+    QueryPerformanceCounter: 6315999us
+    GetSystemTimeAsFileTime: 7205759410108793us
+    GetSystemTimePreciseAsFileTime: 7205759410108793us
+
+Frame 20 pre render:
+    std::chrono system_clock: -4438714189891206us (frametime: 16000us)
+    std::chrono steady_clock: 6315999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6315999us (frametime: 16000us)
+    QueryPerformanceCounter: 6315999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410108793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410108793us (frametime: 16000us)
+Frame 20 post render:
+    std::chrono system_clock: -4438714189874206us
+    std::chrono steady_clock: 6332999us
+    std::chrono high_resolution_clock: 6332999us
+    QueryPerformanceCounter: 6332999us
+    GetSystemTimeAsFileTime: 7205759410125793us
+    GetSystemTimePreciseAsFileTime: 7205759410125793us
+
+Frame 21 pre render:
+    std::chrono system_clock: -4438714189874206us (frametime: 17000us)
+    std::chrono steady_clock: 6332999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6332999us (frametime: 17000us)
+    QueryPerformanceCounter: 6332999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410125793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410125793us (frametime: 17000us)
+Frame 21 post render:
+    std::chrono system_clock: -4438714189857206us
+    std::chrono steady_clock: 6349999us
+    std::chrono high_resolution_clock: 6349999us
+    QueryPerformanceCounter: 6349999us
+    GetSystemTimeAsFileTime: 7205759410142793us
+    GetSystemTimePreciseAsFileTime: 7205759410142793us
+
+Frame 22 pre render:
+    std::chrono system_clock: -4438714189857206us (frametime: 17000us)
+    std::chrono steady_clock: 6349999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6349999us (frametime: 17000us)
+    QueryPerformanceCounter: 6349999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410142793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410142793us (frametime: 17000us)
+Frame 22 post render:
+    std::chrono system_clock: -4438714189841206us
+    std::chrono steady_clock: 6365999us
+    std::chrono high_resolution_clock: 6365999us
+    QueryPerformanceCounter: 6365999us
+    GetSystemTimeAsFileTime: 7205759410158793us
+    GetSystemTimePreciseAsFileTime: 7205759410158793us
+
+Frame 23 pre render:
+    std::chrono system_clock: -4438714189841206us (frametime: 16000us)
+    std::chrono steady_clock: 6365999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6365999us (frametime: 16000us)
+    QueryPerformanceCounter: 6365999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410158793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410158793us (frametime: 16000us)
+Frame 23 post render:
+    std::chrono system_clock: -4438714189824206us
+    std::chrono steady_clock: 6382999us
+    std::chrono high_resolution_clock: 6382999us
+    QueryPerformanceCounter: 6382999us
+    GetSystemTimeAsFileTime: 7205759410175793us
+    GetSystemTimePreciseAsFileTime: 7205759410175793us
+
+Frame 24 pre render:
+    std::chrono system_clock: -4438714189824206us (frametime: 17000us)
+    std::chrono steady_clock: 6382999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6382999us (frametime: 17000us)
+    QueryPerformanceCounter: 6382999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410175793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410175793us (frametime: 17000us)
+Frame 24 post render:
+    std::chrono system_clock: -4438714189807206us
+    std::chrono steady_clock: 6400000us
+    std::chrono high_resolution_clock: 6400000us
+    QueryPerformanceCounter: 6400000us
+    GetSystemTimeAsFileTime: 7205759410192793us
+    GetSystemTimePreciseAsFileTime: 7205759410192793us
+
+Frame 25 pre render:
+    std::chrono system_clock: -4438714189807206us (frametime: 17000us)
+    std::chrono steady_clock: 6400000us (frametime: 17001us)
+    std::chrono high_resolution_clock: 6400000us (frametime: 17001us)
+    QueryPerformanceCounter: 6400000us (frametime: 17001us)
+    GetSystemTimeAsFileTime: 7205759410192793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410192793us (frametime: 17000us)
+Frame 25 post render:
+    std::chrono system_clock: -4438714189791206us
+    std::chrono steady_clock: 6415999us
+    std::chrono high_resolution_clock: 6415999us
+    QueryPerformanceCounter: 6415999us
+    GetSystemTimeAsFileTime: 7205759410208793us
+    GetSystemTimePreciseAsFileTime: 7205759410208793us
+
+Frame 26 pre render:
+    std::chrono system_clock: -4438714189791206us (frametime: 16000us)
+    std::chrono steady_clock: 6415999us (frametime: 15999us)
+    std::chrono high_resolution_clock: 6415999us (frametime: 15999us)
+    QueryPerformanceCounter: 6415999us (frametime: 15999us)
+    GetSystemTimeAsFileTime: 7205759410208793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410208793us (frametime: 16000us)
+Frame 26 post render:
+    std::chrono system_clock: -4438714189774206us
+    std::chrono steady_clock: 6432999us
+    std::chrono high_resolution_clock: 6432999us
+    QueryPerformanceCounter: 6432999us
+    GetSystemTimeAsFileTime: 7205759410225793us
+    GetSystemTimePreciseAsFileTime: 7205759410225793us
+
+Frame 27 pre render:
+    std::chrono system_clock: -4438714189774206us (frametime: 17000us)
+    std::chrono steady_clock: 6432999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6432999us (frametime: 17000us)
+    QueryPerformanceCounter: 6432999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410225793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410225793us (frametime: 17000us)
+Frame 27 post render:
+    std::chrono system_clock: -4438714189757206us
+    std::chrono steady_clock: 6449999us
+    std::chrono high_resolution_clock: 6449999us
+    QueryPerformanceCounter: 6449999us
+    GetSystemTimeAsFileTime: 7205759410242793us
+    GetSystemTimePreciseAsFileTime: 7205759410242793us
+
+Frame 28 pre render:
+    std::chrono system_clock: -4438714189757206us (frametime: 17000us)
+    std::chrono steady_clock: 6449999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6449999us (frametime: 17000us)
+    QueryPerformanceCounter: 6449999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410242793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410242793us (frametime: 17000us)
+Frame 28 post render:
+    std::chrono system_clock: -4438714189741206us
+    std::chrono steady_clock: 6465999us
+    std::chrono high_resolution_clock: 6465999us
+    QueryPerformanceCounter: 6465999us
+    GetSystemTimeAsFileTime: 7205759410258793us
+    GetSystemTimePreciseAsFileTime: 7205759410258793us
+
+Frame 29 pre render:
+    std::chrono system_clock: -4438714189741206us (frametime: 16000us)
+    std::chrono steady_clock: 6465999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6465999us (frametime: 16000us)
+    QueryPerformanceCounter: 6465999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410258793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410258793us (frametime: 16000us)
+Frame 29 post render:
+    std::chrono system_clock: -4438714189724206us
+    std::chrono steady_clock: 6482999us
+    std::chrono high_resolution_clock: 6482999us
+    QueryPerformanceCounter: 6482999us
+    GetSystemTimeAsFileTime: 7205759410275793us
+    GetSystemTimePreciseAsFileTime: 7205759410275793us
+
+Frame 30 pre render:
+    std::chrono system_clock: -4438714189724206us (frametime: 17000us)
+    std::chrono steady_clock: 6482999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6482999us (frametime: 17000us)
+    QueryPerformanceCounter: 6482999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410275793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410275793us (frametime: 17000us)
+Frame 30 post render:
+    std::chrono system_clock: -4438714189707206us
+    std::chrono steady_clock: 6499999us
+    std::chrono high_resolution_clock: 6499999us
+    QueryPerformanceCounter: 6499999us
+    GetSystemTimeAsFileTime: 7205759410292793us
+    GetSystemTimePreciseAsFileTime: 7205759410292793us
+
+Frame 31 pre render:
+    std::chrono system_clock: -4438714189707206us (frametime: 17000us)
+    std::chrono steady_clock: 6499999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6499999us (frametime: 17000us)
+    QueryPerformanceCounter: 6499999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410292793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410292793us (frametime: 17000us)
+Frame 31 post render:
+    std::chrono system_clock: -4438714189691206us
+    std::chrono steady_clock: 6515999us
+    std::chrono high_resolution_clock: 6515999us
+    QueryPerformanceCounter: 6515999us
+    GetSystemTimeAsFileTime: 7205759410308793us
+    GetSystemTimePreciseAsFileTime: 7205759410308793us
+
+Frame 32 pre render:
+    std::chrono system_clock: -4438714189691206us (frametime: 16000us)
+    std::chrono steady_clock: 6515999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6515999us (frametime: 16000us)
+    QueryPerformanceCounter: 6515999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410308793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410308793us (frametime: 16000us)
+Frame 32 post render:
+    std::chrono system_clock: -4438714189674206us
+    std::chrono steady_clock: 6532999us
+    std::chrono high_resolution_clock: 6532999us
+    QueryPerformanceCounter: 6532999us
+    GetSystemTimeAsFileTime: 7205759410325793us
+    GetSystemTimePreciseAsFileTime: 7205759410325793us
+
+Frame 33 pre render:
+    std::chrono system_clock: -4438714189674206us (frametime: 17000us)
+    std::chrono steady_clock: 6532999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6532999us (frametime: 17000us)
+    QueryPerformanceCounter: 6532999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410325793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410325793us (frametime: 17000us)
+Frame 33 post render:
+    std::chrono system_clock: -4438714189657206us
+    std::chrono steady_clock: 6549999us
+    std::chrono high_resolution_clock: 6549999us
+    QueryPerformanceCounter: 6549999us
+    GetSystemTimeAsFileTime: 7205759410342793us
+    GetSystemTimePreciseAsFileTime: 7205759410342793us
+
+Frame 34 pre render:
+    std::chrono system_clock: -4438714189657206us (frametime: 17000us)
+    std::chrono steady_clock: 6549999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6549999us (frametime: 17000us)
+    QueryPerformanceCounter: 6549999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410342793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410342793us (frametime: 17000us)
+Frame 34 post render:
+    std::chrono system_clock: -4438714189641206us
+    std::chrono steady_clock: 6565999us
+    std::chrono high_resolution_clock: 6565999us
+    QueryPerformanceCounter: 6565999us
+    GetSystemTimeAsFileTime: 7205759410358793us
+    GetSystemTimePreciseAsFileTime: 7205759410358793us
+
+Frame 35 pre render:
+    std::chrono system_clock: -4438714189641206us (frametime: 16000us)
+    std::chrono steady_clock: 6565999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6565999us (frametime: 16000us)
+    QueryPerformanceCounter: 6565999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410358793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410358793us (frametime: 16000us)
+Frame 35 post render:
+    std::chrono system_clock: -4438714189624206us
+    std::chrono steady_clock: 6582999us
+    std::chrono high_resolution_clock: 6582999us
+    QueryPerformanceCounter: 6582999us
+    GetSystemTimeAsFileTime: 7205759410375793us
+    GetSystemTimePreciseAsFileTime: 7205759410375793us
+
+Frame 36 pre render:
+    std::chrono system_clock: -4438714189624206us (frametime: 17000us)
+    std::chrono steady_clock: 6582999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6582999us (frametime: 17000us)
+    QueryPerformanceCounter: 6582999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410375793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410375793us (frametime: 17000us)
+Frame 36 post render:
+    std::chrono system_clock: -4438714189607206us
+    std::chrono steady_clock: 6600000us
+    std::chrono high_resolution_clock: 6600000us
+    QueryPerformanceCounter: 6600000us
+    GetSystemTimeAsFileTime: 7205759410392793us
+    GetSystemTimePreciseAsFileTime: 7205759410392793us
+
+Frame 37 pre render:
+    std::chrono system_clock: -4438714189607206us (frametime: 17000us)
+    std::chrono steady_clock: 6600000us (frametime: 17001us)
+    std::chrono high_resolution_clock: 6600000us (frametime: 17001us)
+    QueryPerformanceCounter: 6600000us (frametime: 17001us)
+    GetSystemTimeAsFileTime: 7205759410392793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410392793us (frametime: 17000us)
+Frame 37 post render:
+    std::chrono system_clock: -4438714189591206us
+    std::chrono steady_clock: 6615999us
+    std::chrono high_resolution_clock: 6615999us
+    QueryPerformanceCounter: 6615999us
+    GetSystemTimeAsFileTime: 7205759410408793us
+    GetSystemTimePreciseAsFileTime: 7205759410408793us
+
+Frame 38 pre render:
+    std::chrono system_clock: -4438714189591206us (frametime: 16000us)
+    std::chrono steady_clock: 6615999us (frametime: 15999us)
+    std::chrono high_resolution_clock: 6615999us (frametime: 15999us)
+    QueryPerformanceCounter: 6615999us (frametime: 15999us)
+    GetSystemTimeAsFileTime: 7205759410408793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410408793us (frametime: 16000us)
+Frame 38 post render:
+    std::chrono system_clock: -4438714189574206us
+    std::chrono steady_clock: 6632999us
+    std::chrono high_resolution_clock: 6632999us
+    QueryPerformanceCounter: 6632999us
+    GetSystemTimeAsFileTime: 7205759410425793us
+    GetSystemTimePreciseAsFileTime: 7205759410425793us
+
+Frame 39 pre render:
+    std::chrono system_clock: -4438714189574206us (frametime: 17000us)
+    std::chrono steady_clock: 6632999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6632999us (frametime: 17000us)
+    QueryPerformanceCounter: 6632999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410425793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410425793us (frametime: 17000us)
+Frame 39 post render:
+    std::chrono system_clock: -4438714189557206us
+    std::chrono steady_clock: 6649999us
+    std::chrono high_resolution_clock: 6649999us
+    QueryPerformanceCounter: 6649999us
+    GetSystemTimeAsFileTime: 7205759410442793us
+    GetSystemTimePreciseAsFileTime: 7205759410442793us
+
+Frame 40 pre render:
+    std::chrono system_clock: -4438714189557206us (frametime: 17000us)
+    std::chrono steady_clock: 6649999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6649999us (frametime: 17000us)
+    QueryPerformanceCounter: 6649999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410442793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410442793us (frametime: 17000us)
+Frame 40 post render:
+    std::chrono system_clock: -4438714189541206us
+    std::chrono steady_clock: 6665999us
+    std::chrono high_resolution_clock: 6665999us
+    QueryPerformanceCounter: 6665999us
+    GetSystemTimeAsFileTime: 7205759410458793us
+    GetSystemTimePreciseAsFileTime: 7205759410458793us
+
+Frame 41 pre render:
+    std::chrono system_clock: -4438714189541206us (frametime: 16000us)
+    std::chrono steady_clock: 6665999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6665999us (frametime: 16000us)
+    QueryPerformanceCounter: 6665999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410458793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410458793us (frametime: 16000us)
+Frame 41 post render:
+    std::chrono system_clock: -4438714189524206us
+    std::chrono steady_clock: 6682999us
+    std::chrono high_resolution_clock: 6682999us
+    QueryPerformanceCounter: 6682999us
+    GetSystemTimeAsFileTime: 7205759410475793us
+    GetSystemTimePreciseAsFileTime: 7205759410475793us
+
+Frame 42 pre render:
+    std::chrono system_clock: -4438714189524206us (frametime: 17000us)
+    std::chrono steady_clock: 6682999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6682999us (frametime: 17000us)
+    QueryPerformanceCounter: 6682999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410475793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410475793us (frametime: 17000us)
+Frame 42 post render:
+    std::chrono system_clock: -4438714189507206us
+    std::chrono steady_clock: 6699999us
+    std::chrono high_resolution_clock: 6699999us
+    QueryPerformanceCounter: 6699999us
+    GetSystemTimeAsFileTime: 7205759410492793us
+    GetSystemTimePreciseAsFileTime: 7205759410492793us
+
+Frame 43 pre render:
+    std::chrono system_clock: -4438714189507206us (frametime: 17000us)
+    std::chrono steady_clock: 6699999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6699999us (frametime: 17000us)
+    QueryPerformanceCounter: 6699999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410492793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410492793us (frametime: 17000us)
+Frame 43 post render:
+    std::chrono system_clock: -4438714189491206us
+    std::chrono steady_clock: 6715999us
+    std::chrono high_resolution_clock: 6715999us
+    QueryPerformanceCounter: 6715999us
+    GetSystemTimeAsFileTime: 7205759410508793us
+    GetSystemTimePreciseAsFileTime: 7205759410508793us
+
+Frame 44 pre render:
+    std::chrono system_clock: -4438714189491206us (frametime: 16000us)
+    std::chrono steady_clock: 6715999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6715999us (frametime: 16000us)
+    QueryPerformanceCounter: 6715999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410508793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410508793us (frametime: 16000us)
+Frame 44 post render:
+    std::chrono system_clock: -4438714189474206us
+    std::chrono steady_clock: 6732999us
+    std::chrono high_resolution_clock: 6732999us
+    QueryPerformanceCounter: 6732999us
+    GetSystemTimeAsFileTime: 7205759410525793us
+    GetSystemTimePreciseAsFileTime: 7205759410525793us
+
+Frame 45 pre render:
+    std::chrono system_clock: -4438714189474206us (frametime: 17000us)
+    std::chrono steady_clock: 6732999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6732999us (frametime: 17000us)
+    QueryPerformanceCounter: 6732999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410525793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410525793us (frametime: 17000us)
+Frame 45 post render:
+    std::chrono system_clock: -4438714189457206us
+    std::chrono steady_clock: 6749999us
+    std::chrono high_resolution_clock: 6749999us
+    QueryPerformanceCounter: 6749999us
+    GetSystemTimeAsFileTime: 7205759410542793us
+    GetSystemTimePreciseAsFileTime: 7205759410542793us
+
+Frame 46 pre render:
+    std::chrono system_clock: -4438714189457206us (frametime: 17000us)
+    std::chrono steady_clock: 6749999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6749999us (frametime: 17000us)
+    QueryPerformanceCounter: 6749999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410542793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410542793us (frametime: 17000us)
+Frame 46 post render:
+    std::chrono system_clock: -4438714189441206us
+    std::chrono steady_clock: 6765999us
+    std::chrono high_resolution_clock: 6765999us
+    QueryPerformanceCounter: 6765999us
+    GetSystemTimeAsFileTime: 7205759410558793us
+    GetSystemTimePreciseAsFileTime: 7205759410558793us
+
+Frame 47 pre render:
+    std::chrono system_clock: -4438714189441206us (frametime: 16000us)
+    std::chrono steady_clock: 6765999us (frametime: 16000us)
+    std::chrono high_resolution_clock: 6765999us (frametime: 16000us)
+    QueryPerformanceCounter: 6765999us (frametime: 16000us)
+    GetSystemTimeAsFileTime: 7205759410558793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410558793us (frametime: 16000us)
+Frame 47 post render:
+    std::chrono system_clock: -4438714189424206us
+    std::chrono steady_clock: 6782999us
+    std::chrono high_resolution_clock: 6782999us
+    QueryPerformanceCounter: 6782999us
+    GetSystemTimeAsFileTime: 7205759410575793us
+    GetSystemTimePreciseAsFileTime: 7205759410575793us
+
+Frame 48 pre render:
+    std::chrono system_clock: -4438714189424206us (frametime: 17000us)
+    std::chrono steady_clock: 6782999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6782999us (frametime: 17000us)
+    QueryPerformanceCounter: 6782999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410575793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410575793us (frametime: 17000us)
+Frame 48 post render:
+    std::chrono system_clock: -4438714189407206us
+    std::chrono steady_clock: 6800000us
+    std::chrono high_resolution_clock: 6800000us
+    QueryPerformanceCounter: 6800000us
+    GetSystemTimeAsFileTime: 7205759410592793us
+    GetSystemTimePreciseAsFileTime: 7205759410592793us
+
+Frame 49 pre render:
+    std::chrono system_clock: -4438714189407206us (frametime: 17000us)
+    std::chrono steady_clock: 6800000us (frametime: 17001us)
+    std::chrono high_resolution_clock: 6800000us (frametime: 17001us)
+    QueryPerformanceCounter: 6800000us (frametime: 17001us)
+    GetSystemTimeAsFileTime: 7205759410592793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410592793us (frametime: 17000us)
+Frame 49 post render:
+    std::chrono system_clock: -4438714189391206us
+    std::chrono steady_clock: 6815999us
+    std::chrono high_resolution_clock: 6815999us
+    QueryPerformanceCounter: 6815999us
+    GetSystemTimeAsFileTime: 7205759410608793us
+    GetSystemTimePreciseAsFileTime: 7205759410608793us
+
+Frame 50 pre render:
+    std::chrono system_clock: -4438714189391206us (frametime: 16000us)
+    std::chrono steady_clock: 6815999us (frametime: 15999us)
+    std::chrono high_resolution_clock: 6815999us (frametime: 15999us)
+    QueryPerformanceCounter: 6815999us (frametime: 15999us)
+    GetSystemTimeAsFileTime: 7205759410608793us (frametime: 16000us)
+    GetSystemTimePreciseAsFileTime: 7205759410608793us (frametime: 16000us)
+Frame 50 post render:
+    std::chrono system_clock: -4438714189374206us
+    std::chrono steady_clock: 6832999us
+    std::chrono high_resolution_clock: 6832999us
+    QueryPerformanceCounter: 6832999us
+    GetSystemTimeAsFileTime: 7205759410625793us
+    GetSystemTimePreciseAsFileTime: 7205759410625793us
+
+Frame 51 pre render:
+    std::chrono system_clock: -4438714189374206us (frametime: 17000us)
+    std::chrono steady_clock: 6832999us (frametime: 17000us)
+    std::chrono high_resolution_clock: 6832999us (frametime: 17000us)
+    QueryPerformanceCounter: 6832999us (frametime: 17000us)
+    GetSystemTimeAsFileTime: 7205759410625793us (frametime: 17000us)
+    GetSystemTimePreciseAsFileTime: 7205759410625793us (

@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hooks", "source\hooks\hooks.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "application", "source\application\application.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "basic_timing", "source\tests\basic_timing\basic_timing.vcxproj", "{B97CCFBA-95DB-4448-BE89-C36258FD0089}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_runner", "source\test_runner\test_runner.vcxproj", "{7248981E-1B7D-4B4E-9371-689928DD690F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +27,22 @@ Global
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.Build.0 = Debug|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.ActiveCfg = Release|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.Build.0 = Release|Win32
+		{B97CCFBA-95DB-4448-BE89-C36258FD0089}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B97CCFBA-95DB-4448-BE89-C36258FD0089}.Debug|Win32.Build.0 = Debug|Win32
+		{B97CCFBA-95DB-4448-BE89-C36258FD0089}.Release|Win32.ActiveCfg = Release|Win32
+		{B97CCFBA-95DB-4448-BE89-C36258FD0089}.Release|Win32.Build.0 = Release|Win32
+		{7248981E-1B7D-4B4E-9371-689928DD690F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7248981E-1B7D-4B4E-9371-689928DD690F}.Debug|Win32.Build.0 = Debug|Win32
+		{7248981E-1B7D-4B4E-9371-689928DD690F}.Release|Win32.ActiveCfg = Release|Win32
+		{7248981E-1B7D-4B4E-9371-689928DD690F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B97CCFBA-95DB-4448-BE89-C36258FD0089} = {F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0D822D0-E088-4C05-B0C0-97D4268D7752}
 	EndGlobalSection
 EndGlobal

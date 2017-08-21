@@ -3,7 +3,6 @@ build/
 *.sdf
 *.opensdf
 *.suo
-*.hgr
 *.cfg
 *.vcxproj.user
 *.VC.opendb
