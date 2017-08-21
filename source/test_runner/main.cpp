@@ -30,7 +30,9 @@ int main(int argc, char* argv[])
     const std::experimental::filesystem::path base_path = test_runner_exe.parent_path().parent_path();
 
     if (!Hourglass::Find(base_path))
+    {
         return 1;
+    }
 
     BinaryTests::DiscoverTests(base_path);
 

@@ -12,7 +12,7 @@ namespace TimeStats
 {
     namespace
     {
-        unsigned gs_frame_counter = 0;
+        unsigned int gs_frame_counter = 0;
 
         long long gs_last_us_chrono_system;
         long long gs_last_us_chrono_steady;

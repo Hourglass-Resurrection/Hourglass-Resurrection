@@ -62,7 +62,9 @@ namespace Hourglass
                            gs_hourglass_exe.parent_path().c_str(),
                            &si,
                            &pi) == 0)
+        {
             throw std::runtime_error("Error starting Hourglass: " + std::to_string(GetLastError()));
+        }
 
         CloseHandle(pi.hThread);
 
