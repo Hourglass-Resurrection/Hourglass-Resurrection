@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DbgHelpPrivate.h"
+#include "application/Utils/COM.h"
 
 #include "DbgHelp.h"
 
@@ -19,12 +20,15 @@ namespace
 {
     std::map<DWORD, std::unique_ptr<DbgHelpPrivate>> s_private_map;
     std::wstring s_symbol_paths;
+    Utils::COM::COMLibrary s_dia;
 }
 
 namespace DbgHelp
 {
     void Init()
     {
+        s_dia.Load(L"msdia140.dll");
+
         std::array<WCHAR, 0x1000> buffer;
         buffer.fill('\0');
         s_symbol_paths.append(L".");
@@ -57,7 +61,7 @@ namespace DbgHelp
 
     void AddProcess(HANDLE process, DWORD process_id)
     {
-        s_private_map.emplace(process_id, std::make_unique<DbgHelpPrivate>(process));
+        s_private_map.emplace(process_id, std::make_unique<DbgHelpPrivate>(s_dia, process));
     }
 
     void RemoveProcess(DWORD process_id)

@@ -26,7 +26,8 @@
 
 #include "DbgHelpPrivate.h"
 
-DbgHelpPrivate::DbgHelpPrivate(HANDLE process) :
+DbgHelpPrivate::DbgHelpPrivate(const Utils::COM::COMLibrary& dia, HANDLE process) :
+    m_dia(dia),
     m_process(process),
     m_platform_set(false)
 {
@@ -37,7 +38,7 @@ DbgHelpPrivate::~DbgHelpPrivate() = default;
 bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
 {
     DbgHelpLoadCallback load_callback;
-    auto data_source = Utils::COM::CreateCOMPtr<IDiaDataSource>(CLSID_DiaSource);
+    auto data_source = m_dia.CreateCOMPtr<IDiaDataSource>(CLSID_DiaSource);
     CComPtr<IDiaSession> session;
     CComPtr<IDiaSymbol> symbol;
     auto file_headers = Utils::File::ExecutableFileHeaders(exec);
@@ -92,7 +93,7 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
 
 bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
 {
-    auto stack_walker = Utils::COM::CreateCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
+    auto stack_walker = m_dia.CreateCOMPtr<IDiaStackWalker>(CLSID_DiaStackWalker);
     CComPtr<IDiaEnumStackFrames> stack_frames;
     CONTEXT thread_context;
     thread_context.ContextFlags = CONTEXT_ALL;
