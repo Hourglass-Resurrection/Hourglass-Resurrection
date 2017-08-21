@@ -61,7 +61,7 @@ namespace BinaryTests
             std::wifstream file(path);
             std::wstring line;
             while (std::getline(file, line))
-                rv.push_back(std::move(line));
+                rv.emplace_back(std::move(line));
 
             return rv;
         }
