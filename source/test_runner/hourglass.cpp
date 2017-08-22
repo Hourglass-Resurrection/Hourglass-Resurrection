@@ -21,7 +21,11 @@ namespace Hourglass
 
     bool Find(const std::experimental::filesystem::path& base_path)
     {
+#ifdef NDEBUG
+        gs_hourglass_exe = base_path.parent_path().parent_path() / "Release" / "hourglass-resurrection.exe";
+#else
         gs_hourglass_exe = base_path.parent_path().parent_path() / "Debug" / "hourglass-resurrection-d.exe";
+#endif
 
         if (!filesystem::exists(gs_hourglass_exe))
         {
