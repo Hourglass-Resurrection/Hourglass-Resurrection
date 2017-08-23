@@ -6,7 +6,8 @@
 
 #include "stdafx.h"
 #include "d3d_stuff.h"
-#include "logger.h"
+#include "shared/logger.h"
+#include "shared/timing.h"
 #include "time_stats.h"
 
 constexpr WCHAR CLASS_NAME[] = L"d3d9";
@@ -31,6 +32,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+
+    Timing::Initialize();
 
     MSG msg;
 

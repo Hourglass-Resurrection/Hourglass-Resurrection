@@ -5,7 +5,6 @@
  */
 
 #include "stdafx.h"
-#include "logger.h"
 #include "d3d_stuff.h"
 
 namespace D3D

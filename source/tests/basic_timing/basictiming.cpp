@@ -5,7 +5,7 @@
  */
 
 #include "stdafx.h"
-#include "logger.h"
+#include "shared/timing.h"
 #include "time_stats.h"
 
 constexpr WCHAR CLASS_NAME[] = L"basic_timing";
@@ -45,7 +45,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         header.biCompression = BI_RGB;
     }
 
-    TimeStats::Initialize();
+    Timing::Initialize();
 
     MSG msg;
 

@@ -5,7 +5,8 @@
  */
 
 #include "stdafx.h"
-#include "logger.h"
+#include "shared/logger.h"
+#include "shared/timing.h"
 #include "time_stats.h"
 
 namespace TimeStats
@@ -15,17 +16,6 @@ namespace TimeStats
         unsigned int gs_frame_counter = 0;
 
         long long gs_last_us_query_performance_counter;
-
-        long long CurrentUSQueryPerformanceCounter()
-        {
-            LARGE_INTEGER frequency;
-            QueryPerformanceFrequency(&frequency);
-
-            LARGE_INTEGER counter;
-            QueryPerformanceCounter(&counter);
-
-            return (counter.QuadPart * 1'000'000) / frequency.QuadPart;
-        }
     }
 
     void PreRender()
@@ -34,7 +24,7 @@ namespace TimeStats
 
         Logger::WriteLine(L"Frame " + std::to_wstring(gs_frame_counter) + L" pre render:");
 
-        long long current_us_query_performance_counter = CurrentUSQueryPerformanceCounter();
+        long long current_us_query_performance_counter = Timing::CurrentUSQueryPerformanceCounter();
         Logger::Write(L"    QueryPerformanceCounter: " + std::to_wstring(current_us_query_performance_counter) + L"us");
 
         if (gs_frame_counter > 1)
@@ -48,7 +38,7 @@ namespace TimeStats
     void PostRender()
     {
         Logger::WriteLine(L"Frame " + std::to_wstring(gs_frame_counter) + L" post render:");
-        Logger::WriteLine(L"    QueryPerformanceCounter: " + std::to_wstring(CurrentUSQueryPerformanceCounter()) + L"us");
+        Logger::WriteLine(L"    QueryPerformanceCounter: " + std::to_wstring(Timing::CurrentUSQueryPerformanceCounter()) + L"us");
         Logger::WriteLine(L"");
     }
 }

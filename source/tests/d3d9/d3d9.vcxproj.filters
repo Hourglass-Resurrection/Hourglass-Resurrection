@@ -8,12 +8,15 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{c9f8dbac-0469-469e-ad80-2cd4662cc612}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{d6bb41e6-b951-40f3-a306-dd473144365c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\shared">
+      <UniqueIdentifier>{631906bd-1158-48c7-b415-8b640a914662}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -25,12 +28,15 @@
     <ClCompile Include="d3d_stuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\shared\logger.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\timing.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="time_stats.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -38,6 +44,12 @@
     </ClInclude>
     <ClInclude Include="d3d_stuff.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\logger.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\timing.h">
+      <Filter>Header Files\shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
