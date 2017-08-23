@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "wintasee.h"
@@ -83,7 +83,7 @@ void NonDeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed,
             //	return;
             delayTicks = 0;
         }
-        Sleep(delayTicks);
+        Hooks::UntrampedSleep(delayTicks);
     }
 }
 
@@ -268,54 +268,54 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
         {
             //				ticks++;
 #if 1
-            //				if(type != TIMETYPE_UNTRACKED && (/*!s_frameThreadId ||*/ isFrameThread && !untrustedCaller))
-            if (type != TIMETYPE_UNTRACKED && ((/*(type == TIMETYPE_CRAWLHACK && !s_frameThreadId) ||*/ /*isFrameThread*/1) && !untrustedCaller))
-            {
-                LOG() << "subticks[" << type << "]++, " << altGetTimes[type] << " -> "
-                      << altGetTimes[type] + 1 << ", / " << altGetTimeLimits[type] + 1;
-                //#pragma message("FIXMEEE")
-                //		cmdprintf("SHORTTRACE: 3,120");
-
-                //					debuglog(LCF_TIMERS, "!!! %d (type %d)\n", altGetTimes[type], type);
-                altGetTimes[type]++;
-                //if(altGetTimes[type] > altGetTimeLimits[type] * (s_frameThreadId ? 100 : 1)
-                if (altGetTimes[type] > altGetTimeLimits[type]
-                    /*&& (GetAsyncKeyState('A') & 0x8000)*/)
-                {
-                    int tickDelta = 1;
-                    //int tickDelta = 1000/tasflags.framerate;
-                    //altGetTimes[type] = 0;
-
-                    LOG() << "WARNING! force-advancing time (" << altGetTimes[type] - altGetTimeLimits[type]
-                          << ") (type " << type << ") by " << tickDelta;
-
-                    //		cmdprintf("SHORTTRACE: 3,120");
-                    //AddDelay(1,0,1);
-                    //if(type==6) // fixme
-                    //						cmdprintf("SHORTTRACE: 3,120");
-
-                    ticksExtra += tickDelta;
-                    //if(!s_frameThreadId)
-                    //	debugprintf("OHNOWARNING3!!%d (%d)\n", ticks, tickDelta);
-                    //forceAdvancedTicks += tickDelta;
-
-                    //altGetTimes[type] -= 5; // todo
-                    for (int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
-                        altGetTimes[i] = 0;
-
-                    //						if(s_frameThreadId)
-                    //							altGetTimes[type] -= 10;
-
-                    //void ProcessTimers();
-                    //ProcessTimers();
-
-                    //if(type == TIMETYPE_QUERYPERFCOUNT)
-                    //{
-                    //	ticksExtra+=4;
-                    //	forceAdvancedTicks+=4;
-                    //}
-                }
-            }
+//            //				if(type != TIMETYPE_UNTRACKED && (/*!s_frameThreadId ||*/ isFrameThread && !untrustedCaller))
+//            if (type != TIMETYPE_UNTRACKED && ((/*(type == TIMETYPE_CRAWLHACK && !s_frameThreadId) ||*/ /*isFrameThread*/1) && !untrustedCaller))
+//            {
+//                LOG() << "subticks[" << type << "]++, " << altGetTimes[type] << " -> "
+//                      << altGetTimes[type] + 1 << ", / " << altGetTimeLimits[type] + 1;
+//                //#pragma message("FIXMEEE")
+//                //		cmdprintf("SHORTTRACE: 3,120");
+//
+//                //					debuglog(LCF_TIMERS, "!!! %d (type %d)\n", altGetTimes[type], type);
+//                altGetTimes[type]++;
+//                //if(altGetTimes[type] > altGetTimeLimits[type] * (s_frameThreadId ? 100 : 1)
+//                if (altGetTimes[type] > altGetTimeLimits[type]
+//                    /*&& (GetAsyncKeyState('A') & 0x8000)*/)
+//                {
+//                    int tickDelta = 1;
+//                    //int tickDelta = 1000/tasflags.framerate;
+//                    //altGetTimes[type] = 0;
+//
+//                    LOG() << "WARNING! force-advancing time (" << altGetTimes[type] - altGetTimeLimits[type]
+//                          << ") (type " << type << ") by " << tickDelta;
+//
+//                    //		cmdprintf("SHORTTRACE: 3,120");
+//                    //AddDelay(1,0,1);
+//                    //if(type==6) // fixme
+//                    //						cmdprintf("SHORTTRACE: 3,120");
+//
+//                    ticksExtra += tickDelta;
+//                    //if(!s_frameThreadId)
+//                    //	debugprintf("OHNOWARNING3!!%d (%d)\n", ticks, tickDelta);
+//                    //forceAdvancedTicks += tickDelta;
+//
+//                    //altGetTimes[type] -= 5; // todo
+//                    for (int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
+//                        altGetTimes[i] = 0;
+//
+//                    //						if(s_frameThreadId)
+//                    //							altGetTimes[type] -= 10;
+//
+//                    //void ProcessTimers();
+//                    //ProcessTimers();
+//
+//                    //if(type == TIMETYPE_QUERYPERFCOUNT)
+//                    //{
+//                    //	ticksExtra+=4;
+//                    //	forceAdvancedTicks+=4;
+//                    //}
+//                }
+//            }
 #elif 1
             if (getTimes == MAX_NONFRAME_GETTIMES && !frameThreadId)
                 debugprintf("WARNING! temporarily switched to non-deterministic timer (%d)\n", ticks);
@@ -344,8 +344,8 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
 #endif
         }
 
-        if (ticksExtra) // will be 0 if untrustedCaller
-            AddDelay(ticksExtra, FALSE, TRUE, TRUE);
+        //if (ticksExtra) // will be 0 if untrustedCaller
+        //    AddDelay(ticksExtra, FALSE, TRUE, TRUE);
         lastSetTickValue = ticks;
     }
     //#else
@@ -529,7 +529,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 		// wait for the amount of time it should have taken (THROTTLE)
 		while((int)(desiredTime - time) > 0)
 		{
-			Sleep(1);
+			Hooks::UntrampedSleep(1);
 			time = Hooks::timeGetTime();
 			if(tasflags.fastForward || timeScaleDiv != tasflags.timescaleDivisor)
 				break;
@@ -561,7 +561,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 //	
 //		// add sleep time
 //		if(doSleep && !tasflags.fastForward)
-//			Sleep(sleepTicks);
+//			Hooks::UntrampedSleep(sleepTicks);
 //		sleepAccumTicks += sleepTicks;
 //	
 //		while(true)
@@ -665,7 +665,7 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     //			lastEnterTicks += postponedDelayTicks;
     //			addedDelay += postponedDelayTicks;
     //
-    //			//// correct for the slight difference from using Sleep(1) instead of one big Sleep
+    //			//// correct for the slight difference from using Hooks::UntrampedSleep(1) instead of one big Sleep
     //			//static int extraCounter = 0;
     //			//extraCounter++;
     //			//postponedDelayTicks += extraCounter%3 ? 1 : 0;
@@ -682,7 +682,7 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     if (!tasflags.fastForward || !(tasflags.fastForwardFlags & FFMODE_WAITSKIP))
     {
         // because the caller would have yielded at least a little
-        //Sleep(0);
+        //Hooks::UntrampedSleep(0);
         SwitchToThread();
     }
 

@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 // main DLL cpp
@@ -431,7 +431,7 @@ void HandleShutdown()
 	//// just send anything so the WaitForDebugEvent call returns
 	OutputDebugStringW(L"ok");
 	//// it might ask more than once
-	while(true) { OutputDebugStringW(L"ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+	while(true) { OutputDebugStringW(L"ok ok"); Hooks::UntrampedSleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 

@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -174,6 +174,8 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, SwapBuffers, HDC hdc);
     HOOKFUNC BOOL WINAPI MySwapBuffers(HDC hdc)
     {
+        ENTER();
+
         depth_SwapBuffers++;
         //if(!usingSDLOrDD)
         if (!redrawingScreen)
@@ -196,6 +198,7 @@ namespace Hooks
         }
         depth_SwapBuffers--;
 
+        LEAVE();
         return TRUE;
     }
 

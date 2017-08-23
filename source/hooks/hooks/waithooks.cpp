@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "../wintasee.h"
@@ -11,7 +11,7 @@ namespace Hooks
 {
     void ThreadHandleToExitHandle(HANDLE& pHandle);
 
-    VOID WINAPI UntrampedSleep(DWORD x) { ::Sleep(x); }
+    VOID WINAPI UntrampedSleep(DWORD x) { Sleep(x); }
 
     HOOK_FUNCTION(VOID, WINAPI, Sleep, DWORD dwMilliseconds);
     HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds)
