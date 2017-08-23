@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include "external/d3d9.h"
@@ -1006,6 +1006,7 @@ namespace Hooks
         IDirect3D9* rv = Direct3DCreate9(SDKVersion);
         if (SUCCEEDED(rv))
             HookCOMInterface(IID_IDirect3D9, (void**)&rv);
+        LEAVE(rv);
         return rv;
     }
 
