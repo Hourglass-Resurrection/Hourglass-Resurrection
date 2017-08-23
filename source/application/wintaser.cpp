@@ -3561,8 +3561,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			//}
 
 			LeaveCriticalSection(&g_processMemCS);
-            if (de.dwDebugEventCode != 8)
-                VerboseDebugLog() << "WaitForDebugEvent. received debug event: " << std::hex << de.dwDebugEventCode;
+            //if (de.dwDebugEventCode != 8)
+            //    VerboseDebugLog() << "WaitForDebugEvent. received debug event: " << std::hex << de.dwDebugEventCode;
 
             static LPVOID ipc_address_in_process = nullptr;
 
@@ -3619,7 +3619,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 			case EXCEPTION_DEBUG_EVENT:
 			{
 #pragma region EXCEPTION_DEBUG_EVENT
-                VerboseDebugLog() << "exception code: " << std::hex << de.u.Exception.ExceptionRecord.ExceptionCode;
+                //VerboseDebugLog() << "exception code: " << std::hex << de.u.Exception.ExceptionRecord.ExceptionCode;
 
 				if(de.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT)
 				{
@@ -3865,6 +3865,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                                     ipc_frame.m_command = static_cast<IPC::Command>(static_cast<std::underlying_type<IPC::Command>::type>(ipc_frame.m_command) + 1);
                                     DWORD bytes_written;
                                     WriteProcessMemory(hGameProcess, ipc_address_in_process, &ipc_frame, sizeof(ipc_frame), &bytes_written);
+                                    WriteProcessMemory(hGameProcess, const_cast<LPVOID>(ipc_frame.m_command_data), buf.data(), buf.capacity(), &bytes_written);
                                     break;
                                 }
                             }

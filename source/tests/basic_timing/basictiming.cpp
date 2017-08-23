@@ -64,19 +64,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         TimeStats::PreRender();
 
-        HDC hdc = GetDC(hWnd);
-        RECT client_rect;
-        GetClientRect(hWnd, &client_rect);
-        StretchDIBits(hdc,
-                      0, 0, client_rect.right, client_rect.bottom,
-                      0, 0, 1, 1,
-                      &gs_pixel,
-                      &gs_bitmap_info,
-                      DIB_RGB_COLORS,
-                      SRCCOPY);
         /*
          * Force a Hourglass frame boundary.
          */
+        HDC hdc = GetDC(hWnd);
         SwapBuffers(hdc);
         ReleaseDC(hWnd, hdc);
 
@@ -130,25 +121,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-
-            RECT client_rect;
-            GetClientRect(hWnd, &client_rect);
-
-            StretchDIBits(hdc,
-                          0, 0, client_rect.right, client_rect.bottom,
-                          0, 0, 1, 1,
-                          &gs_pixel,
-                          &gs_bitmap_info,
-                          DIB_RGB_COLORS,
-                          SRCCOPY);
-
-            EndPaint(hWnd, &ps);
-        }
-        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

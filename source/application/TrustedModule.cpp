@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2017- Hourglass Resurrection Team
  * Hourglass Resurrection is licensed under GPL v2.
  * Refer to the file COPYING.txt in the project root.
@@ -18,6 +18,30 @@
 
 namespace
 {
+    /*
+     * This is rougly based on the contents of my SysWOW64 folder.
+     * -- YaLTeR
+     */
+    constexpr const WCHAR* CRT_FILENAMES[] = {
+        L"msvcrt.dll",
+        L"msvcrt20.dll",
+        L"msvcrt40.dll",
+
+        L"msvcp60.dll",
+        L"msvcp60d.dll",
+        L"msvcp100.dll",
+        L"msvcp100d.dll",
+        L"msvcp120.dll",
+        L"msvcp120d.dll",
+        L"msvcp140.dll",
+        L"msvcp140d.dll",
+
+        L"msvcr100.dll",
+        L"msvcr100d.dll",
+        L"msvcr120.dll",
+        L"msvcr120d.dll",
+    };
+
     std::map<DWORD, std::vector<std::wstring>> s_trusted_modules;
 
     size_t CountSharedPrefixLength(const std::wstring& a, const std::wstring& b)
@@ -35,6 +59,15 @@ namespace
         return std::count(str.begin(), str.end(), L'\\');
     }
 
+    std::wstring GetFilenameWithoutPath(const std::wstring& path)
+    {
+        size_t last = path.find_last_of(L"\\/");
+        if (last == std::wstring::npos)
+        {
+            return path;
+        }
+        return path.substr(last + 1);
+    }
 }
 
 /*
@@ -67,6 +100,19 @@ namespace TrustedModule
         else if (path.length() >= 4 && (path.substr(path.length() - 4)) == L".cox") // hack, we can generally assume the game outputted any dll that has this extension
         {
             s_trusted_modules[process_id].emplace_back(path);
+        }
+        else
+        {
+            std::wstring filename = GetFilenameWithoutPath(path);
+
+            if (std::find_if(std::cbegin(CRT_FILENAMES),
+                             std::cend(CRT_FILENAMES),
+                             [&filename](const std::wstring& m) {
+                                 return (filename == m);
+                             }) != std::cend(CRT_FILENAMES))
+            {
+                s_trusted_modules[process_id].emplace_back(path);
+            }
         }
     }
 
