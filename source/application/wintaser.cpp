@@ -4192,7 +4192,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					//bool neverLoaded = dllBaseToFilename.find(de.u.LoadDll.lpBaseOfDll) == dllBaseToFilename.end();
 //					if(!dllBaseToHandle[de.u.LoadDll.lpBaseOfDll])
 //					debugprintf("LOAD_DLL_DEBUG_EVENT: 0x%X\n", de.u.LoadDll.lpBaseOfDll);
-					if(dll_base_to_filename[de.u.LoadDll.lpBaseOfDll].length() == 0)
+					if(dll_base_to_filename[de.u.LoadDll.lpBaseOfDll].length() == 0 && de.u.LoadDll.hFile != nullptr)
 					{
 						std::wstring filename = GetFileNameFromFileHandle(de.u.LoadDll.hFile);
                         DebugLog() << "LOADED DLL: " << filename;
