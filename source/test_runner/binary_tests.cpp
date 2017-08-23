@@ -149,8 +149,8 @@ namespace BinaryTests
 
                                 filesystem::path output = failed / (input_pair.log.stem().wstring() + L"_output.log");
 
-                                filesystem::copy_file(input_pair.log, expected);
-                                filesystem::copy_file(output_log, output);
+                                filesystem::copy_file(input_pair.log, expected, filesystem::copy_options::overwrite_existing);
+                                filesystem::copy_file(output_log, output, filesystem::copy_options::overwrite_existing);
                             }
 
                             REQUIRE( logs_match );
