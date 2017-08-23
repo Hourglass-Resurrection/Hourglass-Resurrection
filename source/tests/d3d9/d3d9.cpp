@@ -5,17 +5,16 @@
  */
 
 #include "stdafx.h"
+#include "d3d_stuff.h"
+#include "shared/logger.h"
 #include "shared/timing.h"
 #include "time_stats.h"
 
-constexpr WCHAR CLASS_NAME[] = L"basic_timing";
-constexpr WCHAR WINDOW_NAME[] = L"basic_timing";
-
-static uint32_t gs_pixel = 0x000000CC;
-static BITMAPINFO gs_bitmap_info;
+constexpr WCHAR CLASS_NAME[] = L"d3d9";
+constexpr WCHAR WINDOW_NAME[] = L"d3d9";
 
 ATOM             MyRegisterClass(HINSTANCE);
-HWND             InitInstance(HINSTANCE, int);
+BOOL             InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -29,20 +28,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-    HWND hWnd = InitInstance(hInstance, nCmdShow);
-    if (!hWnd)
+    if (!InitInstance(hInstance, nCmdShow))
     {
         return FALSE;
-    }
-
-    {
-        BITMAPINFOHEADER& header = gs_bitmap_info.bmiHeader;
-        header.biSize = sizeof(header);
-        header.biWidth = 1;
-        header.biHeight = 1;
-        header.biPlanes = 1;
-        header.biBitCount = 32;
-        header.biCompression = BI_RGB;
     }
 
     Timing::Initialize();
@@ -63,14 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
 
         TimeStats::PreRender();
-
-        /*
-         * Force a Hourglass frame boundary.
-         */
-        HDC hdc = GetDC(hWnd);
-        SwapBuffers(hdc);
-        ReleaseDC(hWnd, hdc);
-
+        D3D::RenderFrame();
         TimeStats::PostRender();
     }
 
@@ -92,29 +73,64 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     return RegisterClassExW(&wcex);
 }
 
-HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd = CreateWindowW(CLASS_NAME,
-                             WINDOW_NAME,
-                             WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT,
-                             0,
-                             CW_USEDEFAULT,
-                             0,
-                             nullptr,
-                             nullptr,
-                             hInstance,
-                             nullptr);
+    HWND hWnd = CreateWindowW(CLASS_NAME,
+                              WINDOW_NAME,
+                              WS_OVERLAPPEDWINDOW,
+                              CW_USEDEFAULT,
+                              0,
+                              CW_USEDEFAULT,
+                              0,
+                              nullptr,
+                              nullptr,
+                              hInstance,
+                              nullptr);
 
-   if (!hWnd)
-   {
-      return nullptr;
-   }
+    if (!hWnd)
+    {
+        return FALSE;
+    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
-   return hWnd;
+    try
+    {
+        D3D::Initialize(hWnd);
+    }
+    catch (const D3D::Error::CreateD3D&)
+    {
+        Logger::WriteLine(L"Error in Direct3DCreate9().");
+        return FALSE;
+    }
+    catch (const D3D::Error::CreateDevice& e)
+    {
+        std::wstring error_string;
+        switch (e.m_return_code)
+        {
+        case D3DERR_DEVICELOST:
+            error_string = L"D3DERR_DEVICELOST";
+            break;
+        case D3DERR_INVALIDCALL:
+            error_string = L"D3DERR_INVALIDCALL";
+            break;
+        case D3DERR_NOTAVAILABLE:
+            error_string = L"D3DERR_NOTAVAILABLE";
+            break;
+        case D3DERR_OUTOFVIDEOMEMORY:
+            error_string = L"D3DERR_OUTOFVIDEOMEMORY";
+            break;
+        default:
+            error_string = std::to_wstring(e.m_return_code);
+            break;
+        }
+
+        Logger::WriteLine(L"Error in CreateDevice(): " + error_string + L'.');
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

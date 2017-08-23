@@ -1,0 +1,573 @@
+Frame 1 pre render:
+    QueryPerformanceCounter: 6000000us
+Frame 1 post render:
+    QueryPerformanceCounter: 6019999us
+
+Frame 2 pre render:
+    QueryPerformanceCounter: 6019999us (frametime: 19999us)
+Frame 2 post render:
+    QueryPerformanceCounter: 6039999us
+
+Frame 3 pre render:
+    QueryPerformanceCounter: 6039999us (frametime: 20000us)
+Frame 3 post render:
+    QueryPerformanceCounter: 6059999us
+
+Frame 4 pre render:
+    QueryPerformanceCounter: 6059999us (frametime: 20000us)
+Frame 4 post render:
+    QueryPerformanceCounter: 6079999us
+
+Frame 5 pre render:
+    QueryPerformanceCounter: 6079999us (frametime: 20000us)
+Frame 5 post render:
+    QueryPerformanceCounter: 6099999us
+
+Frame 6 pre render:
+    QueryPerformanceCounter: 6099999us (frametime: 20000us)
+Frame 6 post render:
+    QueryPerformanceCounter: 6119999us
+
+Frame 7 pre render:
+    QueryPerformanceCounter: 6119999us (frametime: 20000us)
+Frame 7 post render:
+    QueryPerformanceCounter: 6139999us
+
+Frame 8 pre render:
+    QueryPerformanceCounter: 6139999us (frametime: 20000us)
+Frame 8 post render:
+    QueryPerformanceCounter: 6159999us
+
+Frame 9 pre render:
+    QueryPerformanceCounter: 6159999us (frametime: 20000us)
+Frame 9 post render:
+    QueryPerformanceCounter: 6179999us
+
+Frame 10 pre render:
+    QueryPerformanceCounter: 6179999us (frametime: 20000us)
+Frame 10 post render:
+    QueryPerformanceCounter: 6200000us
+
+Frame 11 pre render:
+    QueryPerformanceCounter: 6200000us (frametime: 20001us)
+Frame 11 post render:
+    QueryPerformanceCounter: 6219999us
+
+Frame 12 pre render:
+    QueryPerformanceCounter: 6219999us (frametime: 19999us)
+Frame 12 post render:
+    QueryPerformanceCounter: 6239999us
+
+Frame 13 pre render:
+    QueryPerformanceCounter: 6239999us (frametime: 20000us)
+Frame 13 post render:
+    QueryPerformanceCounter: 6259999us
+
+Frame 14 pre render:
+    QueryPerformanceCounter: 6259999us (frametime: 20000us)
+Frame 14 post render:
+    QueryPerformanceCounter: 6279999us
+
+Frame 15 pre render:
+    QueryPerformanceCounter: 6279999us (frametime: 20000us)
+Frame 15 post render:
+    QueryPerformanceCounter: 6299999us
+
+Frame 16 pre render:
+    QueryPerformanceCounter: 6299999us (frametime: 20000us)
+Frame 16 post render:
+    QueryPerformanceCounter: 6319999us
+
+Frame 17 pre render:
+    QueryPerformanceCounter: 6319999us (frametime: 20000us)
+Frame 17 post render:
+    QueryPerformanceCounter: 6339999us
+
+Frame 18 pre render:
+    QueryPerformanceCounter: 6339999us (frametime: 20000us)
+Frame 18 post render:
+    QueryPerformanceCounter: 6359999us
+
+Frame 19 pre render:
+    QueryPerformanceCounter: 6359999us (frametime: 20000us)
+Frame 19 post render:
+    QueryPerformanceCounter: 6379999us
+
+Frame 20 pre render:
+    QueryPerformanceCounter: 6379999us (frametime: 20000us)
+Frame 20 post render:
+    QueryPerformanceCounter: 6400000us
+
+Frame 21 pre render:
+    QueryPerformanceCounter: 6400000us (frametime: 20001us)
+Frame 21 post render:
+    QueryPerformanceCounter: 6419999us
+
+Frame 22 pre render:
+    QueryPerformanceCounter: 6419999us (frametime: 19999us)
+Frame 22 post render:
+    QueryPerformanceCounter: 6439999us
+
+Frame 23 pre render:
+    QueryPerformanceCounter: 6439999us (frametime: 20000us)
+Frame 23 post render:
+    QueryPerformanceCounter: 6459999us
+
+Frame 24 pre render:
+    QueryPerformanceCounter: 6459999us (frametime: 20000us)
+Frame 24 post render:
+    QueryPerformanceCounter: 6479999us
+
+Frame 25 pre render:
+    QueryPerformanceCounter: 6479999us (frametime: 20000us)
+Frame 25 post render:
+    QueryPerformanceCounter: 6499999us
+
+Frame 26 pre render:
+    QueryPerformanceCounter: 6499999us (frametime: 20000us)
+Frame 26 post render:
+    QueryPerformanceCounter: 6519999us
+
+Frame 27 pre render:
+    QueryPerformanceCounter: 6519999us (frametime: 20000us)
+Frame 27 post render:
+    QueryPerformanceCounter: 6539999us
+
+Frame 28 pre render:
+    QueryPerformanceCounter: 6539999us (frametime: 20000us)
+Frame 28 post render:
+    QueryPerformanceCounter: 6559999us
+
+Frame 29 pre render:
+    QueryPerformanceCounter: 6559999us (frametime: 20000us)
+Frame 29 post render:
+    QueryPerformanceCounter: 6579999us
+
+Frame 30 pre render:
+    QueryPerformanceCounter: 6579999us (frametime: 20000us)
+Frame 30 post render:
+    QueryPerformanceCounter: 6600000us
+
+Frame 31 pre render:
+    QueryPerformanceCounter: 6600000us (frametime: 20001us)
+Frame 31 post render:
+    QueryPerformanceCounter: 6619999us
+
+Frame 32 pre render:
+    QueryPerformanceCounter: 6619999us (frametime: 19999us)
+Frame 32 post render:
+    QueryPerformanceCounter: 6639999us
+
+Frame 33 pre render:
+    QueryPerformanceCounter: 6639999us (frametime: 20000us)
+Frame 33 post render:
+    QueryPerformanceCounter: 6659999us
+
+Frame 34 pre render:
+    QueryPerformanceCounter: 6659999us (frametime: 20000us)
+Frame 34 post render:
+    QueryPerformanceCounter: 6679999us
+
+Frame 35 pre render:
+    QueryPerformanceCounter: 6679999us (frametime: 20000us)
+Frame 35 post render:
+    QueryPerformanceCounter: 6699999us
+
+Frame 36 pre render:
+    QueryPerformanceCounter: 6699999us (frametime: 20000us)
+Frame 36 post render:
+    QueryPerformanceCounter: 6719999us
+
+Frame 37 pre render:
+    QueryPerformanceCounter: 6719999us (frametime: 20000us)
+Frame 37 post render:
+    QueryPerformanceCounter: 6739999us
+
+Frame 38 pre render:
+    QueryPerformanceCounter: 6739999us (frametime: 20000us)
+Frame 38 post render:
+    QueryPerformanceCounter: 6759999us
+
+Frame 39 pre render:
+    QueryPerformanceCounter: 6759999us (frametime: 20000us)
+Frame 39 post render:
+    QueryPerformanceCounter: 6779999us
+
+Frame 40 pre render:
+    QueryPerformanceCounter: 6779999us (frametime: 20000us)
+Frame 40 post render:
+    QueryPerformanceCounter: 6800000us
+
+Frame 41 pre render:
+    QueryPerformanceCounter: 6800000us (frametime: 20001us)
+Frame 41 post render:
+    QueryPerformanceCounter: 6819999us
+
+Frame 42 pre render:
+    QueryPerformanceCounter: 6819999us (frametime: 19999us)
+Frame 42 post render:
+    QueryPerformanceCounter: 6839999us
+
+Frame 43 pre render:
+    QueryPerformanceCounter: 6839999us (frametime: 20000us)
+Frame 43 post render:
+    QueryPerformanceCounter: 6859999us
+
+Frame 44 pre render:
+    QueryPerformanceCounter: 6859999us (frametime: 20000us)
+Frame 44 post render:
+    QueryPerformanceCounter: 6879999us
+
+Frame 45 pre render:
+    QueryPerformanceCounter: 6879999us (frametime: 20000us)
+Frame 45 post render:
+    QueryPerformanceCounter: 6899999us
+
+Frame 46 pre render:
+    QueryPerformanceCounter: 6899999us (frametime: 20000us)
+Frame 46 post render:
+    QueryPerformanceCounter: 6919999us
+
+Frame 47 pre render:
+    QueryPerformanceCounter: 6919999us (frametime: 20000us)
+Frame 47 post render:
+    QueryPerformanceCounter: 6939999us
+
+Frame 48 pre render:
+    QueryPerformanceCounter: 6939999us (frametime: 20000us)
+Frame 48 post render:
+    QueryPerformanceCounter: 6959999us
+
+Frame 49 pre render:
+    QueryPerformanceCounter: 6959999us (frametime: 20000us)
+Frame 49 post render:
+    QueryPerformanceCounter: 6979999us
+
+Frame 50 pre render:
+    QueryPerformanceCounter: 6979999us (frametime: 20000us)
+Frame 50 post render:
+    QueryPerformanceCounter: 7000000us
+
+Frame 51 pre render:
+    QueryPerformanceCounter: 7000000us (frametime: 20001us)
+Frame 51 post render:
+    QueryPerformanceCounter: 7019999us
+
+Frame 52 pre render:
+    QueryPerformanceCounter: 7019999us (frametime: 19999us)
+Frame 52 post render:
+    QueryPerformanceCounter: 7039999us
+
+Frame 53 pre render:
+    QueryPerformanceCounter: 7039999us (frametime: 20000us)
+Frame 53 post render:
+    QueryPerformanceCounter: 7059999us
+
+Frame 54 pre render:
+    QueryPerformanceCounter: 7059999us (frametime: 20000us)
+Frame 54 post render:
+    QueryPerformanceCounter: 7079999us
+
+Frame 55 pre render:
+    QueryPerformanceCounter: 7079999us (frametime: 20000us)
+Frame 55 post render:
+    QueryPerformanceCounter: 7099999us
+
+Frame 56 pre render:
+    QueryPerformanceCounter: 7099999us (frametime: 20000us)
+Frame 56 post render:
+    QueryPerformanceCounter: 7119999us
+
+Frame 57 pre render:
+    QueryPerformanceCounter: 7119999us (frametime: 20000us)
+Frame 57 post render:
+    QueryPerformanceCounter: 7139999us
+
+Frame 58 pre render:
+    QueryPerformanceCounter: 7139999us (frametime: 20000us)
+Frame 58 post render:
+    QueryPerformanceCounter: 7159999us
+
+Frame 59 pre render:
+    QueryPerformanceCounter: 7159999us (frametime: 20000us)
+Frame 59 post render:
+    QueryPerformanceCounter: 7179999us
+
+Frame 60 pre render:
+    QueryPerformanceCounter: 7179999us (frametime: 20000us)
+Frame 60 post render:
+    QueryPerformanceCounter: 7200000us
+
+Frame 61 pre render:
+    QueryPerformanceCounter: 7200000us (frametime: 20001us)
+Frame 61 post render:
+    QueryPerformanceCounter: 7219999us
+
+Frame 62 pre render:
+    QueryPerformanceCounter: 7219999us (frametime: 19999us)
+Frame 62 post render:
+    QueryPerformanceCounter: 7239999us
+
+Frame 63 pre render:
+    QueryPerformanceCounter: 7239999us (frametime: 20000us)
+Frame 63 post render:
+    QueryPerformanceCounter: 7259999us
+
+Frame 64 pre render:
+    QueryPerformanceCounter: 7259999us (frametime: 20000us)
+Frame 64 post render:
+    QueryPerformanceCounter: 7279999us
+
+Frame 65 pre render:
+    QueryPerformanceCounter: 7279999us (frametime: 20000us)
+Frame 65 post render:
+    QueryPerformanceCounter: 7299999us
+
+Frame 66 pre render:
+    QueryPerformanceCounter: 7299999us (frametime: 20000us)
+Frame 66 post render:
+    QueryPerformanceCounter: 7319999us
+
+Frame 67 pre render:
+    QueryPerformanceCounter: 7319999us (frametime: 20000us)
+Frame 67 post render:
+    QueryPerformanceCounter: 7339999us
+
+Frame 68 pre render:
+    QueryPerformanceCounter: 7339999us (frametime: 20000us)
+Frame 68 post render:
+    QueryPerformanceCounter: 7359999us
+
+Frame 69 pre render:
+    QueryPerformanceCounter: 7359999us (frametime: 20000us)
+Frame 69 post render:
+    QueryPerformanceCounter: 7379999us
+
+Frame 70 pre render:
+    QueryPerformanceCounter: 7379999us (frametime: 20000us)
+Frame 70 post render:
+    QueryPerformanceCounter: 7400000us
+
+Frame 71 pre render:
+    QueryPerformanceCounter: 7400000us (frametime: 20001us)
+Frame 71 post render:
+    QueryPerformanceCounter: 7419999us
+
+Frame 72 pre render:
+    QueryPerformanceCounter: 7419999us (frametime: 19999us)
+Frame 72 post render:
+    QueryPerformanceCounter: 7439999us
+
+Frame 73 pre render:
+    QueryPerformanceCounter: 7439999us (frametime: 20000us)
+Frame 73 post render:
+    QueryPerformanceCounter: 7459999us
+
+Frame 74 pre render:
+    QueryPerformanceCounter: 7459999us (frametime: 20000us)
+Frame 74 post render:
+    QueryPerformanceCounter: 7479999us
+
+Frame 75 pre render:
+    QueryPerformanceCounter: 7479999us (frametime: 20000us)
+Frame 75 post render:
+    QueryPerformanceCounter: 7499999us
+
+Frame 76 pre render:
+    QueryPerformanceCounter: 7499999us (frametime: 20000us)
+Frame 76 post render:
+    QueryPerformanceCounter: 7519999us
+
+Frame 77 pre render:
+    QueryPerformanceCounter: 7519999us (frametime: 20000us)
+Frame 77 post render:
+    QueryPerformanceCounter: 7539999us
+
+Frame 78 pre render:
+    QueryPerformanceCounter: 7539999us (frametime: 20000us)
+Frame 78 post render:
+    QueryPerformanceCounter: 7559999us
+
+Frame 79 pre render:
+    QueryPerformanceCounter: 7559999us (frametime: 20000us)
+Frame 79 post render:
+    QueryPerformanceCounter: 7579999us
+
+Frame 80 pre render:
+    QueryPerformanceCounter: 7579999us (frametime: 20000us)
+Frame 80 post render:
+    QueryPerformanceCounter: 7600000us
+
+Frame 81 pre render:
+    QueryPerformanceCounter: 7600000us (frametime: 20001us)
+Frame 81 post render:
+    QueryPerformanceCounter: 7619999us
+
+Frame 82 pre render:
+    QueryPerformanceCounter: 7619999us (frametime: 19999us)
+Frame 82 post render:
+    QueryPerformanceCounter: 7639999us
+
+Frame 83 pre render:
+    QueryPerformanceCounter: 7639999us (frametime: 20000us)
+Frame 83 post render:
+    QueryPerformanceCounter: 7659999us
+
+Frame 84 pre render:
+    QueryPerformanceCounter: 7659999us (frametime: 20000us)
+Frame 84 post render:
+    QueryPerformanceCounter: 7679999us
+
+Frame 85 pre render:
+    QueryPerformanceCounter: 7679999us (frametime: 20000us)
+Frame 85 post render:
+    QueryPerformanceCounter: 7699999us
+
+Frame 86 pre render:
+    QueryPerformanceCounter: 7699999us (frametime: 20000us)
+Frame 86 post render:
+    QueryPerformanceCounter: 7719999us
+
+Frame 87 pre render:
+    QueryPerformanceCounter: 7719999us (frametime: 20000us)
+Frame 87 post render:
+    QueryPerformanceCounter: 7739999us
+
+Frame 88 pre render:
+    QueryPerformanceCounter: 7739999us (frametime: 20000us)
+Frame 88 post render:
+    QueryPerformanceCounter: 7759999us
+
+Frame 89 pre render:
+    QueryPerformanceCounter: 7759999us (frametime: 20000us)
+Frame 89 post render:
+    QueryPerformanceCounter: 7779999us
+
+Frame 90 pre render:
+    QueryPerformanceCounter: 7779999us (frametime: 20000us)
+Frame 90 post render:
+    QueryPerformanceCounter: 7800000us
+
+Frame 91 pre render:
+    QueryPerformanceCounter: 7800000us (frametime: 20001us)
+Frame 91 post render:
+    QueryPerformanceCounter: 7819999us
+
+Frame 92 pre render:
+    QueryPerformanceCounter: 7819999us (frametime: 19999us)
+Frame 92 post render:
+    QueryPerformanceCounter: 7839999us
+
+Frame 93 pre render:
+    QueryPerformanceCounter: 7839999us (frametime: 20000us)
+Frame 93 post render:
+    QueryPerformanceCounter: 7859999us
+
+Frame 94 pre render:
+    QueryPerformanceCounter: 7859999us (frametime: 20000us)
+Frame 94 post render:
+    QueryPerformanceCounter: 7879999us
+
+Frame 95 pre render:
+    QueryPerformanceCounter: 7879999us (frametime: 20000us)
+Frame 95 post render:
+    QueryPerformanceCounter: 7899999us
+
+Frame 96 pre render:
+    QueryPerformanceCounter: 7899999us (frametime: 20000us)
+Frame 96 post render:
+    QueryPerformanceCounter: 7919999us
+
+Frame 97 pre render:
+    QueryPerformanceCounter: 7919999us (frametime: 20000us)
+Frame 97 post render:
+    QueryPerformanceCounter: 7939999us
+
+Frame 98 pre render:
+    QueryPerformanceCounter: 7939999us (frametime: 20000us)
+Frame 98 post render:
+    QueryPerformanceCounter: 7959999us
+
+Frame 99 pre render:
+    QueryPerformanceCounter: 7959999us (frametime: 20000us)
+Frame 99 post render:
+    QueryPerformanceCounter: 7979999us
+
+Frame 100 pre render:
+    QueryPerformanceCounter: 7979999us (frametime: 20000us)
+Frame 100 post render:
+    QueryPerformanceCounter: 8000000us
+
+Frame 101 pre render:
+    QueryPerformanceCounter: 8000000us (frametime: 20001us)
+Frame 101 post render:
+    QueryPerformanceCounter: 8019999us
+
+Frame 102 pre render:
+    QueryPerformanceCounter: 8019999us (frametime: 19999us)
+Frame 102 post render:
+    QueryPerformanceCounter: 8039999us
+
+Frame 103 pre render:
+    QueryPerformanceCounter: 8039999us (frametime: 20000us)
+Frame 103 post render:
+    QueryPerformanceCounter: 8059999us
+
+Frame 104 pre render:
+    QueryPerformanceCounter: 8059999us (frametime: 20000us)
+Frame 104 post render:
+    QueryPerformanceCounter: 8079999us
+
+Frame 105 pre render:
+    QueryPerformanceCounter: 8079999us (frametime: 20000us)
+Frame 105 post render:
+    QueryPerformanceCounter: 8099999us
+
+Frame 106 pre render:
+    QueryPerformanceCounter: 8099999us (frametime: 20000us)
+Frame 106 post render:
+    QueryPerformanceCounter: 8119999us
+
+Frame 107 pre render:
+    QueryPerformanceCounter: 8119999us (frametime: 20000us)
+Frame 107 post render:
+    QueryPerformanceCounter: 8139999us
+
+Frame 108 pre render:
+    QueryPerformanceCounter: 8139999us (frametime: 20000us)
+Frame 108 post render:
+    QueryPerformanceCounter: 8159999us
+
+Frame 109 pre render:
+    QueryPerformanceCounter: 8159999us (frametime: 20000us)
+Frame 109 post render:
+    QueryPerformanceCounter: 8179999us
+
+Frame 110 pre render:
+    QueryPerformanceCounter: 8179999us (frametime: 20000us)
+Frame 110 post render:
+    QueryPerformanceCounter: 8200000us
+
+Frame 111 pre render:
+    QueryPerformanceCounter: 8200000us (frametime: 20001us)
+Frame 111 post render:
+    QueryPerformanceCounter: 8219999us
+
+Frame 112 pre render:
+    QueryPerformanceCounter: 8219999us (frametime: 19999us)
+Frame 112 post render:
+    QueryPerformanceCounter: 8239999us
+
+Frame 113 pre render:
+    QueryPerformanceCounter: 8239999us (frametime: 20000us)
+Frame 113 post render:
+    QueryPerformanceCounter: 8259999us
+
+Frame 114 pre render:
+    QueryPerformanceCounter: 8259999us (frametime: 20000us)
+Frame 114 post render:
+    QueryPerformanceCounter: 8279999us
+
+Frame 115 pre render:
+    QueryPerformanceCounter: 8279999us (frametime: 20000us)
+Frame 115

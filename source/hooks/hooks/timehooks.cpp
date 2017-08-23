@@ -401,28 +401,50 @@ namespace Hooks
     HOOK_FUNCTION(BOOL, WINAPI, QueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount);
     HOOKFUNC BOOL WINAPI MyQueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount)
     {
-        //	return QueryPerformanceCounter(lpPerformanceCount);
         ENTER();
-        if (lpPerformanceCount)
+
+        /*
+         * This branch is required to prevent deadlocks, most notably in NVidia graphics drivers.
+         * See: https://github.com/Hourglass-Resurrection/Hourglass-Resurrection/issues/30
+         * -- YaLTeR
+         */
+        if (!VerifyIsTrustedCaller())
         {
-            lpPerformanceCount->QuadPart = (LONGLONG)detTimer.GetTicks(TIMETYPE_QUERYPERFCOUNT) * (LONGLONG)715909 / (LONGLONG)(1000 / 5);
-            //		timedebugprintf(__FUNCTION__ " returned %I64d.\n", lpPerformanceCount->QuadPart);
-            return TRUE;
+            return QueryPerformanceCounter(lpPerformanceCount);
         }
-        return FALSE;
+
+        if (!lpPerformanceCount)
+        {
+            return FALSE;
+        }
+
+        lpPerformanceCount->QuadPart =
+            detTimer.GetTicks(TIMETYPE_QUERYPERFCOUNT) * 715909ll / (1000 / 5);
+        return TRUE;
     }
+
     HOOK_FUNCTION(BOOL, WINAPI, QueryPerformanceFrequency, LARGE_INTEGER* lpPerformanceFrequency);
     HOOKFUNC BOOL WINAPI MyQueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceFrequency)
     {
-        //	return QueryPerformanceFrequency(lpPerformanceFrequency);
         ENTER();
-        if (lpPerformanceFrequency)
+
+        /*
+         * This branch is required to prevent deadlocks, most notably in NVidia graphics drivers.
+         * See: https://github.com/Hourglass-Resurrection/Hourglass-Resurrection/issues/30
+         * -- YaLTeR
+         */
+        if (!VerifyIsTrustedCaller())
         {
-            lpPerformanceFrequency->QuadPart = (LONGLONG)715909 * (LONGLONG)5;
-            //		timedebugprintf(__FUNCTION__ " returned %I64d.\n", lpPerformanceFrequency->QuadPart);
-            return TRUE;
+            return QueryPerformanceFrequency(lpPerformanceFrequency);
         }
-        return FALSE;
+
+        if (!lpPerformanceFrequency)
+        {
+            return FALSE;
+        }
+
+        lpPerformanceFrequency->QuadPart = 715909ll * 5;
+        return TRUE;
     }
 
     HOOK_FUNCTION(NTSTATUS, NTAPI, NtQueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency);
