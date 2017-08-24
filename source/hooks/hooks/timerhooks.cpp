@@ -576,7 +576,7 @@ namespace Hooks
         BOOL rv = FALSE;
         EnterCriticalSection(&s_pendingSetTimerCS);
 
-        for (std::set<SetTimerData, SetTimerDataCompare>::iterator iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end(); iter++)
+        for (auto iter = s_pendingSetTimers.begin(); iter != s_pendingSetTimers.end(); ++iter)
         {
             if ((iter->hWnd == hWnd) && (iter->nIDEvent == nIDEvent))
             {
@@ -593,6 +593,8 @@ namespace Hooks
                 {
                     s_pendingSetTimers.erase(iter);
                 }
+
+                break;
             }
         }
 
