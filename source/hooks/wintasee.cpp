@@ -431,7 +431,7 @@ void HandleShutdown()
 	//// just send anything so the WaitForDebugEvent call returns
 	OutputDebugStringW(L"ok");
 	//// it might ask more than once
-	while(true) { OutputDebugStringW(L"ok ok"); Hooks::UntrampedSleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+	while(true) { OutputDebugStringW(L"ok ok"); Hooks::Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 
