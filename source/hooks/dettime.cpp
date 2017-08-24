@@ -83,7 +83,7 @@ void NonDeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed,
             //	return;
             delayTicks = 0;
         }
-        Hooks::UntrampedSleep(delayTicks);
+        Hooks::Sleep(delayTicks);
     }
 }
 
@@ -529,7 +529,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 		// wait for the amount of time it should have taken (THROTTLE)
 		while((int)(desiredTime - time) > 0)
 		{
-			Hooks::UntrampedSleep(1);
+			Hooks::Sleep(1);
 			time = Hooks::timeGetTime();
 			if(tasflags.fastForward || timeScaleDiv != tasflags.timescaleDivisor)
 				break;
@@ -561,7 +561,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 //	
 //		// add sleep time
 //		if(doSleep && !tasflags.fastForward)
-//			Hooks::UntrampedSleep(sleepTicks);
+//			Hooks::Sleep(sleepTicks);
 //		sleepAccumTicks += sleepTicks;
 //	
 //		while(true)
@@ -665,7 +665,7 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     //			lastEnterTicks += postponedDelayTicks;
     //			addedDelay += postponedDelayTicks;
     //
-    //			//// correct for the slight difference from using Hooks::UntrampedSleep(1) instead of one big Sleep
+    //			//// correct for the slight difference from using Hooks::Sleep(1) instead of one big Sleep
     //			//static int extraCounter = 0;
     //			//extraCounter++;
     //			//postponedDelayTicks += extraCounter%3 ? 1 : 0;
@@ -682,7 +682,7 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     if (!tasflags.fastForward || !(tasflags.fastForwardFlags & FFMODE_WAITSKIP))
     {
         // because the caller would have yielded at least a little
-        //Hooks::UntrampedSleep(0);
+        //Hooks::Sleep(0);
         SwitchToThread();
     }
 

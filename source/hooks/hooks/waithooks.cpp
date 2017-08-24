@@ -11,7 +11,7 @@ namespace Hooks
 {
     void ThreadHandleToExitHandle(HANDLE& pHandle);
 
-    VOID WINAPI UntrampedSleep(DWORD x) { Sleep(x); }
+    VOID WINAPI UntrampedSleep(DWORD x) { ::Sleep(x); }
 
     HOOK_FUNCTION(VOID, WINAPI, Sleep, DWORD dwMilliseconds);
     HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds)
