@@ -21,292 +21,292 @@ struct ModifierKey InputCapture::modifierKeys[] =
 
 struct SingleInput InputCapture::SIList[] =
 {
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_ESCAPE, "Escape"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_1, "1"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_2, "2"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_3, "3"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_4, "4"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_5, "5"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_6, "6"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_7, "7"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_8, "8"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_9, "9"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_0, "0"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MINUS, "-_"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_EQUALS, "=+"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_BACK, "Backspace"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_TAB, "Tab"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_Q, "Q"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_W, "W"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_E, "E"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_R, "R"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_T, "T"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_Y, "Y"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_U, "U"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_I, "I"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_O, "O"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_P, "P"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LBRACKET, "[{"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RBRACKET, "]}"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RETURN, "Enter"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LCONTROL, "LControl"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_A, "A"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_S, "S"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_D, "D"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F, "F"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_G, "G"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_H, "H"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_J, "J"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_K, "K"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_L, "L"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SEMICOLON, "},:"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_APOSTROPHE, "'\""},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_GRAVE, "`~"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LSHIFT, "LShift"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_BACKSLASH, "\\|"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_Z, "Z"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_X, "X"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_C, "C"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_V, "V"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_B, "B"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_N, "N"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_M, "M"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_COMMA, ",<"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_PERIOD, ".>"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SLASH, "/?"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RSHIFT, "RShift"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MULTIPLY, "Numpad*"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LMENU, "LAlt"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SPACE, "Space"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_CAPITAL, "CapsLock"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F1, "F1"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F2, "F2"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F3, "F3"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F4, "F4"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F5, "F5"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F6, "F6"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F7, "F7"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F8, "F8"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F9, "F9"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F10, "F10"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMLOCK, "NumLock"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SCROLL, "ScrollLock"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD7, "Numpad7"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD8, "Numpad8"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD9, "Numpad9"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SUBTRACT, "Numpad-"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD4, "Numpad4"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD5, "Numpad5"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD6, "Numpad6"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_ADD, "Numpad+"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD1, "Numpad1"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD2, "Numpad2"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD3, "Numpad3"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD0, "Numpad0"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_DECIMAL, "Numpad."},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_OEM_102, "<>\\|"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F11, "F11"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F12, "F12"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F13, "F13"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F14, "F14"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_F15, "F15"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_KANA, "Kana"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_ABNT_C1, "/?"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_CONVERT, "Convert"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NOCONVERT, "NoConvert"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_YEN, "Yen"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_ABNT_C2, "Numpad."},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADEQUALS, "Numpad="},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_PREVTRACK, "Prevtrack"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_AT, "@"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_COLON, ":"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_UNDERLINE, "_"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_KANJI, "Kanji"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_STOP, "Stop"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_AX, "AX"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_UNLABELED, "Unlabeled"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NEXTTRACK, "Nexttrack"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADENTER, "NumpadEnter"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RCONTROL, "RControl"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MUTE, "Mute"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_CALCULATOR, "Calculator"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_PLAYPAUSE, "PlayPause"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASTOP, "MediaStop"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_VOLUMEDOWN, "VolumeDown"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_VOLUMEUP, "VolumeUp"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBHOME, "WebHome"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADCOMMA, "Numpad,"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_DIVIDE, "Numpad/"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SYSRQ, "Sysrq"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RMENU, "RAlt"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_PAUSE, "Pause"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_HOME, "Home"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_UP, "Up"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_PRIOR, "PageUp"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LEFT, "Left"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RIGHT, "Right"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_END, "End"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_DOWN, "Down"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_NEXT, "PageDown"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_INSERT, "Insert"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_DELETE, "Delete"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_LWIN, "LWin"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_RWIN, "RWin"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_APPS, "Apps"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_POWER, "Power"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_SLEEP, "Sleep"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WAKE, "Wake"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBSEARCH, "WebSearch"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBFAVORITES, "WebFavorites"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBREFRESH, "WebRefresh"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBSTOP, "WebStop"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBFORWARD, "WebForward"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBBACK, "WebBack"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MYCOMPUTER, "MyComputer"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MAIL, "Mail"},
-	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASELECT, "MediaSelect"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_ESCAPE, L"Escape"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_1, L"1"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_2, L"2"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_3, L"3"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_4, L"4"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_5, L"5"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_6, L"6"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_7, L"7"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_8, L"8"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_9, L"9"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_0, L"0"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MINUS, L"-_"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_EQUALS, L"=+"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_BACK, L"Backspace"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_TAB, L"Tab"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_Q, L"Q"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_W, L"W"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_E, L"E"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_R, L"R"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_T, L"T"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_Y, L"Y"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_U, L"U"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_I, L"I"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_O, L"O"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_P, L"P"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LBRACKET, L"[{"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RBRACKET, L"]}"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RETURN, L"Enter"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LCONTROL, L"LControl"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_A, L"A"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_S, L"S"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_D, L"D"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F, L"F"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_G, L"G"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_H, L"H"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_J, L"J"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_K, L"K"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_L, L"L"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SEMICOLON, L"},:"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_APOSTROPHE, L"'\""},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_GRAVE, L"`~"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LSHIFT, L"LShift"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_BACKSLASH, L"\\|"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_Z, L"Z"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_X, L"X"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_C, L"C"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_V, L"V"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_B, L"B"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_N, L"N"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_M, L"M"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_COMMA, L",<"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_PERIOD, L".>"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SLASH, L"/?"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RSHIFT, L"RShift"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MULTIPLY, L"Numpad*"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LMENU, L"LAlt"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SPACE, L"Space"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_CAPITAL, L"CapsLock"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F1, L"F1"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F2, L"F2"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F3, L"F3"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F4, L"F4"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F5, L"F5"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F6, L"F6"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F7, L"F7"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F8, L"F8"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F9, L"F9"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F10, L"F10"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMLOCK, L"NumLock"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SCROLL, L"ScrollLock"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD7, L"Numpad7"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD8, L"Numpad8"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD9, L"Numpad9"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SUBTRACT, L"Numpad-"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD4, L"Numpad4"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD5, L"Numpad5"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD6, L"Numpad6"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_ADD, L"Numpad+"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD1, L"Numpad1"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD2, L"Numpad2"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD3, L"Numpad3"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPAD0, L"Numpad0"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_DECIMAL, L"Numpad."},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_OEM_102, L"<>\\|"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F11, L"F11"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F12, L"F12"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F13, L"F13"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F14, L"F14"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_F15, L"F15"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_KANA, L"Kana"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_ABNT_C1, L"/?"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_CONVERT, L"Convert"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NOCONVERT, L"NoConvert"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_YEN, L"Yen"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_ABNT_C2, L"Numpad."},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADEQUALS, L"Numpad="},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_PREVTRACK, L"Prevtrack"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_AT, L"@"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_COLON, L":"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_UNDERLINE, L"_"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_KANJI, L"Kanji"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_STOP, L"Stop"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_AX, L"AX"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_UNLABELED, L"Unlabeled"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NEXTTRACK, L"Nexttrack"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADENTER, L"NumpadEnter"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RCONTROL, L"RControl"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MUTE, L"Mute"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_CALCULATOR, L"Calculator"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_PLAYPAUSE, L"PlayPause"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASTOP, L"MediaStop"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_VOLUMEDOWN, L"VolumeDown"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_VOLUMEUP, L"VolumeUp"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBHOME, L"WebHome"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NUMPADCOMMA, L"Numpad,"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_DIVIDE, L"Numpad/"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SYSRQ, L"Sysrq"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RMENU, L"RAlt"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_PAUSE, L"Pause"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_HOME, L"Home"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_UP, L"Up"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_PRIOR, L"PageUp"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LEFT, L"Left"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RIGHT, L"Right"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_END, L"End"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_DOWN, L"Down"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_NEXT, L"PageDown"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_INSERT, L"Insert"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_DELETE, L"Delete"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_LWIN, L"LWin"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_RWIN, L"RWin"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_APPS, L"Apps"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_POWER, L"Power"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_SLEEP, L"Sleep"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WAKE, L"Wake"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBSEARCH, L"WebSearch"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBFAVORITES, L"WebFavorites"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBREFRESH, L"WebRefresh"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBSTOP, L"WebStop"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBFORWARD, L"WebForward"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_WEBBACK, L"WebBack"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MYCOMPUTER, L"MyComputer"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MAIL, L"Mail"},
+	{SINGLE_INPUT_DI_KEYBOARD, DIK_MEDIASELECT, L"MediaSelect"},
 
 	// Mouse
-	{SINGLE_INPUT_DI_MOUSE, 0, "Mouse Button 0"},
-	{SINGLE_INPUT_DI_MOUSE, 1, "Mouse Button 1"},
-	{SINGLE_INPUT_DI_MOUSE, 2, "Mouse Button 2"},
-	{SINGLE_INPUT_DI_MOUSE, 3, "Mouse Button 3"},
+	{SINGLE_INPUT_DI_MOUSE, 0, L"Mouse Button 0"},
+	{SINGLE_INPUT_DI_MOUSE, 1, L"Mouse Button 1"},
+	{SINGLE_INPUT_DI_MOUSE, 2, L"Mouse Button 2"},
+	{SINGLE_INPUT_DI_MOUSE, 3, L"Mouse Button 3"},
 
 	// Xbox controller 1
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 0, "Xbox Controller 1 - Dpad Up"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 1, "Xbox Controller 1 - Dpad Down"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 2, "Xbox Controller 1 - Dpad Left"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 3, "Xbox Controller 1 - Dpad Right"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 4, "Xbox Controller 1 - Start"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 5, "Xbox Controller 1 - Back"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 6, "Xbox Controller 1 - L3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 7, "Xbox Controller 1 - R3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 8, "Xbox Controller 1 - LB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 9, "Xbox Controller 1 - RB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 12, "Xbox Controller 1 - A"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 13, "Xbox Controller 1 - B"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 14, "Xbox Controller 1 - X"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 15, "Xbox Controller 1 - Y"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 0, L"Xbox Controller 1 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 1, L"Xbox Controller 1 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 2, L"Xbox Controller 1 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 3, L"Xbox Controller 1 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 4, L"Xbox Controller 1 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 5, L"Xbox Controller 1 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 6, L"Xbox Controller 1 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 7, L"Xbox Controller 1 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 8, L"Xbox Controller 1 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 9, L"Xbox Controller 1 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 12, L"Xbox Controller 1 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 13, L"Xbox Controller 1 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 14, L"Xbox Controller 1 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (0 << 8) | 15, L"Xbox Controller 1 - Y"},
 
 	// Xbox controller 2
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 0, "Xbox Controller 2 - Dpad Up"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 1, "Xbox Controller 2 - Dpad Down"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 2, "Xbox Controller 2 - Dpad Left"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 3, "Xbox Controller 2 - Dpad Right"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 4, "Xbox Controller 2 - Start"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 5, "Xbox Controller 2 - Back"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 6, "Xbox Controller 2 - L3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 7, "Xbox Controller 2 - R3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 8, "Xbox Controller 2 - LB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 9, "Xbox Controller 2 - RB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 12, "Xbox Controller 2 - A"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 13, "Xbox Controller 2 - B"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 14, "Xbox Controller 2 - X"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 15, "Xbox Controller 2 - Y"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 0, L"Xbox Controller 2 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 1, L"Xbox Controller 2 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 2, L"Xbox Controller 2 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 3, L"Xbox Controller 2 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 4, L"Xbox Controller 2 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 5, L"Xbox Controller 2 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 6, L"Xbox Controller 2 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 7, L"Xbox Controller 2 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 8, L"Xbox Controller 2 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 9, L"Xbox Controller 2 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 12, L"Xbox Controller 2 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 13, L"Xbox Controller 2 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 14, L"Xbox Controller 2 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (1 << 8) | 15, L"Xbox Controller 2 - Y"},
 
 	// Xbox controller 3
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 0, "Xbox Controller 3 - Dpad Up"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 1, "Xbox Controller 3 - Dpad Down"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 2, "Xbox Controller 3 - Dpad Left"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 3, "Xbox Controller 3 - Dpad Right"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 4, "Xbox Controller 3 - Start"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 5, "Xbox Controller 3 - Back"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 6, "Xbox Controller 3 - L3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 7, "Xbox Controller 3 - R3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 8, "Xbox Controller 3 - LB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 9, "Xbox Controller 3 - RB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 12, "Xbox Controller 3 - A"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 13, "Xbox Controller 3 - B"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 14, "Xbox Controller 3 - X"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 15, "Xbox Controller 3 - Y"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 0, L"Xbox Controller 3 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 1, L"Xbox Controller 3 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 2, L"Xbox Controller 3 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 3, L"Xbox Controller 3 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 4, L"Xbox Controller 3 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 5, L"Xbox Controller 3 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 6, L"Xbox Controller 3 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 7, L"Xbox Controller 3 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 8, L"Xbox Controller 3 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 9, L"Xbox Controller 3 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 12, L"Xbox Controller 3 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 13, L"Xbox Controller 3 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 14, L"Xbox Controller 3 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (2 << 8) | 15, L"Xbox Controller 3 - Y"},
 
 	// Xbox controller 4
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 0, "Xbox Controller 4 - Dpad Up"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 1, "Xbox Controller 4 - Dpad Down"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 2, "Xbox Controller 4 - Dpad Left"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 3, "Xbox Controller 4 - Dpad Right"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 4, "Xbox Controller 4 - Start"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 5, "Xbox Controller 4 - Back"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 6, "Xbox Controller 4 - L3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 7, "Xbox Controller 4 - R3"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 8, "Xbox Controller 4 - LB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 9, "Xbox Controller 4 - RB"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 12, "Xbox Controller 4 - A"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 13, "Xbox Controller 4 - B"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 14, "Xbox Controller 4 - X"},
-	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 15, "Xbox Controller 4 - Y"}
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 0, L"Xbox Controller 4 - Dpad Up"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 1, L"Xbox Controller 4 - Dpad Down"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 2, L"Xbox Controller 4 - Dpad Left"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 3, L"Xbox Controller 4 - Dpad Right"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 4, L"Xbox Controller 4 - Start"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 5, L"Xbox Controller 4 - Back"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 6, L"Xbox Controller 4 - L3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 7, L"Xbox Controller 4 - R3"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 8, L"Xbox Controller 4 - LB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 9, L"Xbox Controller 4 - RB"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 12, L"Xbox Controller 4 - A"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 13, L"Xbox Controller 4 - B"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 14, L"Xbox Controller 4 - X"},
+	{SINGLE_INPUT_XINPUT_JOYSTICK, (3 << 8) | 15, L"Xbox Controller 4 - Y"}
 
 };
 
 struct Event InputCapture::eventList[] =
 {
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_T},              ID_TOGGLE_MOVIE_READONLY,  "Toggle Movie Read-Only"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_O},              ID_FILES_OPENEXE,          "Open Executable"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_M},              ID_FILES_OPENMOV,          "Open Movie"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_P},              ID_FILES_PLAYMOV,          "Run and Play"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_W},              ID_FILES_WATCHMOV,         "Watch from Beginning"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_R},              ID_FILES_RECORDMOV,        "Start Recording To"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_RESUMERECORDING,  "Resume Recording From Now"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_BACKUPMOVIE,      "Backup Movie"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL | DIK_LSHIFT*/ 0x500 | DIK_C}, ID_FILES_STOP_RELAY,       "Stop Running"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_QUIT,             "Exit " /*"winTASer"*/ "Hourglass"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_ESCAPE},                                  ID_TIME_TOGGLE_PAUSE,      "Pause/Unpause"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_DELETE},                                  ID_TIME_TOGGLE_PAUSE,      "Pause/Unpause (key 2)"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_PAUSE},                                   ID_TIME_TOGGLE_PAUSE,      "Pause/Unpause (key 3)"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_TIME_TOGGLE_FASTFORWARD,"Toggle Fast-Forward"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_TAB},                                     ID_SWITCH_TO_TASEE_FROM_TASER, "Fast Forward"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_OEM_102},                                 ID_TIME_FRAME_ADVANCE,     "Frame Advance"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_SPACE},                                   ID_TIME_FRAME_ADVANCE,     "Frame Advance (key 2)"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_MINUS},          ID_TIME_RATE_SLOWER,      "Decrease Speed"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_EQUALS},         ID_TIME_RATE_FASTER,      "Increase Speed"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_TIME_RATE_100,         "Normal Speed"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SOUND_NOPLAYBUFFERS,   "Disable/Enable Sound"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_1},                                       ID_FILES_LOADSTATE_1,     "Load State 1"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_2},                                       ID_FILES_LOADSTATE_2,     "Load State 2"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_3},                                       ID_FILES_LOADSTATE_3,     "Load State 3"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_4},                                       ID_FILES_LOADSTATE_4,     "Load State 4"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_5},                                       ID_FILES_LOADSTATE_5,     "Load State 5"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_6},                                       ID_FILES_LOADSTATE_6,     "Load State 6"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_7},                                       ID_FILES_LOADSTATE_7,     "Load State 7"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_8},                                       ID_FILES_LOADSTATE_8,     "Load State 8"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_9},                                       ID_FILES_LOADSTATE_9,     "Load State 9"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_0},                                       ID_FILES_LOADSTATE_10,    "Load State 10"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F1},                                      ID_FILES_LOADSTATE_11,    "Load State 11"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F2},                                      ID_FILES_LOADSTATE_12,    "Load State 12"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F3},                                      ID_FILES_LOADSTATE_13,    "Load State 13"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F4},                                      ID_FILES_LOADSTATE_14,    "Load State 14"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F5},                                      ID_FILES_LOADSTATE_15,    "Load State 15"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F6},                                      ID_FILES_LOADSTATE_16,    "Load State 16"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F7},                                      ID_FILES_LOADSTATE_17,    "Load State 17"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F8},                                      ID_FILES_LOADSTATE_18,    "Load State 18"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F9},                                      ID_FILES_LOADSTATE_19,    "Load State 19"},
-	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F10},                                     ID_FILES_LOADSTATE_20,    "Load State 20"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_1},                ID_FILES_SAVESTATE_1,     "Save State 1"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_2},                ID_FILES_SAVESTATE_2,     "Save State 2"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_3},                ID_FILES_SAVESTATE_3,     "Save State 3"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_4},                ID_FILES_SAVESTATE_4,     "Save State 4"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_5},                ID_FILES_SAVESTATE_5,     "Save State 5"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_6},                ID_FILES_SAVESTATE_6,     "Save State 6"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_7},                ID_FILES_SAVESTATE_7,     "Save State 7"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_8},                ID_FILES_SAVESTATE_8,     "Save State 8"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_9},                ID_FILES_SAVESTATE_9,     "Save State 9"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_0},                ID_FILES_SAVESTATE_10,    "Save State 10"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F1},               ID_FILES_SAVESTATE_11,    "Save State 11"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F2},               ID_FILES_SAVESTATE_12,    "Save State 12"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F3},               ID_FILES_SAVESTATE_13,    "Save State 13"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F4},               ID_FILES_SAVESTATE_14,    "Save State 14"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F5},               ID_FILES_SAVESTATE_15,    "Save State 15"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F6},               ID_FILES_SAVESTATE_16,    "Save State 16"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F7},               ID_FILES_SAVESTATE_17,    "Save State 17"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F8},               ID_FILES_SAVESTATE_18,    "Save State 18"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F9},               ID_FILES_SAVESTATE_19,    "Save State 19"},
-	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F10},              ID_FILES_SAVESTATE_20,    "Save State 20"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_RAM_SEARCH,            "Ram Search"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_RAM_WATCH,             "Ram Watch"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_INPUT_HOTKEYS,         "Configure Hotkeys"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_INPUT_INPUTS,          "Configure Game Input"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SWITCH_TO_TASEE,       "Switch to Game Window"},
-	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SWITCH_TO_TASER,       "Switch to Hourglass Window"}
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_T},              ID_TOGGLE_MOVIE_READONLY,  L"Toggle Movie Read-Only"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_O},              ID_FILES_OPENEXE,          L"Open Executable"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_M},              ID_FILES_OPENMOV,          L"Open Movie"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_P},              ID_FILES_PLAYMOV,          L"Run and Play"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_W},              ID_FILES_WATCHMOV,         L"Watch from Beginning"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_R},              ID_FILES_RECORDMOV,        L"Start Recording To"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_RESUMERECORDING,  L"Resume Recording From Now"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_BACKUPMOVIE,      L"Backup Movie"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL | DIK_LSHIFT*/ 0x500 | DIK_C}, ID_FILES_STOP_RELAY,       L"Stop Running"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_FILES_QUIT,             L"Exit " /*"winTASer"*/ L"Hourglass"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_ESCAPE},                                  ID_TIME_TOGGLE_PAUSE,      L"Pause/Unpause"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_DELETE},                                  ID_TIME_TOGGLE_PAUSE,      L"Pause/Unpause (key 2)"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_PAUSE},                                   ID_TIME_TOGGLE_PAUSE,      L"Pause/Unpause (key 3)"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_TIME_TOGGLE_FASTFORWARD,L"Toggle Fast-Forward"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_TAB},                                     ID_SWITCH_TO_TASEE_FROM_TASER, L"Fast Forward"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_OEM_102},                                 ID_TIME_FRAME_ADVANCE,     L"Frame Advance"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_SPACE},                                   ID_TIME_FRAME_ADVANCE,     L"Frame Advance (key 2)"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_MINUS},          ID_TIME_RATE_SLOWER,      L"Decrease Speed"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LCONTROL*/ 0x100 | DIK_EQUALS},         ID_TIME_RATE_FASTER,      L"Increase Speed"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_TIME_RATE_100,         L"Normal Speed"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SOUND_NOPLAYBUFFERS,   L"Disable/Enable Sound"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_1},                                       ID_FILES_LOADSTATE_1,     L"Load State 1"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_2},                                       ID_FILES_LOADSTATE_2,     L"Load State 2"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_3},                                       ID_FILES_LOADSTATE_3,     L"Load State 3"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_4},                                       ID_FILES_LOADSTATE_4,     L"Load State 4"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_5},                                       ID_FILES_LOADSTATE_5,     L"Load State 5"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_6},                                       ID_FILES_LOADSTATE_6,     L"Load State 6"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_7},                                       ID_FILES_LOADSTATE_7,     L"Load State 7"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_8},                                       ID_FILES_LOADSTATE_8,     L"Load State 8"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_9},                                       ID_FILES_LOADSTATE_9,     L"Load State 9"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_0},                                       ID_FILES_LOADSTATE_10,    L"Load State 10"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F1},                                      ID_FILES_LOADSTATE_11,    L"Load State 11"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F2},                                      ID_FILES_LOADSTATE_12,    L"Load State 12"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F3},                                      ID_FILES_LOADSTATE_13,    L"Load State 13"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F4},                                      ID_FILES_LOADSTATE_14,    L"Load State 14"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F5},                                      ID_FILES_LOADSTATE_15,    L"Load State 15"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F6},                                      ID_FILES_LOADSTATE_16,    L"Load State 16"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F7},                                      ID_FILES_LOADSTATE_17,    L"Load State 17"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F8},                                      ID_FILES_LOADSTATE_18,    L"Load State 18"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F9},                                      ID_FILES_LOADSTATE_19,    L"Load State 19"},
+	{{SINGLE_INPUT_DI_KEYBOARD, DIK_F10},                                     ID_FILES_LOADSTATE_20,    L"Load State 20"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_1},                ID_FILES_SAVESTATE_1,     L"Save State 1"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_2},                ID_FILES_SAVESTATE_2,     L"Save State 2"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_3},                ID_FILES_SAVESTATE_3,     L"Save State 3"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_4},                ID_FILES_SAVESTATE_4,     L"Save State 4"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_5},                ID_FILES_SAVESTATE_5,     L"Save State 5"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_6},                ID_FILES_SAVESTATE_6,     L"Save State 6"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_7},                ID_FILES_SAVESTATE_7,     L"Save State 7"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_8},                ID_FILES_SAVESTATE_8,     L"Save State 8"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_9},                ID_FILES_SAVESTATE_9,     L"Save State 9"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_0},                ID_FILES_SAVESTATE_10,    L"Save State 10"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F1},               ID_FILES_SAVESTATE_11,    L"Save State 11"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F2},               ID_FILES_SAVESTATE_12,    L"Save State 12"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F3},               ID_FILES_SAVESTATE_13,    L"Save State 13"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F4},               ID_FILES_SAVESTATE_14,    L"Save State 14"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F5},               ID_FILES_SAVESTATE_15,    L"Save State 15"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F6},               ID_FILES_SAVESTATE_16,    L"Save State 16"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F7},               ID_FILES_SAVESTATE_17,    L"Save State 17"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F8},               ID_FILES_SAVESTATE_18,    L"Save State 18"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F9},               ID_FILES_SAVESTATE_19,    L"Save State 19"},
+	{{SINGLE_INPUT_DI_KEYBOARD, /*DIK_LSHIFT*/ 0x400 | DIK_F10},              ID_FILES_SAVESTATE_20,    L"Save State 20"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_RAM_SEARCH,            L"Ram Search"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_RAM_WATCH,             L"Ram Watch"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_INPUT_HOTKEYS,         L"Configure Hotkeys"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_INPUT_INPUTS,          L"Configure Game Input"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SWITCH_TO_TASEE,       L"Switch to Game Window"},
+	{{SINGLE_INPUT_DI_KEYBOARD, 0},                                           ID_SWITCH_TO_TASER,       L"Switch to Hourglass Window"}
 };
 
 std::map<SingleInput,SingleInput> InputCapture::inputMapping;
@@ -385,7 +385,7 @@ char InputCapture::BuildModifier(unsigned char* keys){
 
 void InputCapture::InputToDescription(SingleInput &si) // TODO: Make this better!
 {
-	si.description[0] = '\0'; // Make sure description is cleared.
+	si.description[0] = L'\0'; // Make sure description is cleared.
 	if(si.device == SINGLE_INPUT_DI_KEYBOARD)
 	{
 		char modifier = (si.key >> 8);
@@ -410,23 +410,23 @@ void InputCapture::InputToDescription(SingleInput &si) // TODO: Make this better
 			if(modifier & modifierKeys[6].flag) LWin = true;
 			if(modifier & modifierKeys[7].flag) RWin = true;
 
-			if(LControl && RControl) strcat(si.description, "Ctrl+");
-			else if(LControl) strcat(si.description, "LCtrl+");
-			else if(RControl) strcat(si.description, "RCtrl+");
-			if(LShift && RShift) strcat(si.description, "Shift+");
-			else if(LShift) strcat(si.description, "LShift+");
-			else if(RShift) strcat(si.description, "RShift+");
-			if(LAlt && RAlt) strcat(si.description, "Alt+");
-			else if(LAlt) strcat(si.description, "LAlt+");
-			else if(RAlt) strcat(si.description, "RAlt+");
-			if(LWin && RWin) strcat(si.description, "WinKey+");
-			else if(LWin) strcat(si.description, "LWinKey+");
-			else if(RWin) strcat(si.description, "RWinKey+");
+			if(LControl && RControl) wcscat(si.description, L"Ctrl+");
+			else if(LControl) wcscat(si.description, L"LCtrl+");
+			else if(RControl) wcscat(si.description, L"RCtrl+");
+			if(LShift && RShift) wcscat(si.description, L"Shift+");
+			else if(LShift) wcscat(si.description, L"LShift+");
+			else if(RShift) wcscat(si.description, L"RShift+");
+			if(LAlt && RAlt) wcscat(si.description, L"Alt+");
+			else if(LAlt) wcscat(si.description, L"LAlt+");
+			else if(RAlt) wcscat(si.description, L"RAlt+");
+			if(LWin && RWin) wcscat(si.description, L"WinKey+");
+			else if(LWin) wcscat(si.description, L"LWinKey+");
+			else if(RWin) wcscat(si.description, L"RWinKey+");
 		}
 
 		for (int i=0; i<SICount; i++){
 			if (SIList[i].key == (si.key & 0x00FF)){
-				strcat(si.description, SIList[i].description);
+				wcscat(si.description, SIList[i].description);
 				return;
 			}
 		}		
@@ -626,7 +626,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = { SINGLE_INPUT_DI_KEYBOARD, k, "" };
+		SingleInput siPressed = { SINGLE_INPUT_DI_KEYBOARD, k, L"" };
 
 		/* Input mapping */
 		std::map<SingleInput,SingleInput>::iterator iterI = inputMapping.find(siPressed);
@@ -658,7 +658,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// We build the SingleInput with modifiers this time, and check if it's mapped to something.
-		SingleInput siPressedMod = { SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, "" };
+		SingleInput siPressedMod = { SINGLE_INPUT_DI_KEYBOARD, (modifier << 8) | k, L"" };
 
 		std::map<SingleInput,WORD>::iterator iterE = eventMapping.find(siPressedMod);
 		if (iterE != eventMapping.end()){ // There is something.
@@ -683,7 +683,7 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 			continue;
 
 		// Now we build the SingleInput, and check if it's mapped to something.
-		SingleInput siPressed = { SINGLE_INPUT_DI_MOUSE, static_cast<SHORT>(i), "" };
+		SingleInput siPressed = { SINGLE_INPUT_DI_MOUSE, static_cast<SHORT>(i), L"" };
 
 		//TODO: Duplicate code !!!
 
@@ -761,7 +761,7 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 				// We found a just-pressed mouse button. We need to return the SingleInput
 				si->device = SINGLE_INPUT_DI_MOUSE;
 				si->key = i;
-				sprintf(si->description, "Mouse button %d", i);
+				swprintf(si->description, ARRAYSIZE(si->description), L"Mouse button %d", i);
 				return;
 			}
 		}
@@ -867,36 +867,46 @@ void InputCapture::BuildDefaultEventMapping(){
 	}
 }
 
-void InputCapture::FormatInputMapping(int index, char* line){
+std::wstring InputCapture::FormatInputMapping(int index)
+{
+    std::wstring line;
 
-	SingleInput* si = &SIList[index];
-	strcpy(line, si->description);
-	strcat(line, "\t");
+    SingleInput* si = &SIList[index];
+    line = si->description;
+    line += L'\t';
 
-	for(std::map<SingleInput,SingleInput>::iterator iter = inputMapping.begin(); iter != inputMapping.end(); ++iter){
-		SingleInput fromInput = iter->first;
-		SingleInput toInput = iter->second;
-		if(!(*si < toInput) && !(toInput < *si)){ // if (*si == toInput)
-			strcat(line, fromInput.description);
-			return;
-		}
-	}
+    for (const auto& input : inputMapping) {
+        const SingleInput& fromInput = input.first;
+        const SingleInput& toInput = input.second;
+
+        if (!(*si < toInput) && !(toInput < *si)) { // if (*si == toInput)
+            line += fromInput.description;
+            break;
+        }
+    }
+
+    return line;
 }
 
-void InputCapture::FormatEventMapping(int index, char* line){
+std::wstring InputCapture::FormatEventMapping(int index)
+{
+    std::wstring line;
 
-	Event* ev = &eventList[index];
-	strcpy(line, ev->description);
-	strcat(line, "\t");
+    Event* ev = &eventList[index];
+    line = ev->description;
+    line += L'\t';
 
-	for(std::map<SingleInput,WORD>::iterator iter = eventMapping.begin(); iter != eventMapping.end(); ++iter){
-		SingleInput fromInput = iter->first;
-		WORD toEventId = iter->second;
-		if(ev->id == toEventId){
-			strcat(line, fromInput.description);
-			return;
-		}
-	}
+    for (const auto& event : eventMapping) {
+        const SingleInput& fromInput = event.first;
+        WORD toEventId = event.second;
+
+        if (ev->id == toEventId) {
+            line += fromInput.description;
+            break;
+        }
+    }
+
+    return line;
 }
 
 
@@ -946,7 +956,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			inputC = new InputCapture();
 			// GetModuleHandle returns the HMODULE of the calling process (Hourglass.exe), for this case the HMODULE is the same as the HINSTANCE. 
 			// IF this fails we can probably use GetWindowLong instead.
-			HINSTANCE hInstProcess = (HINSTANCE)GetModuleHandle(NULL);
+			HINSTANCE hInstProcess = (HINSTANCE)GetModuleHandleW(NULL);
 			if(hInstProcess == NULL)
 			{
 				PrintLastError(L"InputConfig: GetModuleHandle", GetLastError());
@@ -962,8 +972,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 			/*HWND gameinput*/ inputC->gameinputbox = GetDlgItem(hDlg, IDC_GAMEINPUTBOX);
 
 			int stops [4] = {25*4, 25*4+4, 25*4+8, 25*4+16};
-			SendMessage(inputC->hotkeysbox, LB_SETTABSTOPS, 4, (LONG)(LPSTR)stops);
-			SendMessage(inputC->gameinputbox, LB_SETTABSTOPS, 4, (LONG)(LPSTR)stops);
+			SendMessageW(inputC->hotkeysbox, LB_SETTABSTOPS, 4, reinterpret_cast<LPARAM>(stops));
+			SendMessageW(inputC->gameinputbox, LB_SETTABSTOPS, 4, reinterpret_cast<LPARAM>(stops));
 
 			inputC->PopulateListbox(inputC->hotkeysbox);
 			inputC->PopulateListbox(inputC->gameinputbox);
@@ -978,9 +988,9 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 
 			if (messageID == LBN_SELCHANGE)
 			{
-				int selCount = SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELCOUNT, (WPARAM) 0, (LPARAM) 0);
+				int selCount = SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_GETSELCOUNT, (WPARAM) 0, (LPARAM) 0);
 				// Nothing marked in the HOTKEY box? Let's check the GAMEINPUT box.
-				selCount = selCount == 0 ? SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELCOUNT, (WPARAM) 0, (LPARAM) 0) : selCount;
+				selCount = selCount == 0 ? SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_GETSELCOUNT, (WPARAM) 0, (LPARAM) 0) : selCount;
 
 				EnableWindow(GetDlgItem(hDlg, IDC_CONF_ASSIGNKEY), (selCount == 1) ? TRUE : FALSE);
 				EnableWindow(GetDlgItem(hDlg, IDC_CONF_USEDEFAULT), (selCount >= 1) ? TRUE : FALSE);
@@ -1018,27 +1028,25 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 					//SingleInput si; // FIXME: Why is this unused?
 
 					// Check if the selection happened in HotKeys
-					if(SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
+					if(SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
 						inputC->ReassignEvent(buf[0]);
 
-						char line[256];
-						inputC->FormatEventMapping(buf[0], line);
+						std::wstring line = inputC->FormatEventMapping(buf[0]);
 
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], reinterpret_cast<LPARAM>(line.c_str()));
 
 						hotkeysNoLongerDefault = true;
 					}
-					else if(SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
+					else if(SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 1, (LPARAM)buf))
 					{
 						inputC->ReassignInput(buf[0]);
 
-						char line[256];
-						inputC->FormatInputMapping(buf[0], line);
+						std::wstring line = inputC->FormatInputMapping(buf[0]);
 
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], reinterpret_cast<LPARAM>(line.c_str()));
 
 						gameinputNoLongerDefault = true;
 					}
@@ -1049,29 +1057,27 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				case IDC_CONF_USEDEFAULT: // TODO: Check if restoring the defaults for selection actually gets you the defaults back
 				{
 					int buf[256];
-					int returned = SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
+					int returned = SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
 						inputC->DefaultEvent(buf[i]);
 
-						char line[256];
-						inputC->FormatEventMapping(buf[i], line);
+						std::wstring line = inputC->FormatEventMapping(buf[i]);
 
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], reinterpret_cast<LPARAM>(line.c_str()));
 
 						hotkeysNoLongerDefault = true;
 					}
-					returned = SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
+					returned = SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
 						inputC->DefaultInput(buf[i]);
 
-						char line[256];
-						inputC->FormatInputMapping(buf[i], line);
+						std::wstring line = inputC->FormatInputMapping(buf[i]);
 
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], reinterpret_cast<LPARAM>(line.c_str()));
 
 						gameinputNoLongerDefault = true;
 					}
@@ -1080,29 +1086,27 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				case IDC_CONF_DISABLE:
 				{
 					int buf[256];
-					int returned = SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
+					int returned = SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
 						inputC->DisableEvent(buf[i]);
 
-						char line[256];
-						inputC->FormatEventMapping(buf[i], line);
+						std::wstring line = inputC->FormatEventMapping(buf[i]);
 
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
-						SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessageW(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], reinterpret_cast<LPARAM>(line.c_str()));
 
 						hotkeysNoLongerDefault = true;
 					}
-					returned = SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
+					returned = SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_GETSELITEMS, 256, (LPARAM)buf);
 					for(int i = 0; i < returned; i++)
 					{
 						inputC->DisableInput(buf[i]);
 
-						char line[256];
-						inputC->FormatInputMapping(buf[i], line);
+						std::wstring line = inputC->FormatInputMapping(buf[i]);
 
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
-						SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+						SendDlgItemMessageW(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], reinterpret_cast<LPARAM>(line.c_str()));
 
 						gameinputNoLongerDefault = true;
 					}
@@ -1136,26 +1140,30 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 
 void InputCapture::PopulateListbox(HWND listbox)
 {
-	// Make sure the listbox is empty before we populate it.
-	SendMessage(listbox, LB_RESETCONTENT, NULL, NULL);
+    // Make sure the listbox is empty before we populate it.
+    SendMessageW(listbox, LB_RESETCONTENT, NULL, NULL);
 
-	int inputNumber = 0;
-	if (listbox == hotkeysbox)
-		inputNumber = eventCount;
-	else
-		inputNumber = SICount;
+    int inputNumber = 0;
+    if (listbox == hotkeysbox)
+        inputNumber = eventCount;
+    else
+        inputNumber = SICount;
 
-	char line[256] = {'\0'};
+    for (int i = 0; i < inputNumber; i++)
+    {
+        std::wstring line;
 
-	for(int i=0; i<inputNumber; i++){
+        // Get the map strings.
+        if (listbox == hotkeysbox)
+        {
+            line = FormatEventMapping(i);
+        }
+        else
+        {
+            line = FormatInputMapping(i);
+        }
 
-		// Get the map strings.
-		if (listbox == hotkeysbox)
-			FormatEventMapping(i, line);
-		else
-			FormatInputMapping(i, line);
-
-		// Send it.
-		SendMessage((HWND) listbox, (UINT) LB_ADDSTRING, (WPARAM) 0, (LPARAM) line);
-	}
+        // Send it.
+        SendMessageW((HWND)listbox, (UINT)LB_ADDSTRING, (WPARAM)0, reinterpret_cast<LPARAM>(line.c_str()));
+    }
 }
