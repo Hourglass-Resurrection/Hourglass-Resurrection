@@ -26,7 +26,7 @@ struct SingleInput
 	short key; // which key/button was pressed. The structure depends on the device type.
 	           // single key+modifiers for keyboard, single button for joystick.
 
-	char description[48]; // Text to display on a GUI.
+	WCHAR description[48]; // Text to display on a GUI.
 
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const SingleInput &si ) const {
@@ -49,7 +49,7 @@ struct Event
 {
 	SingleInput defaultInput; // Default input mapped to this event.
 	WORD id; // Id used to identify the event when sending a message.
-	const char* description; // Text to display on a GUI.
+	LPCWSTR description; // Text to display on a GUI.
 
 	// We need to implement the < operator to use this struct in a map.
 	bool operator<( const Event &ev ) const {
@@ -137,10 +137,10 @@ private:
 	void BuildDefaultEventMapping();
 
 	// Build the string with the input and its mapping.
-	void FormatInputMapping(int index, char* line);
+	std::wstring FormatInputMapping(int index);
 
 	// Build the string with the event and its mapping.
-	void FormatEventMapping(int index, char* line);
+	std::wstring FormatEventMapping(int index);
 
 	// Save current mapping into a config file
 	void SaveMapping(char* filename);
