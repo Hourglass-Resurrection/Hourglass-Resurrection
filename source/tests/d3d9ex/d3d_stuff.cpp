@@ -11,17 +11,17 @@ namespace D3D
 {
     namespace
     {
-        LPDIRECT3D9 gs_d3d;
+        LPDIRECT3D9EX gs_d3d;
         LPDIRECT3DDEVICE9 gs_device;
     }
 
     void Initialize(HWND hwnd)
     {
-        gs_d3d = Direct3DCreate9(D3D_SDK_VERSION);
+        HRESULT result = Direct3DCreate9Ex(D3D_SDK_VERSION, &gs_d3d);
 
-        if (!gs_d3d)
+        if (FAILED(result))
         {
-            throw Error::CreateD3D{};
+            throw Error::CreateD3D{ result };
         }
 
         D3DPRESENT_PARAMETERS params;
@@ -31,12 +31,16 @@ namespace D3D
         params.SwapEffect = D3DSWAPEFFECT_DISCARD;
         params.hDeviceWindow = hwnd;
 
-        HRESULT result = gs_d3d->CreateDevice(D3DADAPTER_DEFAULT,
-                                              D3DDEVTYPE_HAL,
-                                              hwnd,
-                                              D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-                                              &params,
-                                              &gs_device);
+        /*
+         * TODO: Replace with CreateDeviceEx() when hooks are ready.
+         * -- YaLTeR
+         */
+        result = gs_d3d->CreateDevice(D3DADAPTER_DEFAULT,
+                                      D3DDEVTYPE_HAL,
+                                      hwnd,
+                                      D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+                                      &params,
+                                      &gs_device);
 
         if (FAILED(result))
         {

@@ -10,8 +10,8 @@
 #include "shared/timing.h"
 #include "time_stats.h"
 
-constexpr WCHAR CLASS_NAME[] = L"d3d9";
-constexpr WCHAR WINDOW_NAME[] = L"d3d9";
+constexpr WCHAR CLASS_NAME[] = L"d3d9ex";
+constexpr WCHAR WINDOW_NAME[] = L"d3d9ex";
 
 ATOM             MyRegisterClass(HINSTANCE);
 BOOL             InitInstance(HINSTANCE, int);
@@ -101,9 +101,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     {
         D3D::Initialize(hWnd);
     }
-    catch (const D3D::Error::CreateD3D&)
+    catch (const D3D::Error::CreateD3D& e)
     {
-        Logger::WriteLine(L"Error in Direct3DCreate9().");
+        std::wstring error_string;
+        switch (e.m_return_code)
+        {
+        case D3DERR_NOTAVAILABLE:
+            error_string = L"D3DERR_NOTAVAILABLE";
+            break;
+        case D3DERR_OUTOFVIDEOMEMORY:
+            error_string = L"D3DERR_OUTOFVIDEOMEMORY";
+            break;
+        default:
+            error_string = std::to_wstring(e.m_return_code);
+            break;
+        }
+
+        Logger::WriteLine(L"Error in Direct3DCreate9Ex(): " + error_string + L'.');
         return FALSE;
     }
     catch (const D3D::Error::CreateDevice& e)

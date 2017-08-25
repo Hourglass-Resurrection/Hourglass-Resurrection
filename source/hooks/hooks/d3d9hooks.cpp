@@ -11,6 +11,9 @@ DEFINE_LOCAL_GUID(IID_IDirect3DDevice9, 0xD0223B96, 0xBF7A, 0x43FD, 0x92, 0xBD, 
 DEFINE_LOCAL_GUID(IID_IDirect3DSwapChain9, 0x794950F2, 0xADFC, 0x458A, 0x90, 0x5E, 0x10, 0xA1, 0xB, 0xB, 0x50, 0x3B);
 DEFINE_LOCAL_GUID(IID_IDirect3DSurface9, 0x0CFBAF3A, 0x9FF6, 0x429A, 0x99, 0xB3, 0xA2, 0x79, 0x6A, 0xF8, 0xB8, 0x9B);
 DEFINE_LOCAL_GUID(IID_IDirect3DTexture9, 0x85C31227, 0x3DE5, 0x4F00, 0x9B, 0x3A, 0xF1, 0x1A, 0xC3, 0x8C, 0x18, 0xB5);
+DEFINE_LOCAL_GUID(IID_IDirect3D9Ex, 0x02177241, 0x69FC, 0x400C, 0x8F, 0xF1, 0x93, 0xA4, 0x4D, 0xF6, 0x86, 0x1D);
+DEFINE_LOCAL_GUID(IID_IDirect3DDevice9Ex, 0xB18B10CE, 0x2649, 0x405A, 0x87, 0x0F, 0x95, 0xF7, 0x77, 0xD4, 0x31, 0x3A);
+DEFINE_LOCAL_GUID(IID_IDirect3DSwapChain9Ex, 0x91886CAF, 0x1C3D, 0x4D2E, 0xA0, 0xAB, 0x3E, 0x4C, 0x7D, 0x8D, 0x33, 0x03);
 
 using Log = DebugLog<LogCategory::D3D>;
 
@@ -958,54 +961,202 @@ namespace Hooks
 
 
 
+    #define METHOD(ptr, name) \
+        reinterpret_cast<ThisType>(&s_vtable_to_original[*reinterpret_cast<void**>(ptr)])-> ## name
 
-    struct MyDirect3D9
+    #define CALL(name) METHOD(thisptr, name)
+
+    /*
+     * If this vtable was not previously hooked, this will create a new entry in the map.
+     * If this vtable was previously hooked partially, this will only hook the new entries.
+     * (for example if the Ex vtable and the non-Ex vtable start at the same spot).
+     * If this vtable was previously hooked, this will not do anything as expected.
+     * -- YaLTeR
+     */
+    #define HOOK(iface, name) \
+        HookVTable( \
+            obj, \
+            offsetof_virtual(&iface::name), \
+            reinterpret_cast<FARPROC>(My ## name), \
+            reinterpret_cast<FARPROC&>(METHOD(obj, name)), \
+            __FUNCTION__ ": " #name);
+
+    class MyDirect3D9Ex;
+
+    class MyDirect3D9
     {
-        static BOOL Hook(IDirect3D9* obj)
+    private:
+        using ThisType = MyDirect3D9*;
+
+    protected:
+        /*
+         * Map from pointers to vtables to our structs containing the original function pointers.
+         */
+        static std::map<LPVOID, MyDirect3D9Ex> s_vtable_to_original;
+
+        HRESULT(STDMETHODCALLTYPE *QueryInterface)(LPDIRECT3D9 thisptr, REFIID riid, void** ppvObj);
+        HRESULT(STDMETHODCALLTYPE *CreateDevice)(LPDIRECT3D9 thisptr,
+                                                 UINT Adapter,
+                                                 D3DDEVTYPE DeviceType,
+                                                 HWND hFocusWindow,
+                                                 DWORD BehaviorFlags,
+                                                 D3DPRESENT_PARAMETERS* pPresentationParameters,
+                                                 IDirect3DDevice9** ppReturnedDeviceInterface);
+
+        static HRESULT STDMETHODCALLTYPE MyQueryInterface(LPDIRECT3D9 thisptr,
+                                                          REFIID riid,
+                                                          void** ppvObj)
+        {
+            ENTER();
+
+            HRESULT rv = CALL(QueryInterface)(thisptr, riid, ppvObj);
+            if (SUCCEEDED(rv))
+            {
+                HookCOMInterface(riid, ppvObj);
+            }
+
+            return rv;
+        }
+
+        static HRESULT STDMETHODCALLTYPE MyCreateDevice(LPDIRECT3D9 thisptr,
+                                                        UINT Adapter,
+                                                        D3DDEVTYPE DeviceType,
+                                                        HWND hFocusWindow,
+                                                        DWORD BehaviorFlags,
+                                                        D3DPRESENT_PARAMETERS* pPresentationParameters,
+                                                        IDirect3DDevice9** ppReturnedDeviceInterface)
+        {
+            ENTER();
+
+            ProcessPresentationParams9(pPresentationParameters, thisptr, nullptr);
+            HRESULT rv = CALL(CreateDevice)(thisptr,
+                                            Adapter,
+                                            DeviceType,
+                                            hFocusWindow,
+                                            BehaviorFlags,
+                                            pPresentationParameters,
+                                            ppReturnedDeviceInterface);
+
+            if (SUCCEEDED(rv))
+            {
+                HookCOMInterface(IID_IDirect3DDevice9,
+                                 reinterpret_cast<LPVOID*>(ppReturnedDeviceInterface));
+            }
+
+            if (pPresentationParameters
+                && pPresentationParameters->hDeviceWindow
+                && IsWindow(pPresentationParameters->hDeviceWindow))
+            {
+                s_savedD3D9DefaultHWND = pPresentationParameters->hDeviceWindow;
+            }
+            else
+            {
+                s_savedD3D9DefaultHWND = hFocusWindow;
+            }
+
+            return rv;
+        }
+
+    public:
+        MyDirect3D9()
+            : QueryInterface(nullptr)
+            , CreateDevice(nullptr)
+        {
+        }
+
+        static BOOL Hook(LPDIRECT3D9 obj)
         {
             BOOL rv = FALSE;
-            rv |= VTHOOKFUNC(IDirect3D9, CreateDevice);
-            rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-            return rv;
-        }
 
-        static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3D9* pThis, REFIID riid, void** ppvObj);
-        static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3D9* pThis, REFIID riid, void** ppvObj)
-        {
-            ENTER();
-            HRESULT rv = QueryInterface(pThis, riid, ppvObj);
-            if (SUCCEEDED(rv))
-                HookCOMInterface(riid, ppvObj);
-            return rv;
-        }
+            rv |= HOOK(IDirect3D9, CreateDevice);
+            rv |= HOOK(IDirect3D9, QueryInterface);
 
-        static HRESULT(STDMETHODCALLTYPE *CreateDevice)(IDirect3D9* pThis, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface);
-        static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3D9* pThis, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface)
-        {
-            ENTER();
-            ProcessPresentationParams9(pPresentationParameters, pThis, NULL);
-            HRESULT rv = CreateDevice(pThis, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
-            if (SUCCEEDED(rv))
-                HookCOMInterface(IID_IDirect3DDevice9, (LPVOID*)ppReturnedDeviceInterface);
-            if (pPresentationParameters && pPresentationParameters->hDeviceWindow && IsWindow(pPresentationParameters->hDeviceWindow))
-                s_savedD3D9DefaultHWND = pPresentationParameters->hDeviceWindow;
-            else
-                s_savedD3D9DefaultHWND = hFocusWindow;
             return rv;
         }
     };
 
-    HRESULT(STDMETHODCALLTYPE* MyDirect3D9::QueryInterface)(IDirect3D9* pThis, REFIID riid, void** ppvObj) = 0;
-    HRESULT(STDMETHODCALLTYPE* MyDirect3D9::CreateDevice)(IDirect3D9* pThis, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface) = 0;
+    std::map<LPVOID, MyDirect3D9Ex> MyDirect3D9::s_vtable_to_original;
 
+    class MyDirect3D9Ex : public MyDirect3D9
+    {
+    private:
+        using ThisType = MyDirect3D9Ex*;
+
+    protected:
+        HRESULT(STDMETHODCALLTYPE *CreateDeviceEx)(LPDIRECT3D9EX thisptr,
+                                                   UINT Adapter,
+                                                   D3DDEVTYPE DeviceType,
+                                                   HWND hFocusWindow,
+                                                   DWORD BehaviorFlags,
+                                                   D3DPRESENT_PARAMETERS* pPresentationParameters,
+                                                   D3DDISPLAYMODEEX* pFullscreenDisplayMode,
+                                                   IDirect3DDevice9Ex** ppReturnedDeviceInterface);
+
+        static HRESULT STDMETHODCALLTYPE MyCreateDeviceEx(LPDIRECT3D9EX thisptr,
+                                                          UINT Adapter,
+                                                          D3DDEVTYPE DeviceType,
+                                                          HWND hFocusWindow,
+                                                          DWORD BehaviorFlags,
+                                                          D3DPRESENT_PARAMETERS* pPresentationParameters,
+                                                          D3DDISPLAYMODEEX* pFullscreenDisplayMode,
+                                                          IDirect3DDevice9Ex** ppReturnedDeviceInterface)
+        {
+            ENTER();
+
+            /*
+             * TODO. Return an error for now.
+             * -- YaLTeR
+             */
+
+            LEAVE(D3DERR_DEVICELOST);
+            return D3DERR_DEVICELOST;
+        }
+
+    public:
+        MyDirect3D9Ex()
+            : MyDirect3D9()
+            , CreateDeviceEx(nullptr)
+        {
+        }
+
+        static BOOL Hook(LPDIRECT3D9EX obj)
+        {
+            BOOL rv = FALSE;
+
+            rv |= MyDirect3D9::Hook(obj);
+            rv |= HOOK(IDirect3D9Ex, CreateDeviceEx);
+
+            return rv;
+        }
+    };
 
     HOOK_FUNCTION(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion);
     HOOKFUNC IDirect3D9* WINAPI MyDirect3DCreate9(UINT SDKVersion)
     {
         ENTER();
+
         IDirect3D9* rv = Direct3DCreate9(SDKVersion);
-        if (SUCCEEDED(rv))
+        if (rv)
+        {
             HookCOMInterface(IID_IDirect3D9, (void**)&rv);
+        }
+
+        LEAVE(rv);
+        return rv;
+    }
+
+    HOOK_FUNCTION(HRESULT, WINAPI, Direct3DCreate9Ex, UINT SDKVersion, IDirect3D9Ex** ppD3D);
+    HOOKFUNC HRESULT WINAPI MyDirect3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** ppD3D)
+    {
+        ENTER();
+
+        HRESULT rv;
+        rv = Direct3DCreate9Ex(SDKVersion, ppD3D);
+        if (rv == S_OK)
+        {
+            HookCOMInterface(IID_IDirect3D9Ex, (void**)ppD3D);
+        }
+
         LEAVE(rv);
         return rv;
     }
@@ -1025,6 +1176,7 @@ namespace Hooks
             VTHOOKRIID3MULTI3(IDirect3DSurface9, MyDirect3DSurface9);
             VTHOOKRIID3(IDirect3DTexture9, MyDirect3DTexture9);
 #endif
+            VTHOOKRIID3(IDirect3D9Ex, MyDirect3D9Ex);
         default: return false;
         }
         return true;
@@ -1035,6 +1187,7 @@ namespace Hooks
         static const InterceptDescriptor intercepts[] =
         {
             MAKE_INTERCEPT(1, D3D9, Direct3DCreate9),
+            MAKE_INTERCEPT(1, D3D9, Direct3DCreate9Ex),
         };
         ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
     }

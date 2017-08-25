@@ -7,6 +7,7 @@
 
 struct IDirect3D8;
 struct IDirect3D9;
+struct IDirect3D9Ex;
 
 namespace Hooks {
     extern BOOL fakeDisplayValid;
@@ -21,6 +22,7 @@ namespace Hooks {
 
 
     HOOK_FUNCTION_DECLARE(IDirect3D9*, WINAPI, Direct3DCreate9, UINT SDKVersion);
+    HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreate9Ex, UINT SDKVersion, IDirect3D9Ex** ppD3D);
     HOOK_FUNCTION_DECLARE(IDirect3D8*, WINAPI, Direct3DCreate8, UINT SDKVersion);
     HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreate, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
     HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, Direct3DCreate7, UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter);
