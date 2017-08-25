@@ -961,9 +961,10 @@ namespace Hooks
 
 
 
+    #define METHOD(ptr, name) \
+        reinterpret_cast<ThisType>(&s_vtable_to_original[*reinterpret_cast<void**>(ptr)])-> ## name
 
-    #define CALL(name) \
-        s_vtable_to_original[*reinterpret_cast<void**>(thisptr)]. ## name
+    #define CALL(name) METHOD(thisptr, name)
 
     /*
      * If this vtable was not previously hooked, this will create a new entry in the map.
@@ -977,18 +978,22 @@ namespace Hooks
             obj, \
             offsetof_virtual(&iface::name), \
             reinterpret_cast<FARPROC>(My ## name), \
-            reinterpret_cast<FARPROC&>(s_vtable_to_original[*reinterpret_cast<void**>(obj)]. ## name), \
+            reinterpret_cast<FARPROC&>(METHOD(obj, name)), \
             __FUNCTION__ ": " #name);
+
+    class MyDirect3D9Ex;
 
     class MyDirect3D9
     {
+    private:
+        using ThisType = MyDirect3D9*;
+
     protected:
         /*
          * Map from pointers to vtables to our structs containing the original function pointers.
          */
-        static std::map<LPVOID, MyDirect3D9> s_vtable_to_original;
+        static std::map<LPVOID, MyDirect3D9Ex> s_vtable_to_original;
 
-    public:
         HRESULT(STDMETHODCALLTYPE *QueryInterface)(LPDIRECT3D9 thisptr, REFIID riid, void** ppvObj);
         HRESULT(STDMETHODCALLTYPE *CreateDevice)(LPDIRECT3D9 thisptr,
                                                  UINT Adapter,
@@ -997,14 +1002,6 @@ namespace Hooks
                                                  DWORD BehaviorFlags,
                                                  D3DPRESENT_PARAMETERS* pPresentationParameters,
                                                  IDirect3DDevice9** ppReturnedDeviceInterface);
-        HRESULT(STDMETHODCALLTYPE *CreateDeviceEx)(LPDIRECT3D9EX thisptr,
-                                                   UINT Adapter,
-                                                   D3DDEVTYPE DeviceType,
-                                                   HWND hFocusWindow,
-                                                   DWORD BehaviorFlags,
-                                                   D3DPRESENT_PARAMETERS* pPresentationParameters,
-                                                   D3DDISPLAYMODEEX* pFullscreenDisplayMode,
-                                                   IDirect3DDevice9Ex** ppReturnedDeviceInterface);
 
         static HRESULT STDMETHODCALLTYPE MyQueryInterface(LPDIRECT3D9 thisptr,
                                                           REFIID riid,
@@ -1060,10 +1057,10 @@ namespace Hooks
             return rv;
         }
 
+    public:
         MyDirect3D9()
             : QueryInterface(nullptr)
             , CreateDevice(nullptr)
-            , CreateDeviceEx(nullptr)
         {
         }
 
@@ -1078,11 +1075,23 @@ namespace Hooks
         }
     };
 
-    std::map<LPVOID, MyDirect3D9> MyDirect3D9::s_vtable_to_original;
+    std::map<LPVOID, MyDirect3D9Ex> MyDirect3D9::s_vtable_to_original;
 
-    struct MyDirect3D9Ex : public MyDirect3D9
+    class MyDirect3D9Ex : public MyDirect3D9
     {
-    public:
+    private:
+        using ThisType = MyDirect3D9Ex*;
+
+    protected:
+        HRESULT(STDMETHODCALLTYPE *CreateDeviceEx)(LPDIRECT3D9EX thisptr,
+                                                   UINT Adapter,
+                                                   D3DDEVTYPE DeviceType,
+                                                   HWND hFocusWindow,
+                                                   DWORD BehaviorFlags,
+                                                   D3DPRESENT_PARAMETERS* pPresentationParameters,
+                                                   D3DDISPLAYMODEEX* pFullscreenDisplayMode,
+                                                   IDirect3DDevice9Ex** ppReturnedDeviceInterface);
+
         static HRESULT STDMETHODCALLTYPE MyCreateDeviceEx(LPDIRECT3D9EX thisptr,
                                                           UINT Adapter,
                                                           D3DDEVTYPE DeviceType,
@@ -1101,6 +1110,13 @@ namespace Hooks
 
             LEAVE(D3DERR_DEVICELOST);
             return D3DERR_DEVICELOST;
+        }
+
+    public:
+        MyDirect3D9Ex()
+            : MyDirect3D9()
+            , CreateDeviceEx(nullptr)
+        {
         }
 
         static BOOL Hook(LPDIRECT3D9EX obj)
