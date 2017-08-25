@@ -20,7 +20,9 @@ namespace D3D
         gs_d3d = Direct3DCreate9(D3D_SDK_VERSION);
 
         if (!gs_d3d)
+        {
             throw Error::CreateD3D{};
+        }
 
         D3DPRESENT_PARAMETERS params;
 
