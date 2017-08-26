@@ -146,6 +146,7 @@
     <ClCompile Include="AVIDumping\WaveFormat.cpp" />
     <ClCompile Include="GUI\Core\DlgBase.cpp" />
     <ClCompile Include="GUI\Core\MenuItemBase.cpp" />
+    <ClCompile Include="GUI\MainWindow.cpp" />
     <ClCompile Include="GUI\Objects\CheckableMenuItem.cpp" />
     <ClCompile Include="GUI\Objects\CheckboxButton.cpp" />
     <ClCompile Include="GUI\Objects\EditControl.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="GUI\Core\MenuItemBase.h" />
     <ClInclude Include="GUI\Core\ObjBase.h" />
     <ClInclude Include="GUI\Core\WindowClasses.h" />
+    <ClInclude Include="GUI\MainWindow.h" />
     <ClInclude Include="GUI\Objects\CheckableMenuItem.h" />
     <ClInclude Include="GUI\Objects\CheckboxButton.h" />
     <ClInclude Include="GUI\Objects\EditControl.h" />
@@ -248,6 +250,7 @@
     <ClInclude Include="Utils\File.h" />
     <ClInclude Include="Utils\COM.h" />
     <ClInclude Include="Utils\Thread.h" />
+    <ClInclude Include="wintaser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico" />

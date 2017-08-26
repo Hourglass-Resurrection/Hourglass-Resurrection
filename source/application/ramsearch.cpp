@@ -142,7 +142,7 @@ extern HWND RamSearchHWnd;
 extern HWND RamWatchHWnd;
 extern HWND hWnd;
 extern HANDLE hGameProcess;
-extern HINSTANCE hInst;
+//extern HINSTANCE hInst;
 extern CRITICAL_SECTION g_processMemCS;
 static WCHAR Str_Tmp_RS [1024];
 
@@ -1257,7 +1257,7 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 		{
 			reset_address_info(); // TODO: is this prone to deadlock? should we set ResultCount = 0 instead?
 			LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-			RamSearchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMSEARCH), hWnd, (DLGPROC) RamSearchProc);
+			//RamSearchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMSEARCH), hWnd, (DLGPROC) RamSearchProc);
 		}
 	}
 	if (RamWatchClosed || AutoRWLoad)
@@ -1267,7 +1267,7 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 		{
 			if (AutoRWLoad) OpenRWRecentFile(0);
 			LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-			RamWatchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMWATCH), hWnd, (DLGPROC) RamWatchProc);
+			//RamWatchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMWATCH), hWnd, (DLGPROC) RamWatchProc);
 		}
 	}
 
