@@ -10,7 +10,7 @@
 #define XJOY_FLAG  0x10000 // There are 4 xinput joysticks supported, so the 3 next flags are also reserved for the other xinput joysticks
 
 struct CurrentInput {
-	unsigned char keys[256]; // Contains 0/1, indexed by DIK_XXX. SIZE: 256 bytes
+	unsigned char keys[256]; // Contains 0/1, indexed by VK_XXX. SIZE: 256 bytes
 	struct { DIMOUSESTATE di; POINT coords; } mouse; // SIZE: 24 bytes
 	DIJOYSTATE joypad[8]; // SIZE: ((4 * 8) + (4 * 4) + (32 * 1) * 8) = 304 bytes
 	// We can use extended variants of MOUSESTATE and JOYSTATE which contain more buttons, do we want to? If the game supports it, so can we...
