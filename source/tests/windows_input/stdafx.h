@@ -13,13 +13,16 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#include <d3d9.h>
+#include <windowsx.h>
 
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
 
+#include <bitset>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <string>

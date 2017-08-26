@@ -716,7 +716,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 					PostMessageInternal(hwnd, WM_KEYDOWN, i, 0);
 #else
 					//SendMessage(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
-					Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
+                    if (IsWindowUnicode(hwnd))
+                    {
+                        Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
+                    }
+                    else
+                    {
+                        Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
+                    }
 #endif
 
 					// also send a WM_CHAR event in case some games need it (HACK, should do this in TranslateMessage)
@@ -731,7 +738,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 						PostMessageInternal(hwnd, WM_CHAR, c, 0);
 #else
 						//SendMessage(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
-						Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
+                        if (IsWindowUnicode(hwnd))
+                        {
+                            Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
+                        }
+                        else
+                        {
+                            Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
+                        }
 #endif
 					}
 				}
@@ -742,7 +756,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 					PostMessageInternal(hwnd, WM_KEYUP, i, 0);
 #else
 					//SendMessage(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
-					Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+                    if (IsWindowUnicode(hwnd))
+                    {
+                        Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+                    }
+                    else
+                    {
+                        Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+                    }
 #endif
 				}
 			}
@@ -773,7 +794,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 #ifdef EMULATE_MESSAGE_QUEUES
 				PostMessageInternal(hwnd, WM_MOUSEMOVE, flag, coords);
 #else
-				Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
+                if (IsWindowUnicode(hwnd))
+                {
+				    Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
+                }
+                else
+                {
+				    Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
+                }
 #endif
 			}
 
@@ -791,7 +819,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
 #else
-					Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
+                    if (IsWindowUnicode(hwnd))
+                    {
+					    Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
+                    }
+                    else
+                    {
+					    Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
+                    }
 #endif
 				}
 				else if(!cur && prev)
@@ -800,7 +835,14 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 #ifdef EMULATE_MESSAGE_QUEUES
 					PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
 #else
-					Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
+                    if (IsWindowUnicode(hwnd))
+                    {
+					    Hooks::MyWndProcW(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
+                    }
+                    else
+                    {
+					    Hooks::MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
+                    }
 #endif
 				}
 			}

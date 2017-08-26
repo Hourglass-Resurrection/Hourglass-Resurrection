@@ -173,6 +173,11 @@ namespace Hooks
     {
         ENTER(dwMilliseconds, hHandle);
 
+        /*
+         * Important: returning WAIT_OBJECT_0 instead of WAIT_TIMEOUT deadlocks at least some D3D drivers.
+         * -- YaLTeR
+         */
+
         {
             if (tasflags.threadMode == 1)
                 ThreadHandleToExitHandle(hHandle);
@@ -186,7 +191,10 @@ namespace Hooks
             {
                 if (tasflags.fastForward && dwMilliseconds > 1 && dwMilliseconds < 100 && (tasflags.fastForwardFlags & FFMODE_SLEEPSKIP)) // hack: check sleepskip instead of waitskip because waitskip is intended for riskier wait skips
                     dwMilliseconds = 1; // some games have a framerate regulator non-main thread that prevents fast-forward from working unless we do this. note that using 0 instead of 1 would give far worse results.
-                return WaitForSingleObject(hHandle, dwMilliseconds);
+
+                DWORD rv = WaitForSingleObject(hHandle, dwMilliseconds);
+                LEAVE(rv);
+                return rv;
             }
             //else if(tasflags.waitSyncMode <= 1 && prevMs == 0) // hack for Rosenkreuzstilette Freudenstachel
             //{
@@ -194,13 +202,16 @@ namespace Hooks
             //}
             else if (tasflags.waitSyncMode == 0)
             {
-                return WaitForSingleObject(hHandle, INFINITE);
+                DWORD rv = WaitForSingleObject(hHandle, INFINITE);
+                LEAVE(rv);
+                return rv;
             }
             else if (tasflags.threadMode == 0)
             {
                 // for megamari with multithreading disabled
                 DWORD rv = WaitForSingleObject(hHandle, 0);
-                rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                //rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                LEAVE(rv);
                 return rv;
             }
             else
@@ -214,9 +225,9 @@ namespace Hooks
                         dwMilliseconds = 1;
                     DWORD rv = WaitForSingleObject(hHandle, dwMilliseconds);
                     //if(rv == WAIT_TIMEOUT)
-                    {
-                        rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
-                    }
+                    //{
+                    //    rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                    //}
                     //if(prevMs == 0 && rv == WAIT_OBJECT_0)
                     //{
                     //	static int alt = 0;
@@ -225,6 +236,7 @@ namespace Hooks
                     //		rv = WAIT_TIMEOUT; // hack so Exit Fate can run with waitSyncMode == 1 ... but it makes Iji blackscreen?
                     //}
                     // careful, switching the rv from WAIT_OBJECT_0 to WAIT_TIMEOUT (even only sometimes) would break break iji startup
+                    LEAVE(rv);
                     return rv;
                 }
                 DWORD maxWaitTime = 1000; // TODO: make this number configurable in the UI and hopefully used in some other places if appropriate
@@ -237,7 +249,8 @@ namespace Hooks
                     if (maxWaitTime)
                         LOG() << "interrupted wait for " << hHandle << " in case of deadlock.";
                 }
-                rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                //rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                LEAVE(rv);
                 return rv;
             }
 

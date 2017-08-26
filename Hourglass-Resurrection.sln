@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3d9", "source\tests\d3d9\d
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3d9ex", "source\tests\d3d9ex\d3d9ex.vcxproj", "{492C4678-17E4-4896-BBE7-27DC9E056DA2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "windows_input", "source\tests\windows_input\windows_input.vcxproj", "{DA95B213-EB59-410F-BAED-BB5F0ACDD822}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -47,6 +49,10 @@ Global
 		{492C4678-17E4-4896-BBE7-27DC9E056DA2}.Debug|Win32.Build.0 = Debug|Win32
 		{492C4678-17E4-4896-BBE7-27DC9E056DA2}.Release|Win32.ActiveCfg = Release|Win32
 		{492C4678-17E4-4896-BBE7-27DC9E056DA2}.Release|Win32.Build.0 = Release|Win32
+		{DA95B213-EB59-410F-BAED-BB5F0ACDD822}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA95B213-EB59-410F-BAED-BB5F0ACDD822}.Debug|Win32.Build.0 = Debug|Win32
+		{DA95B213-EB59-410F-BAED-BB5F0ACDD822}.Release|Win32.ActiveCfg = Release|Win32
+		{DA95B213-EB59-410F-BAED-BB5F0ACDD822}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +61,7 @@ Global
 		{B97CCFBA-95DB-4448-BE89-C36258FD0089} = {F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}
 		{FF9A520F-5DC4-498B-B6D7-6559E99AECF0} = {F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}
 		{492C4678-17E4-4896-BBE7-27DC9E056DA2} = {F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}
+		{DA95B213-EB59-410F-BAED-BB5F0ACDD822} = {F52650AE-EBC0-451F-9D5D-E7AD66EDA0D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0D822D0-E088-4C05-B0C0-97D4268D7752}

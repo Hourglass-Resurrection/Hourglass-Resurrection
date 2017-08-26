@@ -171,6 +171,85 @@ namespace Hooks
         }
 #endif
         createWindowDepth--;
+        if (hwnd && createWindowDepth == 0)
+        {
+            if (!oldGamehwnd)
+            {
+                curtls.createdFirstWindow = true;
+                gamehwnd = hwnd;
+            }
+
+            WNDPROC oldProc = (WNDPROC)MyGetWindowLongW(hwnd, GWL_WNDPROC);
+            if (!oldProc)
+            {
+                WNDCLASSEXW cls = { sizeof(WNDCLASSEXW) };
+                GetClassInfoExW(hInstance, lpClassName, &cls);
+                if (cls.lpfnWndProc)
+                {
+                    oldProc = cls.lpfnWndProc;
+                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\""
+                          << lpClassName << ") for some reason...\n";
+                }
+            }
+            LOG() << "oldProc[" << hwnd << "] = " << reinterpret_cast<DWORD>(oldProc);
+            hwndToOrigHandler[hwnd] = oldProc;
+            SetWindowLongW(hwnd, GWL_WNDPROC, (LONG)MyWndProcW);
+            IPC::SendIPCMessage(IPC::Command::CMD_HWND, &hwnd, sizeof(&hwnd));
+
+            if (tasflags.windowActivateFlags & 2)
+            {
+                // hmm, I'm getting desyncs all of a sudden...
+                // the wintaser window flickers every time it happens
+                // but I don't know what could be causing that.
+                // well, maybe it's happening less now for some reason,
+                // but it's something to watch for (possible bugs here)
+
+    //			tasflags.windowActivateFlags ^= 2;
+    //			ShowWindow(hwnd, TRUE);
+                SetForegroundWindow(hwnd);
+                //SetActiveWindow(hwnd);
+                //SetFocus(hwnd);
+                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                //			tasflags.windowActivateFlags ^= 2;
+            }
+            else
+            {
+                SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            }
+            SetActiveWindow(hwnd);
+
+
+            // FIXME TEMP maybe need to hook SetActiveWindow / SetForegroundWindow etc instead
+            DispatchMessageInternal(hwnd, WM_ACTIVATE, WA_ACTIVE, (LPARAM)hwnd, false);
+            DispatchMessageInternal(hwnd, WM_SETFOCUS, 0, 0, false);
+
+            /*WINDOWPOS pos = {
+                hwnd,//HWND    hwnd;
+                hWndParent,//HWND    hwndInsertAfter;
+                X,//int     x;
+                Y,//int     y;
+                nWidth,//int     cx;
+                nHeight,//int     cy;
+                SWP_NOREDRAW|SWP_NOACTIVATE|SWP_FRAMECHANGED,//UINT    flags;
+            };*/
+            //DispatchMessageInternal(hwnd, WM_WINDOWPOSCHANGED, 0, (LPARAM)&pos);
+
+            CREATESTRUCTW create = {
+                lpParam,//LPVOID    lpCreateParams;
+                hInstance,//HINSTANCE hInstance;
+                hMenu,//HMENU     hMenu;
+                hWndParent,//HWND      hwndParent;
+                nHeight,//int       cy;
+                nWidth,//int       cx;
+                Y,//int       y;
+                X,//int       x;
+                static_cast<LONG>(dwStyle),//LONG      style;
+                lpWindowName,//LPCTSTR   lpszName;
+                lpClassName,//LPCTSTR   lpszClass;
+                dwExStyle,//DWORD     dwExStyle;
+            };
+            DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM)&create, false);
+        }
 #if 0 // FIXME should be enabled but currently breaks Iji due to some bug
         if (hwnd && createWindowDepth == 0)
         {
