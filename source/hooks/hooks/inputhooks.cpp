@@ -1,4 +1,4 @@
-﻿/*  Copyright (C) 2011 nitsuja and contributors
+/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
 #include <vector>
@@ -1163,6 +1163,14 @@ namespace Hooks
         HOOK_FUNCTION(SHORT, WINAPI, GetKeyState, int vKey);
         HOOKFUNC SHORT WINAPI MyGetKeyState(int vKey)
         {
+            /*
+             * TODO: The returned state should only update when the game reads the relevant WM_ messages
+             * (WM_KEYDOWN, WM_KEYUP, etc.), just as if the state only knew about these messages.
+             *
+             * Currently the whole state is instantly updated on frame boundary.
+             * -- YaLTeR
+             */
+
             // WARNING: PeekMessage SOMETIMES internally calls this function (both directly and indirectly),
             // so we must not change the state of anything in here.
             if (!disableGetKeyStateLogging)
