@@ -49,15 +49,20 @@ namespace Input
         }
     }
 
+    void LogData()
+    {
+        DumpGetAsyncKeyState();
+        DumpGetKeyState();
+        DumpGetKeyboardState();
+    }
+
     void PreRender()
     {
         ++gs_frame_counter;
 
         Logger::WriteLine(L"Frame " + std::to_wstring(gs_frame_counter) + L" pre render:");
 
-        DumpGetAsyncKeyState();
-        DumpGetKeyState();
-        DumpGetKeyboardState();
+        LogData();
 
         Logger::WriteLine(L"");
     }
@@ -66,9 +71,7 @@ namespace Input
     {
         Logger::WriteLine(L"Frame " + std::to_wstring(gs_frame_counter) + L" post render:");
 
-        DumpGetAsyncKeyState();
-        DumpGetKeyState();
-        DumpGetKeyboardState();
+        LogData();
 
         Logger::WriteLine(L"");
     }

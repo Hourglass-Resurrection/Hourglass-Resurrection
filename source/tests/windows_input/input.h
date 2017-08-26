@@ -8,6 +8,7 @@
 
 namespace Input
 {
+    void LogData();
     void PreRender();
     void PostRender();
 }
