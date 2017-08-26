@@ -428,12 +428,28 @@ namespace IPC
         }
         DebugMessage& operator<<(LPCSTR str)
         {
-            FillMessage('S', (strlen(str) + 1) * sizeof(str[0]), str);
+            if (str)
+            {
+                FillMessage('S', (strlen(str) + 1) * sizeof(str[0]), str);
+            }
+            else
+            {
+                FillMessage('S', sizeof("(null)"), "(null)");
+            }
+
             return *this;
         }
         DebugMessage& operator<<(LPCWSTR str)
         {
-            FillMessage('s', (wcslen(str) + 1) * sizeof(str[0]), str);
+            if (str)
+            {
+                FillMessage('s', (wcslen(str) + 1) * sizeof(str[0]), str);
+            }
+            else
+            {
+                FillMessage('s', sizeof(L"(null)"), L"(null)");
+            }
+
             return *this;
         }
     private:
