@@ -56,7 +56,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
+            {
                 running = false;
+            }
 
             TranslateMessage(&msg);
             DispatchMessage(&msg);
