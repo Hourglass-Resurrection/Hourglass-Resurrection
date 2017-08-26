@@ -653,7 +653,7 @@ namespace Hooks
     LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/)
     {
 	    //untrusted = VerifyIsTrustedCaller(!untrusted) ? 0 : (untrusted ? untrusted : 1);
-	    if(/*inPauseHandler || */VerifyIsTrustedCaller()) // if it's the OS or pause handler calling us back,
+	    if(/*inPauseHandler || */!VerifyIsTrustedCaller()) // if it's the OS or pause handler calling us back,
 	    {                                 // we can't rely on it doing so consistently across systems,
 		    if(!(maf & (MAF_INTERCEPT|MAF_BYPASSGAME)))
 		    {
