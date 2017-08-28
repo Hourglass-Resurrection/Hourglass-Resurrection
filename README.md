@@ -1,7 +1,7 @@
 Hourglass Resurrection
 ======================
 
-Automated builds: [Configuration:Debug](https://ci.appveyor.com/api/projects/Warepire/hourglass-resurrection/artifacts/Hourglass-Resurrection-master.zip?branch=master&job=Configuration%3A+Debug) | [Configuration:Release](https://ci.appveyor.com/api/projects/Warepire/hourglass-resurrection/artifacts/Hourglass-Resurrection-master.zip?branch=master&job=Configuration%3A+Release)
+[Automated builds](https://ci.appveyor.com/project/Warepire/hourglass-resurrection/branch/master) - Choose "Configuration: Release", and then the Artifacts tab.
 
 Goal
 ----
