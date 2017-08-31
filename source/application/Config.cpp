@@ -138,11 +138,6 @@ namespace Config{
             swprintf(Conf_File, ARRAYSIZE(Conf_File), L"%s\\%s", this_process_path.c_str(), filename);
         }
 
-        WritePrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), Conf_File);
-        WritePrivateProfileStringW(L"General", L"Movie path", movie_filename.c_str(), Conf_File);
-        WritePrivateProfileStringW(L"General", L"Command line", command_line.c_str(), Conf_File);
-
-        SetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
         //SetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
         SetPrivateProfileIntW(L"Tools", L"Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
         if (advancePastNonVideoFramesConfigured)
@@ -205,21 +200,12 @@ namespace Config{
 		if(!filename)
 			filename = defaultConfigFilename;
 		WCHAR Conf_File[1024];
-        WCHAR temp_str[1024];
 
 		if(*filename && filename[1] == ':')
 			wcscpy(Conf_File, filename);
 		else
 			swprintf(Conf_File, ARRAYSIZE(Conf_File), L"%s\\%s", this_process_path.c_str(), filename);
 
-		GetPrivateProfileStringW(L"General", L"Exe path", exe_filename.c_str(), temp_str, MAX_PATH, Conf_File);
-        exe_filename = temp_str;
-		GetPrivateProfileStringW(L"General", L"Movie path", movie_filename.c_str(), temp_str, MAX_PATH, Conf_File);
-        movie_filename = temp_str;
-		GetPrivateProfileStringW(L"General", L"Command line", command_line.c_str(), temp_str, ARRAYSIZE(temp_str), Conf_File);
-        command_line = temp_str;
-
-		nextLoadRecords = 0!=GetPrivateProfileIntW(L"General", L"Movie Read Only", nextLoadRecords, Conf_File);
 		//localTASflags.forceWindowed = GetPrivateProfileIntA("Graphics", "Force Windowed", localTASflags.forceWindowed, Conf_File);
 		localTASflags.fastForwardFlags = GetPrivateProfileIntW(L"Tools", L"Fast Forward Flags", localTASflags.fastForwardFlags, Conf_File);
 		advancePastNonVideoFrames = GetPrivateProfileIntW(L"Input", L"Skip Lag Frames", advancePastNonVideoFrames, Conf_File);
