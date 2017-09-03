@@ -11,9 +11,6 @@
 constexpr WCHAR CLASS_NAME[] = L"windows_input";
 constexpr WCHAR WINDOW_NAME[] = L"windows_input";
 
-static uint32_t gs_pixel = 0x000000CC;
-static BITMAPINFO gs_bitmap_info;
-
 ATOM             MyRegisterClass(HINSTANCE);
 HWND             InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -33,16 +30,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (!hWnd)
     {
         return FALSE;
-    }
-
-    {
-        BITMAPINFOHEADER& header = gs_bitmap_info.bmiHeader;
-        header.biSize = sizeof(header);
-        header.biWidth = 1;
-        header.biHeight = 1;
-        header.biPlanes = 1;
-        header.biBitCount = 32;
-        header.biCompression = BI_RGB;
     }
 
     MSG msg;
