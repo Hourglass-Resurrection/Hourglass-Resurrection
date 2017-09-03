@@ -85,10 +85,12 @@ IDbgHelpStackWalkCallback::Action PrintStackTrace(IDbgHelpStackWalkCallback& dat
                 std::visit([&oss](auto&& value) {
                     using T = std::decay_t<decltype(value)>;
 
+                    // clang-format off
                     if constexpr (std::is_same_v<T, char>
                                || std::is_same_v<T, wchar_t>
                                || std::is_same_v<T, char16_t>
                                || std::is_same_v<T, char32_t>)
+                    // clang-format on
                     {
                         /*
                          * Print the characters.

@@ -5,6 +5,9 @@
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "shared/input.h" // Contains the CurrentInput struct
 #include <map>
 using namespace std;

@@ -210,10 +210,12 @@ public:
 class DbgHelpPointerType
 {
 public:
+    // clang-format off
     const std::variant<DbgHelpBasicType,
                        DbgHelpUnknownType,
                        DbgHelpEnumType,
                        DbgHelpUnknownUnsizedType> m_underlying_type;
+    // clang-format on
 
     /*
      * Size of the pointer type (differs between 32-bit and 64-bit targets).

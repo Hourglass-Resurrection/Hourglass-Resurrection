@@ -3,6 +3,9 @@
 
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 ////64k in Ram_68k[], 8k in Ram_Z80[]   
 //#define _68K_RAM_SIZE 64*1024
 //#define Z80_RAM_SIZE 8*1024
