@@ -47,10 +47,9 @@ namespace Utils::COM
         ms_initialized = false;
     }
 
-    COMLibrary::COMLibrary()
-        : m_handle(nullptr)
-        , m_dll_get_class_object(nullptr)
-    {}
+    COMLibrary::COMLibrary() : m_handle(nullptr), m_dll_get_class_object(nullptr)
+    {
+    }
 
     COMLibrary::~COMLibrary()
     {
@@ -76,8 +75,8 @@ namespace Utils::COM
                 ("Failed to load the COM library: " + std::to_string(error)).c_str());
         }
 
-        m_dll_get_class_object = reinterpret_cast<DllGetClassObject_t>(
-            GetProcAddress(m_handle, "DllGetClassObject"));
+        m_dll_get_class_object =
+            reinterpret_cast<DllGetClassObject_t>(GetProcAddress(m_handle, "DllGetClassObject"));
 
         if (!m_dll_get_class_object)
         {

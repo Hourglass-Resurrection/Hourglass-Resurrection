@@ -10,7 +10,7 @@
 
 class DlgBase;
 
-MenuSeparator::MenuSeparator(MenuItemBase* parent, DlgBase* dlg) :
-    MenuItemBase(L"", L"", false, parent, dlg)
+MenuSeparator::MenuSeparator(MenuItemBase* parent, DlgBase* dlg)
+    : MenuItemBase(L"", L"", false, parent, dlg)
 {
 }

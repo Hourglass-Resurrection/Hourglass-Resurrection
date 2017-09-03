@@ -15,8 +15,8 @@
 
 class DlgBase;
 
-SubMenu::SubMenu(const std::wstring& title, MenuBase* parent, DlgBase* dlg) :
-    MenuItemBase(title, L"", true, parent, dlg)
+SubMenu::SubMenu(const std::wstring& title, MenuBase* parent, DlgBase* dlg)
+    : MenuItemBase(title, L"", true, parent, dlg)
 {
 }
 

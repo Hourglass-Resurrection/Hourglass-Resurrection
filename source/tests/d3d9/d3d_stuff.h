@@ -10,7 +10,9 @@ namespace D3D
 {
     namespace Error
     {
-        struct CreateD3D {};
+        struct CreateD3D
+        {
+        };
 
         struct CreateDevice
         {

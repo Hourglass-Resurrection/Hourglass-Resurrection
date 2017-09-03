@@ -5,18 +5,23 @@
 
 #include "shared/msg.h"
 
-typedef int MessageActionFlags; enum
+typedef int MessageActionFlags;
+enum
 {
-	// one of these... (what to call)
-	MAF_PASSTHROUGH    = 0x00, // call game's WndProc
-	MAF_BYPASSGAME     = 0x01, // call OS's DefWndProc only (overrides MAF_PASSTHROUGH if combined with it)
-	MAF_INTERCEPT      = 0x02, // call nothing (overrides MAF_BYPASSGAME and/or MAF_PASSTHROUGH if combined with them)
+    // one of these... (what to call)
+    MAF_PASSTHROUGH = 0x00, // call game's WndProc
+    MAF_BYPASSGAME =
+        0x01, // call OS's DefWndProc only (overrides MAF_PASSTHROUGH if combined with it)
+    MAF_INTERCEPT =
+        0x02, // call nothing (overrides MAF_BYPASSGAME and/or MAF_PASSTHROUGH if combined with them)
 
-	// combined with one of these... (what to return)
-	MAF_RETURN_OS      = 0x00, // OS or game return value (or 0 if MAF_INTERCEPT is set)
-	MAF_RETURN_0       = 0x10, // return 0 (overrides MAF_RETURN_OS if combined with it)
-	MAF_RETURN_1       = 0x20, // return 1 (overrides MAF_RETURN_OS and/or MAF_RETURN_0 if combined with them)
-	MAF_RETURN_CUSTOM  = 0x40, // do custom extra action and return a custom value (overrides MAF_RETURN_0 and MAF_RETURN_1 and MAF_RETURN_OS if combined with any or all of them)
+    // combined with one of these... (what to return)
+    MAF_RETURN_OS = 0x00, // OS or game return value (or 0 if MAF_INTERCEPT is set)
+    MAF_RETURN_0 = 0x10, // return 0 (overrides MAF_RETURN_OS if combined with it)
+    MAF_RETURN_1 =
+        0x20, // return 1 (overrides MAF_RETURN_OS and/or MAF_RETURN_0 if combined with them)
+    MAF_RETURN_CUSTOM =
+        0x40, // do custom extra action and return a custom value (overrides MAF_RETURN_0 and MAF_RETURN_1 and MAF_RETURN_OS if combined with any or all of them)
 };
 
 #ifdef EMULATE_MESSAGE_QUEUES
@@ -34,21 +39,22 @@ typedef int MessageActionFlags; enum
 // also todo: wrap all filesystem and registry access. for savestates if nothing else.
 struct MessageQueue
 {
-	static const int MAX_MESSAGES = 10000; // as per default USERPostMessageLimit
-	std::vector<MyMSG> messages;
-	WORD queueStatus; // e.g. QS_KEY. indicates which sorts of new messages are in the queue. for GetQueueStatus and MsgWaitForMultipleObjects[Ex].
-	WORD queueStatusAtLastGet;
-	std::vector<HWND> attachedWindows;
-	MSG lastGot;
-	// queueStatus tracking
-	bool quit;
-	int timer;
-	int key;
-	int hotkey;
-	int mousemove;
-	int mousebutton;
-	int rawinput;
-	//std::vector<MSG> incomingSentMessagesA, incomingSentMessagesW;
+    static const int MAX_MESSAGES = 10000; // as per default USERPostMessageLimit
+    std::vector<MyMSG> messages;
+    WORD
+        queueStatus; // e.g. QS_KEY. indicates which sorts of new messages are in the queue. for GetQueueStatus and MsgWaitForMultipleObjects[Ex].
+    WORD queueStatusAtLastGet;
+    std::vector<HWND> attachedWindows;
+    MSG lastGot;
+    // queueStatus tracking
+    bool quit;
+    int timer;
+    int key;
+    int hotkey;
+    int mousemove;
+    int mousebutton;
+    int rawinput;
+    //std::vector<MSG> incomingSentMessagesA, incomingSentMessagesW;
 };
 
 // TODO: note to self about unusual cases to handle (implement) that I might forget about:

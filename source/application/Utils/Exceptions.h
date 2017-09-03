@@ -20,6 +20,7 @@ namespace Utils
         public:
             WindowsException(DWORD code, LPCSTR message);
             DWORD code() const;
+
         private:
             DWORD m_code;
         };

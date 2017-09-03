@@ -7,11 +7,11 @@
 //#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
 
 #define DIRECTINPUT_VERSION 0x0800
-#include "shared/input.h"
 #include "global.h"
+#include "shared/input.h"
 #include "shared/ipc.h"
 
-void FrameBoundary(void* captureInfo=0, int captureInfoType=CAPTUREINFO_TYPE_NONE);
+void FrameBoundary(void* captureInfo = 0, int captureInfoType = CAPTUREINFO_TYPE_NONE);
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height);
 bool IsWindowFakeFullscreen(HWND hwnd);
 bool RedrawScreen();
@@ -29,18 +29,17 @@ extern int fakeDisplayHeight;
 extern int fakePixelFormatBPP;
 extern int fakeDisplayRefresh;
 extern bool usingSDLOrDD;
-extern PALETTEENTRY activePalette [256];
+extern PALETTEENTRY activePalette[256];
 //extern bool inPauseHandler;
 extern bool redrawingScreen;
 extern bool pauseHandlerSuspendedSound;
 extern int framecount;
 extern DWORD threadCounter;
-extern unsigned char asynckeybit [256];
-extern unsigned char synckeybit [256];
+extern unsigned char asynckeybit[256];
+extern unsigned char synckeybit[256];
 extern int framecountModSkipFreq;
 
 extern CurrentInput previnput;
 extern CurrentInput curinput;
-
 
 #include "dettime.h"

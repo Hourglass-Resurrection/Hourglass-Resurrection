@@ -33,18 +33,17 @@ public:
     virtual bool Callback(LPARAM lparam, WPARAM wparam) = 0;
 };
 
-class Callback0 :
-    public CallbackBase
+class Callback0 : public CallbackBase
 {
 public:
-    Callback0(std::function<bool()> cb) :
-        m_callback(cb)
+    Callback0(std::function<bool()> cb) : m_callback(cb)
     {
     }
     virtual bool Callback(LPARAM lparam, WPARAM wparam)
     {
         return m_callback();
     }
+
 private:
     std::function<bool()> m_callback;
 };
@@ -53,14 +52,14 @@ template<typename T>
 class CallbackLparam : public CallbackBase
 {
 public:
-    CallbackLparam(std::function<bool(T)> cb) :
-        m_callback(cb)
+    CallbackLparam(std::function<bool(T)> cb) : m_callback(cb)
     {
     }
     virtual bool Callback(LPARAM lparam, WPARAM wparam)
     {
         return m_callback(reinterpret_cast<T>(lparam));
     }
+
 private:
     std::function<bool(T)> m_callback;
 };
@@ -69,14 +68,14 @@ template<typename T>
 class CallbackWparam : public CallbackBase
 {
 public:
-    CallbackWparam(std::function<bool(T)> cb) :
-        m_callback(cb)
+    CallbackWparam(std::function<bool(T)> cb) : m_callback(cb)
     {
     }
     virtual bool Callback(LPARAM lparam, WPARAM wparam)
     {
         return m_callback(reinterpret_cast<T>(wparam));
     }
+
 private:
     std::function<bool(T)> m_callback;
 };
@@ -85,14 +84,14 @@ template<typename T, typename U>
 class CallbackBoth : public CallbackBase
 {
 public:
-    CallbackBoth(std::function<bool(T, U)> cb) :
-        m_callback(cb)
+    CallbackBoth(std::function<bool(T, U)> cb) : m_callback(cb)
     {
     }
     virtual bool Callback(LPARAM lparam, WPARAM wparam)
     {
         return m_callback(reinterpret_cast<T>(lparam), reinterpret_cast<U>(wparam));
     }
+
 private:
     std::function<bool(T, U)> m_callback;
 };
@@ -100,14 +99,14 @@ private:
 class CallbackWmCommand : public CallbackBase
 {
 public:
-    CallbackWmCommand(std::function<bool(WORD)> cb) :
-        m_callback(cb)
+    CallbackWmCommand(std::function<bool(WORD)> cb) : m_callback(cb)
     {
     }
     virtual bool Callback(LPARAM lparam, WPARAM wparam)
     {
         return m_callback(HIWORD(wparam));
     }
+
 private:
     std::function<bool(WORD)> m_callback;
 };
@@ -139,11 +138,11 @@ namespace
     };
     struct DLGTEMPLATEEX_2
     {
-        WORD      pointsize;
-        WORD      weight;
-        BYTE      italic;
-        BYTE      charset;
-        WCHAR     typeface[ARRAYSIZE(TYPE_FACE)];
+        WORD pointsize;
+        WORD weight;
+        BYTE italic;
+        BYTE charset;
+        WCHAR typeface[ARRAYSIZE(TYPE_FACE)];
     };
     /*
      * Hacky... But avoids weird magic
@@ -189,13 +188,14 @@ namespace
  * reaches a memory access violation exception (and thus the program crashes).
  * -- Warepire
  */
-DlgBase::DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h) :
-    m_handle(nullptr),
-    m_mode(DlgMode::INDIRECT),
-    m_return_code_set(false),
-    m_return_code(0),
-    m_window(AlignValueTo<sizeof(DWORD)>(sizeof(DLGTEMPLATEEX_1) + sizeof(DLGTEMPLATEEX_2) + (caption.size() * sizeof(WCHAR)))),
-    m_next_id(0)
+DlgBase::DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h)
+    : m_handle(nullptr)
+    , m_mode(DlgMode::INDIRECT)
+    , m_return_code_set(false)
+    , m_return_code(0)
+    , m_window(AlignValueTo<sizeof(DWORD)>(sizeof(DLGTEMPLATEEX_1) + sizeof(DLGTEMPLATEEX_2)
+                                           + (caption.size() * sizeof(WCHAR))))
+    , m_next_id(0)
 {
     /*
      * A bit hacky to avoid a special init function just to pass the isntance to us.
@@ -208,15 +208,18 @@ DlgBase::DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h
 
     ms_ref_count++;
 
-    m_message_callbacks[WM_DESTROY].emplace_back(std::make_unique<Callback0>(std::bind(&DlgBase::DestroyCallback, this)));
-    m_message_callbacks[WM_NCDESTROY].emplace_back(std::make_unique<Callback0>(std::bind(&DlgBase::NcDestroyCallback, this)));
-    m_message_callbacks[WM_INITDIALOG].emplace_back(std::make_unique<Callback0>(std::bind(&DlgBase::SetMenuBar, this)));
+    m_message_callbacks[WM_DESTROY].emplace_back(
+        std::make_unique<Callback0>(std::bind(&DlgBase::DestroyCallback, this)));
+    m_message_callbacks[WM_NCDESTROY].emplace_back(
+        std::make_unique<Callback0>(std::bind(&DlgBase::NcDestroyCallback, this)));
+    m_message_callbacks[WM_INITDIALOG].emplace_back(
+        std::make_unique<Callback0>(std::bind(&DlgBase::SetMenuBar, this)));
 
     auto window_1 = reinterpret_cast<DLGTEMPLATEEX_1*>(m_window.data());
     window_1->dlgVer = 0x0001;
     window_1->signature = 0xFFFF;
-    window_1->style = DS_SETFONT | DS_FIXEDSYS | DS_MODALFRAME | WS_POPUP |
-                      WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    window_1->style = DS_SETFONT | DS_FIXEDSYS | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+                      | WS_MINIMIZEBOX;
 
     window_1->x = x;
     window_1->y = y;
@@ -228,7 +231,8 @@ DlgBase::DlgBase(const std::wstring& caption, SHORT x, SHORT y, SHORT w, SHORT h
         wmemcpy(&window_1->title, caption.data(), caption.size());
     }
 
-    auto window_2 = reinterpret_cast<DLGTEMPLATEEX_2*>(m_window.data() + sizeof(DLGTEMPLATEEX_1) + (caption.size() * sizeof(WCHAR)));
+    auto window_2 = reinterpret_cast<DLGTEMPLATEEX_2*>(m_window.data() + sizeof(DLGTEMPLATEEX_1)
+                                                       + (caption.size() * sizeof(WCHAR)));
 
     window_2->pointsize = 0x0008;
     window_2->weight = FW_NORMAL;
@@ -301,11 +305,12 @@ INT_PTR DlgBase::SpawnDialogBox(const DlgBase* parent, const DlgMode mode)
              * process with the PROMPT dialogs. CreateDialog[X] will not return until the window
              * has processed the WM_INITDIALOG message.
              */
-            HWND ret = CreateDialogIndirectParamW(gs_instance,
-                                                  reinterpret_cast<LPCDLGTEMPLATEW>(m_window.data()),
-                                                  parent_hwnd,
-                                                  BaseCallback,
-                                                  reinterpret_cast<LPARAM>(this));
+            HWND ret =
+                CreateDialogIndirectParamW(gs_instance,
+                                           reinterpret_cast<LPCDLGTEMPLATEW>(m_window.data()),
+                                           parent_hwnd,
+                                           BaseCallback,
+                                           reinterpret_cast<LPARAM>(this));
             if (ret == nullptr)
             {
                 return -1;
@@ -407,7 +412,8 @@ BOOL DlgBase::DestroyDialog()
     {
         if (!m_return_code_set)
         {
-            throw std::exception("DlgBase::DestroyDialog() called on a Prompt without setting return code.");
+            throw std::exception(
+                "DlgBase::DestroyDialog() called on a Prompt without setting return code.");
         }
         return ::EndDialog(m_handle, m_return_code);
     }
@@ -462,7 +468,10 @@ bool DlgBase::SetMenuBar()
     {
         RECT rect;
         GetWindowRect(m_handle, &rect);
-        SetWindowPos(m_handle, nullptr, 0, 0,
+        SetWindowPos(m_handle,
+                     nullptr,
+                     0,
+                     0,
                      rect.right - rect.left,
                      change + rect.bottom - rect.top,
                      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);

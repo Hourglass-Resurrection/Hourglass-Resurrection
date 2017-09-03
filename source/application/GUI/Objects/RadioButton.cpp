@@ -14,8 +14,13 @@
 
 #include "RadioButton.h"
 
-RadioButton::RadioButton(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, BUTTON_WND_CLASS, 0, WS_TABSTOP | BS_AUTORADIOBUTTON, x, y, w, h, dlg)
+RadioButton::RadioButton(const std::wstring& title,
+                         short x,
+                         short y,
+                         short w,
+                         short h,
+                         DlgBase* dlg)
+    : ObjBase(title, BUTTON_WND_CLASS, 0, WS_TABSTOP | BS_AUTORADIOBUTTON, x, y, w, h, dlg)
 {
 }
 

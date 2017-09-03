@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
+#include <DIA SDK/include/dia2.h>
 #include <atlbase.h>
 #include <atlcom.h>
-#include <DIA SDK/include/dia2.h>
 
 #include "DbgHelpPrivate.h"
 #include "DbgHelpTypes.h"
@@ -25,7 +25,9 @@
 class DbgHelpStackWalkCallback : public IDbgHelpStackWalkCallback
 {
 public:
-    DbgHelpStackWalkCallback(HANDLE process, IDiaStackFrame* frame, const DbgHelpPrivate::ModuleData* mod_info);
+    DbgHelpStackWalkCallback(HANDLE process,
+                             IDiaStackFrame* frame,
+                             const DbgHelpPrivate::ModuleData* mod_info);
 
     ULONGLONG GetProgramCounter() override;
     std::wstring GetModuleName() override;

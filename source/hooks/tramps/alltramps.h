@@ -48,7 +48,7 @@
 
 // include windows headers because... not being able to use types from windows headers
 // would be a huge pain considering we're declaring things like win32 API replacements.
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 //#define _WIN32_WINNT 0x0500
 //#define WINVER 0x0501
 #include <windows.h>
@@ -58,26 +58,26 @@
 
 #include "../intercept.h" // in case; wasn't defined yet
 
-#include "timetramps.h"
-#include "timertramps.h"
-#include "waittramps.h"
-#include "synctramps.h"
-#include "messagetramps.h"
-#include "windowtramps.h"
-#include "registrytramps.h"
-#include "filetramps.h"
-#include "moduletramps.h"
-#include "threadtramps.h"
-#include "inputtramps.h"
-#include "gditramps.h"
+#include "Xinputtramps.h"
 #include "dxvideotramps.h"
+#include "filetramps.h"
+#include "gditramps.h"
+#include "inputtramps.h"
+#include "messagetramps.h"
+#include "moduletramps.h"
 #include "opengltramps.h"
+#include "registrytramps.h"
 #include "sdltramps.h"
 #include "soundtramps.h"
-#include "Xinputtramps.h"
+#include "synctramps.h"
+#include "threadtramps.h"
+#include "timertramps.h"
+#include "timetramps.h"
+#include "waittramps.h"
+#include "windowtramps.h"
 
 #ifdef DEFINE_TRAMPS
-	bool notramps = true;
+bool notramps = true;
 #endif
 
 // if notramps is true, it is unsafe to call any trampoline functions.

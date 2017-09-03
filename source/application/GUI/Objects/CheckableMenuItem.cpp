@@ -17,8 +17,11 @@
 
 class DlgBase;
 
-CheckableMenuItem::CheckableMenuItem(const std::wstring& title, const std::wstring& shortcut, MenuBase* parent, DlgBase* dlg) :
-    MenuItemBase(title, shortcut, false, parent, dlg)
+CheckableMenuItem::CheckableMenuItem(const std::wstring& title,
+                                     const std::wstring& shortcut,
+                                     MenuBase* parent,
+                                     DlgBase* dlg)
+    : MenuItemBase(title, shortcut, false, parent, dlg)
 {
     assert(!title.empty());
 }

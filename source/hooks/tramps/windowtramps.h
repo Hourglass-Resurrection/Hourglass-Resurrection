@@ -11,12 +11,36 @@ namespace Hooks
 {
     extern std::map<HWND, WNDPROC> hwndToOrigHandler;
 
-    HOOK_FUNCTION_DECLARE(HWND, WINAPI, CreateWindowExA, DWORD dwExStyle, LPCSTR lpClassName,
-        LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-    HOOK_FUNCTION_DECLARE(HWND, WINAPI, CreateWindowExW, DWORD dwExStyle, LPCWSTR lpClassName,
-        LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+    HOOK_FUNCTION_DECLARE(HWND,
+                          WINAPI,
+                          CreateWindowExA,
+                          DWORD dwExStyle,
+                          LPCSTR lpClassName,
+                          LPCSTR lpWindowName,
+                          DWORD dwStyle,
+                          int X,
+                          int Y,
+                          int nWidth,
+                          int nHeight,
+                          HWND hWndParent,
+                          HMENU hMenu,
+                          HINSTANCE hInstance,
+                          LPVOID lpParam);
+    HOOK_FUNCTION_DECLARE(HWND,
+                          WINAPI,
+                          CreateWindowExW,
+                          DWORD dwExStyle,
+                          LPCWSTR lpClassName,
+                          LPCWSTR lpWindowName,
+                          DWORD dwStyle,
+                          int X,
+                          int Y,
+                          int nWidth,
+                          int nHeight,
+                          HWND hWndParent,
+                          HMENU hMenu,
+                          HINSTANCE hInstance,
+                          LPVOID lpParam);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, DestroyWindow, HWND hWnd);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, CloseWindow, HWND hWnd);
     HOOK_FUNCTION_DECLARE(LONG, WINAPI, SetWindowLongA, HWND hWnd, int nIndex, LONG dwNewLong);
@@ -27,17 +51,88 @@ namespace Hooks
     //HOOK_FUNCTION_DECLARE(BOOL, WINAPI, InvalidateRect, HWND hWnd, CONST RECT *lpRect, BOOL bErase)
     //HOOK_FUNCTION_DECLARE(BOOL, WINAPI, UpdateWindow(HWND hWnd);
 
-    HOOK_FUNCTION_DECLARE(int, WINAPI, MessageBoxA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
-    HOOK_FUNCTION_DECLARE(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
-    HOOK_FUNCTION_DECLARE(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
-    HOOK_FUNCTION_DECLARE(int, WINAPI, MessageBoxExW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId);
-    HOOK_FUNCTION_DECLARE(INT_PTR, WINAPI, DialogBoxParamA, HINSTANCE hInstance, LPCSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOK_FUNCTION_DECLARE(INT_PTR, WINAPI, DialogBoxParamW, HINSTANCE hInstance, LPCWSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOK_FUNCTION_DECLARE(INT_PTR, WINAPI, DialogBoxIndirectParamA, HINSTANCE hInstance, LPCDLGTEMPLATEA hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOK_FUNCTION_DECLARE(INT_PTR, WINAPI, DialogBoxIndirectParamW, HINSTANCE hInstance, LPCDLGTEMPLATEW hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+    HOOK_FUNCTION_DECLARE(int,
+                          WINAPI,
+                          MessageBoxA,
+                          HWND hWnd,
+                          LPCSTR lpText,
+                          LPCSTR lpCaption,
+                          UINT uType);
+    HOOK_FUNCTION_DECLARE(int,
+                          WINAPI,
+                          MessageBoxW,
+                          HWND hWnd,
+                          LPCWSTR lpText,
+                          LPCWSTR lpCaption,
+                          UINT uType);
+    HOOK_FUNCTION_DECLARE(int,
+                          WINAPI,
+                          MessageBoxExA,
+                          HWND hWnd,
+                          LPCSTR lpText,
+                          LPCSTR lpCaption,
+                          UINT uType,
+                          WORD wLanguageId);
+    HOOK_FUNCTION_DECLARE(int,
+                          WINAPI,
+                          MessageBoxExW,
+                          HWND hWnd,
+                          LPCWSTR lpText,
+                          LPCWSTR lpCaption,
+                          UINT uType,
+                          WORD wLanguageId);
+    HOOK_FUNCTION_DECLARE(INT_PTR,
+                          WINAPI,
+                          DialogBoxParamA,
+                          HINSTANCE hInstance,
+                          LPCSTR lpTemplateName,
+                          HWND hWndParent,
+                          DLGPROC lpDialogFunc,
+                          LPARAM dwInitParam);
+    HOOK_FUNCTION_DECLARE(INT_PTR,
+                          WINAPI,
+                          DialogBoxParamW,
+                          HINSTANCE hInstance,
+                          LPCWSTR lpTemplateName,
+                          HWND hWndParent,
+                          DLGPROC lpDialogFunc,
+                          LPARAM dwInitParam);
+    HOOK_FUNCTION_DECLARE(INT_PTR,
+                          WINAPI,
+                          DialogBoxIndirectParamA,
+                          HINSTANCE hInstance,
+                          LPCDLGTEMPLATEA hDialogTemplate,
+                          HWND hWndParent,
+                          DLGPROC lpDialogFunc,
+                          LPARAM dwInitParam);
+    HOOK_FUNCTION_DECLARE(INT_PTR,
+                          WINAPI,
+                          DialogBoxIndirectParamW,
+                          HINSTANCE hInstance,
+                          LPCDLGTEMPLATEW hDialogTemplate,
+                          HWND hWndParent,
+                          DLGPROC lpDialogFunc,
+                          LPARAM dwInitParam);
 
-    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, MoveWindow, HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
-    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, SetWindowPos, HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
+    HOOK_FUNCTION_DECLARE(BOOL,
+                          WINAPI,
+                          MoveWindow,
+                          HWND hWnd,
+                          int X,
+                          int Y,
+                          int nWidth,
+                          int nHeight,
+                          BOOL bRepaint);
+    HOOK_FUNCTION_DECLARE(BOOL,
+                          WINAPI,
+                          SetWindowPos,
+                          HWND hWnd,
+                          HWND hWndInsertAfter,
+                          int X,
+                          int Y,
+                          int cx,
+                          int cy,
+                          UINT uFlags);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, ShowWindow, HWND hWnd, int nCmdShow);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetClientRect, HWND hWnd, LPRECT lpRect);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetWindowRect, HWND hWnd, LPRECT lpRect);

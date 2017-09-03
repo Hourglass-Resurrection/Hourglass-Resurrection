@@ -4,8 +4,8 @@
 #include <map>
 #include <string>
 
-#include "../wintasee.h"
 #include "../tls.h"
+#include "../wintasee.h"
 //#include <setjmp.h>
 
 extern char commandSlot[256 * 8];
@@ -17,7 +17,7 @@ namespace Hooks
     void CloseHandles(DWORD threadId); // extern
 
 #define THREAD_NAME_EXCEPTION 0x406D1388
-#pragma pack(push,8)
+#pragma pack(push, 8)
     typedef struct tagTHREADNAME_INFO
     {
         DWORD dwType; // Must be 0x1000.
@@ -42,13 +42,15 @@ namespace Hooks
 
         __try
         {
-            RaiseException(THREAD_NAME_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+            RaiseException(THREAD_NAME_EXCEPTION,
+                           0,
+                           sizeof(info) / sizeof(ULONG_PTR),
+                           (ULONG_PTR*) &info);
         }
         __except (EXCEPTION_EXECUTE_HANDLER)
         {
         }
     }
-
 
     struct ThreadWrapperInfo
     {
@@ -95,16 +97,16 @@ namespace Hooks
         }
         ENTER();
         DWORD threadId = GetCurrentThreadId();
-        ThreadWrapperInfo& info = *(ThreadWrapperInfo*)lpParam;
+        ThreadWrapperInfo& info = *(ThreadWrapperInfo*) lpParam;
         while (true)
         {
             info.exitcode = STILL_ACTIVE;
             info.beforecallcontext.ContextFlags = CONTEXT_FULL;
             GetThreadContext(GetCurrentThread(), &info.beforecallcontext);
             //setjmp(info.beforecallbuf);
-    //		if(info.args.dwCreationFlags & CREATE_SUSPENDED)
-    //			SuspendThread(GetCurrentThread());
-    //		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+            //		if(info.args.dwCreationFlags & CREATE_SUSPENDED)
+            //			SuspendThread(GetCurrentThread());
+            //		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
             info.beforecallvalid = true;
             if (info.exitcode == STILL_ACTIVE)
                 info.exitcode = info.args.lpStartAddress(info.args.lpParameter);
@@ -133,30 +135,35 @@ namespace Hooks
     // 2 -> allow threads. create a thread normally, as if we hadn't hooked CreateThread.
     // 3 -> micromanaged "synchronous" threads. not currently working. abandoned and disabled, actually.
 
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateThread,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        SIZE_T dwStackSize,
-        LPTHREAD_START_ROUTINE lpStartAddress,
-        LPVOID lpParameter,
-        DWORD dwCreationFlags,
-        LPDWORD lpThreadId
-    );
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateThread,
+                  LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                  SIZE_T dwStackSize,
+                  LPTHREAD_START_ROUTINE lpStartAddress,
+                  LPVOID lpParameter,
+                  DWORD dwCreationFlags,
+                  LPDWORD lpThreadId);
     HOOKFUNC HANDLE WINAPI MyCreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        SIZE_T dwStackSize,
-        LPTHREAD_START_ROUTINE lpStartAddress,
-        LPVOID lpParameter,
-        DWORD dwCreationFlags,
-        LPDWORD lpThreadId
-    )
+                                          SIZE_T dwStackSize,
+                                          LPTHREAD_START_ROUTINE lpStartAddress,
+                                          LPVOID lpParameter,
+                                          DWORD dwCreationFlags,
+                                          LPDWORD lpThreadId)
     {
         ENTER(lpStartAddress, tls.curThreadCreateName);
         //cmdprintf("SHORTTRACE: 3,50");
 
-        if (tasflags.threadMode == 0 || tasflags.threadMode == 3 && !tls.curThreadCreateName || tasflags.threadMode == 4 && tls.curThreadCreateName || (tasflags.threadMode == 5 && !VerifyIsTrustedCaller()))
+        if (tasflags.threadMode == 0 || tasflags.threadMode == 3 && !tls.curThreadCreateName
+            || tasflags.threadMode == 4 && tls.curThreadCreateName
+            || (tasflags.threadMode == 5 && !VerifyIsTrustedCaller()))
         {
             const char* threadTypeName = tls.curThreadCreateName;
-            LOG() << "thread creation denied. name=" << (threadTypeName ? threadTypeName : "unknown_thread");
-            IPC::SendIPCMessage(IPC::Command::CMD_DENIED_THREAD, &lpStartAddress, sizeof(&lpStartAddress));
+            LOG() << "thread creation denied. name="
+                  << (threadTypeName ? threadTypeName : "unknown_thread");
+            IPC::SendIPCMessage(IPC::Command::CMD_DENIED_THREAD,
+                                &lpStartAddress,
+                                sizeof(&lpStartAddress));
 
             // FIXME: it's a terrible hack to choose between these two methods depending on whether we have a thread name,
             // but it gets herocore working with threads disabled, and I can't think of a better solution at the moment.
@@ -172,15 +179,26 @@ namespace Hooks
                 DWORD threadId;
                 if (!lpThreadId)
                     lpThreadId = &threadId;
-                HANDLE rv = CreateThread(lpThreadAttributes, dwStackSize, MyEmptyThreadFunction, lpParameter, dwCreationFlags, lpThreadId);
+                HANDLE rv = CreateThread(lpThreadAttributes,
+                                         dwStackSize,
+                                         MyEmptyThreadFunction,
+                                         lpParameter,
+                                         dwCreationFlags,
+                                         lpThreadId);
                 char name[64];
                 if (!threadTypeName)
                 {
                     IPC::SuggestThreadName suggested_name;
-                    IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
+                    IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME,
+                                        &suggested_name,
+                                        sizeof(suggested_name));
                     threadTypeName = suggested_name.GetThreadName();
                 }
-                sprintf(name, "%u_FAKE_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
+                sprintf(name,
+                        "%u_FAKE_%s_at_%u",
+                        threadCounter++,
+                        threadTypeName,
+                        detTimer.GetTicks());
                 SetThreadName(*lpThreadId, name);
                 return rv;
             }
@@ -193,13 +211,20 @@ namespace Hooks
             DWORD threadId;
             if (!lpThreadId)
                 lpThreadId = &threadId;
-            HANDLE rv = CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+            HANDLE rv = CreateThread(lpThreadAttributes,
+                                     dwStackSize,
+                                     lpStartAddress,
+                                     lpParameter,
+                                     dwCreationFlags,
+                                     lpThreadId);
             char name[64];
             const char* threadTypeName = tls.curThreadCreateName;
             if (!threadTypeName)
             {
                 IPC::SuggestThreadName suggested_name;
-                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME,
+                                    &suggested_name,
+                                    sizeof(suggested_name));
                 threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
@@ -211,10 +236,10 @@ namespace Hooks
         //	return 0;
         //	_asm{int 3};
         //	return 0;
-            //static int time = 0;
-            //time++;
-            //if(time <= 6)
-            //	return 0;
+        //static int time = 0;
+        //time++;
+        //if(time <= 6)
+        //	return 0;
 
         //	debuglog(LCF_THREAD, "!!!CreateThread(0x%X)\n", lpStartAddress);
 
@@ -232,16 +257,18 @@ namespace Hooks
         ////	debugprintf("worked: %d\n", worked);
         //	return rv;
 
-            // try to reuse a thread, to avoid leaking lots of thread handles:
-        if (dwStackSize == 0) dwStackSize = tasflags.threadStackSize; // In the case of 0 (default) assign it the default stack size.
+        // try to reuse a thread, to avoid leaking lots of thread handles:
+        if (dwStackSize == 0)
+            dwStackSize =
+                tasflags
+                    .threadStackSize; // In the case of 0 (default) assign it the default stack size.
         std::map<DWORD, ThreadWrapperInfo*>::iterator iter;
         for (iter = threadWrappers.begin(); iter != threadWrappers.end(); iter++)
         {
             ThreadWrapperInfo* twi = iter->second;
             //debugprintf("!!! 0x%X\n",twi);
-            if (twi && twi->idling && !twi->comatose &&
-                twi->args.dwStackSize == dwStackSize &&
-                twi->args.lpThreadAttributes == lpThreadAttributes)
+            if (twi && twi->idling && !twi->comatose && twi->args.dwStackSize == dwStackSize
+                && twi->args.lpThreadAttributes == lpThreadAttributes)
             {
                 twi->args.lpStartAddress = lpStartAddress;
                 twi->args.lpParameter = lpParameter;
@@ -252,13 +279,14 @@ namespace Hooks
                     resumeResult = ResumeThread(twi->privateHandle);
                     if (resumeResult <= 1)
                         break;
-                    if (resumeResult == (DWORD)-1)
+                    if (resumeResult == (DWORD) -1)
                         break;
                 }
-                if (resumeResult == (DWORD)-1)
+                if (resumeResult == (DWORD) -1)
                 {
-                    LOG() << "abandoning thread (handle=" << twi->handle << " (ph=" << twi->privateHandle
-                          << "), id=" << twi->threadId << "! error code " << GetLastError();
+                    LOG() << "abandoning thread (handle=" << twi->handle
+                          << " (ph=" << twi->privateHandle << "), id=" << twi->threadId
+                          << "! error code " << GetLastError();
                     twi->comatose = true;
                     continue; // private handle became invalid somehow?... give it up and keep searching for something else that's valid to reuse
                 }
@@ -271,7 +299,13 @@ namespace Hooks
                 // generate a new public handle (because the game might have closed the old one with CloseHandle)
                 HANDLE oldHandle = twi->handle;
                 threadWrappersOriginalHandleToId[twi->handle] = NULL;
-                DuplicateHandle(GetCurrentProcess(), twi->privateHandle, GetCurrentProcess(), &twi->handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+                DuplicateHandle(GetCurrentProcess(),
+                                twi->privateHandle,
+                                GetCurrentProcess(),
+                                &twi->handle,
+                                0,
+                                FALSE,
+                                DUPLICATE_SAME_ACCESS);
                 threadWrappersOriginalHandleToId[twi->handle] = twi->threadId;
 
                 ResetEvent(twi->exitEvent);
@@ -283,13 +317,20 @@ namespace Hooks
                     if (!threadTypeName)
                     {
                         IPC::SuggestThreadName suggested_name;
-                        IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
+                        IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME,
+                                            &suggested_name,
+                                            sizeof(suggested_name));
                         threadTypeName = suggested_name.GetThreadName();
                     }
-                    sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
+                    sprintf(name,
+                            "%u_%s_at_%u",
+                            threadCounter++,
+                            threadTypeName,
+                            detTimer.GetTicks());
                     SetThreadName(twi->threadId, name);
-                    LOG() << "reused wrapper thread and renamed it: " << name << ". handle=" << oldHandle
-                          << "->" << twi->handle << " (ph=" << twi->privateHandle << "), id=" << twi->threadId;
+                    LOG() << "reused wrapper thread and renamed it: " << name
+                          << ". handle=" << oldHandle << "->" << twi->handle
+                          << " (ph=" << twi->privateHandle << "), id=" << twi->threadId;
                 }
 
                 twi->idling = false;
@@ -317,8 +358,7 @@ namespace Hooks
             MyThreadWrapperThread,
             twi,
             dwCreationFlags,
-            lpThreadId
-        );
+            lpThreadId);
         //#pragma message("FIXMEEE")
         //	if(!tls.curThreadCreateName){
         //		debugprintf("OMFG!!\n");
@@ -326,7 +366,13 @@ namespace Hooks
         //		_asm{int 3}
         //		SuspendThread(handle);SuspendThread(handle);} //
         twi->handle = handle;
-        DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(), &twi->privateHandle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+        DuplicateHandle(GetCurrentProcess(),
+                        handle,
+                        GetCurrentProcess(),
+                        &twi->privateHandle,
+                        0,
+                        FALSE,
+                        DUPLICATE_SAME_ACCESS);
         threadId = *lpThreadId;
         threadWrappers[threadId] = twi;
         threadWrappersOriginalHandleToId[handle] = threadId;
@@ -341,13 +387,16 @@ namespace Hooks
             if (!threadTypeName)
             {
                 IPC::SuggestThreadName suggested_name;
-                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME, &suggested_name, sizeof(suggested_name));
+                IPC::SendIPCMessage(IPC::Command::CMD_SUGGEST_THREAD_NAME,
+                                    &suggested_name,
+                                    sizeof(suggested_name));
                 threadTypeName = suggested_name.GetThreadName();
             }
             sprintf(name, "%u_%s_at_%u", threadCounter++, threadTypeName, detTimer.GetTicks());
             SetThreadName(twi->threadId, name);
-            LOG() << "created real (wrapper) thread and named it: " << name << ". handle=" << twi->handle
-                  << " (ph=" << twi->privateHandle << "), id=" << twi->threadId;
+            LOG() << "created real (wrapper) thread and named it: " << name
+                  << ". handle=" << twi->handle << " (ph=" << twi->privateHandle
+                  << "), id=" << twi->threadId;
         }
 
         return handle;
@@ -378,11 +427,11 @@ namespace Hooks
             // maybe the only way to wrap threads completely properly is to
             // spoof all thread IDs the game can receive and then
             // make the thread saving/loading code a lot more complicated.
-    //		if(twi->beforecallvalid) 
-    //		{
-    ////			SetThreadContext(hThread, &twi->beforecallcontext);
-    //			longjmp(twi->beforecallbuf, dwExitCode);
-    //		}
+            //		if(twi->beforecallvalid)
+            //		{
+            ////			SetThreadContext(hThread, &twi->beforecallcontext);
+            //			longjmp(twi->beforecallbuf, dwExitCode);
+            //		}
             twi->idling = true;
             while (true)
                 SuspendThread(hThread);
@@ -396,7 +445,9 @@ namespace Hooks
         ENTER(dwExitCode);
 
         //DWORD threadId = GetThreadId(hThread); // function doesn't exist on windows 2000...
-        DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
+        DWORD threadId = (hThread == GetCurrentThread())
+                             ? GetCurrentThreadId()
+                             : threadWrappersOriginalHandleToId[hThread];
         ThreadWrapperInfo* twi = threadWrappers[threadId];
         if (twi)
         {
@@ -417,7 +468,9 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyGetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode)
     {
         ENTER(hThread, lpExitCode);
-        DWORD threadId = (hThread == GetCurrentThread()) ? GetCurrentThreadId() : threadWrappersOriginalHandleToId[hThread];
+        DWORD threadId = (hThread == GetCurrentThread())
+                             ? GetCurrentThreadId()
+                             : threadWrappersOriginalHandleToId[hThread];
         ThreadWrapperInfo* twi = threadWrappers[threadId];
         if (twi && (twi->comatose || twi->idling))
         {
@@ -436,41 +489,65 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(NTSTATUS, NTAPI, NtSetInformationThread, HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength);
-    HOOKFUNC NTSTATUS NTAPI MyNtSetInformationThread(HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength)
+    HOOK_FUNCTION(NTSTATUS,
+                  NTAPI,
+                  NtSetInformationThread,
+                  HANDLE ThreadHandle,
+                  DWORD ThreadInformationClass,
+                  PVOID ThreadInformation,
+                  ULONG ThreadInformationLength);
+    HOOKFUNC NTSTATUS NTAPI MyNtSetInformationThread(HANDLE ThreadHandle,
+                                                     DWORD ThreadInformationClass,
+                                                     PVOID ThreadInformation,
+                                                     ULONG ThreadInformationLength)
     {
-        if (ThreadInformationClass == 0x11/*ThreadHideFromDebugger*/)
+        if (ThreadInformationClass == 0x11 /*ThreadHideFromDebugger*/)
         {
             LOG() << "denied setting ThreadHideFromDebugger";
             return 0; // STATUS_SUCCESS
         }
-        NTSTATUS rv = NtSetInformationThread(ThreadHandle, ThreadInformationClass, ThreadInformation, ThreadInformationLength);
+        NTSTATUS rv = NtSetInformationThread(ThreadHandle,
+                                             ThreadInformationClass,
+                                             ThreadInformation,
+                                             ThreadInformationLength);
         return rv;
     }
 
-    struct _tiddata {
-        unsigned long   _tid;       /* thread ID */
-        uintptr_t _thandle;         /* thread handle */
-        int     _terrno;            /* errno value */
-        unsigned long   _tdoserrno; /* _doserrno value */
-        unsigned int    _fpds;      /* Floating Point data segment */
-        unsigned long   _holdrand;  /* rand() seed value */
-                                    //There's more than this in a full _tiddata struct, but this is probably everything we're interested in
+    struct _tiddata
+    {
+        unsigned long _tid; /* thread ID */
+        uintptr_t _thandle; /* thread handle */
+        int _terrno; /* errno value */
+        unsigned long _tdoserrno; /* _doserrno value */
+        unsigned int _fpds; /* Floating Point data segment */
+        unsigned long _holdrand; /* rand() seed value */
+        //There's more than this in a full _tiddata struct, but this is probably everything we're interested in
     };
 
-    typedef struct _tiddata * _ptiddata;
+    typedef struct _tiddata* _ptiddata;
     BOOL FlsRecursing = FALSE;
-    std::map<DWORD, DWORD *> fseeds;
+    std::map<DWORD, DWORD*> fseeds;
     HOOK_FUNCTION(BOOL, WINAPI, FlsSetValue, DWORD dwFlsIndex, LPVOID lpFlsData);
-    HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
+    HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData)
+    {
         BOOL rv = FlsSetValue(dwFlsIndex, lpFlsData);
-        if ((!FlsRecursing) && (lpFlsData != NULL)) {
+        if ((!FlsRecursing) && (lpFlsData != NULL))
+        {
             FlsRecursing = TRUE;
-            if (fseeds.find(dwFlsIndex) == fseeds.end()) {
-                _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
-                LOG() << "FlsSetValue(" << dwFlsIndex << ",lpFlsData), set _tiddata structure at " << ptd;
-                IPC::AutoWatch auto_watch(&(ptd->_holdrand), 'd', 'u', (std::wstring(L"AutoRandSeed_Fiber_") + std::to_wstring(dwFlsIndex)).c_str());
-                IPC::SendIPCMessage(IPC::Command::CMD_WATCH_ADDRESS, &auto_watch, sizeof(auto_watch));
+            if (fseeds.find(dwFlsIndex) == fseeds.end())
+            {
+                _ptiddata ptd = (_ptiddata) FlsGetValue(dwFlsIndex);
+                LOG() << "FlsSetValue(" << dwFlsIndex << ",lpFlsData), set _tiddata structure at "
+                      << ptd;
+                IPC::AutoWatch auto_watch(&(ptd->_holdrand),
+                                          'd',
+                                          'u',
+                                          (std::wstring(L"AutoRandSeed_Fiber_")
+                                           + std::to_wstring(dwFlsIndex))
+                                              .c_str());
+                IPC::SendIPCMessage(IPC::Command::CMD_WATCH_ADDRESS,
+                                    &auto_watch,
+                                    sizeof(auto_watch));
                 fseeds[dwFlsIndex] = &(ptd->_holdrand);
             }
             FlsRecursing = FALSE;
@@ -502,12 +579,13 @@ namespace Hooks
     HOOK_FUNCTION(PVOID, WINAPI, FlsGetValue, DWORD dwFlsIndex);
     HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
 
-    void ThreadHandleToExitHandle(HANDLE& hHandle)
+        void ThreadHandleToExitHandle(HANDLE& hHandle)
     {
         std::map<HANDLE, DWORD>::iterator found = threadWrappersOriginalHandleToId.find(hHandle);
         if (found != threadWrappersOriginalHandleToId.end())
         {
-            std::map<DWORD, ThreadWrapperInfo*>::iterator found2 = threadWrappers.find(found->second);
+            std::map<DWORD, ThreadWrapperInfo*>::iterator found2 =
+                threadWrappers.find(found->second);
             if (found2 != threadWrappers.end())
             {
                 ThreadWrapperInfo* twi = found2->second;
@@ -518,8 +596,7 @@ namespace Hooks
 
     void ApplyThreadIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, KERNEL32, CreateThread),
             MAKE_INTERCEPT(1, KERNEL32, ExitThread),
             MAKE_INTERCEPT(1, KERNEL32, TerminateThread),

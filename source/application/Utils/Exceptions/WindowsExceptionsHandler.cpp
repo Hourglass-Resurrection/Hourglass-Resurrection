@@ -19,7 +19,8 @@ namespace
         switch (code)
         {
         case EXCEPTION_ACCESS_VIOLATION:
-            message = "The thread attempted to read from or write to a virtual address for which it does not have access.";
+            message = "The thread attempted to read from or write to a virtual address for which "
+                      "it does not have access.";
             break;
         case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
             message = "The thread attempted to access an array element that is out of bounds.";
@@ -28,28 +29,33 @@ namespace
             message = "A breakpoint was encountered.";
             break;
         case EXCEPTION_DATATYPE_MISALIGNMENT:
-            message = "The thread attempted to read or write data that is misaligned on hardware that does not provide alignment.";
+            message = "The thread attempted to read or write data that is misaligned on hardware "
+                      "that does not provide alignment.";
             break;
         case EXCEPTION_FLT_DENORMAL_OPERAND:
             message = "One of the operands in a floating point operation was denormal.";
             break;
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-            message = "The thread attempted to divide a floating point value by a floating point divisor of 0 (zero).";
+            message = "The thread attempted to divide a floating point value by a floating point "
+                      "divisor of 0 (zero).";
             break;
         case EXCEPTION_FLT_INEXACT_RESULT:
-            message = "The result of a floating point operation could not be represented exactly as a decimal fraction.";
+            message = "The result of a floating point operation could not be represented exactly "
+                      "as a decimal fraction.";
             break;
         case EXCEPTION_FLT_INVALID_OPERATION:
             message = "Invalid floating point operation.";
             break;
         case EXCEPTION_FLT_OVERFLOW:
-            message = "The exponent of a floating point operation was greater than the magnitude allowed by the corresponding type.";
+            message = "The exponent of a floating point operation was greater than the magnitude "
+                      "allowed by the corresponding type.";
             break;
         case EXCEPTION_FLT_STACK_CHECK:
             message = "The stack overflowed or underflowed, because of a floating point operation.";
             break;
         case EXCEPTION_FLT_UNDERFLOW:
-            message = "The exponent of a floating point operation was less than the magnitude allowed by the corresponding type.";
+            message = "The exponent of a floating point operation was less than the magnitude "
+                      "allowed by the corresponding type.";
             break;
         case EXCEPTION_GUARD_PAGE:
             message = "The thread accessed memory allocated with the PAGE_GUARD modifier.";
@@ -58,25 +64,32 @@ namespace
             message = "The thread tried to execute an invalid instruction.";
             break;
         case EXCEPTION_IN_PAGE_ERROR:
-            message = "The thread tried to access a page that is not present, and the system was unable to load the page.";
+            message = "The thread tried to access a page that is not present, and the system was "
+                      "unable to load the page.";
             break;
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
-            message = "The thread attempted to divide an integer value by an integer divisor of 0 (zero).";
+            message = "The thread attempted to divide an integer value by an integer divisor of 0 "
+                      "(zero).";
             break;
         case EXCEPTION_INT_OVERFLOW:
-            message = "The result of an integer operation created a value that was too large to be held by the destination register.";
+            message = "The result of an integer operation created a value that was too large to be "
+                      "held by the destination register.";
             break;
         case EXCEPTION_INVALID_DISPOSITION:
-            message = "An exception handler returned an invalid disposition to the exception dispatcher.";
+            message =
+                "An exception handler returned an invalid disposition to the exception dispatcher.";
             break;
         case EXCEPTION_INVALID_HANDLE:
-            message = "The thread used a handle to a kernel object that was invalid. Probably because it has been closed.";
+            message = "The thread used a handle to a kernel object that was invalid. Probably "
+                      "because it has been closed.";
             break;
         case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-            message = "The thread attempted to continue execution after a non-continuable exception occured.";
+            message = "The thread attempted to continue execution after a non-continuable "
+                      "exception occured.";
             break;
         case EXCEPTION_PRIV_INSTRUCTION:
-            message = "The thread attempted to execute an instruction with an operation that is not allowed in the current computer mode.";
+            message = "The thread attempted to execute an instruction with an operation that is "
+                      "not allowed in the current computer mode.";
             break;
         case EXCEPTION_SINGLE_STEP:
             message = "Trace trap or other single instruction mechanism signal.";

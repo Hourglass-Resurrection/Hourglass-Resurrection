@@ -9,16 +9,31 @@ namespace Hooks
 {
     HOOK_FUNCTION_DECLARE(DWORD, WINAPI, timeGetTime);
     HOOK_FUNCTION_DECLARE(DWORD, WINAPI, GetTickCount);
-    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetSystemTimes, LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime);
+    HOOK_FUNCTION_DECLARE(BOOL,
+                          WINAPI,
+                          GetSystemTimes,
+                          LPFILETIME lpIdleTime,
+                          LPFILETIME lpKernelTime,
+                          LPFILETIME lpUserTime);
     HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, timeGetSystemTime, LPMMTIME pmmt, UINT cbmmt);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTime, LPSYSTEMTIME lpSystemTime);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTimeAsFileTime, LPFILETIME lpSystemTimeAsFileTime);
-    HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetSystemTimePreciseAsFileTime, LPFILETIME lpSystemTimeAsFileTime);
+    HOOK_FUNCTION_DECLARE(VOID,
+                          WINAPI,
+                          GetSystemTimePreciseAsFileTime,
+                          LPFILETIME lpSystemTimeAsFileTime);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, GetLocalTime, LPSYSTEMTIME lpSystemTime);
     HOOK_FUNCTION_DECLARE(NTSTATUS, NTAPI, NtQuerySystemTime, PLARGE_INTEGER SystemTime);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, QueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount);
-    HOOK_FUNCTION_DECLARE(BOOL, WINAPI, QueryPerformanceFrequency, LARGE_INTEGER* lpPerformanceFrequency);
-    HOOK_FUNCTION_DECLARE(NTSTATUS, NTAPI, NtQueryPerformanceCounter, LARGE_INTEGER* lpPerformanceCount, LARGE_INTEGER* lpPerformanceFrequency);
+    HOOK_FUNCTION_DECLARE(BOOL,
+                          WINAPI,
+                          QueryPerformanceFrequency,
+                          LARGE_INTEGER* lpPerformanceFrequency);
+    HOOK_FUNCTION_DECLARE(NTSTATUS,
+                          NTAPI,
+                          NtQueryPerformanceCounter,
+                          LARGE_INTEGER* lpPerformanceCount,
+                          LARGE_INTEGER* lpPerformanceFrequency);
 
     // these are timing-related but not really time-related,
     // so it's probably not necessary to hook them.

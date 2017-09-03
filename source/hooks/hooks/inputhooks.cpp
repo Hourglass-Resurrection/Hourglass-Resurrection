@@ -1,48 +1,365 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 #include "../wintasee.h"
 //#include "../tls.h"
 
-DEFINE_LOCAL_GUID(IID_IDirectInputA, 0x89521360, 0xAA8A, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInputW, 0x89521361, 0xAA8A, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInput2A, 0x5944E662, 0xAA8A, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInput2W, 0x5944E663, 0xAA8A, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInput7A, 0x9A4CB684, 0x236D, 0x11D3, 0x8E, 0x9D, 0x00, 0xC0, 0x4F, 0x68, 0x44, 0xAE);
-DEFINE_LOCAL_GUID(IID_IDirectInput7W, 0x9A4CB685, 0x236D, 0x11D3, 0x8E, 0x9D, 0x00, 0xC0, 0x4F, 0x68, 0x44, 0xAE);
-DEFINE_LOCAL_GUID(IID_IDirectInput8A, 0xBF798030, 0x483A, 0x4DA2, 0xAA, 0x99, 0x5D, 0x64, 0xED, 0x36, 0x97, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInput8W, 0xBF798031, 0x483A, 0x4DA2, 0xAA, 0x99, 0x5D, 0x64, 0xED, 0x36, 0x97, 0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputA,
+                  0x89521360,
+                  0xAA8A,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputW,
+                  0x89521361,
+                  0xAA8A,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInput2A,
+                  0x5944E662,
+                  0xAA8A,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInput2W,
+                  0x5944E663,
+                  0xAA8A,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInput7A,
+                  0x9A4CB684,
+                  0x236D,
+                  0x11D3,
+                  0x8E,
+                  0x9D,
+                  0x00,
+                  0xC0,
+                  0x4F,
+                  0x68,
+                  0x44,
+                  0xAE);
+DEFINE_LOCAL_GUID(IID_IDirectInput7W,
+                  0x9A4CB685,
+                  0x236D,
+                  0x11D3,
+                  0x8E,
+                  0x9D,
+                  0x00,
+                  0xC0,
+                  0x4F,
+                  0x68,
+                  0x44,
+                  0xAE);
+DEFINE_LOCAL_GUID(IID_IDirectInput8A,
+                  0xBF798030,
+                  0x483A,
+                  0x4DA2,
+                  0xAA,
+                  0x99,
+                  0x5D,
+                  0x64,
+                  0xED,
+                  0x36,
+                  0x97,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInput8W,
+                  0xBF798031,
+                  0x483A,
+                  0x4DA2,
+                  0xAA,
+                  0x99,
+                  0x5D,
+                  0x64,
+                  0xED,
+                  0x36,
+                  0x97,
+                  0x00);
 
-DEFINE_LOCAL_GUID(IID_IDirectInputDeviceA, 0x5944E680, 0xC92E, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInputDeviceW, 0x5944E681, 0xC92E, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice2A, 0x5944E682, 0xC92E, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice2W, 0x5944E683, 0xC92E, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice7A, 0x57D7C6BC, 0x2356, 0x11D3, 0x8E, 0x9D, 0x00, 0xC0, 0x4F, 0x68, 0x44, 0xAE);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice7W, 0x57D7C6BD, 0x2356, 0x11D3, 0x8E, 0x9D, 0x00, 0xC0, 0x4F, 0x68, 0x44, 0xAE);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice8A, 0x54D41080, 0xDC15, 0x4833, 0xA4, 0x1B, 0x74, 0x8F, 0x73, 0xA3, 0x81, 0x79);
-DEFINE_LOCAL_GUID(IID_IDirectInputDevice8W, 0x54D41081, 0xDC15, 0x4833, 0xA4, 0x1B, 0x74, 0x8F, 0x73, 0xA3, 0x81, 0x79);
+DEFINE_LOCAL_GUID(IID_IDirectInputDeviceA,
+                  0x5944E680,
+                  0xC92E,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputDeviceW,
+                  0x5944E681,
+                  0xC92E,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice2A,
+                  0x5944E682,
+                  0xC92E,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice2W,
+                  0x5944E683,
+                  0xC92E,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice7A,
+                  0x57D7C6BC,
+                  0x2356,
+                  0x11D3,
+                  0x8E,
+                  0x9D,
+                  0x00,
+                  0xC0,
+                  0x4F,
+                  0x68,
+                  0x44,
+                  0xAE);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice7W,
+                  0x57D7C6BD,
+                  0x2356,
+                  0x11D3,
+                  0x8E,
+                  0x9D,
+                  0x00,
+                  0xC0,
+                  0x4F,
+                  0x68,
+                  0x44,
+                  0xAE);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice8A,
+                  0x54D41080,
+                  0xDC15,
+                  0x4833,
+                  0xA4,
+                  0x1B,
+                  0x74,
+                  0x8F,
+                  0x73,
+                  0xA3,
+                  0x81,
+                  0x79);
+DEFINE_LOCAL_GUID(IID_IDirectInputDevice8W,
+                  0x54D41081,
+                  0xDC15,
+                  0x4833,
+                  0xA4,
+                  0x1B,
+                  0x74,
+                  0x8F,
+                  0x73,
+                  0xA3,
+                  0x81,
+                  0x79);
 
 // Device GUIDs, re-defined as local GUIDs to avoid linker errors.
-DEFINE_LOCAL_GUID(GUID_SysMouse, 0x6F1D2B60, 0xD5A0, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_SysKeyboard, 0x6F1D2B61, 0xD5A0, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
+DEFINE_LOCAL_GUID(GUID_SysMouse,
+                  0x6F1D2B60,
+                  0xD5A0,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_SysKeyboard,
+                  0x6F1D2B61,
+                  0xD5A0,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
 
 // DeviceObject GUIDs, re-defined as local GUIDs to avoid linker errors.
-DEFINE_LOCAL_GUID(GUID_XAxis, 0xA36D02E0, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_YAxis, 0xA36D02E1, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_ZAxis, 0xA36D02E2, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_RxAxis, 0xA36D02F4, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_RyAxis, 0xA36D02F5, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_RzAxis, 0xA36D02E3, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_Slider, 0xA36D02E4, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_Button, 0xA36D02F0, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_Key, 0x55728220, 0xD33C, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_POV, 0xA36D02F2, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-DEFINE_LOCAL_GUID(GUID_Unknown, 0xA36D02F3, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
-
-
+DEFINE_LOCAL_GUID(GUID_XAxis,
+                  0xA36D02E0,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_YAxis,
+                  0xA36D02E1,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_ZAxis,
+                  0xA36D02E2,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_RxAxis,
+                  0xA36D02F4,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_RyAxis,
+                  0xA36D02F5,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_RzAxis,
+                  0xA36D02E3,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_Slider,
+                  0xA36D02E4,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_Button,
+                  0xA36D02F0,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_Key,
+                  0x55728220,
+                  0xD33C,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_POV,
+                  0xA36D02F2,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
+DEFINE_LOCAL_GUID(GUID_Unknown,
+                  0xA36D02F3,
+                  0xC9F3,
+                  0x11CF,
+                  0xBF,
+                  0xC7,
+                  0x44,
+                  0x45,
+                  0x53,
+                  0x54,
+                  0x00,
+                  0x00);
 
 namespace Hooks
 {
@@ -50,15 +367,146 @@ namespace Hooks
     {
         using Log = DebugLog<LogCategory::DINPUT>;
 
-        template<typename IDirectInputDeviceN> struct IDirectInputDeviceTraits {};
-        template<> struct IDirectInputDeviceTraits<IDirectInputDeviceA> { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDeviceW> { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice2A> { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice2W> { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice7A> { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice7W> { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 16 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice8A> { typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOA LPDIEFFECTINFON; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN; typedef LPCSTR  LPCNSTR; typedef CHAR  NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 20 }; };
-        template<> struct IDirectInputDeviceTraits<IDirectInputDevice8W> { typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN; typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN; typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN; typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN; typedef LPDIEFFECTINFOW LPDIEFFECTINFON; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN; typedef LPCWSTR LPCNSTR; typedef WCHAR NCHAR; enum { defaultDIDEVICEOBJECTDATAsize = 20 }; };
+        template<typename IDirectInputDeviceN>
+        struct IDirectInputDeviceTraits
+        {
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDeviceA>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOA LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCSTR LPCNSTR;
+            typedef CHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDeviceW>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOW LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCWSTR LPCNSTR;
+            typedef WCHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice2A>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOA LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCSTR LPCNSTR;
+            typedef CHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice2W>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOW LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCWSTR LPCNSTR;
+            typedef WCHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice7A>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOA LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCSTR LPCNSTR;
+            typedef CHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice7W>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOW LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCWSTR LPCNSTR;
+            typedef WCHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 16
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice8A>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKA LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEA LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEA LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKA LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOA LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERA LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCSTR LPCNSTR;
+            typedef CHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 20
+            };
+        };
+        template<>
+        struct IDirectInputDeviceTraits<IDirectInputDevice8W>
+        {
+            typedef LPDIENUMDEVICEOBJECTSCALLBACKW LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef LPDIDEVICEINSTANCEW LPDIDEVICEINSTANCEN;
+            typedef LPDIDEVICEOBJECTINSTANCEW LPDIDEVICEOBJECTINSTANCEN;
+            typedef LPDIENUMEFFECTSCALLBACKW LPDIENUMEFFECTSCALLBACKN;
+            typedef LPDIEFFECTINFOW LPDIEFFECTINFON;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIDEVICEIMAGEINFOHEADERW LPDIDEVICEIMAGEINFOHEADERN;
+            typedef LPCWSTR LPCNSTR;
+            typedef WCHAR NCHAR;
+            enum
+            {
+                defaultDIDEVICEOBJECTDATAsize = 20
+            };
+        };
 
         // The DIDEVICEOBJECTINSTANCE struct has to be locally re-implemented thanks to it being defined in dinput.h as 2 different structs,
         // this creates a conflict for our catch-all model since only the *A-implementation gets used if we use the normal struct due to our
@@ -69,35 +517,54 @@ namespace Hooks
         // accessing the data from this struct compared to a "real" one.
         // -- Warepire
         template<typename NCHAR>
-        struct MyDIDEVICEOBJECTINSTANCE {
-            DWORD	dwSize;
-            GUID	guidType;
-            DWORD	dwOfs;
-            DWORD	dwType;
-            DWORD	dwFlags;
-            NCHAR	tszName[MAX_PATH];
-            DWORD	dwFFMaxForce;
-            DWORD	dwFFForceResolution;
-            WORD	wCollectionNumber;
-            WORD	wDesignatorIndex;
-            WORD	wUsagePage;
-            WORD	wUsage;
-            DWORD	dwDimension;
-            WORD	wExponent;
-            WORD	wReportId;
+        struct MyDIDEVICEOBJECTINSTANCE
+        {
+            DWORD dwSize;
+            GUID guidType;
+            DWORD dwOfs;
+            DWORD dwType;
+            DWORD dwFlags;
+            NCHAR tszName[MAX_PATH];
+            DWORD dwFFMaxForce;
+            DWORD dwFFForceResolution;
+            WORD wCollectionNumber;
+            WORD wDesignatorIndex;
+            WORD wUsagePage;
+            WORD wUsage;
+            DWORD dwDimension;
+            WORD wExponent;
+            WORD wReportId;
         };
 
-        // Due to NCHAR being able to take the shape of both a CHAR and WCHAR we cannot assign it data in string format.
-        // This is caused by the difference in length of the 2 datatypes. We are however lucky enough that the values we
-        // want to assign are the same, so we will just initiate tszName as an array using hexadecimal values.
-        // To make the code somewhat easier to read I added these defines.
-        // -- Warepire
-        #define XAXIS   { 0x58, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 }			// "X-axis\0"
-        #define YAXIS   { 0x59, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 }			// "Y-axis\0"
-        #define WHEEL   { 0x57, 0x68, 0x65, 0x65, 0x6C, 0x00 }					// "Wheel\0"
-        #define BUTTON0 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x30, 0x00 }// "Button 0\0"
-        #define BUTTON1 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x31, 0x00 }// "Button 1\0"
-        #define BUTTON2 { 0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 }// "Button 2\0"
+// Due to NCHAR being able to take the shape of both a CHAR and WCHAR we cannot assign it data in string format.
+// This is caused by the difference in length of the 2 datatypes. We are however lucky enough that the values we
+// want to assign are the same, so we will just initiate tszName as an array using hexadecimal values.
+// To make the code somewhat easier to read I added these defines.
+// -- Warepire
+#define XAXIS                                    \
+    {                                            \
+        0x58, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 \
+    } // "X-axis\0"
+#define YAXIS                                    \
+    {                                            \
+        0x59, 0x2D, 0x61, 0x78, 0x69, 0x73, 0x00 \
+    } // "Y-axis\0"
+#define WHEEL                              \
+    {                                      \
+        0x57, 0x68, 0x65, 0x65, 0x6C, 0x00 \
+    } // "Wheel\0"
+#define BUTTON0                                              \
+    {                                                        \
+        0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x30, 0x00 \
+    } // "Button 0\0"
+#define BUTTON1                                              \
+    {                                                        \
+        0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x31, 0x00 \
+    } // "Button 1\0"
+#define BUTTON2                                              \
+    {                                                        \
+        0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0x20, 0x32, 0x00 \
+    } // "Button 2\0"
 
         typedef std::vector<struct BufferedInput*> BufferedInputList;
         static BufferedInputList s_bufferedKeySlots;
@@ -112,7 +579,14 @@ namespace Hooks
             HANDLE event;
             BufferedInputList& bufferList;
 
-            BufferedInput(BufferedInputList& buflist) : data(NULL), size(0), used(0), startOffset(0), overflowed(FALSE), event(NULL), bufferList(buflist)
+            BufferedInput(BufferedInputList& buflist)
+                : data(NULL)
+                , size(0)
+                , used(0)
+                , startOffset(0)
+                , overflowed(FALSE)
+                , event(NULL)
+                , bufferList(buflist)
             {
                 LOG() << "(" << this << ") adding self to list.";
                 bufferList.push_back(this);
@@ -122,7 +596,8 @@ namespace Hooks
                 Resize(0);
 
                 LOG() << "(" << this << ") removing self from list.";
-                bufferList.erase(std::remove(bufferList.begin(), bufferList.end(), this), bufferList.end());
+                bufferList.erase(std::remove(bufferList.begin(), bufferList.end(), this),
+                                 bufferList.end());
             }
             void Resize(DWORD newSize)
             {
@@ -133,7 +608,8 @@ namespace Hooks
                 if (oldSize != newSize)
                 {
                     LOG() << "allocating " << oldSize << " -> " << newSize;
-                    data = (DIDEVICEOBJECTDATA*)realloc(data, newSize * sizeof(DIDEVICEOBJECTDATA));
+                    data =
+                        (DIDEVICEOBJECTDATA*) realloc(data, newSize * sizeof(DIDEVICEOBJECTDATA));
 
                     if (used > newSize)
                     {
@@ -143,7 +619,10 @@ namespace Hooks
                 }
                 LOG() << "done.";
             }
-            HRESULT GetData(DWORD elemSize, LPDIDEVICEOBJECTDATA dataOut, LPDWORD numElements, DWORD flags)
+            HRESULT GetData(DWORD elemSize,
+                            LPDIDEVICEOBJECTDATA dataOut,
+                            LPDWORD numElements,
+                            DWORD flags)
             {
                 ENTER(elemSize, dataOut, numElements, flags);
                 if (!numElements)
@@ -159,8 +638,8 @@ namespace Hooks
                 {
                     while (requested && newUsed)
                     {
-                        LOG() << "assigning " << elemSize << " bytes to "
-                              << &dataOut[retrieved] << " from " << &data[(startOffset + retrieved) % size];
+                        LOG() << "assigning " << elemSize << " bytes to " << &dataOut[retrieved]
+                              << " from " << &data[(startOffset + retrieved) % size];
                         if (dataOut)
                             dataOut[retrieved] = data[(startOffset + retrieved) % size];
                         retrieved++;
@@ -172,10 +651,12 @@ namespace Hooks
                 {
                     while (requested && newUsed)
                     {
-                        LOG() << "copying " << elemSize << " bytes to "
-                              << &dataOut[retrieved] << " from " << &data[(startOffset + retrieved) % size];
+                        LOG() << "copying " << elemSize << " bytes to " << &dataOut[retrieved]
+                              << " from " << &data[(startOffset + retrieved) % size];
                         if (dataOut)
-                            memcpy(((char*)dataOut) + elemSize * retrieved, &data[(startOffset + retrieved) % size], elemSize);
+                            memcpy(((char*) dataOut) + elemSize * retrieved,
+                                   &data[(startOffset + retrieved) % size],
+                                   elemSize);
 
                         // if memcpy doesn't work
                         //if(dataOut)
@@ -192,16 +673,19 @@ namespace Hooks
                         //		to.dwTimeStamp = from.dwTimeStamp;
                         //}
 
-                        DIDEVICEOBJECTDATA& to = *(DIDEVICEOBJECTDATA*)(((char*)dataOut) + elemSize * retrieved);
-                        LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs << ", data="
-                              << to.dwData << ", id=" << to.dwSequence << ") (used=" << newUsed << ")";
+                        DIDEVICEOBJECTDATA& to =
+                            *(DIDEVICEOBJECTDATA*) (((char*) dataOut) + elemSize * retrieved);
+                        LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs
+                              << ", data=" << to.dwData << ", id=" << to.dwSequence
+                              << ") (used=" << newUsed << ")";
 
                         retrieved++;
                         requested--;
                         newUsed--;
 
-                        LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs << ", data="
-                              << to.dwData << ", id=" << to.dwSequence << ") (used=" << newUsed << ")";
+                        LOG() << "BufferedInput::GotEvent(VK=0x??, DIK=" << to.dwOfs
+                              << ", data=" << to.dwData << ", id=" << to.dwSequence
+                              << ") (used=" << newUsed << ")";
                     }
                 }
 
@@ -216,7 +700,8 @@ namespace Hooks
                     {
                         overflowed = FALSE;
                         if (used && event)
-                            SetEvent(event); // tells app that we still have more input, otherwise it will lag behind weirdly
+                            SetEvent(
+                                event); // tells app that we still have more input, otherwise it will lag behind weirdly
                     }
                 }
 
@@ -233,25 +718,26 @@ namespace Hooks
                     // convert event from VK to DIK
                     HKL keyboardLayout = MyGetKeyboardLayout(0);
                     int VK = inputEvent.dwOfs;
-                    int DIK = MapVirtualKeyEx(VK, /*MAPVK_VK_TO_VSC*/0, keyboardLayout) & 0xFF;
+                    int DIK = MapVirtualKeyEx(VK, /*MAPVK_VK_TO_VSC*/ 0, keyboardLayout) & 0xFF;
                     inputEvent.dwOfs = DIK;
 
                     LOG() << "(VK=" << VK << ", DIK=" << DIK << ", data=" << inputEvent.dwData
-                        << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
+                          << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
 
                     data[(startOffset + used) % size] = inputEvent;
                     used++;
 
                     LOG() << "(VK=" << VK << ", DIK=" << DIK << ", data=" << inputEvent.dwData
-                        << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
+                          << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
                 }
                 if (event)
                     SetEvent(event);
             }
-            static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
+            static void AddEventToAllDevices(DIDEVICEOBJECTDATA inputEvent,
+                                             BufferedInputList& bufferList)
             {
                 ENTER();
-                for (int i = (int)bufferList.size() - 1; i >= 0; i--)
+                for (int i = (int) bufferList.size() - 1; i >= 0; i--)
                     bufferList[i]->AddEvent(inputEvent);
             }
             void AddMouseEvent(DIDEVICEOBJECTDATA inputEvent)
@@ -262,7 +748,7 @@ namespace Hooks
                 else
                 {
                     LOG() << "(dwOfs=" << inputEvent.dwOfs << ", data=" << inputEvent.dwData
-                        << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
+                          << ", id=" << inputEvent.dwSequence << ") (used=" << used << ")";
 
                     data[(startOffset + used) % size] = inputEvent;
                     used++;
@@ -270,43 +756,60 @@ namespace Hooks
                 if (event)
                     SetEvent(event);
             }
-            static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent, BufferedInputList& bufferList)
+            static void AddMouseEventToAllDevices(DIDEVICEOBJECTDATA inputEvent,
+                                                  BufferedInputList& bufferList)
             {
                 ENTER();
-                for (int i = (int)bufferList.size() - 1; i >= 0; i--)
+                for (int i = (int) bufferList.size() - 1; i >= 0; i--)
                     bufferList[i]->AddMouseEvent(inputEvent);
             }
         };
 
         // HACK: Something to init GUID to if it's not passed as a param to the class
         // TODO: Implement the hooking in such a way that GUID is ALWAYS needed for this hook.
-        static const GUID emptyGUID = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
+        static const GUID emptyGUID = {0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0}};
 
         // TODO: more than keyboard
         template<typename IDirectInputDeviceN>
         class MyDirectInputDevice : public IDirectInputDeviceN
         {
         public:
-
             typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPCNSTR LPCNSTR;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIENUMDEVICEOBJECTSCALLBACKN LPDIENUMDEVICEOBJECTSCALLBACKN;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEOBJECTINSTANCEN LPDIDEVICEOBJECTINSTANCEN;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEINSTANCEN LPDIDEVICEINSTANCEN;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIENUMEFFECTSCALLBACKN LPDIENUMEFFECTSCALLBACKN;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIEFFECTINFON LPDIEFFECTINFON;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIACTIONFORMATN LPDIACTIONFORMATN;
-            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEIMAGEINFOHEADERN LPDIDEVICEIMAGEINFOHEADERN;
+            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::
+                LPDIENUMDEVICEOBJECTSCALLBACKN LPDIENUMDEVICEOBJECTSCALLBACKN;
+            typedef
+                typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEOBJECTINSTANCEN
+                    LPDIDEVICEOBJECTINSTANCEN;
+            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEINSTANCEN
+                LPDIDEVICEINSTANCEN;
+            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIENUMEFFECTSCALLBACKN
+                LPDIENUMEFFECTSCALLBACKN;
+            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIEFFECTINFON
+                LPDIEFFECTINFON;
+            typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIACTIONFORMATN
+                LPDIACTIONFORMATN;
+            typedef
+                typename IDirectInputDeviceTraits<IDirectInputDeviceN>::LPDIDEVICEIMAGEINFOHEADERN
+                    LPDIDEVICEIMAGEINFOHEADERN;
             typedef typename IDirectInputDeviceTraits<IDirectInputDeviceN>::NCHAR NCHAR;
 
-            MyDirectInputDevice(IDirectInputDeviceN* device) : m_device(device), m_type(emptyGUID), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+            MyDirectInputDevice(IDirectInputDeviceN* device)
+                : m_device(device)
+                , m_type(emptyGUID)
+                , m_acquired(FALSE)
+                , m_bufferedInput(s_bufferedKeySlots)
             {
                 LOG() << "created without GUID.";
             }
 
-            MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid) : m_device(device), m_type(guid), m_acquired(FALSE), m_bufferedInput(s_bufferedKeySlots)
+            MyDirectInputDevice(IDirectInputDeviceN* device, REFGUID guid)
+                : m_device(device)
+                , m_type(guid)
+                , m_acquired(FALSE)
+                , m_bufferedInput(s_bufferedKeySlots)
             {
-                LOG() << "created, received GUID: " << guid.Data1 << " " << guid.Data2
-                      << " " << guid.Data3 << " " << guid.Data4;
+                LOG() << "created, received GUID: " << guid.Data1 << " " << guid.Data2 << " "
+                      << guid.Data3 << " " << guid.Data4;
             }
 
             /*** IUnknown methods ***/
@@ -345,14 +848,17 @@ namespace Hooks
                 {
                     // This function requires that lpDIDevCaps exists and that it's dwSize member is initialized to either
                     // sizeof(DIDEVCAPS_DX3) which is 24 bytes or sizeof(DIDEVCAPS) which is 44 bytes.
-                    if (lpDIDevCaps == NULL) return E_POINTER;
-                    if (lpDIDevCaps->dwSize != 24 && lpDIDevCaps->dwSize != 44) return DIERR_INVALIDPARAM;
+                    if (lpDIDevCaps == NULL)
+                        return E_POINTER;
+                    if (lpDIDevCaps->dwSize != 24 && lpDIDevCaps->dwSize != 44)
+                        return DIERR_INVALIDPARAM;
                     lpDIDevCaps->dwFlags = (DIDC_ATTACHED | DIDC_EMULATED);
                     lpDIDevCaps->dwDevType = 0x112;
                     lpDIDevCaps->dwAxes = 3;
                     lpDIDevCaps->dwButtons = 3;
                     lpDIDevCaps->dwPOVs = 0;
-                    if (lpDIDevCaps->dwSize == 44 /*sizeof(DIDEVCAPS)*/) // These are only defined in structs for DX-versions 5+
+                    if (lpDIDevCaps->dwSize
+                        == 44 /*sizeof(DIDEVCAPS)*/) // These are only defined in structs for DX-versions 5+
                     {
                         lpDIDevCaps->dwFFSamplePeriod = 0;
                         lpDIDevCaps->dwFFMinTimeResolution = 0;
@@ -366,7 +872,8 @@ namespace Hooks
                 return DIERR_INVALIDPARAM; // NYI! for keyboard or gamepads
             }
 
-            STDMETHOD(EnumObjects)(LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)
+            STDMETHOD(EnumObjects)
+            (LPDIENUMDEVICEOBJECTSCALLBACKN lpCallback, LPVOID pvRef, DWORD dwFlags)
             {
                 ENTER(dwFlags);
 
@@ -378,23 +885,73 @@ namespace Hooks
                     // in todays world, as far as I know anyway. This should be compatible with any mouse as long as it is loaded as SysMouse.
                     // -- Warepire
                     DWORD size = (sizeof(NCHAR) > sizeof(CHAR)) ? 576 : 316;
-                    struct MyDIDEVICEOBJECTINSTANCE<NCHAR> EmulatedSysMouse[6] = {
-                        { size, GUID_XAxis,  0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                        { size, GUID_YAxis,  0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                        { size, GUID_ZAxis,  0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL,   0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                        { size, GUID_Button, 0xC, 0x301, 0,                    BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                        { size, GUID_Button, 0xD, 0x401, 0,                    BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                        { size, GUID_Button, 0xE, 0x501, 0,                    BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+                    struct MyDIDEVICEOBJECTINSTANCE<NCHAR> EmulatedSysMouse[6] =
+                    {
+                        {size,
+                         GUID_XAxis,
+                         0x0,
+                         0x001,
+                         DIDOI_ASPECTPOSITION,
+                         XAXIS,
+                         0,
+                         0,
+                         0,
+                         0,
+                         0,
+                         0,
+                         0,
+                         0,
+                         0},
+                            {size,
+                             GUID_YAxis,
+                             0x4,
+                             0x101,
+                             DIDOI_ASPECTPOSITION,
+                             YAXIS,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0},
+                            {size,
+                             GUID_ZAxis,
+                             0x8,
+                             0x201,
+                             DIDOI_ASPECTPOSITION,
+                             WHEEL,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0},
+                            {size, GUID_Button, 0xC, 0x301, 0, BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                            {size, GUID_Button, 0xD, 0x401, 0, BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                        {
+                            size, GUID_Button, 0xE, 0x501, 0, BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        }
+                    };
 
                     // Requests that will return all the objects of our emulated mouse.
                     // The if statement checks for these flags: DIDFT_ALL || DIDFT_ENUMCOLLECTION(0) || DIDFT_NOCOLLECTION
                     // ALL is quite self-describing, the other 2 will both return all objects in HID collection 0 for this device.
                     // Which means all objects since they all belong to HID collection 0.
-                    if ((dwFlags == DIDFT_ALL) || (((dwFlags >> 8) & 0xFFFF) == 0x0000) || ((dwFlags & DIDFT_NOCOLLECTION) == DIDFT_NOCOLLECTION))
+                    if ((dwFlags == DIDFT_ALL) || (((dwFlags >> 8) & 0xFFFF) == 0x0000)
+                        || ((dwFlags & DIDFT_NOCOLLECTION) == DIDFT_NOCOLLECTION))
                     {
                         for (unsigned int i = 0; i < 6; i++)
                         {
-                            if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+                            if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])),
+                                           pvRef)
+                                == DIENUM_STOP)
+                                break;
                         }
                     }
                     else // Requests that will return subsets of the objects.
@@ -403,14 +960,20 @@ namespace Hooks
                         {
                             for (unsigned int i = 0; i < 3; i++)
                             {
-                                if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+                                if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])),
+                                               pvRef)
+                                    == DIENUM_STOP)
+                                    break;
                             }
                         }
                         if ((dwFlags & DIDFT_PSHBUTTON) == DIDFT_PSHBUTTON)
                         {
                             for (unsigned int i = 3; i < 6; i++)
                             {
-                                if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])), pvRef) == DIENUM_STOP) break;
+                                if (lpCallback((LPDIDEVICEOBJECTINSTANCEN)(&(EmulatedSysMouse[i])),
+                                               pvRef)
+                                    == DIENUM_STOP)
+                                    break;
                             }
                         }
 
@@ -446,7 +1009,7 @@ namespace Hooks
                 //return rvfilter(m_device->GetProperty(rguid, ph));
                 if (&rguid == &DIPROP_BUFFERSIZE)
                 {
-                    DWORD& size = *(DWORD*)(ph + 1);
+                    DWORD& size = *(DWORD*) (ph + 1);
                     size = m_bufferedInput.size;
                     return DI_OK;
                 }
@@ -462,7 +1025,7 @@ namespace Hooks
                 //return m_device->SetProperty(rguid, ph);
                 if (&rguid == &DIPROP_BUFFERSIZE)
                 {
-                    DWORD size = *(DWORD*)(ph + 1);
+                    DWORD size = *(DWORD*) (ph + 1);
                     if (size > 1024)
                         size = 1024;
                     m_bufferedInput.Resize(size);
@@ -512,39 +1075,81 @@ namespace Hooks
                     if (size > 256)
                         size = 256;
 
-                    BYTE* keys = (BYTE*)data;
+                    BYTE* keys = (BYTE*) data;
 
-                    DEBUG_LOG() << "TODO: Should really send DIK keys instead, but that breaks VK input....";
+                    DEBUG_LOG() << "TODO: Should really send DIK keys instead, but that breaks VK "
+                                   "input....";
                     for (unsigned int i = 0; i < size; i++)
                     {
                         int DIK = i;
-                        int VK = MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/3, keyboardLayout) & 0xFF;
+                        int VK =
+                            MapVirtualKeyEx(DIK, /*MAPVK_VSC_TO_VK_EX*/ 3, keyboardLayout) & 0xFF;
 
                         // unfortunately MapVirtualKeyEx is slightly broken, so patch up the results ourselves...
                         // (note that some of the left/right modifier keys get lost too despite MAPVK_VSC_TO_VK_EX)
                         switch (DIK)
                         {
-                        case DIK_LEFT:    VK = VK_LEFT; break;
-                        case DIK_RIGHT:   VK = VK_RIGHT; break;
-                        case DIK_UP:      VK = VK_UP; break;
-                        case DIK_DOWN:    VK = VK_DOWN; break;
-                        case DIK_PRIOR:   VK = VK_PRIOR; break;
-                        case DIK_NEXT:    VK = VK_NEXT; break;
-                        case DIK_HOME:    VK = VK_HOME; break;
-                        case DIK_END:     VK = VK_END; break;
-                        case DIK_INSERT:  VK = VK_INSERT; break;
-                        case DIK_DELETE:  VK = VK_DELETE; break;
-                        case DIK_DIVIDE:  VK = VK_DIVIDE; break;
-                        case DIK_NUMLOCK: VK = VK_NUMLOCK; break;
-                        case DIK_LWIN:    VK = VK_LWIN; break;
-                        case DIK_RWIN:    VK = VK_RWIN; break;
-                        case DIK_RMENU:   VK = VK_RMENU; break;
-                        case DIK_RCONTROL:VK = VK_RCONTROL; break;
+                        case DIK_LEFT:
+                            VK = VK_LEFT;
+                            break;
+                        case DIK_RIGHT:
+                            VK = VK_RIGHT;
+                            break;
+                        case DIK_UP:
+                            VK = VK_UP;
+                            break;
+                        case DIK_DOWN:
+                            VK = VK_DOWN;
+                            break;
+                        case DIK_PRIOR:
+                            VK = VK_PRIOR;
+                            break;
+                        case DIK_NEXT:
+                            VK = VK_NEXT;
+                            break;
+                        case DIK_HOME:
+                            VK = VK_HOME;
+                            break;
+                        case DIK_END:
+                            VK = VK_END;
+                            break;
+                        case DIK_INSERT:
+                            VK = VK_INSERT;
+                            break;
+                        case DIK_DELETE:
+                            VK = VK_DELETE;
+                            break;
+                        case DIK_DIVIDE:
+                            VK = VK_DIVIDE;
+                            break;
+                        case DIK_NUMLOCK:
+                            VK = VK_NUMLOCK;
+                            break;
+                        case DIK_LWIN:
+                            VK = VK_LWIN;
+                            break;
+                        case DIK_RWIN:
+                            VK = VK_RWIN;
+                            break;
+                        case DIK_RMENU:
+                            VK = VK_RMENU;
+                            break;
+                        case DIK_RCONTROL:
+                            VK = VK_RCONTROL;
+                            break;
                         // these work for me, but are here in case other layouts need them
-                        case DIK_RSHIFT:  VK = VK_RSHIFT; break;
-                        case DIK_LMENU:   VK = VK_LMENU; break;
-                        case DIK_LCONTROL:VK = VK_LCONTROL; break;
-                        case DIK_LSHIFT:  VK = VK_LSHIFT; break;
+                        case DIK_RSHIFT:
+                            VK = VK_RSHIFT;
+                            break;
+                        case DIK_LMENU:
+                            VK = VK_LMENU;
+                            break;
+                        case DIK_LCONTROL:
+                            VK = VK_LCONTROL;
+                            break;
+                        case DIK_LSHIFT:
+                            VK = VK_LSHIFT;
+                            break;
                         }
 
                         keys[DIK] = (BYTE)(::Hooks::WinInput::MyGetKeyState(VK) & 0xFF);
@@ -559,10 +1164,10 @@ namespace Hooks
                     // In the case of the game using DIMOUSESTATE2 we need to make sure the extra buttons are set to "idle" to avoid weird problems.
                     if (size == sizeof(DIMOUSESTATE2))
                     {
-                        ((LPDIMOUSESTATE2)data)->rgbButtons[4] = 0;
-                        ((LPDIMOUSESTATE2)data)->rgbButtons[5] = 0;
-                        ((LPDIMOUSESTATE2)data)->rgbButtons[6] = 0;
-                        ((LPDIMOUSESTATE2)data)->rgbButtons[7] = 0;
+                        ((LPDIMOUSESTATE2) data)->rgbButtons[4] = 0;
+                        ((LPDIMOUSESTATE2) data)->rgbButtons[5] = 0;
+                        ((LPDIMOUSESTATE2) data)->rgbButtons[6] = 0;
+                        ((LPDIMOUSESTATE2) data)->rgbButtons[7] = 0;
                     }
                     memcpy(data, &curinput.mouse.di, sizeof(DIMOUSESTATE));
                     return DI_OK;
@@ -570,7 +1175,8 @@ namespace Hooks
                 return E_PENDING;
             }
 
-            STDMETHOD(GetDeviceData)(DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
+            STDMETHOD(GetDeviceData)
+            (DWORD size, LPDIDEVICEOBJECTDATA data, LPDWORD numElements, DWORD flags)
             {
                 ENTER();
                 //return m_device->GetDeviceData(size, data, numElements, flags);
@@ -579,7 +1185,8 @@ namespace Hooks
                 if (m_bufferedInput.size == 0)
                     return DIERR_NOTBUFFERED;
                 if (!size)
-                    size = IDirectInputDeviceTraits<IDirectInputDeviceN>::defaultDIDEVICEOBJECTDATAsize;
+                    size = IDirectInputDeviceTraits<IDirectInputDeviceN>::
+                        defaultDIDEVICEOBJECTDATAsize;
                 return m_bufferedInput.GetData(size, data, numElements, flags);
             }
 
@@ -622,7 +1229,8 @@ namespace Hooks
                 ENTER();
                 if (IsWindow(window))
                     gamehwnd = window;
-                if (m_type == GUID_SysMouse) {
+                if (m_type == GUID_SysMouse)
+                {
                     IPC::SendIPCMessage(IPC::Command::CMD_MOUSE_REG, &window, sizeof(&window));
                 }
                 //return rvfilter(m_device->SetCooperativeLevel(window, level));
@@ -636,9 +1244,11 @@ namespace Hooks
                 {
                     // This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
                     // if the game passes a NULL pointer or a struct without the size member inited we cannot continue.
-                    if (pdidoi == NULL) return E_POINTER;
+                    if (pdidoi == NULL)
+                        return E_POINTER;
                     DWORD zero = 0;
-                    if (memcmp(pdidoi, &zero, 4) == 0) return DIERR_INVALIDPARAM;
+                    if (memcmp(pdidoi, &zero, 4) == 0)
+                        return DIERR_INVALIDPARAM;
                     switch (dwHow)
                     {
                     // Due to games being able to pass wrong values (either through bad code or bad coders) we cannot merge
@@ -656,41 +1266,126 @@ namespace Hooks
                         // and then assigning all the values depending on case...
                         case 0x0:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = { size, GUID_XAxis, 0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = {size,
+                                                                     GUID_XAxis,
+                                                                     0x0,
+                                                                     0x001,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     XAXIS,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &xaxis, xaxis.dwSize);
                             break;
                         }
                         case 0x4:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = { size, GUID_YAxis, 0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = {size,
+                                                                     GUID_YAxis,
+                                                                     0x4,
+                                                                     0x101,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     YAXIS,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &yaxis, yaxis.dwSize);
                             break;
                         }
                         case 0x8:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = { size, GUID_ZAxis, 0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = {size,
+                                                                     GUID_ZAxis,
+                                                                     0x8,
+                                                                     0x201,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     WHEEL,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &wheel, wheel.dwSize);
                             break;
                         }
                         case 0xC:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = { size, GUID_Button, 0xC, 0x304, 0, BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = {size,
+                                                                       GUID_Button,
+                                                                       0xC,
+                                                                       0x304,
+                                                                       0,
+                                                                       BUTTON0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button0, button0.dwSize);
                             break;
                         }
                         case 0xD:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = { size, GUID_Button, 0xD, 0x404, 0, BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = {size,
+                                                                       GUID_Button,
+                                                                       0xD,
+                                                                       0x404,
+                                                                       0,
+                                                                       BUTTON1,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button1, button1.dwSize);
                             break;
                         }
                         case 0xE:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = { size, GUID_Button, 0xE, 0x504, 0, BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = {size,
+                                                                       GUID_Button,
+                                                                       0xE,
+                                                                       0x504,
+                                                                       0,
+                                                                       BUTTON2,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button2, button2.dwSize);
                             break;
                         }
-                        default: return DIERR_OBJECTNOTFOUND;
+                        default:
+                            return DIERR_OBJECTNOTFOUND;
                         }
                         break;
                     }
@@ -702,41 +1397,126 @@ namespace Hooks
                         {
                         case 0x001:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = { size, GUID_XAxis, 0x0, 0x001, DIDOI_ASPECTPOSITION, XAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> xaxis = {size,
+                                                                     GUID_XAxis,
+                                                                     0x0,
+                                                                     0x001,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     XAXIS,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &xaxis, xaxis.dwSize);
                             break;
                         }
                         case 0x101:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = { size, GUID_YAxis, 0x4, 0x101, DIDOI_ASPECTPOSITION, YAXIS, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> yaxis = {size,
+                                                                     GUID_YAxis,
+                                                                     0x4,
+                                                                     0x101,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     YAXIS,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &yaxis, yaxis.dwSize);
                             break;
                         }
                         case 0x201:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = { size, GUID_ZAxis, 0x8, 0x201, DIDOI_ASPECTPOSITION, WHEEL, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> wheel = {size,
+                                                                     GUID_ZAxis,
+                                                                     0x8,
+                                                                     0x201,
+                                                                     DIDOI_ASPECTPOSITION,
+                                                                     WHEEL,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0,
+                                                                     0};
                             memcpy(pdidoi, &wheel, wheel.dwSize);
                             break;
                         }
                         case 0x304:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = { size, GUID_Button, 0xC, 0x304, 0, BUTTON0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button0 = {size,
+                                                                       GUID_Button,
+                                                                       0xC,
+                                                                       0x304,
+                                                                       0,
+                                                                       BUTTON0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button0, button0.dwSize);
                             break;
                         }
                         case 0x404:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = { size, GUID_Button, 0xD, 0x404, 0, BUTTON1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button1 = {size,
+                                                                       GUID_Button,
+                                                                       0xD,
+                                                                       0x404,
+                                                                       0,
+                                                                       BUTTON1,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button1, button1.dwSize);
                             break;
                         }
                         case 0x504:
                         {
-                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = { size, GUID_Button, 0xE, 0x504, 0, BUTTON2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                            MyDIDEVICEOBJECTINSTANCE<NCHAR> button2 = {size,
+                                                                       GUID_Button,
+                                                                       0xE,
+                                                                       0x504,
+                                                                       0,
+                                                                       BUTTON2,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0,
+                                                                       0};
                             memcpy(pdidoi, &button2, button2.dwSize);
                             break;
                         }
-                        default: return DIERR_OBJECTNOTFOUND;
+                        default:
+                            return DIERR_OBJECTNOTFOUND;
                         }
                         break;
                     }
@@ -784,7 +1564,7 @@ namespace Hooks
             }
 
             // DirectInputDevice2 methods
-            STDMETHOD(CreateEffect)(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT * c, LPUNKNOWN d)
+            STDMETHOD(CreateEffect)(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT* c, LPUNKNOWN d)
             {
                 ENTER();
                 //return m_device->CreateEffect(a,b,c,d);
@@ -814,7 +1594,8 @@ namespace Hooks
                 //return m_device->SendForceFeedbackCommand(a);
                 return DIERR_UNSUPPORTED;
             }
-            STDMETHOD(EnumCreatedEffectObjects)(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c)
+            STDMETHOD(EnumCreatedEffectObjects)
+            (LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c)
             {
                 ENTER();
                 //return m_device->EnumCreatedEffectObjects(a,b,c);
@@ -842,7 +1623,8 @@ namespace Hooks
                 return DI_OK; // according to the documentation, this function never does anything anyway and should not be called
             }
             // IDirectInputDevice7 methods
-            STDMETHOD(EnumEffectsInFile)(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d)
+            STDMETHOD(EnumEffectsInFile)
+            (LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d)
             {
                 ENTER();
                 //return m_device->EnumEffectsInFile(a,b,c,d);
@@ -889,76 +1671,278 @@ namespace Hooks
         };
 
         // methods DirectInputDevice doesn't implement
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::CreateEffect(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT * c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumEffects(LPDIENUMEFFECTSCALLBACKN a, LPVOID b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetEffectInfo(LPDIEFFECTINFON a, REFGUID b) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetForceFeedbackState(LPDWORD a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SendForceFeedbackCommand(DWORD a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::Escape(LPDIEFFESCAPE a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::Poll() IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SendDeviceData(DWORD a, LPCDIDEVICEOBJECTDATA b, LPDWORD c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::CreateEffect(REFGUID a, LPCDIEFFECT b, LPDIRECTINPUTEFFECT * c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumEffects(LPDIENUMEFFECTSCALLBACKN a, LPVOID b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetEffectInfo(LPDIEFFECTINFON a, REFGUID b) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetForceFeedbackState(LPDWORD a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SendForceFeedbackCommand(DWORD a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a, LPVOID b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::Escape(LPDIEFFESCAPE a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::Poll() IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SendDeviceData(DWORD a, LPCDIDEVICEOBJECTDATA b, LPDWORD c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumEffectsInFile(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::WriteEffectToFile(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumEffectsInFile(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::WriteEffectToFile(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
-        // methods DirectInputDevice2 doesn't implement
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2A>::EnumEffectsInFile(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2A>::WriteEffectToFile(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2A>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2A>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2A>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2W>::EnumEffectsInFile(LPCNSTR a, LPDIENUMEFFECTSINFILECALLBACK b, LPVOID c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2W>::WriteEffectToFile(LPCNSTR a, DWORD b, LPDIFILEEFFECT c, DWORD d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2W>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2W>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice2W>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
-        // methods DirectInputDevice7 doesn't implement
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7W>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7W>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7W>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7A>::BuildActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7A>::SetActionMap(LPDIACTIONFORMATN a, LPCNSTR b, DWORD c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInputDevice<IDirectInputDevice7A>::GetImageInfo(LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
+        template<>
+        HRESULT MyDirectInputDevice<IDirectInputDeviceA>::CreateEffect(
+            REFGUID a,
+            LPCDIEFFECT b,
+            LPDIRECTINPUTEFFECT* c,
+            LPUNKNOWN d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumEffects(LPDIENUMEFFECTSCALLBACKN a,
+                                                                      LPVOID b,
+                                                                      DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetEffectInfo(LPDIEFFECTINFON a,
+                                                                            REFGUID b)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetForceFeedbackState(LPDWORD a)
+                    IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SendForceFeedbackCommand(DWORD a)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumCreatedEffectObjects(
+                    LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a,
+                    LPVOID b,
+                    DWORD c) IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceA>::Escape(LPDIEFFESCAPE a)
+                    IMPOSSIBLE_IMPL template<>
+                    HRESULT MyDirectInputDevice<IDirectInputDeviceA>::Poll() IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SendDeviceData(
+                DWORD a,
+                LPCDIDEVICEOBJECTDATA b,
+                LPDWORD c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::CreateEffect(REFGUID a,
+                                                                           LPCDIEFFECT b,
+                                                                           LPDIRECTINPUTEFFECT* c,
+                                                                           LPUNKNOWN d)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumEffects(
+                    LPDIENUMEFFECTSCALLBACKN a,
+                    LPVOID b,
+                    DWORD c) IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetEffectInfo(LPDIEFFECTINFON a,
+                                                                                REFGUID b)
+                    IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetForceFeedbackState(LPDWORD a)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SendForceFeedbackCommand(DWORD a)
+                    IMPOSSIBLE_IMPL template<>
+                    HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumCreatedEffectObjects(
+                        LPDIENUMCREATEDEFFECTOBJECTSCALLBACK a,
+                        LPVOID b,
+                        DWORD c) IMPOSSIBLE_IMPL template<>
+                    HRESULT MyDirectInputDevice<IDirectInputDeviceW>::Escape(LPDIEFFESCAPE a)
+                        IMPOSSIBLE_IMPL template<>
+                        HRESULT MyDirectInputDevice<IDirectInputDeviceW>::Poll() IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SendDeviceData(
+                DWORD a,
+                LPCDIDEVICEOBJECTDATA b,
+                LPDWORD c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::EnumEffectsInFile(
+                LPCNSTR a,
+                LPDIENUMEFFECTSINFILECALLBACK b,
+                LPVOID c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::WriteEffectToFile(LPCNSTR a,
+                                                                                DWORD b,
+                                                                                LPDIFILEEFFECT c,
+                                                                                DWORD d)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT
+            MyDirectInputDevice<IDirectInputDeviceA>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                     LPCNSTR b,
+                                                                     DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                           LPCNSTR b,
+                                                                           DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceA>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::EnumEffectsInFile(
+                LPCNSTR a,
+                LPDIENUMEFFECTSINFILECALLBACK b,
+                LPVOID c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::WriteEffectToFile(LPCNSTR a,
+                                                                                DWORD b,
+                                                                                LPDIFILEEFFECT c,
+                                                                                DWORD d)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT
+            MyDirectInputDevice<IDirectInputDeviceW>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                     LPCNSTR b,
+                                                                     DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                           LPCNSTR b,
+                                                                           DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDeviceW>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
+            // methods DirectInputDevice2 doesn't implement
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2A>::EnumEffectsInFile(
+                LPCNSTR a,
+                LPDIENUMEFFECTSINFILECALLBACK b,
+                LPVOID c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2A>::WriteEffectToFile(LPCNSTR a,
+                                                                                 DWORD b,
+                                                                                 LPDIFILEEFFECT c,
+                                                                                 DWORD d)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT
+            MyDirectInputDevice<IDirectInputDevice2A>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                      LPCNSTR b,
+                                                                      DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2A>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                            LPCNSTR b,
+                                                                            DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2A>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2W>::EnumEffectsInFile(
+                LPCNSTR a,
+                LPDIENUMEFFECTSINFILECALLBACK b,
+                LPVOID c,
+                DWORD d) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2W>::WriteEffectToFile(LPCNSTR a,
+                                                                                 DWORD b,
+                                                                                 LPDIFILEEFFECT c,
+                                                                                 DWORD d)
+                IMPOSSIBLE_IMPL template<>
+                HRESULT
+            MyDirectInputDevice<IDirectInputDevice2W>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                      LPCNSTR b,
+                                                                      DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2W>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                            LPCNSTR b,
+                                                                            DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice2W>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
+            // methods DirectInputDevice7 doesn't implement
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7W>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                              LPCNSTR b,
+                                                                              DWORD c)
+                IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7W>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                            LPCNSTR b,
+                                                                            DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7W>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7A>::BuildActionMap(LPDIACTIONFORMATN a,
+                                                                              LPCNSTR b,
+                                                                              DWORD c)
+                IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7A>::SetActionMap(LPDIACTIONFORMATN a,
+                                                                            LPCNSTR b,
+                                                                            DWORD c) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInputDevice<IDirectInputDevice7A>::GetImageInfo(
+                LPDIDEVICEIMAGEINFOHEADERN a) IMPOSSIBLE_IMPL
 
-        template<typename IDirectInputN> struct IDirectInputTraits {};
-        template<> struct IDirectInputTraits<IDirectInputA> { typedef IDirectInputDeviceA  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN; typedef LPCSTR  LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInputW> { typedef IDirectInputDeviceW  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN; typedef LPCWSTR LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput2A> { typedef IDirectInputDeviceA  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN; typedef LPCSTR  LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput2W> { typedef IDirectInputDeviceW  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN; typedef LPCWSTR LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput7A> { typedef IDirectInputDeviceA  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN; typedef LPCSTR  LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput7W> { typedef IDirectInputDeviceW  IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN; typedef LPCWSTR LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput8A> { typedef IDirectInputDevice8A IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATA LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN; typedef LPCSTR  LPCNSTR; };
-        template<> struct IDirectInputTraits<IDirectInput8W> { typedef IDirectInputDevice8W IDirectInputDeviceN; typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN; typedef LPDIACTIONFORMATW LPDIACTIONFORMATN; typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN; typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN; typedef LPCWSTR LPCNSTR; };
-
+            template<typename IDirectInputN>
+            struct IDirectInputTraits
+        {
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInputA>
+        {
+            typedef IDirectInputDeviceA IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInputW>
+        {
+            typedef IDirectInputDeviceW IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCWSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput2A>
+        {
+            typedef IDirectInputDeviceA IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput2W>
+        {
+            typedef IDirectInputDeviceW IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCWSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput7A>
+        {
+            typedef IDirectInputDeviceA IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput7W>
+        {
+            typedef IDirectInputDeviceW IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCWSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput8A>
+        {
+            typedef IDirectInputDevice8A IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEA LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATA LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBA LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSA LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCSTR LPCNSTR;
+        };
+        template<>
+        struct IDirectInputTraits<IDirectInput8W>
+        {
+            typedef IDirectInputDevice8W IDirectInputDeviceN;
+            typedef LPCDIDEVICEINSTANCEW LPCDIDEVICEINSTANCEN;
+            typedef LPDIACTIONFORMATW LPDIACTIONFORMATN;
+            typedef LPDIENUMDEVICESBYSEMANTICSCBW LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef LPDICONFIGUREDEVICESPARAMSW LPDICONFIGUREDEVICESPARAMSN;
+            typedef LPCWSTR LPCNSTR;
+        };
 
         template<typename IDirectInputN>
         class MyDirectInput : public IDirectInputN
         {
         public:
-
-            typedef typename IDirectInputTraits<IDirectInputN>::IDirectInputDeviceN IDirectInputDeviceN;
+            typedef
+                typename IDirectInputTraits<IDirectInputN>::IDirectInputDeviceN IDirectInputDeviceN;
             typedef typename IDirectInputTraits<IDirectInputN>::LPCNSTR LPCNSTR;
-            typedef typename IDirectInputTraits<IDirectInputN>::LPCDIDEVICEINSTANCEN LPCDIDEVICEINSTANCEN;
+            typedef typename IDirectInputTraits<IDirectInputN>::LPCDIDEVICEINSTANCEN
+                LPCDIDEVICEINSTANCEN;
             typedef typename IDirectInputTraits<IDirectInputN>::LPDIACTIONFORMATN LPDIACTIONFORMATN;
-            typedef typename IDirectInputTraits<IDirectInputN>::LPDIENUMDEVICESBYSEMANTICSCBN LPDIENUMDEVICESBYSEMANTICSCBN;
-            typedef typename IDirectInputTraits<IDirectInputN>::LPDICONFIGUREDEVICESPARAMSN LPDICONFIGUREDEVICESPARAMSN;
-            typedef BOOL(FAR PASCAL * LPDIENUMDEVICESCALLBACKN)(LPCDIDEVICEINSTANCEN, LPVOID);
+            typedef typename IDirectInputTraits<IDirectInputN>::LPDIENUMDEVICESBYSEMANTICSCBN
+                LPDIENUMDEVICESBYSEMANTICSCBN;
+            typedef typename IDirectInputTraits<IDirectInputN>::LPDICONFIGUREDEVICESPARAMSN
+                LPDICONFIGUREDEVICESPARAMSN;
+            typedef BOOL(FAR PASCAL* LPDIENUMDEVICESCALLBACKN)(LPCDIDEVICEINSTANCEN, LPVOID);
             static const GUID IID_IDirectInputDeviceN;
 
             MyDirectInput(IDirectInputN* di) : m_di(di)
@@ -1003,16 +1987,18 @@ namespace Hooks
                 HRESULT hr = m_di->CreateDevice(rguid, device, unknown);
                 if (SUCCEEDED(hr))
                 {
-                    LOG() << "Hooking input device with GUID: " << rguid.Data1 << ", " << rguid.Data2 << ", " << rguid.Data3 << ", " << rguid.Data4;
+                    LOG() << "Hooking input device with GUID: " << rguid.Data1 << ", "
+                          << rguid.Data2 << ", " << rguid.Data3 << ", " << rguid.Data4;
                     // Return our own keyboard device that checks for injected keypresses
                     // (at least if rguid == GUID_SysKeyboard that's what it'll do)
-                    HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*)device, rguid);
+                    HookCOMInterfaceEx(IID_IDirectInputDeviceN, (LPVOID*) device, rguid);
                 }
 
                 return hr;
             }
 
-            STDMETHOD(EnumDevices)(DWORD devType, LPDIENUMDEVICESCALLBACKN callback, LPVOID ref, DWORD flags)
+            STDMETHOD(EnumDevices)
+            (DWORD devType, LPDIENUMDEVICESCALLBACKN callback, LPVOID ref, DWORD flags)
             {
                 ENTER();
                 // FIXME: NYI.
@@ -1054,12 +2040,14 @@ namespace Hooks
                 ENTER();
                 return m_di->FindDevice(a, b, c);
             }
-            STDMETHOD(EnumDevicesBySemantics)(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e)
+            STDMETHOD(EnumDevicesBySemantics)
+            (LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e)
             {
                 ENTER();
                 return m_di->EnumDevicesBySemantics(a, b, c, d, e);
             }
-            STDMETHOD(ConfigureDevices)(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d)
+            STDMETHOD(ConfigureDevices)
+            (LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d)
             {
                 ENTER();
                 return m_di->ConfigureDevices(a, b, c, d);
@@ -1070,38 +2058,123 @@ namespace Hooks
         };
 
         // unimplemented methods for old versions of DirectInput that didn't have them
-        template<> HRESULT MyDirectInput<IDirectInputA>::FindDevice(REFGUID a, LPCNSTR b, LPGUID c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputW>::FindDevice(REFGUID a, LPCNSTR b, LPGUID c) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputA>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputW>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputA>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputW>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputA>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInputW>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2A>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2W>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2A>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2W>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2A>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput2W>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput7A>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput7W>::EnumDevicesBySemantics(LPCNSTR a, LPDIACTIONFORMATN b, LPDIENUMDEVICESBYSEMANTICSCBN c, LPVOID d, DWORD e) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput7A>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput7W>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a, LPDICONFIGUREDEVICESPARAMSN b, DWORD c, LPVOID d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput8A>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
-        template<> HRESULT MyDirectInput<IDirectInput8W>::CreateDeviceEx(REFGUID a, REFIID b, LPVOID* c, LPUNKNOWN d) IMPOSSIBLE_IMPL
+        template<>
+        HRESULT MyDirectInput<IDirectInputA>::FindDevice(REFGUID a,
+                                                         LPCNSTR b,
+                                                         LPGUID c) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputW>::FindDevice(REFGUID a,
+                                                         LPCNSTR b,
+                                                         LPGUID c) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputA>::EnumDevicesBySemantics(
+            LPCNSTR a,
+            LPDIACTIONFORMATN b,
+            LPDIENUMDEVICESBYSEMANTICSCBN c,
+            LPVOID d,
+            DWORD e) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputW>::EnumDevicesBySemantics(
+            LPCNSTR a,
+            LPDIACTIONFORMATN b,
+            LPDIENUMDEVICESBYSEMANTICSCBN c,
+            LPVOID d,
+            DWORD e) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputA>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                               LPDICONFIGUREDEVICESPARAMSN b,
+                                                               DWORD c,
+                                                               LPVOID d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputW>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                               LPDICONFIGUREDEVICESPARAMSN b,
+                                                               DWORD c,
+                                                               LPVOID d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputA>::CreateDeviceEx(REFGUID a,
+                                                             REFIID b,
+                                                             LPVOID* c,
+                                                             LPUNKNOWN d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInputW>::CreateDeviceEx(REFGUID a,
+                                                             REFIID b,
+                                                             LPVOID* c,
+                                                             LPUNKNOWN d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInput2A>::EnumDevicesBySemantics(
+            LPCNSTR a,
+            LPDIACTIONFORMATN b,
+            LPDIENUMDEVICESBYSEMANTICSCBN c,
+            LPVOID d,
+            DWORD e) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInput2W>::EnumDevicesBySemantics(
+            LPCNSTR a,
+            LPDIACTIONFORMATN b,
+            LPDIENUMDEVICESBYSEMANTICSCBN c,
+            LPVOID d,
+            DWORD e) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInput2A>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                                LPDICONFIGUREDEVICESPARAMSN b,
+                                                                DWORD c,
+                                                                LPVOID d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInput2W>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                                LPDICONFIGUREDEVICESPARAMSN b,
+                                                                DWORD c,
+                                                                LPVOID d) IMPOSSIBLE_IMPL template<>
+        HRESULT MyDirectInput<IDirectInput2A>::CreateDeviceEx(REFGUID a,
+                                                              REFIID b,
+                                                              LPVOID* c,
+                                                              LPUNKNOWN d) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInput<IDirectInput2W>::CreateDeviceEx(REFGUID a,
+                                                                  REFIID b,
+                                                                  LPVOID* c,
+                                                                  LPUNKNOWN d) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInput<IDirectInput7A>::EnumDevicesBySemantics(
+                LPCNSTR a,
+                LPDIACTIONFORMATN b,
+                LPDIENUMDEVICESBYSEMANTICSCBN c,
+                LPVOID d,
+                DWORD e) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInput<IDirectInput7W>::EnumDevicesBySemantics(
+                LPCNSTR a,
+                LPDIACTIONFORMATN b,
+                LPDIENUMDEVICESBYSEMANTICSCBN c,
+                LPVOID d,
+                DWORD e) IMPOSSIBLE_IMPL template<>
+            HRESULT MyDirectInput<IDirectInput7A>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                                    LPDICONFIGUREDEVICESPARAMSN b,
+                                                                    DWORD c,
+                                                                    LPVOID d) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInput<IDirectInput7W>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK a,
+                                                                    LPDICONFIGUREDEVICESPARAMSN b,
+                                                                    DWORD c,
+                                                                    LPVOID d) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInput<IDirectInput8A>::CreateDeviceEx(REFGUID a,
+                                                                  REFIID b,
+                                                                  LPVOID* c,
+                                                                  LPUNKNOWN d) IMPOSSIBLE_IMPL
+            template<>
+            HRESULT MyDirectInput<IDirectInput8W>::CreateDeviceEx(REFGUID a,
+                                                                  REFIID b,
+                                                                  LPVOID* c,
+                                                                  LPUNKNOWN d) IMPOSSIBLE_IMPL
 
-        template<> const GUID MyDirectInput<IDirectInputA>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceA;
-        template<> const GUID MyDirectInput<IDirectInputW>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
-        template<> const GUID MyDirectInput<IDirectInput2A>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceA;
-        template<> const GUID MyDirectInput<IDirectInput2W>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
-        template<> const GUID MyDirectInput<IDirectInput7A>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceA;
-        template<> const GUID MyDirectInput<IDirectInput7W>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
-        template<> const GUID MyDirectInput<IDirectInput8A>::IID_IDirectInputDeviceN = IID_IDirectInputDevice8A;
-        template<> const GUID MyDirectInput<IDirectInput8W>::IID_IDirectInputDeviceN = IID_IDirectInputDevice8W;
-
+            template<>
+            const GUID MyDirectInput<IDirectInputA>::IID_IDirectInputDeviceN =
+                IID_IDirectInputDeviceA;
+        template<>
+        const GUID MyDirectInput<IDirectInputW>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
+        template<>
+        const GUID MyDirectInput<IDirectInput2A>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceA;
+        template<>
+        const GUID MyDirectInput<IDirectInput2W>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
+        template<>
+        const GUID MyDirectInput<IDirectInput7A>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceA;
+        template<>
+        const GUID MyDirectInput<IDirectInput7W>::IID_IDirectInputDeviceN = IID_IDirectInputDeviceW;
+        template<>
+        const GUID MyDirectInput<IDirectInput8A>::IID_IDirectInputDeviceN =
+            IID_IDirectInputDevice8A;
+        template<>
+        const GUID MyDirectInput<IDirectInput8W>::IID_IDirectInputDeviceN =
+            IID_IDirectInputDevice8W;
     }
-
 
     int g_midFrameAsyncKeyRequests = 0;
 
@@ -1142,19 +2215,20 @@ namespace Hooks
                 return 0;
             }
 
-            if (asynckeybit[vKey]) // if the key has been pressed since the last call to this function
+            if (asynckeybit
+                    [vKey]) // if the key has been pressed since the last call to this function
             {
                 //if(s_frameThreadId == GetCurrentThreadId())
                 //if(tls.isFrameThread)
                 if (tls_IsPrimaryThread())
                     asynckeybit[vKey] = 0;
                 if (curinput.keys[vKey])
-                    return (SHORT)0x8001; // key is just now pressed
+                    return (SHORT) 0x8001; // key is just now pressed
                 return 1; // key is not held, but was pressed earlier
             }
 
             if (curinput.keys[vKey])
-                return (SHORT)0x8000; // key is held
+                return (SHORT) 0x8000; // key is held
             return 0; // key is not held
         }
 
@@ -1177,7 +2251,7 @@ namespace Hooks
             {
                 ENTER(vKey);
             }
-        //	return GetKeyState(vKey);
+            //	return GetKeyState(vKey);
 
             SHORT rv;
             if (vKey == VK_CAPITAL || vKey == VK_NUMLOCK || vKey == VK_SCROLL)
@@ -1185,14 +2259,14 @@ namespace Hooks
                 // special case for these because curinput stores the toggle status of these keys
                 // whereas GetKeyState (perhaps surprisingly) treats them like other keys
                 if (curinput.keys[vKey] != previnput.keys[vKey])
-                    rv = curinput.keys[vKey] ? (SHORT)0xFF81 : (SHORT)0xFF80;
+                    rv = curinput.keys[vKey] ? (SHORT) 0xFF81 : (SHORT) 0xFF80;
                 else
                     rv = curinput.keys[vKey] ? 1 : 0;
             }
             else
             {
                 if (curinput.keys[vKey])
-                    rv = synckeybit[vKey] ? (SHORT)0xFF81 : (SHORT)0xFF80;
+                    rv = synckeybit[vKey] ? (SHORT) 0xFF81 : (SHORT) 0xFF80;
                 else
                     rv = synckeybit[vKey] ? 1 : 0;
             }
@@ -1210,7 +2284,7 @@ namespace Hooks
             // so we must not change the state of anything in here.
             // (MyPeekMessageA -> _PeekMessageA@20 -> _NtUserPeekMessage@20 -> _KiUserExceptionDispatcher@8 -> ___ClientImmProcessKey@4 -> _ImmProcessKey@20 -> MyGetKeyboardState)
 
-        //	return GetKeyboardState(lpKeyState);
+            //	return GetKeyboardState(lpKeyState);
             ENTER();
             if (!lpKeyState)
                 return FALSE;
@@ -1221,7 +2295,7 @@ namespace Hooks
             return TRUE;
         }
 
-        static LASTINPUTINFO s_lii = { sizeof(LASTINPUTINFO) };
+        static LASTINPUTINFO s_lii = {sizeof(LASTINPUTINFO)};
 
         HOOK_FUNCTION(BOOL, WINAPI, GetLastInputInfo, PLASTINPUTINFO plii);
         HOOKFUNC BOOL WINAPI MyGetLastInputInfo(PLASTINPUTINFO plii)
@@ -1265,47 +2339,84 @@ namespace Hooks
                     s_lii.dwTime = timeStamp;
 
                     __declspec(noinline) SHORT WINAPI MyGetKeyState(int vKey);
-                    DIDEVICEOBJECTDATA keyEvent = { i, static_cast<DWORD>(MyGetKeyState(i) & 0xFF), timeStamp, inputEventSequenceID++ };
-                    DirectInput::BufferedInput::AddEventToAllDevices(keyEvent, DirectInput::s_bufferedKeySlots);
+                    DIDEVICEOBJECTDATA keyEvent = {i,
+                                                   static_cast<DWORD>(MyGetKeyState(i) & 0xFF),
+                                                   timeStamp,
+                                                   inputEventSequenceID++};
+                    DirectInput::BufferedInput::AddEventToAllDevices(
+                        keyEvent, DirectInput::s_bufferedKeySlots);
                 }
             }
 
             // Send mouse events.
-            if (curinput.mouse.di.lX != 0) {
+            if (curinput.mouse.di.lX != 0)
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_X, static_cast<DWORD>(curinput.mouse.di.lX), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_X,
+                                                 static_cast<DWORD>(curinput.mouse.di.lX),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
-            if (curinput.mouse.di.lY != 0) {
+            if (curinput.mouse.di.lY != 0)
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_Y, static_cast<DWORD>(curinput.mouse.di.lY), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Y,
+                                                 static_cast<DWORD>(curinput.mouse.di.lY),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
-            if (curinput.mouse.di.lZ != 0) {
+            if (curinput.mouse.di.lZ != 0)
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_Z, static_cast<DWORD>(curinput.mouse.di.lZ), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_Z,
+                                                 static_cast<DWORD>(curinput.mouse.di.lZ),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
-            if (curinput.mouse.di.rgbButtons[0] != previnput.mouse.di.rgbButtons[0]) {
+            if (curinput.mouse.di.rgbButtons[0] != previnput.mouse.di.rgbButtons[0])
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_BUTTON0, static_cast<DWORD>(curinput.mouse.di.rgbButtons[0] ? 0x80 : 0x00), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON0,
+                                                 static_cast<DWORD>(
+                                                     curinput.mouse.di.rgbButtons[0] ? 0x80 : 0x00),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
-            if (curinput.mouse.di.rgbButtons[1] != previnput.mouse.di.rgbButtons[1]) {
+            if (curinput.mouse.di.rgbButtons[1] != previnput.mouse.di.rgbButtons[1])
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_BUTTON1, static_cast<DWORD>(curinput.mouse.di.rgbButtons[1] ? 0x80 : 0x00), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON1,
+                                                 static_cast<DWORD>(
+                                                     curinput.mouse.di.rgbButtons[1] ? 0x80 : 0x00),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
-            if (curinput.mouse.di.rgbButtons[2] != previnput.mouse.di.rgbButtons[2]) {
+            if (curinput.mouse.di.rgbButtons[2] != previnput.mouse.di.rgbButtons[2])
+            {
                 DWORD timeStamp = detTimer.GetTicks();
                 s_lii.dwTime = timeStamp;
-                DIDEVICEOBJECTDATA mouseEvent = { DIMOFS_BUTTON2, static_cast<DWORD>(curinput.mouse.di.rgbButtons[2] ? 0x80 : 0x00), timeStamp, inputEventSequenceID++ };
-                DirectInput::BufferedInput::AddMouseEventToAllDevices(mouseEvent, DirectInput::s_bufferedKeySlots);
+                DIDEVICEOBJECTDATA mouseEvent = {DIMOFS_BUTTON2,
+                                                 static_cast<DWORD>(
+                                                     curinput.mouse.di.rgbButtons[2] ? 0x80 : 0x00),
+                                                 timeStamp,
+                                                 inputEventSequenceID++};
+                DirectInput::BufferedInput::AddMouseEventToAllDevices(
+                    mouseEvent, DirectInput::s_bufferedKeySlots);
             }
             /*if (curinput.mouse.rgbButtons[3] && !previnput.mouse.rgbButtons[3]){
                 DWORD timeStamp = detTimer.GetTicks();
@@ -1319,13 +2430,13 @@ namespace Hooks
              * we have to pass the previous absolute coords into the current frame.
              */
 
-            bool isMouseUsed = (curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0) || (curinput.mouse.di.lZ != 0);
+            bool isMouseUsed = (curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0)
+                               || (curinput.mouse.di.lZ != 0);
             for (int i = 0; i < 4; i++)
                 isMouseUsed |= ((curinput.mouse.di.rgbButtons[i] & MOUSE_PRESSED_FLAG) != 0);
 
             if (!isMouseUsed)
                 curinput.mouse.coords = previnput.mouse.coords;
-
         }
 
         HOOK_FUNCTION(MMRESULT, WINAPI, joyReleaseCapture, UINT uJoyID);
@@ -1333,13 +2444,22 @@ namespace Hooks
         {
             ENTER(uJoyID);
             return MMSYSERR_NODRIVER; // NYI
-                //cmdprintf("WAITING: %u", 1);
+            //cmdprintf("WAITING: %u", 1);
             MMRESULT rv = joyReleaseCapture(uJoyID);
             //cmdprintf("WAITED: %u", 1);
             return rv;
         }
-        HOOK_FUNCTION(MMRESULT, WINAPI, joySetCapture, HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
-        HOOKFUNC MMRESULT WINAPI MyjoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
+        HOOK_FUNCTION(MMRESULT,
+                      WINAPI,
+                      joySetCapture,
+                      HWND hwnd,
+                      UINT uJoyID,
+                      UINT uPeriod,
+                      BOOL fChanged);
+        HOOKFUNC MMRESULT WINAPI MyjoySetCapture(HWND hwnd,
+                                                 UINT uJoyID,
+                                                 UINT uPeriod,
+                                                 BOOL fChanged)
         {
             ENTER(hwnd, uJoyID, uPeriod, fChanged);
             return MMSYSERR_NODRIVER; // NYI
@@ -1406,11 +2526,13 @@ namespace Hooks
             return rv;
         }
 
-
         HOOK_FUNCTION(BOOL, WINAPI, GetCursorPos, LPPOINT lpPoint);
         HOOKFUNC BOOL WINAPI MyGetCursorPos(LPPOINT lpPoint)
         {
-            if (!lpPoint) { return FALSE; }
+            if (!lpPoint)
+            {
+                return FALSE;
+            }
             lpPoint->x = curinput.mouse.coords.x;
             lpPoint->y = curinput.mouse.coords.y;
             ClientToScreen(gamehwnd, lpPoint);
@@ -1421,15 +2543,27 @@ namespace Hooks
         HOOK_FUNCTION(BOOL, WINAPI, GetCursorInfo, PCURSORINFO pci);
         HOOKFUNC BOOL WINAPI MyGetCursorInfo(PCURSORINFO pci)
         {
-            if (!GetCursorInfo(pci)) { return FALSE; }
+            if (!GetCursorInfo(pci))
+            {
+                return FALSE;
+            }
             return MyGetCursorPos(&pci->ptScreenPos);
         }
     }
 
     namespace DirectInput
     {
-        HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateA, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
-        HOOKFUNC HRESULT WINAPI MyDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter)
+        HOOK_FUNCTION(HRESULT,
+                      WINAPI,
+                      DirectInputCreateA,
+                      HINSTANCE hinst,
+                      DWORD dwVersion,
+                      LPDIRECTINPUTA* ppDI,
+                      LPUNKNOWN punkOuter);
+        HOOKFUNC HRESULT WINAPI MyDirectInputCreateA(HINSTANCE hinst,
+                                                     DWORD dwVersion,
+                                                     LPDIRECTINPUTA* ppDI,
+                                                     LPUNKNOWN punkOuter)
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
@@ -1440,13 +2574,13 @@ namespace Hooks
             if (SUCCEEDED(rv))
             {
                 if (dwVersion < 0x500)
-                    HookCOMInterface(IID_IDirectInputA, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInputA, (LPVOID*) ppDI);
                 else if (dwVersion < 0x700)
-                    HookCOMInterface(IID_IDirectInput2A, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput2A, (LPVOID*) ppDI);
                 else if (dwVersion < 0x800)
-                    HookCOMInterface(IID_IDirectInput7A, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput7A, (LPVOID*) ppDI);
                 else if (dwVersion < 0x900)
-                    HookCOMInterface(IID_IDirectInput8A, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput8A, (LPVOID*) ppDI);
             }
             else
             {
@@ -1456,8 +2590,17 @@ namespace Hooks
 
             return rv;
         }
-        HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateW, HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
-        HOOKFUNC HRESULT WINAPI MyDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter)
+        HOOK_FUNCTION(HRESULT,
+                      WINAPI,
+                      DirectInputCreateW,
+                      HINSTANCE hinst,
+                      DWORD dwVersion,
+                      LPDIRECTINPUTW* ppDI,
+                      LPUNKNOWN punkOuter);
+        HOOKFUNC HRESULT WINAPI MyDirectInputCreateW(HINSTANCE hinst,
+                                                     DWORD dwVersion,
+                                                     LPDIRECTINPUTW* ppDI,
+                                                     LPUNKNOWN punkOuter)
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
@@ -1468,13 +2611,13 @@ namespace Hooks
             if (SUCCEEDED(rv))
             {
                 if (dwVersion < 0x500)
-                    HookCOMInterface(IID_IDirectInputW, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInputW, (LPVOID*) ppDI);
                 else if (dwVersion < 0x700)
-                    HookCOMInterface(IID_IDirectInput2W, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput2W, (LPVOID*) ppDI);
                 else if (dwVersion < 0x800)
-                    HookCOMInterface(IID_IDirectInput7W, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput7W, (LPVOID*) ppDI);
                 else if (dwVersion < 0x900)
-                    HookCOMInterface(IID_IDirectInput8W, (LPVOID*)ppDI);
+                    HookCOMInterface(IID_IDirectInput8W, (LPVOID*) ppDI);
             }
             else
             {
@@ -1485,8 +2628,19 @@ namespace Hooks
             return rv;
         }
 
-        HOOK_FUNCTION(HRESULT, WINAPI, DirectInputCreateEx, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
-        HOOKFUNC HRESULT WINAPI MyDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
+        HOOK_FUNCTION(HRESULT,
+                      WINAPI,
+                      DirectInputCreateEx,
+                      HINSTANCE hinst,
+                      DWORD dwVersion,
+                      REFIID riidltf,
+                      LPVOID* ppvOut,
+                      LPUNKNOWN punkOuter);
+        HOOKFUNC HRESULT WINAPI MyDirectInputCreateEx(HINSTANCE hinst,
+                                                      DWORD dwVersion,
+                                                      REFIID riidltf,
+                                                      LPVOID* ppvOut,
+                                                      LPUNKNOWN punkOuter)
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
@@ -1506,9 +2660,19 @@ namespace Hooks
             return rv;
         }
 
-
-        HOOK_FUNCTION(HRESULT, WINAPI, DirectInput8Create, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
-        HOOKFUNC HRESULT WINAPI MyDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
+        HOOK_FUNCTION(HRESULT,
+                      WINAPI,
+                      DirectInput8Create,
+                      HINSTANCE hinst,
+                      DWORD dwVersion,
+                      REFIID riidltf,
+                      LPVOID* ppvOut,
+                      LPUNKNOWN punkOuter);
+        HOOKFUNC HRESULT WINAPI MyDirectInput8Create(HINSTANCE hinst,
+                                                     DWORD dwVersion,
+                                                     REFIID riidltf,
+                                                     LPVOID* ppvOut,
+                                                     LPUNKNOWN punkOuter)
         {
             ENTER();
             ThreadLocalStuff& curtls = tls;
@@ -1550,12 +2714,16 @@ namespace Hooks
                 HOOKRIID2(DirectInputDevice8A, MyDirectInputDevice);
                 HOOKRIID2(DirectInputDevice8W, MyDirectInputDevice);
 
-            default: return false;
+            default:
+                return false;
             }
             return true;
         }
 
-        bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
+        bool HookCOMInterfaceInputEx(REFIID riid,
+                                     LPVOID* ppvOut,
+                                     REFGUID parameter,
+                                     bool uncheckedFastNew)
         {
             switch (riid.Data1)
             {
@@ -1577,7 +2745,8 @@ namespace Hooks
                 HOOKRIID2EX(DirectInputDevice8A, MyDirectInputDevice, parameter);
                 HOOKRIID2EX(DirectInputDevice8W, MyDirectInputDevice, parameter);
 
-            default: return false;
+            default:
+                return false;
             }
             return true;
         }
@@ -1587,8 +2756,7 @@ namespace Hooks
     {
         void ApplyDirectInputIntercepts()
         {
-            static const InterceptDescriptor intercepts[] =
-            {
+            static const InterceptDescriptor intercepts[] = {
                 MAKE_INTERCEPT(1, DINPUT, DirectInputCreateA),
                 MAKE_INTERCEPT(1, DINPUT, DirectInputCreateW),
                 MAKE_INTERCEPT(1, DINPUT, DirectInputCreateEx),
@@ -1601,8 +2769,7 @@ namespace Hooks
     {
         void ApplyWinInputIntercepts()
         {
-            static const InterceptDescriptor intercepts[] =
-            {
+            static const InterceptDescriptor intercepts[] = {
                 MAKE_INTERCEPT(1, USER32, GetAsyncKeyState),
                 MAKE_INTERCEPT(1, USER32, GetKeyState),
                 MAKE_INTERCEPT(1, USER32, GetKeyboardState),

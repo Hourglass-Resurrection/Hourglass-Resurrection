@@ -19,7 +19,10 @@ class DlgBase;
 class MenuItem : public MenuItemBase
 {
 public:
-    MenuItem(const std::wstring& title, const std::wstring& shortcut, MenuItemBase* parent, DlgBase* dlg);
+    MenuItem(const std::wstring& title,
+             const std::wstring& shortcut,
+             MenuItemBase* parent,
+             DlgBase* dlg);
 
     MenuItem& SetEnabled(bool enabled);
 

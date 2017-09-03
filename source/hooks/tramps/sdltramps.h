@@ -9,11 +9,13 @@
 
 namespace Hooks
 {
-    struct SDL_Palette {
+    struct SDL_Palette
+    {
         int entryCount;
         PALETTEENTRY* entries;
     };
-    struct SDL_PixelFormat {
+    struct SDL_PixelFormat
+    {
         SDL_Palette* palette;
         unsigned char BitsPerPixel;
         unsigned char BytesPerPixel;
@@ -47,13 +49,31 @@ namespace Hooks
         unsigned short w, h;
     };
 
-    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_Flip, SDL_Surface *screen);
-    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UpdateRect, SDL_Surface *screen, int x, int y, int w, int h);
-    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects);
+    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_Flip, SDL_Surface* screen);
+    HOOK_FUNCTION_DECLARE(void,
+                          SDLCALL,
+                          SDL_UpdateRect,
+                          SDL_Surface* screen,
+                          int x,
+                          int y,
+                          int w,
+                          int h);
+    HOOK_FUNCTION_DECLARE(void,
+                          SDLCALL,
+                          SDL_UpdateRects,
+                          SDL_Surface* screen,
+                          int numrects,
+                          SDL_Rect* rects);
     HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_GL_SwapBuffers);
-    HOOK_FUNCTION_DECLARE(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags);
-    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface);
-    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface);
+    HOOK_FUNCTION_DECLARE(SDL_Surface*,
+                          SDLCALL,
+                          SDL_SetVideoMode,
+                          int width,
+                          int height,
+                          int bpp,
+                          unsigned int flags);
+    HOOK_FUNCTION_DECLARE(int, SDLCALL, SDL_LockSurface, SDL_Surface* surface);
+    HOOK_FUNCTION_DECLARE(void, SDLCALL, SDL_UnlockSurface, SDL_Surface* surface);
 
     void ApplySDLIntercepts();
 }

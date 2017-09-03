@@ -22,14 +22,17 @@ namespace Hourglass
     bool Find(const std::experimental::filesystem::path& base_path)
     {
 #ifdef NDEBUG
-        gs_hourglass_exe = base_path.parent_path().parent_path() / "Release" / "hourglass-resurrection.exe";
+        gs_hourglass_exe =
+            base_path.parent_path().parent_path() / "Release" / "hourglass-resurrection.exe";
 #else
-        gs_hourglass_exe = base_path.parent_path().parent_path() / "Debug" / "hourglass-resurrection-d.exe";
+        gs_hourglass_exe =
+            base_path.parent_path().parent_path() / "Debug" / "hourglass-resurrection-d.exe";
 #endif
 
         if (!filesystem::exists(gs_hourglass_exe))
         {
-            std::wcout << L"Could not find the Hourglass .exe at " << gs_hourglass_exe << L". Quitting.\n";
+            std::wcout << L"Could not find the Hourglass .exe at " << gs_hourglass_exe
+                       << L". Quitting.\n";
             return false;
         }
         else
@@ -41,10 +44,9 @@ namespace Hourglass
 
     void Run(const filesystem::path& exe, const filesystem::path& input)
     {
-        std::wstring commandline = L'"' + gs_hourglass_exe.wstring()
-                                 + L"\" --game \"" + exe.wstring()
-                                 + L"\" --movie \"" + input.wstring()
-                                 + L"\" --ignore-md5 --play --quit-on-movie-end";
+        std::wstring commandline = L'"' + gs_hourglass_exe.wstring() + L"\" --game \""
+                                   + exe.wstring() + L"\" --movie \"" + input.wstring()
+                                   + L"\" --ignore-md5 --play --quit-on-movie-end";
 
         std::wcout << commandline << L'\n';
 
@@ -65,7 +67,8 @@ namespace Hourglass
                            nullptr,
                            gs_hourglass_exe.parent_path().c_str(),
                            &si,
-                           &pi) == 0)
+                           &pi)
+            == 0)
         {
             throw std::runtime_error("Error starting Hourglass: " + std::to_string(GetLastError()));
         }

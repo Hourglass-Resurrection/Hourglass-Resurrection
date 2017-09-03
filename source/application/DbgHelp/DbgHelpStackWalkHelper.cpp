@@ -7,9 +7,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <DIA SDK/include/dia2.h>
 #include <atlbase.h>
 #include <atlcom.h>
-#include <DIA SDK/include/dia2.h>
 
 #include "../logging.h"
 #include "DbgHelpPrivate.h"
@@ -34,7 +34,8 @@ namespace
 
         for (const auto& table : enum_tables)
         {
-            HRESULT rv = table->QueryInterface(__uuidof(T), reinterpret_cast<LPVOID*>(&desired_table));
+            HRESULT rv =
+                table->QueryInterface(__uuidof(T), reinterpret_cast<LPVOID*>(&desired_table));
             if (rv == S_OK)
             {
                 break;
@@ -44,8 +45,8 @@ namespace
     }
 }
 
-DbgHelpStackWalkHelper::DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context) :
-    m_priv(priv)
+DbgHelpStackWalkHelper::DbgHelpStackWalkHelper(const DbgHelpPrivate* priv, const CONTEXT& context)
+    : m_priv(priv)
 {
     memcpy(&m_thread_context, &context, sizeof(CONTEXT));
 }
@@ -215,7 +216,7 @@ HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG registe
     static constexpr DWORD WORD_MASK = MAXDWORD - MAXWORD;
     switch (index)
     {
-        /*
+    /*
         * TODO: Cast register_value?
         * -- Warepire
         */
@@ -232,16 +233,20 @@ HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG registe
         m_thread_context.Ebx = (m_thread_context.Ebx & LOBYTE_MASK) + (register_value & MAXBYTE);
         break;
     case CV_REG_AH:
-        m_thread_context.Eax = (m_thread_context.Eax & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
+        m_thread_context.Eax =
+            (m_thread_context.Eax & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
         break;
     case CV_REG_CH:
-        m_thread_context.Ecx = (m_thread_context.Ecx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
+        m_thread_context.Ecx =
+            (m_thread_context.Ecx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
         break;
     case CV_REG_DH:
-        m_thread_context.Edx = (m_thread_context.Edx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
+        m_thread_context.Edx =
+            (m_thread_context.Edx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
         break;
     case CV_REG_BH:
-        m_thread_context.Ebx = (m_thread_context.Ebx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
+        m_thread_context.Ebx =
+            (m_thread_context.Ebx & HIBYTE_MASK) + ((register_value & MAXBYTE) << 8);
         break;
     case CV_REG_AX:
         m_thread_context.Eax = (m_thread_context.Eax & WORD_MASK) + (register_value & MAXWORD);
@@ -313,7 +318,8 @@ HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG registe
         m_thread_context.Eip = (m_thread_context.Eip & WORD_MASK) + (register_value & MAXWORD);
         break;
     case CV_REG_FLAGS:
-        m_thread_context.EFlags = (m_thread_context.EFlags & WORD_MASK) + (register_value & MAXWORD);
+        m_thread_context.EFlags =
+            (m_thread_context.EFlags & WORD_MASK) + (register_value & MAXWORD);
         break;
     case CV_REG_EIP:
         m_thread_context.Eip = (register_value & MAXDWORD);
@@ -341,8 +347,11 @@ HRESULT DbgHelpStackWalkHelper::put_registerValue(DWORD index, ULONGLONG registe
     return S_OK;
 }
 
-HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtual_address,
-                                           DWORD buffer_length, DWORD* bytes_read, BYTE* buffer)
+HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type,
+                                           ULONGLONG virtual_address,
+                                           DWORD buffer_length,
+                                           DWORD* bytes_read,
+                                           BYTE* buffer)
 {
     /*
      * We do not limit the access to memory depending on type.
@@ -353,15 +362,20 @@ HRESULT DbgHelpStackWalkHelper::readMemory(MemoryTypeEnum type, ULONGLONG virtua
     {
         return E_POINTER;
     }
-    if (ReadProcessMemory(m_priv->GetProcess(), reinterpret_cast<LPCVOID>(virtual_address),
-                          buffer, buffer_length, bytes_read) == FALSE)
+    if (ReadProcessMemory(m_priv->GetProcess(),
+                          reinterpret_cast<LPCVOID>(virtual_address),
+                          buffer,
+                          buffer_length,
+                          bytes_read)
+        == FALSE)
     {
         return E_FAIL;
     }
     return S_OK;
 }
 
-HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULONGLONG* return_address)
+HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame,
+                                                       ULONGLONG* return_address)
 {
     return E_NOTIMPL;
 
@@ -400,10 +414,13 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULO
         return_address_location += 2;
     }
 
-
-    if ((ReadProcessMemory(m_priv->GetProcess(), reinterpret_cast<LPCVOID>(return_address_location),
-                           return_address, sizeof(DWORD), &read_bytes) == FALSE) ||
-        read_bytes != sizeof(DWORD))
+    if ((ReadProcessMemory(m_priv->GetProcess(),
+                           reinterpret_cast<LPCVOID>(return_address_location),
+                           return_address,
+                           sizeof(DWORD),
+                           &read_bytes)
+         == FALSE)
+        || read_bytes != sizeof(DWORD))
     {
         *return_address = 0;
         return S_FALSE;
@@ -412,7 +429,9 @@ HRESULT DbgHelpStackWalkHelper::searchForReturnAddress(IDiaFrameData* frame, ULO
     return S_OK;
 }
 
-HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame, ULONGLONG start_address, ULONGLONG* return_address)
+HRESULT DbgHelpStackWalkHelper::searchForReturnAddressStart(IDiaFrameData* frame,
+                                                            ULONGLONG start_address,
+                                                            ULONGLONG* return_address)
 {
     /*
      * Keep this unimplemented for now.
@@ -465,7 +484,10 @@ HRESULT DbgHelpStackWalkHelper::symbolForVA(ULONGLONG virtual_address, IDiaSymbo
     return rv;
 }
 
-HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data_length, DWORD* bytes_read, BYTE* buffer)
+HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address,
+                                           DWORD data_length,
+                                           DWORD* bytes_read,
+                                           BYTE* buffer)
 {
     /*
      * 64-bit specific
@@ -474,7 +496,8 @@ HRESULT DbgHelpStackWalkHelper::pdataForVA(ULONGLONG virtual_address, DWORD data
     return E_NOTIMPL;
 }
 
-HRESULT DbgHelpStackWalkHelper::imageForVA(ULONGLONG virtual_address_context, ULONGLONG* virtual_address_image_start)
+HRESULT DbgHelpStackWalkHelper::imageForVA(ULONGLONG virtual_address_context,
+                                           ULONGLONG* virtual_address_image_start)
 {
     auto data = m_priv->GetModuleData(virtual_address_context);
     if (data == nullptr || data->m_module_symbol_session == nullptr)
@@ -495,12 +518,18 @@ HRESULT DbgHelpStackWalkHelper::addressForVA(ULONGLONG va, DWORD* pISect, DWORD*
     return E_NOTIMPL;
 }
 
-HRESULT DbgHelpStackWalkHelper::numberOfFunctionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD* pNumFragments)
+HRESULT DbgHelpStackWalkHelper::numberOfFunctionFragmentsForVA(ULONGLONG vaFunc,
+                                                               DWORD cbFunc,
+                                                               DWORD* pNumFragments)
 {
     return E_NOTIMPL;
 }
 
-HRESULT DbgHelpStackWalkHelper::functionFragmentsForVA(ULONGLONG vaFunc, DWORD cbFunc, DWORD cFragments, ULONGLONG * pVaFragment, DWORD * pLenFragment)
+HRESULT DbgHelpStackWalkHelper::functionFragmentsForVA(ULONGLONG vaFunc,
+                                                       DWORD cbFunc,
+                                                       DWORD cFragments,
+                                                       ULONGLONG* pVaFragment,
+                                                       DWORD* pLenFragment)
 {
     return E_NOTIMPL;
 }

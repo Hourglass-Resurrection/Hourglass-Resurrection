@@ -14,17 +14,17 @@
 struct WaveFormat
 {
 public:
-	WaveFormat(const LPWAVEFORMATEX format = nullptr);
-	WaveFormat(const WAVEFORMATEX& format);
-	WaveFormat(const WaveFormat& format);
-	WaveFormat& operator =(const WaveFormat& format);
-	~WaveFormat();
-	operator LPWAVEFORMATEX();
-	operator const LPWAVEFORMATEX() const;
-	size_t GetSize();
-	size_t GetMaxSize();
-	LPWAVEFORMATEX m_format;
+    WaveFormat(const LPWAVEFORMATEX format = nullptr);
+    WaveFormat(const WAVEFORMATEX& format);
+    WaveFormat(const WaveFormat& format);
+    WaveFormat& operator=(const WaveFormat& format);
+    ~WaveFormat();
+    operator LPWAVEFORMATEX();
+    operator const LPWAVEFORMATEX() const;
+    size_t GetSize();
+    size_t GetMaxSize();
+    LPWAVEFORMATEX m_format;
 
 private:
-	void Init(const LPWAVEFORMATEX format);
+    void Init(const LPWAVEFORMATEX format);
 };

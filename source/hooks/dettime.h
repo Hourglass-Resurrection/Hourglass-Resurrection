@@ -7,15 +7,15 @@
 
 enum TimeCallType
 {
-	TIMETYPE_UNTRACKED=-1,
-	TIMETYPE_QUERYPERFCOUNT=0,
-	TIMETYPE_NTQUERYSYSTIME,
-	TIMETYPE_GETTICKCOUNT,
-	TIMETYPE_TIMEGETSYSTIME,
-	TIMETYPE_TIMEGETTIME,
-	TIMETYPE_SETTIMER,
-	TIMETYPE_CRAWLHACK,
-	TIMETYPE_NUMTRACKEDTYPES
+    TIMETYPE_UNTRACKED = -1,
+    TIMETYPE_QUERYPERFCOUNT = 0,
+    TIMETYPE_NTQUERYSYSTIME,
+    TIMETYPE_GETTICKCOUNT,
+    TIMETYPE_TIMEGETSYSTIME,
+    TIMETYPE_TIMEGETTIME,
+    TIMETYPE_SETTIMER,
+    TIMETYPE_CRAWLHACK,
+    TIMETYPE_NUMTRACKEDTYPES
 };
 
 // used to adjust the timers if we switch between them,
@@ -61,16 +61,14 @@ private:
 
 extern NonDeterministicTimer nonDetTimer;
 
-
 #define MAX_NONFRAME_GETTIMES 4000
 
 // hack to avoid adding more parameters through to EnterFrameBoundary
 extern bool s_isSleepEnterFB;
 extern bool s_isWaitEnterFB;
 
-
 // a timer that gives deterministic values, at least in the main thread.
-// 
+//
 // deterministic means that calling FrameBoundary() and querying this timer
 // in the same order will produce the same stream of results,
 // independently of anything else like the system clock or CPU speed.
@@ -100,9 +98,18 @@ public:
     FILETIME GetFileTime();
     SYSTEMTIME GetSystemTime();
 
-    int GetInternalTickCountForDebugging() { return ticks; }
-    int GetInternalTickCount2ForDebugging() { return addedDelay; }
-    int GetInternalTickCount3ForDebugging() { return lastNewTicks; }
+    int GetInternalTickCountForDebugging()
+    {
+        return ticks;
+    }
+    int GetInternalTickCount2ForDebugging()
+    {
+        return addedDelay;
+    }
+    int GetInternalTickCount3ForDebugging()
+    {
+        return lastNewTicks;
+    }
 
 private:
     DWORD ticks;
@@ -113,7 +120,8 @@ private:
     DWORD lastEnterStartTicks; // TODO: DELETE THIS (unused)
     DWORD lastOvershot;
     DWORD frameThreadId;
-    DWORD altGetTimes[TIMETYPE_NUMTRACKEDTYPES]; // limit for each time-getting method before time auto-advances to avoid a freeze
+    DWORD altGetTimes
+        [TIMETYPE_NUMTRACKEDTYPES]; // limit for each time-getting method before time auto-advances to avoid a freeze
     DWORD altGetTimeLimits[TIMETYPE_NUMTRACKEDTYPES];
     DWORD lastNewTicks;
     DWORD addedDelay;

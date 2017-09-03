@@ -19,7 +19,10 @@ class DlgBase;
 class CheckableMenuItem : public MenuItemBase
 {
 public:
-    CheckableMenuItem(const std::wstring& title, const std::wstring& shortcut, MenuBase* parent, DlgBase* dlg);
+    CheckableMenuItem(const std::wstring& title,
+                      const std::wstring& shortcut,
+                      MenuBase* parent,
+                      DlgBase* dlg);
 
     CheckableMenuItem& SetEnabled(bool enabled);
     CheckableMenuItem& SetChecked(bool checked);

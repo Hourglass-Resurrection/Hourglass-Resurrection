@@ -14,7 +14,7 @@
 
 #include "StaticText.h"
 
-StaticText::StaticText(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, STATIC_WND_CLASS, 0, SS_LEFT, x, y, w, h, dlg)
+StaticText::StaticText(const std::wstring& title, short x, short y, short w, short h, DlgBase* dlg)
+    : ObjBase(title, STATIC_WND_CLASS, 0, SS_LEFT, x, y, w, h, dlg)
 {
 }

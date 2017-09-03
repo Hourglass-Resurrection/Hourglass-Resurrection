@@ -17,25 +17,25 @@
 
 #include <DIA SDK/include/dia2.h>
 
-#include "application/logging.h"
+#include "DbgHelpLoadCallback.h"
+#include "DbgHelpStackWalkCallback.h"
+#include "DbgHelpStackWalkHelper.h"
 #include "application/Utils/COM.h"
 #include "application/Utils/File.h"
-#include "DbgHelpLoadCallback.h"
-#include "DbgHelpStackWalkHelper.h"
-#include "DbgHelpStackWalkCallback.h"
+#include "application/logging.h"
 
 #include "DbgHelpPrivate.h"
 
-DbgHelpPrivate::DbgHelpPrivate(const Utils::COM::COMLibrary& dia, HANDLE process) :
-    m_dia(dia),
-    m_process(process),
-    m_platform_set(false)
+DbgHelpPrivate::DbgHelpPrivate(const Utils::COM::COMLibrary& dia, HANDLE process)
+    : m_dia(dia), m_process(process), m_platform_set(false)
 {
 }
 
 DbgHelpPrivate::~DbgHelpPrivate() = default;
 
-bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path)
+bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base,
+                                 const std::wstring& exec,
+                                 const std::wstring& search_path)
 {
     DbgHelpLoadCallback load_callback;
     auto data_source = m_dia.CreateCOMPtr<IDiaDataSource>(CLSID_DiaSource);
@@ -52,7 +52,8 @@ bool DbgHelpPrivate::LoadSymbols(DWORD64 module_base, const std::wstring& exec, 
     if (data_source->loadDataForExe(exec.c_str(), search_path.c_str(), &load_callback) != S_OK)
     {
         DebugLog() << "[Hourglass][DebugSymbols] No symbols found, using export table as symbols.";
-        m_loaded_modules[module_base].m_module_exports_table = file_headers.GetExportTable(module_base);
+        m_loaded_modules[module_base].m_module_exports_table =
+            file_headers.GetExportTable(module_base);
         return true;
     }
 
@@ -110,12 +111,15 @@ bool DbgHelpPrivate::StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb)
     /*
      * CV_CFL_PENTIUM is the flag passed to getEnumFrames2 internally by getEnumFrames.
      */
-    if (stack_walker->getEnumFrames2(m_platform_set ? m_platform : CV_CFL_PENTIUM, &helper, &stack_frames) != S_OK)
+    if (stack_walker->getEnumFrames2(m_platform_set ? m_platform : CV_CFL_PENTIUM,
+                                     &helper,
+                                     &stack_frames)
+        != S_OK)
     {
         return false;
     }
 
-    IDiaStackFrame *stack_frame = nullptr;
+    IDiaStackFrame* stack_frame = nullptr;
     for (ULONG next = 0; (stack_frames->Next(1, &stack_frame, &next) == S_OK) && (next == 1);)
     {
         ULONGLONG pc;

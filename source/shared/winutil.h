@@ -5,7 +5,13 @@
 
 struct AutoCritSect
 {
-	AutoCritSect(CRITICAL_SECTION* cs) : m_cs(cs) { EnterCriticalSection(m_cs); }
-	~AutoCritSect() { LeaveCriticalSection(m_cs); }
-	CRITICAL_SECTION* m_cs;
+    AutoCritSect(CRITICAL_SECTION* cs) : m_cs(cs)
+    {
+        EnterCriticalSection(m_cs);
+    }
+    ~AutoCritSect()
+    {
+        LeaveCriticalSection(m_cs);
+    }
+    CRITICAL_SECTION* m_cs;
 };

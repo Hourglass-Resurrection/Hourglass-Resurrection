@@ -16,14 +16,18 @@ namespace Utils
 {
     namespace COM
     {
-        using DllGetClassObject_t = HRESULT(__stdcall *)(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+        using DllGetClassObject_t = HRESULT(__stdcall*)(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
 
         template<class T>
         CComPtr<T> CreateCOMPtr(REFIID class_id)
         {
             CComPtr<T> result;
-            if (CoCreateInstance(class_id, nullptr, CLSCTX_INPROC_SERVER, __uuidof(T),
-                                 reinterpret_cast<LPVOID*>(&result)) != S_OK)
+            if (CoCreateInstance(class_id,
+                                 nullptr,
+                                 CLSCTX_INPROC_SERVER,
+                                 __uuidof(T),
+                                 reinterpret_cast<LPVOID*>(&result))
+                != S_OK)
             {
                 throw std::bad_alloc();
             }
@@ -34,6 +38,7 @@ namespace Utils
         {
         public:
             static void Init();
+
         private:
             COMInstance();
             ~COMInstance();
@@ -69,7 +74,8 @@ namespace Utils
                 CComPtr<T> result;
                 if (factory->CreateInstance(nullptr,
                                             __uuidof(T),
-                                            reinterpret_cast<LPVOID*>(&result)) != S_OK)
+                                            reinterpret_cast<LPVOID*>(&result))
+                    != S_OK)
                 {
                     throw std::exception("Error creating a class instance!");
                 }

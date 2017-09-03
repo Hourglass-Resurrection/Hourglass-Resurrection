@@ -1,9 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../tls.h"
 #include <map>
+#include "../tls.h"
+#include "../wintasee.h"
 
 using Log = DebugLog<LogCategory::SYNC>;
 
@@ -11,12 +11,15 @@ namespace Hooks
 {
     void ThreadHandleToExitHandle(HANDLE& pHandle);
 
-    VOID WINAPI UntrampedSleep(DWORD x) { ::Sleep(x); }
+    VOID WINAPI UntrampedSleep(DWORD x)
+    {
+        ::Sleep(x);
+    }
 
     HOOK_FUNCTION(VOID, WINAPI, Sleep, DWORD dwMilliseconds);
     HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds)
     {
-        BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
+        BOOL isFrameThread = tls_IsPrimaryThread(); //tls.isFrameThread;
 
         ENTER(dwMilliseconds);
 
@@ -24,9 +27,9 @@ namespace Hooks
         if (dwMilliseconds && isFrameThread)
         {
             // add a delay for framerate adjustment and to take large sleeps into account.
-    //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
-    //		// to make the game run at a lower framerate than it naturally does.
-    //		if(dwMilliseconds >= 5)
+            //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
+            //		// to make the game run at a lower framerate than it naturally does.
+            //		if(dwMilliseconds >= 5)
             if (VerifyIsTrustedCaller())
                 detTimer.AddDelay(dwMilliseconds, TRUE, TRUE);
 
@@ -54,15 +57,15 @@ namespace Hooks
     {
         ENTER(dwMilliseconds, bAlertable);
 
-        BOOL isFrameThread = tls_IsPrimaryThread();//tls.isFrameThread;
+        BOOL isFrameThread = tls_IsPrimaryThread(); //tls.isFrameThread;
 
         //if(dwMilliseconds && s_frameThreadId == GetCurrentThreadId()) // main thread waiting?
         if (dwMilliseconds && isFrameThread && !(bAlertable || !VerifyIsTrustedCaller()))
         {
             // add a delay for framerate adjustment and to take large sleeps into account.
-    //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
-    //		// to make the game run at a lower framerate than it naturally does.
-    //		if(dwMilliseconds >= 5)
+            //		// we ignore <5 millisecond sleeps here because they can accumulate in our timer
+            //		// to make the game run at a lower framerate than it naturally does.
+            //		if(dwMilliseconds >= 5)
             detTimer.AddDelay(dwMilliseconds, TRUE, TRUE);
 
             dwMilliseconds = 0;
@@ -78,7 +81,6 @@ namespace Hooks
         //	verbosedebugprintf("DENIED because of fast-forward\n");
         //}
 
-
         // not needed anymore now that joypad functions like joyGetPosEx are replaced.
         // might become a problem again later in which case this can be re-enabled.
         //// hack for rotategear intro in wrapped thread mode
@@ -89,14 +91,13 @@ namespace Hooks
         //	dwMilliseconds -= ((dwMilliseconds - 1000) / 32) * 31;
         //}
 
-
         {
             //debugprintf("sleepex: %d\n", dwMilliseconds);
             SleepEx(dwMilliseconds, bAlertable);
         }
     }
 
-    void TransferWait(DWORD& dwMilliseconds/*, bool rly=true*/)
+    void TransferWait(DWORD& dwMilliseconds /*, bool rly=true*/)
     {
 #if 0
         if (tls.isFrameThread) // only apply this to the main thread
@@ -119,16 +120,17 @@ namespace Hooks
             if (dwMilliseconds > 0)
             {
                 //	if(tls.isFrameThread && !tls.callerisuntrusted) // only apply this to the main thread
-                if (tls_IsPrimaryThread() && VerifyIsTrustedCaller()) // only apply this to the main thread
+                if (tls_IsPrimaryThread()
+                    && VerifyIsTrustedCaller()) // only apply this to the main thread
                 {
                     // add the delay logically but don't physically wait yet
-    //				if(rly){
+                    //				if(rly){
                     //detTimer.AddDelay(dwMilliseconds, FALSE, tasflags.waitSyncMode<2, TRUE); // attempted sync hack
                     detTimer.AddDelay(dwMilliseconds, FALSE, TRUE, TRUE); // FIXME: might desync?
                     //detTimer.AddDelay(dwMilliseconds, FALSE, FALSE, TRUE); // FIXME... sync hack
-    //				}
+                    //				}
                     // if in fast-forward mode, nullify the physical wait (if any remains)
-    //				if(tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP))
+                    //				if(tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP))
                     dwMilliseconds = 0;
                     // because of this, we have to be careful not to accidentally call this function twice in a row.
                     // for example, if we hook both WaitForSingleObject and WaitForSingleObjectEx,
@@ -139,10 +141,15 @@ namespace Hooks
         }
     }
 
-
-    HOOK_FUNCTION(DWORD, WINAPI, WaitForSingleObjectEx,
-        HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable);
-    HOOKFUNC DWORD WINAPI MyWaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds, BOOL bAlertable)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  WaitForSingleObjectEx,
+                  HANDLE hHandle,
+                  DWORD dwMilliseconds,
+                  BOOL bAlertable);
+    HOOKFUNC DWORD WINAPI MyWaitForSingleObjectEx(HANDLE hHandle,
+                                                  DWORD dwMilliseconds,
+                                                  BOOL bAlertable)
     {
         ENTER(dwMilliseconds, bAlertable);
 
@@ -152,11 +159,11 @@ namespace Hooks
 
             //		TransferWait(dwMilliseconds);
             DWORD rv;
-            do {
+            do
+            {
                 rv = WaitForSingleObjectEx(hHandle, dwMilliseconds, bAlertable);
             } while (rv == WAIT_TIMEOUT);
             return rv;
-
 
             // careful not to do anything (not even a printf) after the wait function...
             // many games will crash from a race condition if we don't return as fast as possible.
@@ -164,11 +171,10 @@ namespace Hooks
 
         //	TransferWait(dwMilliseconds);
         //	return WaitForSingleObjectEx(hHandle, dwMilliseconds, bAlertable);
-            // careful not to do anything (not even a printf) after the wait function...
-            // many games will crash from a race condition if we don't return as fast as possible.
+        // careful not to do anything (not even a printf) after the wait function...
+        // many games will crash from a race condition if we don't return as fast as possible.
     }
-    HOOK_FUNCTION(DWORD, WINAPI, WaitForSingleObject,
-        HANDLE hHandle, DWORD dwMilliseconds);
+    HOOK_FUNCTION(DWORD, WINAPI, WaitForSingleObject, HANDLE hHandle, DWORD dwMilliseconds);
     HOOKFUNC DWORD WINAPI MyWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
     {
         ENTER(dwMilliseconds, hHandle);
@@ -182,15 +188,17 @@ namespace Hooks
             if (tasflags.threadMode == 1)
                 ThreadHandleToExitHandle(hHandle);
 
-
             DWORD prevMs = dwMilliseconds;
             TransferWait(dwMilliseconds);
             if (!tls_IsPrimaryThread() || tasflags.waitSyncMode == 2
                 //	|| (tasflags.waitSyncMode <= 1 && prevMs == 0) // hack for Rosenkreuzstilette Freudenstachel
                 )
             {
-                if (tasflags.fastForward && dwMilliseconds > 1 && dwMilliseconds < 100 && (tasflags.fastForwardFlags & FFMODE_SLEEPSKIP)) // hack: check sleepskip instead of waitskip because waitskip is intended for riskier wait skips
-                    dwMilliseconds = 1; // some games have a framerate regulator non-main thread that prevents fast-forward from working unless we do this. note that using 0 instead of 1 would give far worse results.
+                if (tasflags.fastForward && dwMilliseconds > 1 && dwMilliseconds < 100
+                    && (tasflags.fastForwardFlags
+                        & FFMODE_SLEEPSKIP)) // hack: check sleepskip instead of waitskip because waitskip is intended for riskier wait skips
+                    dwMilliseconds =
+                        1; // some games have a framerate regulator non-main thread that prevents fast-forward from working unless we do this. note that using 0 instead of 1 would give far worse results.
 
                 DWORD rv = WaitForSingleObject(hHandle, dwMilliseconds);
                 LEAVE(rv);
@@ -219,9 +227,10 @@ namespace Hooks
                 // TODO: games with "loading threads" (such as Rosenkreuzstilette Freudenstachel)
                 // have trouble with this case
 
-                if ((DWORD)dwMilliseconds < 100)
+                if ((DWORD) dwMilliseconds < 100)
                 {
-                    if (tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP) && dwMilliseconds)
+                    if (tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP)
+                        && dwMilliseconds)
                         dwMilliseconds = 1;
                     DWORD rv = WaitForSingleObject(hHandle, dwMilliseconds);
                     //if(rv == WAIT_TIMEOUT)
@@ -239,9 +248,11 @@ namespace Hooks
                     LEAVE(rv);
                     return rv;
                 }
-                DWORD maxWaitTime = 1000; // TODO: make this number configurable in the UI and hopefully used in some other places if appropriate
+                DWORD maxWaitTime =
+                    1000; // TODO: make this number configurable in the UI and hopefully used in some other places if appropriate
                 if (tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP))
-                    maxWaitTime = 1; // could cause problems but this option should be off by default
+                    maxWaitTime =
+                        1; // could cause problems but this option should be off by default
 
                 DWORD rv = WaitForSingleObject(hHandle, maxWaitTime);
                 if (rv == WAIT_TIMEOUT)
@@ -262,47 +273,62 @@ namespace Hooks
             //			rv = WaitForSingleObject(hHandle, dwMilliseconds);
             //		}
             //		return rv;
-                    // careful not to do anything (not even a printf) after the wait function...
-                    // many games will crash from a race condition if we don't return as fast as possible.
+            // careful not to do anything (not even a printf) after the wait function...
+            // many games will crash from a race condition if we don't return as fast as possible.
         }
         //	return MyWaitForSingleObjectEx(hHandle, dwMilliseconds, FALSE);
     }
 
-
-    HOOK_FUNCTION(DWORD, WINAPI, WaitForMultipleObjectsEx,
-        DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable);
-    HOOKFUNC DWORD WINAPI MyWaitForMultipleObjectsEx(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds, BOOL bAlertable)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  WaitForMultipleObjectsEx,
+                  DWORD nCount,
+                  CONST HANDLE* lpHandles,
+                  BOOL bWaitAll,
+                  DWORD dwMilliseconds,
+                  BOOL bAlertable);
+    HOOKFUNC DWORD WINAPI MyWaitForMultipleObjectsEx(DWORD nCount,
+                                                     CONST HANDLE* lpHandles,
+                                                     BOOL bWaitAll,
+                                                     DWORD dwMilliseconds,
+                                                     BOOL bAlertable)
     {
         ENTER(dwMilliseconds, bAlertable);
 
         {
             //	TransferWait(dwMilliseconds);
-        //		return WaitForMultipleObjectsEx(nCount, lpHandles, bWaitAll, dwMilliseconds, bAlertable);
+            //		return WaitForMultipleObjectsEx(nCount, lpHandles, bWaitAll, dwMilliseconds, bAlertable);
 
-        //		TransferWait(dwMilliseconds);
+            //		TransferWait(dwMilliseconds);
             DWORD rv;
             //do{
             rv = WaitForMultipleObjectsEx(nCount, lpHandles, bWaitAll, dwMilliseconds, bAlertable);
             //} while(rv == WAIT_TIMEOUT);
             return rv;
 
-
             // careful not to do anything (not even a printf) after the wait function...
             // many games will crash from a race condition if we don't return as fast as possible.
         }
         //	TransferWait(dwMilliseconds);
         //	return WaitForMultipleObjectsEx(nCount, lpHandles, bWaitAll, dwMilliseconds, bAlertable);
-            // careful not to do anything (not even a printf) after the wait function...
-            // many games will crash from a race condition if we don't return as fast as possible.
+        // careful not to do anything (not even a printf) after the wait function...
+        // many games will crash from a race condition if we don't return as fast as possible.
     }
-    HOOK_FUNCTION(DWORD, WINAPI, WaitForMultipleObjects,
-        DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
-    HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount, CONST HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  WaitForMultipleObjects,
+                  DWORD nCount,
+                  CONST HANDLE* lpHandles,
+                  BOOL bWaitAll,
+                  DWORD dwMilliseconds);
+    HOOKFUNC DWORD WINAPI MyWaitForMultipleObjects(DWORD nCount,
+                                                   CONST HANDLE* lpHandles,
+                                                   BOOL bWaitAll,
+                                                   DWORD dwMilliseconds)
     {
         ENTER(dwMilliseconds, nCount, bWaitAll);
         for (DWORD i = 0; i < nCount; i++)
             LOG() << "    " << lpHandles[i];
-
 
         {
             /*
@@ -326,12 +352,13 @@ namespace Hooks
                     return rv;
             */
 
-
             DWORD prevMs = dwMilliseconds;
             TransferWait(dwMilliseconds);
             if (!tls_IsPrimaryThread() || tasflags.waitSyncMode == 2)
             {
-                if (tasflags.fastForward && dwMilliseconds > 1 && dwMilliseconds < 5000 && (tasflags.fastForwardFlags & FFMODE_SLEEPSKIP)) // hack: check sleepskip instead of waitskip because waitskip is intended for riskier wait skips
+                if (tasflags.fastForward && dwMilliseconds > 1 && dwMilliseconds < 5000
+                    && (tasflags.fastForwardFlags
+                        & FFMODE_SLEEPSKIP)) // hack: check sleepskip instead of waitskip because waitskip is intended for riskier wait skips
                     dwMilliseconds = 1;
             }
             else if (tasflags.waitSyncMode == 0)
@@ -343,7 +370,8 @@ namespace Hooks
                 // for eversion with multithreading disabled
                 dwMilliseconds = 0;
             }
-            else if (VerifyIsTrustedCaller()) // hack: if caller is untrusted already, it would have more trouble causing desync than otherwise, so in that case let it wait naturally to avoid frequent deadlocks in quartz.dll at Iji loading screens
+            else if (
+                VerifyIsTrustedCaller()) // hack: if caller is untrusted already, it would have more trouble causing desync than otherwise, so in that case let it wait naturally to avoid frequent deadlocks in quartz.dll at Iji loading screens
             {
                 //if(dwMilliseconds == 0)
                 //{
@@ -358,9 +386,9 @@ namespace Hooks
             // wait for thread -> wait for event
             // avoids deadlock when a thread waits for a wrapped thread to exit
             // (actually this isn't that hacky, except it should be done to all WaitFor* cases instead of only this case)
-            if (tasflags.threadMode == 1 && (int)nCount > 0)
+            if (tasflags.threadMode == 1 && (int) nCount > 0)
             {
-                HANDLE* handles = (HANDLE*)_alloca(nCount * sizeof(HANDLE));
+                HANDLE* handles = (HANDLE*) _alloca(nCount * sizeof(HANDLE));
                 for (DWORD i = 0; i < nCount; i++)
                 {
                     HANDLE pHandle = lpHandles[i];
@@ -388,11 +416,9 @@ namespace Hooks
                 //}
             }
 
-
             DWORD rv = WaitForMultipleObjects(nCount, lpHandles, bWaitAll, dwMilliseconds);
             //	debuglog(LCF_WAIT|LCF_FREQUENT/*|LCF_DESYNC*/, __FUNCTION__ " done waiting (0x%X).\n", rv);
             return rv;
-
 
             //else // breaks iji startup
             //{
@@ -426,28 +452,35 @@ namespace Hooks
             //	return WaitForMultipleObjects(nCount, lpHandles, bWaitAll, INFINITE);
             //}
 
-
-
             // careful not to do anything (not even a printf) after the wait function...
             // many games will crash from a race condition if we don't return as fast as possible.
         }
         //	return MyWaitForMultipleObjectsEx(nCount, lpHandles, bWaitAll, dwMilliseconds, FALSE);
     }
 
-
-    HOOK_FUNCTION(DWORD, WINAPI, SignalObjectAndWait,
-        HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable);
-    HOOKFUNC DWORD WINAPI MySignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, DWORD dwMilliseconds, BOOL bAlertable)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  SignalObjectAndWait,
+                  HANDLE hObjectToSignal,
+                  HANDLE hObjectToWaitOn,
+                  DWORD dwMilliseconds,
+                  BOOL bAlertable);
+    HOOKFUNC DWORD WINAPI MySignalObjectAndWait(HANDLE hObjectToSignal,
+                                                HANDLE hObjectToWaitOn,
+                                                DWORD dwMilliseconds,
+                                                BOOL bAlertable)
     {
         ENTER(dwMilliseconds, bAlertable);
 
         {
             //	TransferWait(dwMilliseconds);
-        //		return SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
+            //		return SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
 
             TransferWait(dwMilliseconds);
-            DWORD rv = SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
-            if (rv == WAIT_TIMEOUT && tasflags.waitSyncMode < 2 && tls_IsPrimaryThread()) {
+            DWORD rv =
+                SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
+            if (rv == WAIT_TIMEOUT && tasflags.waitSyncMode < 2 && tls_IsPrimaryThread())
+            {
                 if (tasflags.waitSyncMode == 0)
                     rv = WaitForSingleObjectEx(hObjectToWaitOn, INFINITE, 0);
                 else
@@ -460,14 +493,21 @@ namespace Hooks
         }
     }
 
-
-
-    HOOK_FUNCTION(DWORD, WINAPI, MsgWaitForMultipleObjects,
-        DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask);
-    HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  MsgWaitForMultipleObjects,
+                  DWORD nCount,
+                  const HANDLE* pHandles,
+                  BOOL bWaitAll,
+                  DWORD dwMilliseconds,
+                  DWORD dwWakeMask);
+    HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjects(DWORD nCount,
+                                                      const HANDLE* pHandles,
+                                                      BOOL bWaitAll,
+                                                      DWORD dwMilliseconds,
+                                                      DWORD dwWakeMask)
     {
         ENTER(dwMilliseconds, dwWakeMask);
-
 
         {
             // FIXME super desync prone especially in Iji (enemy randomness).
@@ -486,16 +526,16 @@ namespace Hooks
             //
             // ok, I think it's fixed now. need to clean this stuff up...
 
-    //DWORD rv = MyWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds); // desyncs too... not anymore, but
-    //return rv;
+            //DWORD rv = MyWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds); // desyncs too... not anymore, but
+            //return rv;
             //return MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
 
             DWORD prevMs = dwMilliseconds;
 
             TransferWait(dwMilliseconds);
 
-            HANDLE* handles = (HANDLE*)_alloca(nCount * sizeof(HANDLE));
-            if (tasflags.threadMode == 1 && (int)nCount > 0)
+            HANDLE* handles = (HANDLE*) _alloca(nCount * sizeof(HANDLE));
+            if (tasflags.threadMode == 1 && (int) nCount > 0)
             {
                 // try to convert thread handles to thread exit event handles
                 for (DWORD i = 0; i < nCount; i++)
@@ -509,12 +549,18 @@ namespace Hooks
 
             if (tasflags.waitSyncMode == 2 /*|| (!tls_IsPrimaryThread())*/)
             {
-                return MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
+                return MsgWaitForMultipleObjects(nCount,
+                                                 pHandles,
+                                                 bWaitAll,
+                                                 dwMilliseconds,
+                                                 dwWakeMask);
             }
-            else if (tasflags.waitSyncMode == 1 && (dwWakeMask & QS_ALLINPUT) != 0 && dwMilliseconds >= 500 && tls_IsPrimaryThread())
+            else if (tasflags.waitSyncMode == 1 && (dwWakeMask & QS_ALLINPUT) != 0
+                     && dwMilliseconds >= 500
+                     && tls_IsPrimaryThread())
             {
                 // hack to fix freeze in Temporal
-                HRESULT rv = WaitForMultipleObjects(nCount, pHandles, bWaitAll, /*500*/0);
+                HRESULT rv = WaitForMultipleObjects(nCount, pHandles, bWaitAll, /*500*/ 0);
                 if (rv == WAIT_TIMEOUT)
                     rv = WAIT_OBJECT_0 + nCount;
                 return rv;
@@ -524,8 +570,12 @@ namespace Hooks
                 HRESULT rv;
                 // not sure
                 //return MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
-                dwWakeMask &= ~(QS_PAINT | QS_MOUSE | QS_KEY | QS_HOTKEY |/*QS_RAWINPUT*/0x0400);
-                rv = MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
+                dwWakeMask &= ~(QS_PAINT | QS_MOUSE | QS_KEY | QS_HOTKEY | /*QS_RAWINPUT*/ 0x0400);
+                rv = MsgWaitForMultipleObjects(nCount,
+                                               pHandles,
+                                               bWaitAll,
+                                               dwMilliseconds,
+                                               dwWakeMask);
                 //// hack to fix freeze in Garden of Coloured Lights
                 //// problem: breaks music in Perfect Cherry Blossom if the wait is too small, doesn't work well in garden of coloured lights if too large
                 //if(dwWakeMask & (QS_MOUSE|QS_KEY|QS_HOTKEY|/*QS_RAWINPUT*/0x0400))
@@ -549,14 +599,19 @@ namespace Hooks
                 {
                     if (tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP))
                         dwMilliseconds = 0;
-                    DWORD maxWaitTime = 1000; // TODO: make this number configurable in the UI and hopefully used in some other places if appropriate
+                    DWORD maxWaitTime =
+                        1000; // TODO: make this number configurable in the UI and hopefully used in some other places if appropriate
                     if (dwMilliseconds > maxWaitTime)
                         dwMilliseconds = maxWaitTime;
 #ifdef EMULATE_MESSAGE_QUEUES
 #pragma message("FIXMEEE") // should probably rewrite this function to use MessageQueue somehow
 #endif
                     //DWORD rv = WaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds);
-                    DWORD rv = MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
+                    DWORD rv = MsgWaitForMultipleObjects(nCount,
+                                                         pHandles,
+                                                         bWaitAll,
+                                                         dwMilliseconds,
+                                                         dwWakeMask);
                     //				if(rv == WAIT_TIMEOUT)
                     {
                         // this is sync-critical code, but the variable is automatically part of savestates, so it's OK.
@@ -568,7 +623,8 @@ namespace Hooks
                             //if(rv == WAIT_TIMEOUT)
                             //	if(!(tasflags.fastForward && (tasflags.fastForwardFlags & FFMODE_WAITSKIP)))
                             //		MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, 100, dwWakeMask); // in case
-                            rv = WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
+                            rv =
+                                WAIT_OBJECT_0; // "might crash", but that's better than "probably desync"
                             // rotategear has no input if it never gets WAIT_OBJECT_0
                         }
                         else
@@ -593,13 +649,12 @@ namespace Hooks
                 //return rv;
             }
 
-
             //QS_ALLPOSTMESSAGE
             //debugprintf("MsgWaitForMultipleObjects. (nCount = 0x%X, pHandles = 0x%X, bWaitAll = 0x%X, dwMilliseconds = 0x%X, dwWakeMask = 0x%X)\n", nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
-    //return 0; // doesn't desync, but no music
-    //		TransferWait(dwMilliseconds);
+            //return 0; // doesn't desync, but no music
+            //		TransferWait(dwMilliseconds);
 
-    /*
+            /*
             TransferWait(dwMilliseconds);
             DWORD rv;
             do{
@@ -609,16 +664,26 @@ namespace Hooks
             return rv;
     */
 
-    //		return MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
+            //		return MsgWaitForMultipleObjects(nCount, pHandles, bWaitAll, dwMilliseconds, dwWakeMask);
             // careful not to do anything (not even a printf) after the wait function...
             // many games will crash from a race condition if we don't return as fast as possible.
         }
     }
 
     // Ex versions disabled as a precaution, see the note in TransferWait about how hooking both might cause desyncs.
-    HOOK_FUNCTION(DWORD, WINAPI, MsgWaitForMultipleObjectsEx,
-        DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags);
-    HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjectsEx(DWORD nCount, const HANDLE *pHandles, DWORD dwMilliseconds, DWORD dwWakeMask, DWORD dwFlags)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  MsgWaitForMultipleObjectsEx,
+                  DWORD nCount,
+                  const HANDLE* pHandles,
+                  DWORD dwMilliseconds,
+                  DWORD dwWakeMask,
+                  DWORD dwFlags);
+    HOOKFUNC DWORD WINAPI MyMsgWaitForMultipleObjectsEx(DWORD nCount,
+                                                        const HANDLE* pHandles,
+                                                        DWORD dwMilliseconds,
+                                                        DWORD dwWakeMask,
+                                                        DWORD dwFlags)
     {
         ENTER(dwMilliseconds, dwWakeMask);
         //	TransferWait(dwMilliseconds);
@@ -627,9 +692,15 @@ namespace Hooks
         // many games will crash from a race condition if we don't return as fast as possible.
     }
 
-    HOOK_FUNCTION(NTSTATUS, NTAPI, NtWaitForSingleObject,
-        HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
-    HOOKFUNC NTSTATUS NTAPI MyNtWaitForSingleObject(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
+    HOOK_FUNCTION(NTSTATUS,
+                  NTAPI,
+                  NtWaitForSingleObject,
+                  HANDLE Handle,
+                  BOOLEAN Alertable,
+                  PLARGE_INTEGER Timeout);
+    HOOKFUNC NTSTATUS NTAPI MyNtWaitForSingleObject(HANDLE Handle,
+                                                    BOOLEAN Alertable,
+                                                    PLARGE_INTEGER Timeout)
     {
         DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
         ENTER(dwMilliseconds);
@@ -638,31 +709,42 @@ namespace Hooks
             return NtWaitForSingleObject(Handle, Alertable, Timeout);
         }
     }
-    HOOK_FUNCTION(NTSTATUS, NTAPI, NtWaitForMultipleObjects,
-        ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
-    HOOKFUNC NTSTATUS NTAPI MyNtWaitForMultipleObjects(ULONG ObjectCount, PHANDLE ObjectsArray, DWORD WaitType, BOOLEAN Alertable, PLARGE_INTEGER Timeout)
+    HOOK_FUNCTION(NTSTATUS,
+                  NTAPI,
+                  NtWaitForMultipleObjects,
+                  ULONG ObjectCount,
+                  PHANDLE ObjectsArray,
+                  DWORD WaitType,
+                  BOOLEAN Alertable,
+                  PLARGE_INTEGER Timeout);
+    HOOKFUNC NTSTATUS NTAPI MyNtWaitForMultipleObjects(ULONG ObjectCount,
+                                                       PHANDLE ObjectsArray,
+                                                       DWORD WaitType,
+                                                       BOOLEAN Alertable,
+                                                       PLARGE_INTEGER Timeout)
     {
         DWORD dwMilliseconds = Timeout ? Timeout->LowPart : ~0;
         ENTER(dwMilliseconds);
 
         {
-            return NtWaitForMultipleObjects(ObjectCount, ObjectsArray, WaitType, Alertable, Timeout);
+            return NtWaitForMultipleObjects(ObjectCount,
+                                            ObjectsArray,
+                                            WaitType,
+                                            Alertable,
+                                            Timeout);
         }
     }
 
-    HOOK_FUNCTION(BOOL, NTAPI, RtlTryEnterCriticalSection,
-        RTL_CRITICAL_SECTION* crit);
+    HOOK_FUNCTION(BOOL, NTAPI, RtlTryEnterCriticalSection, RTL_CRITICAL_SECTION* crit);
     HOOKFUNC BOOL NTAPI MyRtlTryEnterCriticalSection(RTL_CRITICAL_SECTION* crit)
     {
         ENTER(crit);
         return RtlTryEnterCriticalSection(crit);
     }
 
-    HOOK_FUNCTION(NTSTATUS, NTAPI, RtlEnterCriticalSection,
-        RTL_CRITICAL_SECTION *crit);
-    HOOKFUNC NTSTATUS NTAPI MyRtlEnterCriticalSection(RTL_CRITICAL_SECTION *crit)
+    HOOK_FUNCTION(NTSTATUS, NTAPI, RtlEnterCriticalSection, RTL_CRITICAL_SECTION* crit);
+    HOOKFUNC NTSTATUS NTAPI MyRtlEnterCriticalSection(RTL_CRITICAL_SECTION* crit)
     {
-
         NTSTATUS rv = RtlEnterCriticalSection(crit);
 
         return rv;
@@ -689,7 +771,8 @@ namespace Hooks
 
             // hack
             if (tasflags.messageSyncMode != 0)
-                detTimer.GetTicks(TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
+                detTimer.GetTicks(
+                    TIMETYPE_CRAWLHACK); // potentially desync prone (but some games will need it) ... moving it here (on no-result) helped sync a bit though... and the problem that happens here is usually caused by GetMessageActionFlags being incomplete
         }
         if (!firstWait)
             debuglog(LCF_MESSAGES | LCF_WAIT, __FUNCTION__ " finished waiting.\n");
@@ -703,8 +786,7 @@ namespace Hooks
 
     void ApplyWaitIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, KERNEL32, Sleep),
             MAKE_INTERCEPT(1, KERNEL32, SleepEx),
             MAKE_INTERCEPT(1, KERNEL32, WaitForSingleObject),
@@ -716,7 +798,7 @@ namespace Hooks
             MAKE_INTERCEPT(0, USER32, MsgWaitForMultipleObjectsEx),
             MAKE_INTERCEPT(0, NTDLL, NtWaitForSingleObject),
             MAKE_INTERCEPT(0, NTDLL, NtWaitForMultipleObjects),
-            MAKE_INTERCEPT(/*1*/0, NTDLL, RtlEnterCriticalSection),
+            MAKE_INTERCEPT(/*1*/ 0, NTDLL, RtlEnterCriticalSection),
             MAKE_INTERCEPT(0, NTDLL, RtlTryEnterCriticalSection),
             MAKE_INTERCEPT(1, USER32, WaitMessage),
         };

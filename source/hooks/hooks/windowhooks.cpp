@@ -1,11 +1,11 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../tls.h"
-#include "../msgqueue.h"
-#include "../locale.h"
 #include <map>
+#include "../locale.h"
+#include "../msgqueue.h"
+#include "../tls.h"
+#include "../wintasee.h"
 
 using Log = DebugLog<LogCategory::WINDOW>;
 
@@ -17,12 +17,33 @@ namespace Hooks
     //std::map<HWND, BOOL> hwndDeniedDeactivate;
     //std::map<HWND, BOOL> hwndRespondingToPaintMessage;
 
-    HOOK_FUNCTION(HWND, WINAPI, CreateWindowExA, DWORD dwExStyle, LPCSTR lpClassName,
-        LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-    HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
-        LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+    HOOK_FUNCTION(HWND,
+                  WINAPI,
+                  CreateWindowExA,
+                  DWORD dwExStyle,
+                  LPCSTR lpClassName,
+                  LPCSTR lpWindowName,
+                  DWORD dwStyle,
+                  int X,
+                  int Y,
+                  int nWidth,
+                  int nHeight,
+                  HWND hWndParent,
+                  HMENU hMenu,
+                  HINSTANCE hInstance,
+                  LPVOID lpParam);
+    HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle,
+                                           LPCSTR lpClassName,
+                                           LPCSTR lpWindowName,
+                                           DWORD dwStyle,
+                                           int X,
+                                           int Y,
+                                           int nWidth,
+                                           int nHeight,
+                                           HWND hWndParent,
+                                           HMENU hMenu,
+                                           HINSTANCE hInstance,
+                                           LPVOID lpParam)
     {
         ENTER(X, Y, nWidth, nHeight, dwStyle, dwExStyle);
         createWindowDepth++;
@@ -44,9 +65,18 @@ namespace Hooks
 
         ThreadLocalStuff& curtls = tls;
         curtls.treatDLLLoadsAsClient++;
-        HWND hwnd = CreateWindowExA(dwExStyle, lpClassName,
-            lpWindowName, dwStyle, X, Y, nWidth, nHeight,
-            hWndParent, hMenu, hInstance, lpParam);
+        HWND hwnd = CreateWindowExA(dwExStyle,
+                                    lpClassName,
+                                    lpWindowName,
+                                    dwStyle,
+                                    X,
+                                    Y,
+                                    nWidth,
+                                    nHeight,
+                                    hWndParent,
+                                    hMenu,
+                                    hInstance,
+                                    lpParam);
 
         MySetWindowTextA(hwnd, lpWindowName);
 
@@ -70,21 +100,21 @@ namespace Hooks
                 gamehwnd = hwnd;
             }
 
-            WNDPROC oldProc = (WNDPROC)MyGetWindowLongA(hwnd, GWL_WNDPROC);
+            WNDPROC oldProc = (WNDPROC) MyGetWindowLongA(hwnd, GWL_WNDPROC);
             if (!oldProc)
             {
-                WNDCLASSEXA cls = { sizeof(WNDCLASSEXA) };
+                WNDCLASSEXA cls = {sizeof(WNDCLASSEXA)};
                 GetClassInfoExA(hInstance, lpClassName, &cls);
                 if (cls.lpfnWndProc)
                 {
                     oldProc = cls.lpfnWndProc;
-                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\""
-                          << lpClassName << ") for some reason...\n";
+                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\"" << lpClassName
+                          << ") for some reason...\n";
                 }
             }
             LOG() << "oldProc[" << hwnd << "] = " << reinterpret_cast<DWORD>(oldProc);
             hwndToOrigHandler[hwnd] = oldProc;
-            SetWindowLongA(hwnd, GWL_WNDPROC, (LONG)MyWndProcA);
+            SetWindowLongA(hwnd, GWL_WNDPROC, (LONG) MyWndProcA);
             IPC::SendIPCMessage(IPC::Command::CMD_HWND, &hwnd, sizeof(&hwnd));
 
             if (tasflags.windowActivateFlags & 2)
@@ -95,8 +125,8 @@ namespace Hooks
                 // well, maybe it's happening less now for some reason,
                 // but it's something to watch for (possible bugs here)
 
-    //			tasflags.windowActivateFlags ^= 2;
-    //			ShowWindow(hwnd, TRUE);
+                //			tasflags.windowActivateFlags ^= 2;
+                //			ShowWindow(hwnd, TRUE);
                 SetForegroundWindow(hwnd);
                 //SetActiveWindow(hwnd);
                 //SetFocus(hwnd);
@@ -109,9 +139,8 @@ namespace Hooks
             }
             SetActiveWindow(hwnd);
 
-
             // FIXME TEMP maybe need to hook SetActiveWindow / SetForegroundWindow etc instead
-            DispatchMessageInternal(hwnd, WM_ACTIVATE, WA_ACTIVE, (LPARAM)hwnd);
+            DispatchMessageInternal(hwnd, WM_ACTIVATE, WA_ACTIVE, (LPARAM) hwnd);
             DispatchMessageInternal(hwnd, WM_SETFOCUS, 0, 0);
 
             /*WINDOWPOS pos = {
@@ -126,29 +155,50 @@ namespace Hooks
             //DispatchMessageInternal(hwnd, WM_WINDOWPOSCHANGED, 0, (LPARAM)&pos);
 
             CREATESTRUCTA create = {
-                lpParam,//LPVOID    lpCreateParams;
-                hInstance,//HINSTANCE hInstance;
-                hMenu,//HMENU     hMenu;
-                hWndParent,//HWND      hwndParent;
-                nHeight,//int       cy;
-                nWidth,//int       cx;
-                Y,//int       y;
-                X,//int       x;
-                static_cast<LONG>(dwStyle),//LONG      style;
-                lpWindowName,//LPCTSTR   lpszName;
-                lpClassName,//LPCTSTR   lpszClass;
-                dwExStyle,//DWORD     dwExStyle;
+                lpParam, //LPVOID    lpCreateParams;
+                hInstance, //HINSTANCE hInstance;
+                hMenu, //HMENU     hMenu;
+                hWndParent, //HWND      hwndParent;
+                nHeight, //int       cy;
+                nWidth, //int       cx;
+                Y, //int       y;
+                X, //int       x;
+                static_cast<LONG>(dwStyle), //LONG      style;
+                lpWindowName, //LPCTSTR   lpszName;
+                lpClassName, //LPCTSTR   lpszClass;
+                dwExStyle, //DWORD     dwExStyle;
             };
-            DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM)&create);
+            DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM) &create);
         }
         return hwnd;
     }
-    HOOK_FUNCTION(HWND, WINAPI, CreateWindowExW, DWORD dwExStyle, LPCWSTR lpClassName,
-        LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-    HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
-        LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight,
-        HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+    HOOK_FUNCTION(HWND,
+                  WINAPI,
+                  CreateWindowExW,
+                  DWORD dwExStyle,
+                  LPCWSTR lpClassName,
+                  LPCWSTR lpWindowName,
+                  DWORD dwStyle,
+                  int X,
+                  int Y,
+                  int nWidth,
+                  int nHeight,
+                  HWND hWndParent,
+                  HMENU hMenu,
+                  HINSTANCE hInstance,
+                  LPVOID lpParam);
+    HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle,
+                                           LPCWSTR lpClassName,
+                                           LPCWSTR lpWindowName,
+                                           DWORD dwStyle,
+                                           int X,
+                                           int Y,
+                                           int nWidth,
+                                           int nHeight,
+                                           HWND hWndParent,
+                                           HMENU hMenu,
+                                           HINSTANCE hInstance,
+                                           LPVOID lpParam)
     {
         ENTER(X, Y, nWidth, nHeight, dwStyle, dwExStyle);
         LOG() << "Warning: Not yet implemented!";
@@ -156,9 +206,18 @@ namespace Hooks
         HWND oldGamehwnd = gamehwnd;
         ThreadLocalStuff& curtls = tls;
         curtls.treatDLLLoadsAsClient++;
-        HWND hwnd = CreateWindowExW(dwExStyle, lpClassName,
-            lpWindowName, dwStyle, X, Y, nWidth, nHeight,
-            hWndParent, hMenu, hInstance, lpParam);
+        HWND hwnd = CreateWindowExW(dwExStyle,
+                                    lpClassName,
+                                    lpWindowName,
+                                    dwStyle,
+                                    X,
+                                    Y,
+                                    nWidth,
+                                    nHeight,
+                                    hWndParent,
+                                    hMenu,
+                                    hInstance,
+                                    lpParam);
         curtls.treatDLLLoadsAsClient--;
         LOG() << "made hwnd = " << hwnd;
 #ifdef EMULATE_MESSAGE_QUEUES
@@ -179,21 +238,21 @@ namespace Hooks
                 gamehwnd = hwnd;
             }
 
-            WNDPROC oldProc = (WNDPROC)MyGetWindowLongW(hwnd, GWL_WNDPROC);
+            WNDPROC oldProc = (WNDPROC) MyGetWindowLongW(hwnd, GWL_WNDPROC);
             if (!oldProc)
             {
-                WNDCLASSEXW cls = { sizeof(WNDCLASSEXW) };
+                WNDCLASSEXW cls = {sizeof(WNDCLASSEXW)};
                 GetClassInfoExW(hInstance, lpClassName, &cls);
                 if (cls.lpfnWndProc)
                 {
                     oldProc = cls.lpfnWndProc;
-                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\""
-                          << lpClassName << ") for some reason...\n";
+                    LOG() << "WARNING: had to retrieve wndproc from wndclass (\"" << lpClassName
+                          << ") for some reason...\n";
                 }
             }
             LOG() << "oldProc[" << hwnd << "] = " << reinterpret_cast<DWORD>(oldProc);
             hwndToOrigHandler[hwnd] = oldProc;
-            SetWindowLongW(hwnd, GWL_WNDPROC, (LONG)MyWndProcW);
+            SetWindowLongW(hwnd, GWL_WNDPROC, (LONG) MyWndProcW);
             IPC::SendIPCMessage(IPC::Command::CMD_HWND, &hwnd, sizeof(&hwnd));
 
             if (tasflags.windowActivateFlags & 2)
@@ -204,8 +263,8 @@ namespace Hooks
                 // well, maybe it's happening less now for some reason,
                 // but it's something to watch for (possible bugs here)
 
-    //			tasflags.windowActivateFlags ^= 2;
-    //			ShowWindow(hwnd, TRUE);
+                //			tasflags.windowActivateFlags ^= 2;
+                //			ShowWindow(hwnd, TRUE);
                 SetForegroundWindow(hwnd);
                 //SetActiveWindow(hwnd);
                 //SetFocus(hwnd);
@@ -218,9 +277,8 @@ namespace Hooks
             }
             SetActiveWindow(hwnd);
 
-
             // FIXME TEMP maybe need to hook SetActiveWindow / SetForegroundWindow etc instead
-            DispatchMessageInternal(hwnd, WM_ACTIVATE, WA_ACTIVE, (LPARAM)hwnd, false);
+            DispatchMessageInternal(hwnd, WM_ACTIVATE, WA_ACTIVE, (LPARAM) hwnd, false);
             DispatchMessageInternal(hwnd, WM_SETFOCUS, 0, 0, false);
 
             /*WINDOWPOS pos = {
@@ -235,20 +293,20 @@ namespace Hooks
             //DispatchMessageInternal(hwnd, WM_WINDOWPOSCHANGED, 0, (LPARAM)&pos);
 
             CREATESTRUCTW create = {
-                lpParam,//LPVOID    lpCreateParams;
-                hInstance,//HINSTANCE hInstance;
-                hMenu,//HMENU     hMenu;
-                hWndParent,//HWND      hwndParent;
-                nHeight,//int       cy;
-                nWidth,//int       cx;
-                Y,//int       y;
-                X,//int       x;
-                static_cast<LONG>(dwStyle),//LONG      style;
-                lpWindowName,//LPCTSTR   lpszName;
-                lpClassName,//LPCTSTR   lpszClass;
-                dwExStyle,//DWORD     dwExStyle;
+                lpParam, //LPVOID    lpCreateParams;
+                hInstance, //HINSTANCE hInstance;
+                hMenu, //HMENU     hMenu;
+                hWndParent, //HWND      hwndParent;
+                nHeight, //int       cy;
+                nWidth, //int       cx;
+                Y, //int       y;
+                X, //int       x;
+                static_cast<LONG>(dwStyle), //LONG      style;
+                lpWindowName, //LPCTSTR   lpszName;
+                lpClassName, //LPCTSTR   lpszClass;
+                dwExStyle, //DWORD     dwExStyle;
             };
-            DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM)&create, false);
+            DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM) &create, false);
         }
 #if 0 // FIXME should be enabled but currently breaks Iji due to some bug
         if (hwnd && createWindowDepth == 0)
@@ -389,7 +447,6 @@ namespace Hooks
         return gamehwnd;
     }
 
-
     HOOK_FUNCTION(LONG, WINAPI, GetWindowLongA, HWND hWnd, int nIndex);
     HOOKFUNC LONG WINAPI MyGetWindowLongA(HWND hWnd, int nIndex)
     {
@@ -399,9 +456,8 @@ namespace Hooks
             std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
             if (found != hwndToOrigHandler.end())
             {
-                LOG() << "returning known WNDPROC: "
-                      << reinterpret_cast<LPVOID>(found->second);
-                return (LONG)found->second;
+                LOG() << "returning known WNDPROC: " << reinterpret_cast<LPVOID>(found->second);
+                return (LONG) found->second;
             }
             else
             {
@@ -411,7 +467,7 @@ namespace Hooks
             }
         }
         LONG rv = GetWindowLongA(hWnd, nIndex);
-        LOG() << "rv: "<< rv;
+        LOG() << "rv: " << rv;
         return rv;
     }
     HOOK_FUNCTION(LONG, WINAPI, GetWindowLongW, HWND hWnd, int nIndex);
@@ -423,9 +479,8 @@ namespace Hooks
             std::map<HWND, WNDPROC>::iterator found = hwndToOrigHandler.find(hWnd);
             if (found != hwndToOrigHandler.end())
             {
-                LOG() << "returning known WNDPROC: "
-                      << reinterpret_cast<LPVOID>(found->second);
-                return (LONG)found->second;
+                LOG() << "returning known WNDPROC: " << reinterpret_cast<LPVOID>(found->second);
+                return (LONG) found->second;
             }
             else
             {
@@ -439,7 +494,6 @@ namespace Hooks
         return rv;
     }
 
-
     HOOK_FUNCTION(LONG, WINAPI, SetWindowLongA, HWND hWnd, int nIndex, LONG dwNewLong);
     HOOKFUNC LONG WINAPI MySetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
     {
@@ -452,8 +506,8 @@ namespace Hooks
             LONG rv = MyGetWindowLongA(hWnd, nIndex);
             LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
             LEAVE(rv);
-            hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
-            SetWindowLongA(hWnd, GWL_WNDPROC, (LONG)MyWndProcA);
+            hwndToOrigHandler[hWnd] = (WNDPROC) dwNewLong;
+            SetWindowLongA(hWnd, GWL_WNDPROC, (LONG) MyWndProcA);
             return rv;
         }
         if (nIndex == GWL_STYLE)
@@ -482,8 +536,8 @@ namespace Hooks
             LONG rv = MyGetWindowLongW(hWnd, nIndex);
             LOG() << "hwndToOrigHandler[" << hWnd << "] = " << dwNewLong;
             LEAVE(rv);
-            hwndToOrigHandler[hWnd] = (WNDPROC)dwNewLong;
-            SetWindowLongW(hWnd, GWL_WNDPROC, (LONG)MyWndProcW);
+            hwndToOrigHandler[hWnd] = (WNDPROC) dwNewLong;
+            SetWindowLongW(hWnd, GWL_WNDPROC, (LONG) MyWndProcW);
             return rv;
         }
         if (nIndex == GWL_STYLE)
@@ -501,9 +555,17 @@ namespace Hooks
         return rv;
     }
 
-
-    HOOK_FUNCTION(BOOL, WINAPI, MoveWindow, HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
-    HOOKFUNC BOOL WINAPI MyMoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  MoveWindow,
+                  HWND hWnd,
+                  int X,
+                  int Y,
+                  int nWidth,
+                  int nHeight,
+                  BOOL bRepaint);
+    HOOKFUNC BOOL WINAPI
+    MyMoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
     {
         ENTER(hWnd, X, Y, nWidth, nHeight, bRepaint);
         if (tasflags.forceWindowed)
@@ -521,8 +583,18 @@ namespace Hooks
         BOOL rv = MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
         return rv;
     }
-    HOOK_FUNCTION(BOOL, WINAPI, SetWindowPos, HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
-    HOOKFUNC BOOL WINAPI MySetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  SetWindowPos,
+                  HWND hWnd,
+                  HWND hWndInsertAfter,
+                  int X,
+                  int Y,
+                  int cx,
+                  int cy,
+                  UINT uFlags);
+    HOOKFUNC BOOL WINAPI
+    MySetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
     {
         if (tasflags.forceWindowed)
         {
@@ -531,7 +603,9 @@ namespace Hooks
         }
         if (tasflags.windowActivateFlags & 2)
         {
-            if (hWndInsertAfter == HWND_NOTOPMOST || hWndInsertAfter == HWND_BOTTOM || hWndInsertAfter == HWND_TOP || hWndInsertAfter == NULL)
+            if (hWndInsertAfter == HWND_NOTOPMOST || hWndInsertAfter == HWND_BOTTOM
+                || hWndInsertAfter == HWND_TOP
+                || hWndInsertAfter == NULL)
                 hWndInsertAfter = HWND_TOPMOST;
         }
         else
@@ -544,11 +618,13 @@ namespace Hooks
         // SetWindowPos normally sends WM_WINDOWPOSCHANGED,
         // but to ensure that other things we don't control can't also cause that message to get processed,
         // we block it in GetMessageActionFlags, and send a special version of it that won't get blocked here.
-        WINDOWPOS pos = { hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags, };
+        WINDOWPOS pos = {
+            hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags,
+        };
         //	if(fakeDisplayValid && IsWindowFakeFullscreen(hWnd))
         //		DispatchMessageInternal(hWnd, WM_WINDOWPOSCHANGED-2, 0, (LPARAM)&pos);
         //	else
-        DispatchMessageInternal(hWnd, WM_WINDOWPOSCHANGED, 0, (LPARAM)&pos);
+        DispatchMessageInternal(hWnd, WM_WINDOWPOSCHANGED, 0, (LPARAM) &pos);
 
         return rv;
     }
@@ -567,7 +643,7 @@ namespace Hooks
         // IsWindowFakeFullscreen checks disabled because they let window position info leak to Eternal Daughter and possibly others (maybe need to use ::IsChild inside IsWindowFakeFullscreen)
         // VerifyIsTrustedCaller checks added as a hack so that DirectDrawClipper can still get the real window coordinates
         // TODO: instead of calling VerifyIsTrustedCaller we could probably have MyDirectDrawSurface::MyBlt set a flag for us. although maybe this way is safer.
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
+        if (fakeDisplayValid /* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             if (!lpRect)
                 return FALSE;
@@ -583,7 +659,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyGetWindowRect(HWND hWnd, LPRECT lpRect)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
+        if (fakeDisplayValid /* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             if (!lpRect)
                 return FALSE;
@@ -600,7 +676,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyClientToScreen(HWND hWnd, LPPOINT lpPoint)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
+        if (fakeDisplayValid /* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             return (lpPoint != NULL);
         }
@@ -610,7 +686,7 @@ namespace Hooks
     HOOKFUNC BOOL WINAPI MyScreenToClient(HWND hWnd, LPPOINT lpPoint)
     {
         // see coments in MyGetClientRect
-        if (fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
+        if (fakeDisplayValid /* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller())
         {
             return (lpPoint != NULL);
         }
@@ -625,11 +701,21 @@ namespace Hooks
         {
             str_to_wstr(wstr, lpString, LocaleToCodePage(tasflags.appLocale));
             BOOL rv = MySetWindowTextW(hWnd, wstr);
-            DispatchMessageInternal(hWnd, WM_SETTEXT, 0, (LPARAM)wstr, false, MAF_BYPASSGAME | MAF_RETURN_OS);
+            DispatchMessageInternal(hWnd,
+                                    WM_SETTEXT,
+                                    0,
+                                    (LPARAM) wstr,
+                                    false,
+                                    MAF_BYPASSGAME | MAF_RETURN_OS);
             return rv;
         }
         BOOL rv = SetWindowTextA(hWnd, lpString);
-        DispatchMessageInternal(hWnd, WM_SETTEXT, 0, (LPARAM)lpString, true, MAF_BYPASSGAME | MAF_RETURN_OS);
+        DispatchMessageInternal(hWnd,
+                                WM_SETTEXT,
+                                0,
+                                (LPARAM) lpString,
+                                true,
+                                MAF_BYPASSGAME | MAF_RETURN_OS);
         return rv;
     }
     HOOK_FUNCTION(BOOL, WINAPI, SetWindowTextW, HWND hWnd, LPCWSTR lpString);
@@ -637,10 +723,14 @@ namespace Hooks
     {
         ENTER(hWnd, lpString);
         BOOL rv = SetWindowTextW(hWnd, lpString);
-        DispatchMessageInternal(hWnd, WM_SETTEXT, 0, (LPARAM)lpString, false, MAF_BYPASSGAME | MAF_RETURN_OS);
+        DispatchMessageInternal(hWnd,
+                                WM_SETTEXT,
+                                0,
+                                (LPARAM) lpString,
+                                false,
+                                MAF_BYPASSGAME | MAF_RETURN_OS);
         return rv;
     }
-
 
     int GetDefaultMessageBoxResult(UINT uType)
     {
@@ -678,7 +768,7 @@ namespace Hooks
         case MB_YESNO:
         case MB_YESNOCANCEL:
             return IDYES;
-            // instead of choosing button 1, let's try the most "keep going" option
+        // instead of choosing button 1, let's try the most "keep going" option
         case MB_ABORTRETRYIGNORE:
             return IDIGNORE;
         case MB_RETRYCANCEL:
@@ -697,7 +787,13 @@ namespace Hooks
         IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
-    HOOK_FUNCTION(int, WINAPI, MessageBoxW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
+    HOOK_FUNCTION(int,
+                  WINAPI,
+                  MessageBoxW,
+                  HWND hWnd,
+                  LPCWSTR lpText,
+                  LPCWSTR lpCaption,
+                  UINT uType);
     HOOKFUNC int WINAPI MyMessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
     {
         ENTER(lpCaption, lpText);
@@ -705,38 +801,99 @@ namespace Hooks
         IPC::SendIPCMessage(IPC::Command::CMD_STACK_TRACE, &stack_trace, sizeof(stack_trace));
         return GetDefaultMessageBoxResult(uType);
     }
-    HOOK_FUNCTION(int, WINAPI, MessageBoxExA, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId);
-    HOOKFUNC int WINAPI MyMessageBoxExA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId)
+    HOOK_FUNCTION(int,
+                  WINAPI,
+                  MessageBoxExA,
+                  HWND hWnd,
+                  LPCSTR lpText,
+                  LPCSTR lpCaption,
+                  UINT uType,
+                  WORD wLanguageId);
+    HOOKFUNC int WINAPI
+    MyMessageBoxExA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType, WORD wLanguageId)
     {
         ENTER(lpCaption, lpText);
         return GetDefaultMessageBoxResult(uType);
     }
-    HOOK_FUNCTION(int, WINAPI, MessageBoxExW, HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId);;
-    HOOKFUNC int WINAPI MyMessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId)
+    HOOK_FUNCTION(int,
+                  WINAPI,
+                  MessageBoxExW,
+                  HWND hWnd,
+                  LPCWSTR lpText,
+                  LPCWSTR lpCaption,
+                  UINT uType,
+                  WORD wLanguageId);
+    ;
+    HOOKFUNC int WINAPI
+    MyMessageBoxExW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId)
     {
         ENTER(lpCaption, lpText);
         return GetDefaultMessageBoxResult(uType);
     }
-    HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxParamA, HINSTANCE hInstance, LPCSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOKFUNC INT_PTR WINAPI MyDialogBoxParamA(HINSTANCE hInstance, LPCSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+    HOOK_FUNCTION(INT_PTR,
+                  WINAPI,
+                  DialogBoxParamA,
+                  HINSTANCE hInstance,
+                  LPCSTR lpTemplateName,
+                  HWND hWndParent,
+                  DLGPROC lpDialogFunc,
+                  LPARAM dwInitParam);
+    HOOKFUNC INT_PTR WINAPI MyDialogBoxParamA(HINSTANCE hInstance,
+                                              LPCSTR lpTemplateName,
+                                              HWND hWndParent,
+                                              DLGPROC lpDialogFunc,
+                                              LPARAM dwInitParam)
     {
         ENTER();
         return IDOK;
     }
-    HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxParamW, HINSTANCE hInstance, LPCWSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOKFUNC INT_PTR WINAPI MyDialogBoxParamW(HINSTANCE hInstance, LPCWSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+    HOOK_FUNCTION(INT_PTR,
+                  WINAPI,
+                  DialogBoxParamW,
+                  HINSTANCE hInstance,
+                  LPCWSTR lpTemplateName,
+                  HWND hWndParent,
+                  DLGPROC lpDialogFunc,
+                  LPARAM dwInitParam);
+    HOOKFUNC INT_PTR WINAPI MyDialogBoxParamW(HINSTANCE hInstance,
+                                              LPCWSTR lpTemplateName,
+                                              HWND hWndParent,
+                                              DLGPROC lpDialogFunc,
+                                              LPARAM dwInitParam)
     {
         ENTER();
         return IDOK;
     }
-    HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxIndirectParamA, HINSTANCE hInstance, LPCDLGTEMPLATEA hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamA(HINSTANCE hInstance, LPCDLGTEMPLATEA hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+    HOOK_FUNCTION(INT_PTR,
+                  WINAPI,
+                  DialogBoxIndirectParamA,
+                  HINSTANCE hInstance,
+                  LPCDLGTEMPLATEA hDialogTemplate,
+                  HWND hWndParent,
+                  DLGPROC lpDialogFunc,
+                  LPARAM dwInitParam);
+    HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamA(HINSTANCE hInstance,
+                                                      LPCDLGTEMPLATEA hDialogTemplate,
+                                                      HWND hWndParent,
+                                                      DLGPROC lpDialogFunc,
+                                                      LPARAM dwInitParam)
     {
         ENTER();
         return IDOK;
     }
-    HOOK_FUNCTION(INT_PTR, WINAPI, DialogBoxIndirectParamW, HINSTANCE hInstance, LPCDLGTEMPLATEW hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
-    HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamW(HINSTANCE hInstance, LPCDLGTEMPLATEW hDialogTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+    HOOK_FUNCTION(INT_PTR,
+                  WINAPI,
+                  DialogBoxIndirectParamW,
+                  HINSTANCE hInstance,
+                  LPCDLGTEMPLATEW hDialogTemplate,
+                  HWND hWndParent,
+                  DLGPROC lpDialogFunc,
+                  LPARAM dwInitParam);
+    HOOKFUNC INT_PTR WINAPI MyDialogBoxIndirectParamW(HINSTANCE hInstance,
+                                                      LPCDLGTEMPLATEW hDialogTemplate,
+                                                      HWND hWndParent,
+                                                      DLGPROC lpDialogFunc,
+                                                      LPARAM dwInitParam)
     {
         ENTER();
         return IDOK;
@@ -744,8 +901,7 @@ namespace Hooks
 
     void ApplyWindowIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, USER32, CreateWindowExA),
             MAKE_INTERCEPT(1, USER32, CreateWindowExW), // FIXME?
             MAKE_INTERCEPT(1, USER32, DestroyWindow),

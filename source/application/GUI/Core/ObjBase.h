@@ -40,7 +40,15 @@ protected:
         Unset,
     };
 
-    ObjBase(const std::wstring& title, const WCHAR* const window_class, DWORD ex_style, DWORD style, short x, short y, short w, short h, DlgBase* dlg)
+    ObjBase(const std::wstring& title,
+            const WCHAR* const window_class,
+            DWORD ex_style,
+            DWORD style,
+            short x,
+            short y,
+            short w,
+            short h,
+            DlgBase* dlg)
         /*
          * Struct size + title-len + extraCount
          */

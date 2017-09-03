@@ -9,33 +9,44 @@
 
 #include <algorithm>
 
-#include "application/logging.h"
 #include "../File.h"
+#include "application/logging.h"
 
-Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& filename) :
-    m_file(INVALID_HANDLE_VALUE),
-    m_mapped_file(INVALID_HANDLE_VALUE),
-    m_buffer(nullptr),
-    m_valid(false)
+Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& filename)
+    : m_file(INVALID_HANDLE_VALUE)
+    , m_mapped_file(INVALID_HANDLE_VALUE)
+    , m_buffer(nullptr)
+    , m_valid(false)
 {
-    HANDLE m_file = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    HANDLE m_file = CreateFileW(filename.c_str(),
+                                GENERIC_READ,
+                                FILE_SHARE_READ,
+                                nullptr,
+                                OPEN_EXISTING,
+                                FILE_FLAG_SEQUENTIAL_SCAN,
+                                nullptr);
     if (m_file == INVALID_HANDLE_VALUE)
     {
         return;
     }
 
-    LARGE_INTEGER size = { 0, 0 };
+    LARGE_INTEGER size = {0, 0};
     if (GetFileSizeEx(m_file, &size) == FALSE)
     {
         return;
     }
 
-    HANDLE m_mapped_file = CreateFileMappingW(m_file, nullptr, PAGE_READONLY, size.u.HighPart, size.u.LowPart, nullptr);
+    HANDLE m_mapped_file = CreateFileMappingW(m_file,
+                                              nullptr,
+                                              PAGE_READONLY,
+                                              size.u.HighPart,
+                                              size.u.LowPart,
+                                              nullptr);
     if (m_mapped_file == INVALID_HANDLE_VALUE)
     {
         return;
     }
-    
+
     m_buffer = reinterpret_cast<BYTE*>(MapViewOfFile(m_mapped_file, FILE_MAP_READ, 0, 0, 0));
     if (m_buffer == nullptr)
     {
@@ -44,9 +55,9 @@ Utils::File::ExecutableFileHeaders::ExecutableFileHeaders(const std::wstring& fi
 
     auto nt_header = GetNTHeader();
 
-    if (memcmp(&(nt_header->Signature), "PE\0\0", 4) != 0 ||
-        nt_header->FileHeader.SizeOfOptionalHeader == 0 ||
-        !(nt_header->FileHeader.Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE))
+    if (memcmp(&(nt_header->Signature), "PE\0\0", 4) != 0
+        || nt_header->FileHeader.SizeOfOptionalHeader == 0
+        || !(nt_header->FileHeader.Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE))
     {
         return;
     }
@@ -72,7 +83,8 @@ DWORD Utils::File::ExecutableFileHeaders::GetImageSizeInRAM() const
     return GetNTHeader()->OptionalHeader.SizeOfImage;
 }
 
-std::map<DWORD64, std::wstring> Utils::File::ExecutableFileHeaders::GetExportTable(DWORD64 mod_base) const
+std::map<DWORD64, std::wstring> Utils::File::ExecutableFileHeaders::GetExportTable(
+    DWORD64 mod_base) const
 {
     std::map<DWORD64, std::wstring> export_table;
 
@@ -131,19 +143,25 @@ std::map<DWORD64, std::wstring> Utils::File::ExecutableFileHeaders::GetExportTab
     return export_table;
 }
 
-Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::ExecutableFileHeaders::GetRelocationTable(DWORD64 mod_base) const
+Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::ExecutableFileHeaders::
+    GetRelocationTable(DWORD64 mod_base) const
 {
     auto nt_header = GetNTHeader();
-    Utils::File::ExecutableFileHeaders::ImageRelocationTable table = { mod_base - nt_header->OptionalHeader.ImageBase };
+    Utils::File::ExecutableFileHeaders::ImageRelocationTable table = {
+        mod_base - nt_header->OptionalHeader.ImageBase};
 
     if (nt_header->OptionalHeader.NumberOfRvaAndSizes >= IMAGE_DIRECTORY_ENTRY_BASERELOC)
     {
-        DWORD reloc_offset = RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+        DWORD reloc_offset =
+            RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC]
+                            .VirtualAddress);
         LPBYTE relocations = const_cast<LPBYTE>(m_buffer) + reloc_offset;
         PIMAGE_BASE_RELOCATION this_reloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>(relocations);
-        for (UINT j = 0; j < nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
-            j += this_reloc->SizeOfBlock, relocations += this_reloc->SizeOfBlock,
-            this_reloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>(relocations))
+        for (UINT j = 0;
+             j < nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
+             j += this_reloc->SizeOfBlock,
+                  relocations += this_reloc->SizeOfBlock,
+                  this_reloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>(relocations))
         {
             /*
              * Sometimes the .reloc table is smaller than the allocated space
@@ -171,8 +189,9 @@ Utils::File::ExecutableFileHeaders::ImageRelocationTable Utils::File::Executable
                  * the offset into the page pointed to by VirtualAddress above.
                  */
                 auto& rd = table.m_relocation_data;
-                rd.push_back({ static_cast<WORD>(reloc >> 12),
-                               mod_base + this_reloc->VirtualAddress + static_cast<WORD>(reloc & 0x0FFF) });
+                rd.push_back(
+                    {static_cast<WORD>(reloc >> 12),
+                     mod_base + this_reloc->VirtualAddress + static_cast<WORD>(reloc & 0x0FFF)});
             }
         }
     }
@@ -190,7 +209,8 @@ DWORD Utils::File::ExecutableFileHeaders::RvaToOffset(DWORD rva) const
     auto sections = GetSectionHeader();
     for (DWORD i = 0; i < nt_header->FileHeader.NumberOfSections; i++)
     {
-        if (sections[i].VirtualAddress <= rva && sections[i].VirtualAddress + sections[i].SizeOfRawData > rva)
+        if (sections[i].VirtualAddress <= rva
+            && sections[i].VirtualAddress + sections[i].SizeOfRawData > rva)
         {
             return (sections[i].PointerToRawData + rva) - sections[i].VirtualAddress;
         }
@@ -206,13 +226,15 @@ const PIMAGE_DOS_HEADER Utils::File::ExecutableFileHeaders::GetDOSHeader() const
 const PIMAGE_NT_HEADERS32 Utils::File::ExecutableFileHeaders::GetNTHeader() const
 {
     auto dos_header = GetDOSHeader();
-    return reinterpret_cast<PIMAGE_NT_HEADERS32>(const_cast<LPBYTE>(m_buffer) + dos_header->e_lfanew);
+    return reinterpret_cast<PIMAGE_NT_HEADERS32>(const_cast<LPBYTE>(m_buffer)
+                                                 + dos_header->e_lfanew);
 }
 
 const PIMAGE_SECTION_HEADER Utils::File::ExecutableFileHeaders::GetSectionHeader() const
 {
     auto dos_header = GetDOSHeader();
-    return reinterpret_cast<PIMAGE_SECTION_HEADER>(const_cast<LPBYTE>(m_buffer) + dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS32));
+    return reinterpret_cast<PIMAGE_SECTION_HEADER>(
+        const_cast<LPBYTE>(m_buffer) + dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS32));
 }
 
 const PIMAGE_EXPORT_DIRECTORY Utils::File::ExecutableFileHeaders::GetExportDirectory() const
@@ -220,10 +242,14 @@ const PIMAGE_EXPORT_DIRECTORY Utils::File::ExecutableFileHeaders::GetExportDirec
     LPBYTE directory = nullptr;
     auto nt_header = GetNTHeader();
 
-    if (nt_header->OptionalHeader.NumberOfRvaAndSizes >= IMAGE_DIRECTORY_ENTRY_EXPORT &&
-        nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
+    if (nt_header->OptionalHeader.NumberOfRvaAndSizes >= IMAGE_DIRECTORY_ENTRY_EXPORT
+        && nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress
+               != 0)
     {
-        directory = const_cast<LPBYTE>(m_buffer) + RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        directory =
+            const_cast<LPBYTE>(m_buffer)
+            + RvaToOffset(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]
+                              .VirtualAddress);
     }
     return reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>(directory);
 }

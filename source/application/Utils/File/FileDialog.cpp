@@ -19,15 +19,13 @@ namespace
      * The pipe characters are just placeholders for the null characters to ease string manipulation
      */
     std::map<Utils::File::FileFilter, LPCWSTR> file_type_map =
-    {
-        { Utils::File::FileFilter::AllFiles, L"All Files (*.*)|*.*|" },
-        { Utils::File::FileFilter::HourglassMovie, L"Windows TAS Files (*.hgr)|*.hgr|" },
-        { Utils::File::FileFilter::Executable, L"Executables (*.exe)|*.exe|" },
-        { Utils::File::FileFilter::Config, L"Config Files (*.cfg)|*.cfg|" },
-        { Utils::File::FileFilter::WatchList, L"Watchlist (*.wch)|*.wch|" },
-        { Utils::File::FileFilter::AVI, L"AVI file (*.avi)|*.avi|" }
-    };
-    
+        {{Utils::File::FileFilter::AllFiles, L"All Files (*.*)|*.*|"},
+         {Utils::File::FileFilter::HourglassMovie, L"Windows TAS Files (*.hgr)|*.hgr|"},
+         {Utils::File::FileFilter::Executable, L"Executables (*.exe)|*.exe|"},
+         {Utils::File::FileFilter::Config, L"Config Files (*.cfg)|*.cfg|"},
+         {Utils::File::FileFilter::WatchList, L"Watchlist (*.wch)|*.wch|"},
+         {Utils::File::FileFilter::AVI, L"AVI file (*.avi)|*.avi|"}};
+
     std::wstring GetFilter(const std::vector<Utils::File::FileFilter>& file_types)
     {
         std::wstring result;
@@ -42,20 +40,19 @@ namespace
         return result;
     }
 
-    using FileNameGetter = BOOL(WINAPI *)(LPOPENFILENAMEW open_file_name);
+    using FileNameGetter = BOOL(WINAPI*)(LPOPENFILENAMEW open_file_name);
 
-    std::wstring GetFileName(
-        const std::wstring& location,
-        const std::vector<Utils::File::FileFilter>& file_types,
-        const DWORD& flags,
-        const FileNameGetter file_name_getter)
+    std::wstring GetFileName(const std::wstring& location,
+                             const std::vector<Utils::File::FileFilter>& file_types,
+                             const DWORD& flags,
+                             const FileNameGetter file_name_getter)
     {
         auto filter = GetFilter(file_types);
 
-        WCHAR buffer[FILENAME_MAX] = { 0 };
+        WCHAR buffer[FILENAME_MAX] = {0};
         location.copy(buffer, location.length());
 
-        OPENFILENAMEW open_file_name = { 0 };
+        OPENFILENAMEW open_file_name = {0};
         open_file_name.lStructSize = sizeof(open_file_name);
         open_file_name.lpstrFilter = filter.data();
         open_file_name.nFilterIndex = 1;
@@ -68,17 +65,15 @@ namespace
     }
 }
 
-std::wstring Utils::File::GetFileNameOpen(
-    const std::wstring& location,
-    const std::vector<Utils::File::FileFilter>& file_types)
+std::wstring Utils::File::GetFileNameOpen(const std::wstring& location,
+                                          const std::vector<Utils::File::FileFilter>& file_types)
 {
     auto flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
     return GetFileName(location, file_types, flags, GetOpenFileName);
 }
 
-std::wstring Utils::File::GetFileNameSave(
-    const std::wstring& location,
-    const std::vector<Utils::File::FileFilter>& file_types)
+std::wstring Utils::File::GetFileNameSave(const std::wstring& location,
+                                          const std::vector<Utils::File::FileFilter>& file_types)
 {
     auto flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_NOREADONLYRETURN;
     return GetFileName(location, file_types, flags, GetSaveFileName);

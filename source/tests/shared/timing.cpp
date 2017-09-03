@@ -16,25 +16,28 @@ namespace Timing
 {
     namespace
     {
-        void(__stdcall *GetSystemTimePreciseAsFileTime)(LPFILETIME lpSystemTimeAsFileTime);
+        void(__stdcall* GetSystemTimePreciseAsFileTime)(LPFILETIME lpSystemTimeAsFileTime);
     }
 
     long long CurrentUSChronoSystem()
     {
         auto now = std::chrono::system_clock::now();
-        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch())
+            .count();
     }
 
     long long CurrentUSChronoSteady()
     {
         auto now = std::chrono::steady_clock::now();
-        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch())
+            .count();
     }
 
     long long CurrentUSChronoHighResolution()
     {
         auto now = std::chrono::high_resolution_clock::now();
-        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+        return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch())
+            .count();
     }
 
     long long CurrentUSQueryPerformanceCounter()
@@ -77,7 +80,7 @@ namespace Timing
     void Initialize()
     {
         HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
-        GetSystemTimePreciseAsFileTime = reinterpret_cast<void(__stdcall *)(LPFILETIME)>(
+        GetSystemTimePreciseAsFileTime = reinterpret_cast<void(__stdcall*)(LPFILETIME)>(
             GetProcAddress(kernel32, "GetSystemTimePreciseAsFileTime"));
 
         /*

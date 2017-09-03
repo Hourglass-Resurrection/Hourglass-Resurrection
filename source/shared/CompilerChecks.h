@@ -16,7 +16,7 @@
 
 #define _CURRENTLY_USED_MSC_VER 1911
 
-static_assert(!(_MSC_VER < _CURRENTLY_USED_MSC_VER), "Your toolchain version is too old. Compilation aborted. Update Visual Studio.");
+static_assert(!(_MSC_VER < _CURRENTLY_USED_MSC_VER),
+              "Your toolchain version is too old. Compilation aborted. Update Visual Studio.");
 
-#define ABORT_ON_NEW_COMPILER(str) \
-        static_assert(!(_MSC_VER > _CURRENTLY_USED_MSC_VER), str)
+#define ABORT_ON_NEW_COMPILER(str) static_assert(!(_MSC_VER > _CURRENTLY_USED_MSC_VER), str)

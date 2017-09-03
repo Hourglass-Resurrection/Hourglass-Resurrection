@@ -1,12 +1,12 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../msgqueue.h"
 #include <algorithm>
-#include <vector>
 #include <map>
 #include <set>
+#include <vector>
+#include "../msgqueue.h"
+#include "../wintasee.h"
 
 using Log = DebugLog<LogCategory::TIMERS>;
 
@@ -22,17 +22,18 @@ namespace Hooks
         TIMERPROC lpTimerFunc;
 
         // Stuff below required?
-        bool killRequested; // The place where this is used (MySetTimerTimerThread) is not used anywhere
-        bool operator < (const SetTimerData& other) const
+        bool
+            killRequested; // The place where this is used (MySetTimerTimerThread) is not used anywhere
+        bool operator<(const SetTimerData& other) const
         {
-            LARGE_INTEGER a = { (DWORD)hWnd, (LONG)nIDEvent };
-            LARGE_INTEGER b = { (DWORD)other.hWnd, (LONG)other.nIDEvent };
+            LARGE_INTEGER a = {(DWORD) hWnd, (LONG) nIDEvent};
+            LARGE_INTEGER b = {(DWORD) other.hWnd, (LONG) other.nIDEvent};
             return a.QuadPart < b.QuadPart;
         }
     };
     struct SetTimerDataCompare // Struct with functor that helps us sort the elements in the set.
     {
-        bool operator() (const SetTimerData& a, const SetTimerData& b) const
+        bool operator()(const SetTimerData& a, const SetTimerData& b) const
         {
             return a.nIDEvent < b.nIDEvent;
         }
@@ -41,11 +42,13 @@ namespace Hooks
     static std::set<SetTimerData, SetTimerDataCompare> s_pendingSetTimers;
     static CRITICAL_SECTION s_pendingSetTimerCS;
 
-    // Creates a guaranteed unique ID that is as low as possible 
+    // Creates a guaranteed unique ID that is as low as possible
     UINT_PTR CreateNewTimerID()
     {
         UINT_PTR rv = 1;
-        for (std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+        for (std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin();
+             it != s_pendingSetTimers.end();
+             it++)
         {
             if (rv == it->nIDEvent)
             {
@@ -81,7 +84,7 @@ namespace Hooks
                 ////		debugprintf("HOO: %d, %d\n", value.targetTime, time);
                 //		if((int)(earliestTriggerTime - value.targetTime) > 0)
                 //			earliestTriggerTime = value.targetTime;
-                if ((int)(time - iter->targetTime) >= 0)
+                if ((int) (time - iter->targetTime) >= 0)
                 {
                     triggeredTimers.push_back(*iter);
                     s_pendingSetTimers.erase(iter++);
@@ -112,7 +115,8 @@ namespace Hooks
                     SetTimerData data = triggeredTimers[i];
 
                     LOG() << "timer triggered: hWnd=" << data.hWnd << " nIDEvent=" << data.nIDEvent
-                          << " targetTime=" << data.targetTime << " lpTimerFunc=" << data.lpTimerFunc;
+                          << " targetTime=" << data.targetTime
+                          << " lpTimerFunc=" << data.lpTimerFunc;
 
                     if (data.lpTimerFunc)
                     {
@@ -122,7 +126,12 @@ namespace Hooks
                     {
                         // posting it doesn't work for some reason (iji hangs on startup)
                         //PostMessageInternal(key.hWnd, WM_TIMER, key.nIDEvent, (LPARAM)value.lpTimerFunc);
-                        DispatchMessageInternal(data.hWnd, WM_TIMER, data.nIDEvent, (LPARAM)data.lpTimerFunc, true, MAF_PASSTHROUGH | MAF_RETURN_OS);
+                        DispatchMessageInternal(data.hWnd,
+                                                WM_TIMER,
+                                                data.nIDEvent,
+                                                (LPARAM) data.lpTimerFunc,
+                                                true,
+                                                MAF_PASSTHROUGH | MAF_RETURN_OS);
                     }
                 }
             }
@@ -208,7 +217,6 @@ namespace Hooks
     }
     */
 
-
     UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC lpTimerFunc)
     {
         EnterCriticalSection(&s_pendingSetTimerCS);
@@ -216,17 +224,21 @@ namespace Hooks
         uElapse = std::max<DWORD>(USER_TIMER_MINIMUM, std::min<DWORD>(USER_TIMER_MAXIMUM, uElapse));
         DWORD targetTime = detTimer.GetTicks() + uElapse;
 
-        SetTimerData data = { hWnd, nIDEvent, targetTime, lpTimerFunc, false };
+        SetTimerData data = {hWnd, nIDEvent, targetTime, lpTimerFunc, false};
 
         if (nIDEvent != 0)
         {
             bool found = false;
-            for (std::set<SetTimerData, SetTimerDataCompare>::iterator it = s_pendingSetTimers.begin(); it != s_pendingSetTimers.end(); it++)
+            for (std::set<SetTimerData, SetTimerDataCompare>::iterator it =
+                     s_pendingSetTimers.begin();
+                 it != s_pendingSetTimers.end();
+                 it++)
             {
                 // Find the right timer
                 if (it->nIDEvent == data.nIDEvent)
                 {
-                    if (data.hWnd == NULL) // Does it replace the most recent timer with this ID? Or is it some other heriarchy? Assuming first created.
+                    if (data.hWnd
+                        == NULL) // Does it replace the most recent timer with this ID? Or is it some other heriarchy? Assuming first created.
                     {
                         found = true;
                         data.hWnd = it->hWnd;
@@ -244,7 +256,8 @@ namespace Hooks
 
             if (found == false) // New timer.
             {
-                if (data.hWnd == NULL) // If hWnd is NOT NULL and timer isn't found, then we use the provided ID for the new timer.
+                if (data.hWnd
+                    == NULL) // If hWnd is NOT NULL and timer isn't found, then we use the provided ID for the new timer.
                 {
                     data.hWnd = gamehwnd; // Fix hWnd like this?
                     data.nIDEvent = CreateNewTimerID();
@@ -286,9 +299,25 @@ namespace Hooks
         DWORD prevTime;
         TimerThreadInfo* prev;
         TimerThreadInfo* next;
-        TimerThreadInfo(UINT uDelay, UINT uResolution, UINT fuEvent, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT uTimerID)
-            : delay(uDelay), res(uResolution), event(fuEvent), callback(lpTimeProc), user(dwUser), uid(uTimerID),
-            killRequest(false), dead(false), handle(NULL), overshot(0), prevTime(0), prev(NULL), next(NULL)
+        TimerThreadInfo(UINT uDelay,
+                        UINT uResolution,
+                        UINT fuEvent,
+                        LPTIMECALLBACK lpTimeProc,
+                        DWORD_PTR dwUser,
+                        UINT uTimerID)
+            : delay(uDelay)
+            , res(uResolution)
+            , event(fuEvent)
+            , callback(lpTimeProc)
+            , user(dwUser)
+            , uid(uTimerID)
+            , killRequest(false)
+            , dead(false)
+            , handle(NULL)
+            , overshot(0)
+            , prevTime(0)
+            , prev(NULL)
+            , next(NULL)
         {
         }
     } timerHead(0, 0, 0, 0, 0, 0);
@@ -300,7 +329,7 @@ namespace Hooks
 
     //void PrintTimerResolutionInfo()
     //{
-    //	typedef DWORD (NTAPI *ntqueryfunc)(ULONG*, ULONG*, ULONG*); 
+    //	typedef DWORD (NTAPI *ntqueryfunc)(ULONG*, ULONG*, ULONG*);
     //	ntqueryfunc querytimer = (ntqueryfunc)GetProcAddress(GetModuleHandle("NTDLL.DLL"), "NtQueryTimerResolution");
     //	if(querytimer)
     //	{
@@ -459,17 +488,17 @@ namespace Hooks
             }
             else
             {
-                if ((int)(time - info->prevTime) >= (int)info->delay - info->overshot)
+                if ((int) (time - info->prevTime) >= (int) info->delay - info->overshot)
                 {
                     if (info->event & TIME_CALLBACK_EVENT_SET)
                     {
                         LOG() << "setting " << info->callback;
-                        SetEvent((HANDLE)info->callback);
+                        SetEvent((HANDLE) info->callback);
                     }
                     else if (info->event & TIME_CALLBACK_EVENT_PULSE)
                     {
                         LOG() << "pulsing " << info->callback;
-                        PulseEvent((HANDLE)info->callback);
+                        PulseEvent((HANDLE) info->callback);
                     }
                     else
                     {
@@ -483,7 +512,7 @@ namespace Hooks
                     // NOTE: if this appears to make the music play too quickly,
                     // that probably means the DeterministicTimer is advancing too fast.
                     // zeroing this out or subtracting from it is not the answer.
-                    info->overshot += (int)(time)-(int)(info->prevTime + info->delay);
+                    info->overshot += (int) (time) - (int) (info->prevTime + info->delay);
 
 #if 0
                     DWORD currentTime = timeGetTime();
@@ -505,8 +534,19 @@ namespace Hooks
             }
         }
     }
-    HOOK_FUNCTION(MMRESULT, WINAPI, timeSetEvent, UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
-    HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
+    HOOK_FUNCTION(MMRESULT,
+                  WINAPI,
+                  timeSetEvent,
+                  UINT uDelay,
+                  UINT uResolution,
+                  LPTIMECALLBACK lpTimeProc,
+                  DWORD_PTR dwUser,
+                  UINT fuEvent);
+    HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay,
+                                            UINT uResolution,
+                                            LPTIMECALLBACK lpTimeProc,
+                                            DWORD_PTR dwUser,
+                                            UINT fuEvent)
     {
         if (tasflags.timersMode == 0)
         {
@@ -516,7 +556,8 @@ namespace Hooks
         ENTER(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
         if (tasflags.timersMode == 2)
             return timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
-        TimerThreadInfo* threadInfo = new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
+        TimerThreadInfo* threadInfo =
+            new TimerThreadInfo(uDelay, uResolution, fuEvent, lpTimeProc, dwUser, 11 * ++timerUID);
         threadInfo->prevTime = detTimer.GetTicks();
         threadInfo->prev = ttiTail;
         ttiTail->next = threadInfo;
@@ -546,7 +587,10 @@ namespace Hooks
             return filterKillTimerResult(timeKillEvent(uTimerID));
         ENTER(uTimerID);
         TimerThreadInfo* info = ttiHead;
-        do { info = info->next; } while (info && info->uid != uTimerID);
+        do
+        {
+            info = info->next;
+        } while (info && info->uid != uTimerID);
         //do{ info = info->next; debugprintf("0x%X\n", info); }
         //while( info && (debugprintf("0x%X != 0x%X?\n",info->uid,uTimerID), info->uid != uTimerID) );
         if (!info)
@@ -556,9 +600,17 @@ namespace Hooks
         return TIMERR_NOERROR;
     }
 
-
-    HOOK_FUNCTION(UINT_PTR, WINAPI, SetTimer, HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
-    HOOKFUNC UINT_PTR WINAPI MySetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc)
+    HOOK_FUNCTION(UINT_PTR,
+                  WINAPI,
+                  SetTimer,
+                  HWND hWnd,
+                  UINT_PTR nIDEvent,
+                  UINT uElapse,
+                  TIMERPROC lpTimerFunc);
+    HOOKFUNC UINT_PTR WINAPI MySetTimer(HWND hWnd,
+                                        UINT_PTR nIDEvent,
+                                        UINT uElapse,
+                                        TIMERPROC lpTimerFunc)
     {
         ENTER(hWnd, nIDEvent, uElapse, lpTimerFunc);
         if (tasflags.timersMode == 2)
@@ -603,16 +655,33 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(BOOL, WINAPI, CreateTimerQueueTimer,
-        PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
-        PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags);
-    HOOKFUNC BOOL WINAPI MyCreateTimerQueueTimer(PHANDLE phNewTimer, HANDLE TimerQueue, WAITORTIMERCALLBACKFUNC Callback,
-        PVOID Parameter, DWORD DueTime, DWORD Period, ULONG Flags)
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  CreateTimerQueueTimer,
+                  PHANDLE phNewTimer,
+                  HANDLE TimerQueue,
+                  WAITORTIMERCALLBACKFUNC Callback,
+                  PVOID Parameter,
+                  DWORD DueTime,
+                  DWORD Period,
+                  ULONG Flags);
+    HOOKFUNC BOOL WINAPI MyCreateTimerQueueTimer(PHANDLE phNewTimer,
+                                                 HANDLE TimerQueue,
+                                                 WAITORTIMERCALLBACKFUNC Callback,
+                                                 PVOID Parameter,
+                                                 DWORD DueTime,
+                                                 DWORD Period,
+                                                 ULONG Flags)
     {
         ENTER();
         DEBUG_LOG() << "Not yet implemented!";
-        BOOL rv = CreateTimerQueueTimer(phNewTimer, TimerQueue, Callback,
-            Parameter, DueTime, Period, Flags);
+        BOOL rv = CreateTimerQueueTimer(phNewTimer,
+                                        TimerQueue,
+                                        Callback,
+                                        Parameter,
+                                        DueTime,
+                                        Period,
+                                        Flags);
         return rv;
     }
 
@@ -623,8 +692,7 @@ namespace Hooks
 
     void ApplyTimerIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, WINMM, timeSetEvent),
             MAKE_INTERCEPT(1, WINMM, timeKillEvent),
             MAKE_INTERCEPT(1, USER32, SetTimer),

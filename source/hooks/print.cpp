@@ -1,14 +1,14 @@
 ﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
+#include "print.h"
 #include <windows.h>
 #include <cstdio>
-#include "print.h"
 //#include "global.h"
 
-#include "shared/ipc.h"
-#include "ipc.h"
 #include "intercept.h"
+#include "ipc.h"
+#include "shared/ipc.h"
 
 #include "tramps/timetramps.h"
 
@@ -37,7 +37,7 @@ VerboseLog::VerboseLog()
         m_print_message << "MAIN: ";
     }
     m_print_message << "(f=" << Hooks::getCurrentFramestamp()
-        << ", t=" << Hooks::getCurrentTimestamp() << ") ";
+                    << ", t=" << Hooks::getCurrentTimestamp() << ") ";
 #endif
 }
 

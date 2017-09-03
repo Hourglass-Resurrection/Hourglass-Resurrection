@@ -1,13 +1,35 @@
 ﻿/*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
+#include <map>
+#include "../tls.h"
 #include "../wintasee.h"
 #include "shared/winutil.h"
-#include "../tls.h"
-#include <map>
 
-DEFINE_LOCAL_GUID(CLSID_FilterGraphManager, 0xe436ebb3, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
-DEFINE_LOCAL_GUID(CLSID_FilterGraphNoThread, 0xe436ebb8, 0x524f, 0x11ce, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
+DEFINE_LOCAL_GUID(CLSID_FilterGraphManager,
+                  0xe436ebb3,
+                  0x524f,
+                  0x11ce,
+                  0x9f,
+                  0x53,
+                  0x00,
+                  0x20,
+                  0xaf,
+                  0x0b,
+                  0xa7,
+                  0x70);
+DEFINE_LOCAL_GUID(CLSID_FilterGraphNoThread,
+                  0xe436ebb8,
+                  0x524f,
+                  0x11ce,
+                  0x9f,
+                  0x53,
+                  0x00,
+                  0x20,
+                  0xaf,
+                  0x0b,
+                  0xa7,
+                  0x70);
 
 using Log = DebugLog<LogCategory::MODULE>;
 
@@ -139,10 +161,8 @@ namespace Hooks
         }
     }
 
-
-
     // MyLdrUnloadDll disabled because
-    // there's no need to call UpdateLoadedOrUnloadedDllHooks immediately when an unload happens 
+    // there's no need to call UpdateLoadedOrUnloadedDllHooks immediately when an unload happens
     // since MyLdrLoadDll will handle it (UpdateLoadedOrUnloadedDllHooks),
     // and these NTDLL functions can be sort of unstable so I leave them alone when possible.
     //HOOKFUNC NTSTATUS NTAPI MyLdrUnloadDll(HANDLE ModuleAddress)
@@ -206,17 +226,18 @@ namespace Hooks
     static BOOL ShouldLoadUserDll(LPWSTR lpFileName)
     {
         if (tasflags.allowLoadInstalledDlls == tasflags.allowLoadUxtheme)
-            return!!tasflags.allowLoadInstalledDlls;
+            return !!tasflags.allowLoadInstalledDlls;
         char name[1024];
         {
             int i = 0;
             for (; lpFileName[i] && i != sizeof(name) - 1; i++)
-                name[i] = tolower((char)lpFileName[i]);
+                name[i] = tolower((char) lpFileName[i]);
             name[i] = 0;
         }
         char* slash = strrchr(name, '\\');
         const char* dllname = slash ? slash + 1 : name;
-        bool isUxTheme = !strcmp(dllname, "uxtheme.dll") || !strcmp(dllname, "themeui.dll") || !strcmp(dllname, "themeservice.dll");
+        bool isUxTheme = !strcmp(dllname, "uxtheme.dll") || !strcmp(dllname, "themeui.dll")
+                         || !strcmp(dllname, "themeservice.dll");
         if (isUxTheme)
             return tasflags.allowLoadUxtheme;
         return tasflags.allowLoadInstalledDlls;
@@ -228,10 +249,10 @@ namespace Hooks
         {
             int i = 0;
             for (; lpFileName[i] && i != sizeof(name) - 1; i++)
-                name[i] = tolower((char)lpFileName[i]);
+                name[i] = tolower((char) lpFileName[i]);
             name[i] = 0;
         }
-        return (BOOL)strstr(name, match);
+        return (BOOL) strstr(name, match);
     }
 
     bool watchForCLLApiNum = false;
@@ -239,40 +260,50 @@ namespace Hooks
 
     //void debugsplatmem(DWORD address, const char* name);
 
-    HOOK_FUNCTION(NTSTATUS, NTAPI, LdrLoadDll, PWCHAR PathToFile, ULONG Flags, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle);
-    HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle)
+    HOOK_FUNCTION(NTSTATUS,
+                  NTAPI,
+                  LdrLoadDll,
+                  PWCHAR PathToFile,
+                  ULONG Flags,
+                  PUNICODE_STRING ModuleFileName,
+                  PHANDLE ModuleHandle);
+    HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile,
+                                         ULONG Flags,
+                                         PUNICODE_STRING ModuleFileName,
+                                         PHANDLE ModuleHandle)
     {
-        //debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
-        //cmdprintf("SHORTTRACE: 3,50");
+//debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
+//cmdprintf("SHORTTRACE: 3,50");
 
-            //debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
-            //DWORD myEBP;
-         //   __asm
-         //   {
-         //     mov [myEBP], ebp;
-         //   }
-            //debugsplatmem(myEBP, "ebp");
+//debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
+//DWORD myEBP;
+//   __asm
+//   {
+//     mov [myEBP], ebp;
+//   }
+//debugsplatmem(myEBP, "ebp");
 
 #if 1 // new method, get list of loaded dlls from debugger (because LdrLoadDll can load multiple dlls)
-    //_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this 
+        //_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this
         if (tlsIsSafeToUse)
         {
             ThreadLocalStuff& curtls = tls;
             if (curtls.callingClientLoadLibrary || curtls.treatDLLLoadsAsClient)
             {
                 curtls.callingClientLoadLibrary = FALSE; // see MyKiUserCallbackDispatcher
-                watchForCLLApiNum = false; // if we were watching for the apiNum, it must have worked
+                watchForCLLApiNum =
+                    false; // if we were watching for the apiNum, it must have worked
                 if (!ShouldLoadUserDll(ModuleFileName->Buffer))
                 {
                     //debuglog(LCF_MODULE, "DENIED loading DLL: %S\n", ModuleFileName->Buffer);
                     //cmdprintf("SHORTTRACE: 3,50");
-                    return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
+                    return /*STATUS_DLL_NOT_FOUND*/ 0xC0000135;
                 }
             }
 
             // TEST HACK
             if (WideStringContains(ModuleFileName->Buffer, "dpofeedb.dll"))
-                return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
+                return /*STATUS_DLL_NOT_FOUND*/ 0xC0000135;
         }
         //if(tlsIsSafeToUse)
         //{
@@ -287,9 +318,9 @@ namespace Hooks
         return rv;
 #else
 
-    // for some reason this function is INCREDIBLY fragile.
-    // the slightest bit too much processing will make games fail to load certain critical DLLs.
-    // I'd like to call ShouldAllowDLLLoad to deny certain DLLs from loading, but currently can't.
+        // for some reason this function is INCREDIBLY fragile.
+        // the slightest bit too much processing will make games fail to load certain critical DLLs.
+        // I'd like to call ShouldAllowDLLLoad to deny certain DLLs from loading, but currently can't.
 
         LPWSTR lpFileName = ModuleFileName->Buffer;
 
@@ -298,7 +329,7 @@ namespace Hooks
         char name[1024];
         int i = 0;
         for (; lpFileName[i] && i != sizeof(name) - 1; i++)
-            name[i] = (char)lpFileName[i];
+            name[i] = (char) lpFileName[i];
         name[i] = 0;
 
         //debuglog(LCF_MODULE, __FUNCTION__ "(%S, 0x%X, %S, 0x%X)\n", lpFileName, Flags, PathToFile, ModuleHandle);
@@ -313,21 +344,20 @@ namespace Hooks
         //if(inside) if(inside != GetCurrentThreadId()) while(inside) {OutputDebugString("WTFA\n");}
         //inside = GetCurrentThreadId();
 
-    //#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
+        //#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
         // terrible mystery hack! to fix some games from failing to find kernel32.dll when this file is compiled with VS2005
         //static bool already = false;
         //if(!already)
-    //	if(lpFileName[0] == 'K' && lpFileName[6] == '3')
-    //	{
-    //		//already = true;
-    //		NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
-    ////		inside = 0;
-    //		return rv;
-    //	}
-    //#endif
+        //	if(lpFileName[0] == 'K' && lpFileName[6] == '3')
+        //	{
+        //		//already = true;
+        //		NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
+        ////		inside = 0;
+        //		return rv;
+        //	}
+        //#endif
 
-
-    //	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
+        //	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
 
         if (rv >= 0)
         {
@@ -339,8 +369,8 @@ namespace Hooks
                 //debuglog(LCF_MODULE, "Rehooking: %s\n", dllname);
                 RetryInterceptAPIs(dllname);
                 // disabled because it will make AVIs captured on different machines be slightly different lengths
-                            //// loading DLLs takes time
-                            //detTimer.AddDelay(/*10*/15, FALSE, FALSE); // must both be FALSE to signal async delay add, otherwise really weird things will happen like inaccurate thread creation reports to the debugger
+                //// loading DLLs takes time
+                //detTimer.AddDelay(/*10*/15, FALSE, FALSE); // must both be FALSE to signal async delay add, otherwise really weird things will happen like inaccurate thread creation reports to the debugger
             }
         }
         else
@@ -365,7 +395,6 @@ namespace Hooks
         return rv;
 #endif
     }
-
 
     //static char dllLeaveAloneList [256][MAX_PATH+1] = {};
     //
@@ -429,14 +458,21 @@ namespace Hooks
     //	return rv;
     //}
 
-    HOOK_FUNCTION(VOID, NTAPI, KiUserCallbackDispatcher, ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength);
-    HOOKFUNC VOID NTAPI MyKiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength)
+    HOOK_FUNCTION(VOID,
+                  NTAPI,
+                  KiUserCallbackDispatcher,
+                  ULONG ApiNumber,
+                  PVOID InputBuffer,
+                  ULONG InputLength);
+    HOOKFUNC VOID NTAPI MyKiUserCallbackDispatcher(ULONG ApiNumber,
+                                                   PVOID InputBuffer,
+                                                   ULONG InputLength)
     {
         //ENTER(ApiNumber);
 
         // maybe should instead scan the stack in MyLdrLoadDll for something we put on the stack in MyKiUserCallbackDispatcher? but I couldn't get it to work...
-    //	char test [8] = {0,0x42,0x42,0x42,0x42,0x42,0x42,0x42,};
-    //	debugprintf(test);
+        //	char test [8] = {0,0x42,0x42,0x42,0x42,0x42,0x42,0x42,};
+        //	debugprintf(test);
 
         if (watchForCLLApiNum)
             cllApiNum = ApiNumber;
@@ -455,7 +491,7 @@ namespace Hooks
     {
         if (riid.Data1 > 1)
             return riid;
-        return (REFIID)rclsid;
+        return (REFIID) rclsid;
     }
     const char* riidToName(REFIID riid)
     {
@@ -466,7 +502,7 @@ namespace Hooks
         case 0x56A8689C:
             return "IMemAllocator";
 
-            // not sure which of these are helpful, I'm just noting them down for now
+        // not sure which of these are helpful, I'm just noting them down for now
         case 0x56A86895:
             return "IBaseFilter";
         case 0xE436EBB3:
@@ -497,8 +533,19 @@ namespace Hooks
     }
 
     // in case either MyCoCreateInstance doesn't call MyCoCreateInstanceEx or MyCoCreateInstance is called and MyCoCreateInstanceEx failed to get hooked
-    HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstance, REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv);
-    HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
+    HOOK_FUNCTION(HRESULT,
+                  STDAPICALLTYPE,
+                  CoCreateInstance,
+                  REFCLSID rclsid,
+                  LPUNKNOWN pUnkOuter,
+                  DWORD dwClsContext,
+                  REFIID riid,
+                  LPVOID* ppv);
+    HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid,
+                                                       LPUNKNOWN pUnkOuter,
+                                                       DWORD dwClsContext,
+                                                       REFIID riid,
+                                                       LPVOID* ppv)
     {
         ENTER(riid.Data1, rclsid.Data1);
         ThreadLocalStuff& curtls = tls;
@@ -527,20 +574,28 @@ namespace Hooks
         return rv;
     }
 
-    static void PreCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, const char* callerName, const char* oldName)
+    static void PreCoGetClassObject(REFCLSID rclsid,
+                                    REFIID riid,
+                                    LPVOID FAR* ppv,
+                                    const char* callerName,
+                                    const char* oldName)
     {
         ENTER(riid.Data1, rclsid.Data1, callerName);
         const char* newName = riidToName(chooseriid(riid, rclsid));
         LOG() << "newName = " << newName;
         if (rclsid.Data1 == CLSID_FilterGraphManager.Data1 /*&& tasflags.threadMode < 2*/)
-            ((IID&)rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
+            ((IID&) rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
         if (!oldName && !newName)
             newName = "DirectShow"; // TODO
         ThreadLocalStuff& curtls = tls;
         if (newName)
             curtls.curThreadCreateName = newName;
     }
-    static void PostCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, HRESULT hr, const char* oldName)
+    static void PostCoGetClassObject(REFCLSID rclsid,
+                                     REFIID riid,
+                                     LPVOID FAR* ppv,
+                                     HRESULT hr,
+                                     const char* oldName)
     {
         ThreadLocalStuff& curtls = tls;
         if (SUCCEEDED(hr))
@@ -550,8 +605,19 @@ namespace Hooks
         UpdateLoadedOrUnloadedDllHooks();
     }
 
-    HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoGetClassObject, REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv);
-    HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv)
+    HOOK_FUNCTION(HRESULT,
+                  STDAPICALLTYPE,
+                  CoGetClassObject,
+                  REFCLSID rclsid,
+                  DWORD dwClsContext,
+                  LPVOID pvReserved,
+                  REFIID riid,
+                  LPVOID FAR* ppv);
+    HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid,
+                                                       DWORD dwClsContext,
+                                                       LPVOID pvReserved,
+                                                       REFIID riid,
+                                                       LPVOID FAR* ppv)
     {
         const char* oldName = tls.curThreadCreateName;
         PreCoGetClassObject(rclsid, riid, ppv, __FUNCTION__, oldName);
@@ -561,16 +627,30 @@ namespace Hooks
     }
 
     // in case either MyCoCreateInstanceEx is directly instead of from MyCoCreateInstance, or MyCoCreateInstanceEx is called from MyCoCreateInstance but MyCoCreateInstance failed to get hooked
-    HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, CoCreateInstanceEx, REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults);
-    HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
+    HOOK_FUNCTION(HRESULT,
+                  STDAPICALLTYPE,
+                  CoCreateInstanceEx,
+                  REFCLSID Clsid,
+                  LPUNKNOWN punkOuter,
+                  DWORD dwClsCtx,
+                  struct _COSERVERINFO* pServerInfo,
+                  DWORD dwCount,
+                  struct tagMULTI_QI* pResults);
+    HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid,
+                                                         LPUNKNOWN punkOuter,
+                                                         DWORD dwClsCtx,
+                                                         struct _COSERVERINFO* pServerInfo,
+                                                         DWORD dwCount,
+                                                         struct tagMULTI_QI* pResults)
     {
         ENTER(Clsid.Data1, dwCount);
 
         // check for creating custom objects that skip COM
-    //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
+        //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
         for (DWORD i = 0; i < dwCount; i++)
         {
-            if (DirectSound::TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
+            if (DirectSound::TrySoundCoCreateInstance(*pResults[i].pIID,
+                                                      (LPVOID*) &pResults[i].pItf))
             {
                 pResults[i].hr = S_OK;
                 HRESULT rv = S_OK;
@@ -579,7 +659,9 @@ namespace Hooks
                 {
                     if (i != j)
                     {
-                        pResults[j].hr = pResults[i].pItf->QueryInterface(*pResults[j].pIID, (LPVOID*)pResults[j].pItf);
+                        pResults[j].hr =
+                            pResults[i].pItf->QueryInterface(*pResults[j].pIID,
+                                                             (LPVOID*) pResults[j].pItf);
                         if (FAILED(pResults[j].hr))
                             rv = pResults[j].hr;
                         else
@@ -596,50 +678,73 @@ namespace Hooks
         HRESULT rv = CoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
         for (DWORD i = 0; i < dwCount; i++)
             if (SUCCEEDED(pResults[i].hr))
-                HookCOMInterface(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf);
+                HookCOMInterface(*pResults[i].pIID, (LPVOID*) &pResults[i].pItf);
         return rv;
     }
 
-    //static HRESULT STDAPICALLTYPE MyDllGetClassObject_Impl(TypeOfDllGetClassObject DllGetClassObject, const char* dllname, REFCLSID rclsid, REFIID riid, LPVOID *ppv)
-    //{
-    //	debuglog(LCF_MODULE, __FUNCTION__ " called by %s.\n", dllname);
-    //	const char* oldName = tls.curThreadCreateName;
-    //	PreCoGetClassObject(rclsid,riid,ppv, dllname, oldName);
-    //	HRESULT rv = DllGetClassObject(rclsid, riid, ppv);
-    //	PostCoGetClassObject(rclsid,riid,ppv, rv, oldName);
-    //	return rv;
-    //}
-    //#define X(y) HOOKFUNC HRESULT STDAPICALLTYPE My##y##DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) { return MyDllGetClassObject_Impl(Tramp##y##DllGetClassObject, ArrayNameDllGetClassObject[y], rclsid, riid, ppv); }
-    //    CodeGen_X_List
-    //#undef X
-    //TypeOfDllGetClassObject ArrayMyDllGetClassObject[] = 
-    //{
-    //#define X(y) My##y##DllGetClassObject,
-    //    CodeGen_X_List
-    //#undef X
-    //	NULL
-    //};
+//static HRESULT STDAPICALLTYPE MyDllGetClassObject_Impl(TypeOfDllGetClassObject DllGetClassObject, const char* dllname, REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+//{
+//	debuglog(LCF_MODULE, __FUNCTION__ " called by %s.\n", dllname);
+//	const char* oldName = tls.curThreadCreateName;
+//	PreCoGetClassObject(rclsid,riid,ppv, dllname, oldName);
+//	HRESULT rv = DllGetClassObject(rclsid, riid, ppv);
+//	PostCoGetClassObject(rclsid,riid,ppv, rv, oldName);
+//	return rv;
+//}
+//#define X(y) HOOKFUNC HRESULT STDAPICALLTYPE My##y##DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) { return MyDllGetClassObject_Impl(Tramp##y##DllGetClassObject, ArrayNameDllGetClassObject[y], rclsid, riid, ppv); }
+//    CodeGen_X_List
+//#undef X
+//TypeOfDllGetClassObject ArrayMyDllGetClassObject[] =
+//{
+//#define X(y) My##y##DllGetClassObject,
+//    CodeGen_X_List
+//#undef X
+//	NULL
+//};
 
-#define IMPLEMENT_MyDllGetClassObject(suffix) \
-HOOK_FUNCTION_DECLARE(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
-HOOK_FUNCTION(HRESULT, STDAPICALLTYPE, DllGetClassObject_##suffix, REFCLSID rclsid, REFIID riid, LPVOID *ppv); \
-HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
-{ \
-	const char* oldName = tls.curThreadCreateName; \
-	PreCoGetClassObject(rclsid,riid,ppv, #suffix, oldName); \
-	HRESULT rv = TrampDllGetClassObject_##suffix(rclsid, riid, ppv); \
-	PostCoGetClassObject(rclsid,riid,ppv, rv, oldName); \
-	return rv; \
+#define IMPLEMENT_MyDllGetClassObject(suffix)                                 \
+    \
+HOOK_FUNCTION_DECLARE(HRESULT,                                                \
+                      STDAPICALLTYPE,                                         \
+                      DllGetClassObject_##suffix,                             \
+                      REFCLSID rclsid,                                        \
+                      REFIID riid,                                            \
+                      LPVOID* ppv);                                           \
+    \
+HOOK_FUNCTION(HRESULT,                                                        \
+              STDAPICALLTYPE,                                                 \
+              DllGetClassObject_##suffix,                                     \
+              REFCLSID rclsid,                                                \
+              REFIID riid,                                                    \
+              LPVOID* ppv);                                                   \
+    \
+HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, \
+                                                             REFIID riid,     \
+                                                             LPVOID* ppv)     \
+    \
+{                                                                      \
+        const char* oldName = tls.curThreadCreateName;                        \
+        PreCoGetClassObject(rclsid, riid, ppv, #suffix, oldName);             \
+        HRESULT rv = TrampDllGetClassObject_##suffix(rclsid, riid, ppv);      \
+        PostCoGetClassObject(rclsid, riid, ppv, rv, oldName);                 \
+        return rv;                                                            \
+    \
 }
     IMPLEMENT_MyDllGetClassObject(quartz)
         //IMPLEMENT_MyDllGetClassObject(ffdshow) // apparently not needed
         //IMPLEMENT_MyDllGetClassObject(fmodex)
         //IMPLEMENT_MyDllGetClassObject(bass)
 
-
-        HOOK_FUNCTION(HRESULT, STDMETHODCALLTYPE, IUnknown_QueryInterface_Proxy,
-            IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject);
-    HOOKFUNC HRESULT STDMETHODCALLTYPE MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This, REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject)
+        HOOK_FUNCTION(HRESULT,
+                      STDMETHODCALLTYPE,
+                      IUnknown_QueryInterface_Proxy,
+                      IUnknown __RPC_FAR* This,
+                      REFIID riid,
+                      void __RPC_FAR* __RPC_FAR* ppvObject);
+    HOOKFUNC HRESULT STDMETHODCALLTYPE
+    MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR* This,
+                                    REFIID riid,
+                                    void __RPC_FAR* __RPC_FAR* ppvObject)
     {
         ENTER(riid.Data1);
         ThreadLocalStuff& curtls = tls;
@@ -662,8 +767,21 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     {
         return RtlAllocateHeap(HeapHandle, Flags, Size);
     }
-    HOOK_FUNCTION(PVOID, NTAPI, RtlCreateHeap, ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters);
-    HOOKFUNC PVOID NTAPI MyRtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters)
+    HOOK_FUNCTION(PVOID,
+                  NTAPI,
+                  RtlCreateHeap,
+                  ULONG Flags,
+                  PVOID HeapBase,
+                  SIZE_T ReserveSize,
+                  SIZE_T CommitSize,
+                  PVOID Lock,
+                  struct RTL_HEAP_PARAMETERS* Parameters);
+    HOOKFUNC PVOID NTAPI MyRtlCreateHeap(ULONG Flags,
+                                         PVOID HeapBase,
+                                         SIZE_T ReserveSize,
+                                         SIZE_T CommitSize,
+                                         PVOID Lock,
+                                         struct RTL_HEAP_PARAMETERS* Parameters)
     {
         return RtlCreateHeap(Flags, HeapBase, ReserveSize, CommitSize, Lock, Parameters);
     }
@@ -672,102 +790,112 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     {
         return NdrAllocate(pStubMsg, Len);
     }
-    HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitializeNew, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
-    HOOKFUNC void RPC_ENTRY MyNdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
+    HOOK_FUNCTION(void,
+                  RPC_ENTRY,
+                  NdrClientInitializeNew,
+                  PRPC_MESSAGE pRpcMsg,
+                  PMIDL_STUB_MESSAGE pStubMsg,
+                  PMIDL_STUB_DESC pStubDescriptor,
+                  unsigned int ProcNum);
+    HOOKFUNC void RPC_ENTRY MyNdrClientInitializeNew(PRPC_MESSAGE pRpcMsg,
+                                                     PMIDL_STUB_MESSAGE pStubMsg,
+                                                     PMIDL_STUB_DESC pStubDescriptor,
+                                                     unsigned int ProcNum)
     {
         return NdrClientInitializeNew(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
     }
-    HOOK_FUNCTION(void, RPC_ENTRY, NdrClientInitialize, PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum);
-    HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
+    HOOK_FUNCTION(void,
+                  RPC_ENTRY,
+                  NdrClientInitialize,
+                  PRPC_MESSAGE pRpcMsg,
+                  PMIDL_STUB_MESSAGE pStubMsg,
+                  PMIDL_STUB_DESC pStubDescriptor,
+                  unsigned int ProcNum);
+    HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg,
+                                                  PMIDL_STUB_MESSAGE pStubMsg,
+                                                  PMIDL_STUB_DESC pStubDescriptor,
+                                                  unsigned int ProcNum)
     {
         return NdrClientInitialize(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
     }
 
-
-
-
-
-    HOOK_FUNCTION(BOOL, WINAPI, CreateProcessA,
-        LPCSTR lpApplicationName,
-        LPSTR lpCommandLine,
-        LPSECURITY_ATTRIBUTES lpProcessAttributes,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        BOOL bInheritHandles,
-        DWORD dwCreationFlags,
-        LPVOID lpEnvironment,
-        LPCSTR lpCurrentDirectory,
-        LPSTARTUPINFOA lpStartupInfo,
-        LPPROCESS_INFORMATION lpProcessInformation
-    );
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  CreateProcessA,
+                  LPCSTR lpApplicationName,
+                  LPSTR lpCommandLine,
+                  LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                  LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                  BOOL bInheritHandles,
+                  DWORD dwCreationFlags,
+                  LPVOID lpEnvironment,
+                  LPCSTR lpCurrentDirectory,
+                  LPSTARTUPINFOA lpStartupInfo,
+                  LPPROCESS_INFORMATION lpProcessInformation);
     HOOKFUNC BOOL WINAPI MyCreateProcessA(LPCSTR lpApplicationName,
-        LPSTR lpCommandLine,
-        LPSECURITY_ATTRIBUTES lpProcessAttributes,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        BOOL bInheritHandles,
-        DWORD dwCreationFlags,
-        LPVOID lpEnvironment,
-        LPCSTR lpCurrentDirectory,
-        LPSTARTUPINFOA lpStartupInfo,
-        LPPROCESS_INFORMATION lpProcessInformation
-    )
+                                          LPSTR lpCommandLine,
+                                          LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                                          LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                                          BOOL bInheritHandles,
+                                          DWORD dwCreationFlags,
+                                          LPVOID lpEnvironment,
+                                          LPCSTR lpCurrentDirectory,
+                                          LPSTARTUPINFOA lpStartupInfo,
+                                          LPPROCESS_INFORMATION lpProcessInformation)
     {
         ENTER(lpCommandLine);
         DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
-        BOOL rv = CreateProcessA(
-            lpApplicationName,
-            lpCommandLine,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
+        BOOL rv = CreateProcessA(lpApplicationName,
+                                 lpCommandLine,
+                                 lpProcessAttributes,
+                                 lpThreadAttributes,
+                                 bInheritHandles,
+                                 dwCreationFlags,
+                                 lpEnvironment,
+                                 lpCurrentDirectory,
+                                 lpStartupInfo,
+                                 lpProcessInformation);
         return rv;
     }
 
-    HOOK_FUNCTION(BOOL, WINAPI, CreateProcessW,
-        LPCWSTR lpApplicationName,
-        LPWSTR lpCommandLine,
-        LPSECURITY_ATTRIBUTES lpProcessAttributes,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        BOOL bInheritHandles,
-        DWORD dwCreationFlags,
-        LPVOID lpEnvironment,
-        LPCWSTR lpCurrentDirectory,
-        LPSTARTUPINFOW lpStartupInfo,
-        LPPROCESS_INFORMATION lpProcessInformation
-    );
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  CreateProcessW,
+                  LPCWSTR lpApplicationName,
+                  LPWSTR lpCommandLine,
+                  LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                  LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                  BOOL bInheritHandles,
+                  DWORD dwCreationFlags,
+                  LPVOID lpEnvironment,
+                  LPCWSTR lpCurrentDirectory,
+                  LPSTARTUPINFOW lpStartupInfo,
+                  LPPROCESS_INFORMATION lpProcessInformation);
     HOOKFUNC BOOL WINAPI MyCreateProcessW(LPCWSTR lpApplicationName,
-        LPWSTR lpCommandLine,
-        LPSECURITY_ATTRIBUTES lpProcessAttributes,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        BOOL bInheritHandles,
-        DWORD dwCreationFlags,
-        LPVOID lpEnvironment,
-        LPCWSTR lpCurrentDirectory,
-        LPSTARTUPINFOW lpStartupInfo,
-        LPPROCESS_INFORMATION lpProcessInformation
-    )
+                                          LPWSTR lpCommandLine,
+                                          LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                                          LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                                          BOOL bInheritHandles,
+                                          DWORD dwCreationFlags,
+                                          LPVOID lpEnvironment,
+                                          LPCWSTR lpCurrentDirectory,
+                                          LPSTARTUPINFOW lpStartupInfo,
+                                          LPPROCESS_INFORMATION lpProcessInformation)
     {
         ENTER(lpCommandLine);
         DEBUG_LOG() << "Not yet implemented!";
         tls.isFrameThread = FALSE;
-        BOOL rv = CreateProcessW(
-            lpApplicationName,
-            lpCommandLine,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
+        BOOL rv = CreateProcessW(lpApplicationName,
+                                 lpCommandLine,
+                                 lpProcessAttributes,
+                                 lpThreadAttributes,
+                                 bInheritHandles,
+                                 dwCreationFlags,
+                                 lpEnvironment,
+                                 lpCurrentDirectory,
+                                 lpStartupInfo,
+                                 lpProcessInformation);
         return rv;
     }
 
@@ -775,8 +903,11 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
     HOOKFUNC VOID WINAPI MyExitProcess(DWORD dwExitCode)
     {
         ENTER();
-        _asm {int 3}
-        while (true) { Sleep(10); }
+        _asm {int 3 }
+        while (true)
+        {
+            Sleep(10);
+        }
     }
 
     //HOOKFUNC NTSTATUS NTAPI MyNtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength)
@@ -816,8 +947,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
 
     void ApplyModuleIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             //MAKE_INTERCEPT(1, KERNEL32, GetProcAddress),
             //MAKE_INTERCEPT(1, KERNEL32, LoadLibraryExW),
             //MAKE_INTERCEPT(1, NTDLL, LdrUnloadDll),
@@ -827,8 +957,15 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, RE
             MAKE_INTERCEPT(1, OLE32, CoCreateInstance),
             MAKE_INTERCEPT(1, OLE32, CoCreateInstanceEx),
             MAKE_INTERCEPT(1, OLE32, CoGetClassObject),
-            MAKE_INTERCEPT3(1, QUARTZ.DLL, DllGetClassObject, quartz), // this is mainly so we can hook the IReferenceClock used by DirectShow
-            MAKE_INTERCEPT(1, RPCRT4, IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
+            MAKE_INTERCEPT3(
+                1,
+                QUARTZ.DLL,
+                DllGetClassObject,
+                quartz), // this is mainly so we can hook the IReferenceClock used by DirectShow
+            MAKE_INTERCEPT(
+                1,
+                RPCRT4,
+                IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
 
             MAKE_INTERCEPT(1, KERNEL32, ExitProcess),
             MAKE_INTERCEPT(1, KERNEL32, CreateProcessA),

@@ -41,7 +41,7 @@ namespace D3D
         if (FAILED(result))
         {
             gs_d3d->Release();
-            throw Error::CreateDevice{ result };
+            throw Error::CreateDevice{result};
         }
     }
 

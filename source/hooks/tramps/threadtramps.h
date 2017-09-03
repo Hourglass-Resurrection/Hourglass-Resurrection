@@ -7,21 +7,28 @@
 
 namespace Hooks
 {
-    HOOK_FUNCTION_DECLARE(HANDLE, WINAPI, CreateThread,
-        LPSECURITY_ATTRIBUTES lpThreadAttributes,
-        SIZE_T dwStackSize,
-        LPTHREAD_START_ROUTINE lpStartAddress,
-        LPVOID lpParameter,
-        DWORD dwCreationFlags,
-        LPDWORD lpThreadId
-    );
+    HOOK_FUNCTION_DECLARE(HANDLE,
+                          WINAPI,
+                          CreateThread,
+                          LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                          SIZE_T dwStackSize,
+                          LPTHREAD_START_ROUTINE lpStartAddress,
+                          LPVOID lpParameter,
+                          DWORD dwCreationFlags,
+                          LPDWORD lpThreadId);
     HOOK_FUNCTION_DECLARE(VOID, WINAPI, ExitThread, DWORD dwExitCode);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, TerminateThread, HANDLE hThread, DWORD dwExitCode);
     HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetExitCodeThread, HANDLE hThread, LPDWORD lpExitCode);
-    HOOK_FUNCTION_DECLARE(NTSTATUS, NTAPI, NtSetInformationThread, HANDLE ThreadHandle, DWORD ThreadInformationClass, PVOID ThreadInformation, ULONG ThreadInformationLength);
+    HOOK_FUNCTION_DECLARE(NTSTATUS,
+                          NTAPI,
+                          NtSetInformationThread,
+                          HANDLE ThreadHandle,
+                          DWORD ThreadInformationClass,
+                          PVOID ThreadInformation,
+                          ULONG ThreadInformationLength);
 
 #ifdef TlsSetValue
-    #error this shouldn't happen (TlsSetValue already defined)
+#error this shouldn't happen (TlsSetValue already defined)
 #endif
 
     // hack: because we need to call TlsSetValue/TlsGetValue potentially very early in the startup process,

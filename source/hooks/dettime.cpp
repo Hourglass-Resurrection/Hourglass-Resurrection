@@ -1,9 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "wintasee.h"
-#include "tls.h"
 #include "dettime.h"
+#include "tls.h"
+#include "wintasee.h"
 
 using Log = DebugLog<LogCategory::DETTIMER>;
 
@@ -42,14 +42,15 @@ DWORD NonDeterministicTimer::GetTicks(TimeCallType type)
         if (tasflags.fastForward) // fast-forward
             delta *= 3; // arbitrary, but higher didn't work well for me with this timer
         int difference = lastExitTime - lastEnterTime;
-        if (difference > 50) // this check prevent the normal frame boundary duration from throwing off the timer
+        if (difference
+            > 50) // this check prevent the normal frame boundary duration from throwing off the timer
         {
             delta -= difference; // this lets the timer slow down for pause and frame advance
             lastEnterTime = lastExitTime; // difference can only be used once per frame boundary
         }
         ticks += delta;
         //			debugprintf("%d: ticks += %d\n", __LINE__, delta);
-        LOG() << ": ADDED: "<< delta << " ticks\n";
+        LOG() << ": ADDED: " << delta << " ticks\n";
         lasttime = tc;
         lastSetTickValue = ticks;
     }
@@ -59,17 +60,17 @@ DWORD NonDeterministicTimer::GetTicks(TimeCallType type)
 void NonDeterministicTimer::ExitFrameBoundary()
 {
     ENTER();
-	lastExitTime = Hooks::timeGetTime();
+    lastExitTime = Hooks::timeGetTime();
 }
 void NonDeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 {
-	ENTER(framesPerSecond);
+    ENTER(framesPerSecond);
 
-	lastEnterTime = Hooks::timeGetTime();
+    lastEnterTime = Hooks::timeGetTime();
 
-	GetTicks();
-	Hooks::DirectSound::AdvanceTimeAndMixAll(ticks - lastEnterTicks);
-	lastEnterTicks = ticks;
+    GetTicks();
+    Hooks::DirectSound::AdvanceTimeAndMixAll(ticks - lastEnterTicks);
+    lastEnterTicks = ticks;
 }
 
 void NonDeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BOOL replace)
@@ -77,7 +78,8 @@ void NonDeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed,
     ENTER();
     //if(doSleep)
     {
-        if (tasflags.fastForward && (tasflags.fastForwardFlags & (isSleep ? FFMODE_SLEEPSKIP : FFMODE_WAITSKIP)))
+        if (tasflags.fastForward
+            && (tasflags.fastForwardFlags & (isSleep ? FFMODE_SLEEPSKIP : FFMODE_WAITSKIP)))
         {
             //if(tasflags.fastForwardFlags & FFMODE_SWITCHSKIP)
             //	return;
@@ -87,23 +89,22 @@ void NonDeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed,
     }
 }
 
-
 void NonDeterministicTimer::Initialize(DWORD startTicks)
 {
-	ENTER(startTicks);
-	ticks = startTicks;
-	lastEnterTicks = startTicks;
-	lasttime = Hooks::timeGetTime();
-	frameThreadId = 0;
-	lastEnterTime = lasttime;
-	lastExitTime = lasttime;
+    ENTER(startTicks);
+    ticks = startTicks;
+    lastEnterTicks = startTicks;
+    lasttime = Hooks::timeGetTime();
+    frameThreadId = 0;
+    lastEnterTime = lasttime;
+    lastExitTime = lasttime;
 }
 
 FILETIME NonDeterministicTimer::GetFileTime()
 {
     ENTER();
     ULARGE_INTEGER uli;
-    uli.QuadPart = (ULONGLONG)GetTicks() * 10000;
+    uli.QuadPart = (ULONGLONG) GetTicks() * 10000;
 
     // some games crash if the time is too bogus
     // (e.g. BMD crashes when you press S to take a screenshot),
@@ -124,8 +125,6 @@ SYSTEMTIME NonDeterministicTimer::GetSystemTime()
     FileTimeToSystemTime(&fileTime, &systemTime);
     return systemTime;
 }
-
-
 
 DWORD DeterministicTimer::GetTicks(TimeCallType type)
 {
@@ -234,20 +233,20 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
 
         DWORD ticksExtra = 0;
 
-        //if(getTimes > MAX_NONFRAME_GETTIMES && !untrustedCaller)
-        //{
-        //	getTimes = 0; // prevents some games from entering this block of code twice (changes sync)
-        //
-        //	debuglog(LCF_TIMESET|LCF_DESYNC, "switched timer to normal mode (%d --> %d)\n", ticks, (ticks - lastSetTickValue <= 3000) ? (lastSetTickValue + 3000) : ticks);
-        //
-        //	{
-        //		// have to update ticks to prevent freezing when switching between timers
-        //		if(ticks - lastSetTickValue <= 3000)
-        //			ticks = lastSetTickValue + 3000; // leave a window of 3000 ticks where the destination is deterministic (this number affects sync!)
-        //		else
-        //			debuglog(LCF_TIMEGET|LCF_TIMESET|LCF_DESYNC|LCF_ERROR, "WARNING! fallback mode overran time allotment, may get non-deterministic results\n");
-        //	}
-        //}
+//if(getTimes > MAX_NONFRAME_GETTIMES && !untrustedCaller)
+//{
+//	getTimes = 0; // prevents some games from entering this block of code twice (changes sync)
+//
+//	debuglog(LCF_TIMESET|LCF_DESYNC, "switched timer to normal mode (%d --> %d)\n", ticks, (ticks - lastSetTickValue <= 3000) ? (lastSetTickValue + 3000) : ticks);
+//
+//	{
+//		// have to update ticks to prevent freezing when switching between timers
+//		if(ticks - lastSetTickValue <= 3000)
+//			ticks = lastSetTickValue + 3000; // leave a window of 3000 ticks where the destination is deterministic (this number affects sync!)
+//		else
+//			debuglog(LCF_TIMEGET|LCF_TIMESET|LCF_DESYNC|LCF_ERROR, "WARNING! fallback mode overran time allotment, may get non-deterministic results\n");
+//	}
+//}
 #if 0
         //			debugprintf("A\n");
         if (lastTimerIsNonDet)
@@ -266,7 +265,7 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
         //if(0) // FIXME FIXME
         if (/*!disableSelfTicking &&*/ !untrustedCaller)
         {
-            //				ticks++;
+//				ticks++;
 #if 1
 //            //				if(type != TIMETYPE_UNTRACKED && (/*!s_frameThreadId ||*/ isFrameThread && !untrustedCaller))
 //            if (type != TIMETYPE_UNTRACKED && ((/*(type == TIMETYPE_CRAWLHACK && !s_frameThreadId) ||*/ /*isFrameThread*/1) && !untrustedCaller))
@@ -318,7 +317,8 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
 //            }
 #elif 1
             if (getTimes == MAX_NONFRAME_GETTIMES && !frameThreadId)
-                debugprintf("WARNING! temporarily switched to non-deterministic timer (%d)\n", ticks);
+                debugprintf("WARNING! temporarily switched to non-deterministic timer (%d)\n",
+                            ticks);
             // switch temporarily to non-deterministic timer
             getTimes++;
 #else
@@ -356,214 +356,215 @@ DWORD DeterministicTimer::GetTicks(TimeCallType type)
     //						//getTimes = 0;
     ////				}
 
-
-
     return ticks;
 }
-
 
 void DeterministicTimer::ExitFrameBoundary()
 {
     ENTER();
-	for(int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
-		altGetTimes[i] = 0;
-	//forceAdvancedTicks = 0;
-	ticksAddedSinceLastFrame = 0;
-	replaceReserveUsed = 0;
+    for (int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
+        altGetTimes[i] = 0;
+    //forceAdvancedTicks = 0;
+    ticksAddedSinceLastFrame = 0;
+    replaceReserveUsed = 0;
 
-	if(tasflags.framerate <= 0)
-		return nonDetTimer.ExitFrameBoundary(); // 0 framerate means disable deterministic timer
+    if (tasflags.framerate <= 0)
+        return nonDetTimer.ExitFrameBoundary(); // 0 framerate means disable deterministic timer
 
-//		disableSelfTicking = 0;
+    //		disableSelfTicking = 0;
 
-//		debugprintf("thread = 0x%X, framethread = 0x%X\n", frameThreadId, GetCurrentThreadId());
-//		debugprintf("getTimes = %d (0x%X)", getTimes, getTimes);
-	getTimes = 0;
-	if(warningcountdown > 0)
-		warningcountdown = 100;
+    //		debugprintf("thread = 0x%X, framethread = 0x%X\n", frameThreadId, GetCurrentThreadId());
+    //		debugprintf("getTimes = %d (0x%X)", getTimes, getTimes);
+    getTimes = 0;
+    if (warningcountdown > 0)
+        warningcountdown = 100;
 
-	// FIXME: TESTING
-	DWORD addedTicks = lastNewTicks;//(ticks - lastEnterStartTicks);
-	if(addedDelay > addedTicks)
-		addedDelay -= addedTicks;
-	else
-		addedDelay = 0;
+    // FIXME: TESTING
+    DWORD addedTicks = lastNewTicks; //(ticks - lastEnterStartTicks);
+    if (addedDelay > addedTicks)
+        addedDelay -= addedTicks;
+    else
+        addedDelay = 0;
 }
 
 void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 {
-	ENTER(framesPerSecond);
-	if(tasflags.framerate <= 0)
-		return nonDetTimer.EnterFrameBoundary(framesPerSecond); // 0 framerate means disable deterministic timer
+    ENTER(framesPerSecond);
+    if (tasflags.framerate <= 0)
+        return nonDetTimer.EnterFrameBoundary(
+            framesPerSecond); // 0 framerate means disable deterministic timer
 
-	lastEnterStartTicks = ticks;
+    lastEnterStartTicks = ticks;
 
-//		disableSelfTicking = 0;
+    //		disableSelfTicking = 0;
 
-//		debugprintf("framethread 0x%X -> 0x%X\n", frameThreadId, GetCurrentThreadId());
-	frameThreadId = GetCurrentThreadId();
+    //		debugprintf("framethread 0x%X -> 0x%X\n", frameThreadId, GetCurrentThreadId());
+    frameThreadId = GetCurrentThreadId();
 
-	DWORD newTicks = 1000/framesPerSecond;
+    DWORD newTicks = 1000 / framesPerSecond;
 
-	// make the increment alternate correctly when
-	// 1000 is not evenly divisible by framesPerSecond
-	DWORD remainder = 1000%framesPerSecond;
-	ticksMinorAccum += remainder;
-	int ticksOver = ticksMinorAccum/framesPerSecond;
-	if(ticksOver > 0)
-	{
-		int ticksContrib = ticksOver;
-		newTicks += ticksContrib;
-		ticksMinorAccum -= ticksContrib*framesPerSecond;
-	}
+    // make the increment alternate correctly when
+    // 1000 is not evenly divisible by framesPerSecond
+    DWORD remainder = 1000 % framesPerSecond;
+    ticksMinorAccum += remainder;
+    int ticksOver = ticksMinorAccum / framesPerSecond;
+    if (ticksOver > 0)
+    {
+        int ticksContrib = ticksOver;
+        newTicks += ticksContrib;
+        ticksMinorAccum -= ticksContrib * framesPerSecond;
+    }
 
-	lastNewTicks = newTicks;
+    lastNewTicks = newTicks;
 
-//		debugprintf("%d\n",newTicks);
+    //		debugprintf("%d\n",newTicks);
 
+    //		// subtract out ticks that were made when calling GetTicks()
+    //		DWORD takenTicks = (ticks - lastEnterTicks) + ((s_isSleepEnterFB || s_isWaitEnterFB) ? 0 : ticksAddedSinceLastFrame) /*+ forceAdvancedTicks*/;
+    //		DWORD takenTicks = (ticks - lastEnterTicks) /*+ forceAdvancedTicks*/;
+    DWORD takenTicks = (ticks - lastEnterTicks) + forceAdvancedTicks;
+    //		DWORD takenTicks = (ticks - lastEnterTicks) + ((s_isSleepEnterFB || s_isWaitEnterFB) ? 0 : forceAdvancedTicks); // TODO: use this version after all, with a smaller sleep increment that adds more directly to ticks
 
-//		// subtract out ticks that were made when calling GetTicks()
-//		DWORD takenTicks = (ticks - lastEnterTicks) + ((s_isSleepEnterFB || s_isWaitEnterFB) ? 0 : ticksAddedSinceLastFrame) /*+ forceAdvancedTicks*/;
-//		DWORD takenTicks = (ticks - lastEnterTicks) /*+ forceAdvancedTicks*/;
-	DWORD takenTicks = (ticks - lastEnterTicks) + forceAdvancedTicks;
-//		DWORD takenTicks = (ticks - lastEnterTicks) + ((s_isSleepEnterFB || s_isWaitEnterFB) ? 0 : forceAdvancedTicks); // TODO: use this version after all, with a smaller sleep increment that adds more directly to ticks
- 
     int getCurrentFramestampLogical();
 
-//		if(s_isSleepEnterFB || s_isWaitEnterFB)
-//			debugprintf("f %d, sleep %d ticks\n", getCurrentFramestampLogical(), max(0, (int)newTicks - (int)takenTicks));
-//		else
-//			debugprintf("f %d, frame %d ticks\n", getCurrentFramestampLogical(), max(0, (int)newTicks - (int)takenTicks));
-	if(!(s_isSleepEnterFB || s_isWaitEnterFB))
-		forceAdvancedTicks = 0;
-	//if(takenTicks >= newTicks && newTicks > 0) // FIXME TEMP TESTING
-	//	takenTicks = newTicks - 1; // FIXME TEMP TESTING
-	if(newTicks > takenTicks)
-	{
-		ticks += newTicks - takenTicks;
-//			debugprintf("%d: ticks += %d\n", __LINE__, newTicks - takenTicks);
-//			/*time*/debugprintf("ADDED: %d ticks (%d - %d)\n", newTicks - takenTicks, newTicks, takenTicks);
-		LOG() << ": ADDED: " << newTicks - takenTicks << " ticks ("
-              << newTicks << " - " << takenTicks << ")";
-//		cmdprintf("SHORTTRACE: 3,6");
-	}
+    //		if(s_isSleepEnterFB || s_isWaitEnterFB)
+    //			debugprintf("f %d, sleep %d ticks\n", getCurrentFramestampLogical(), max(0, (int)newTicks - (int)takenTicks));
+    //		else
+    //			debugprintf("f %d, frame %d ticks\n", getCurrentFramestampLogical(), max(0, (int)newTicks - (int)takenTicks));
+    if (!(s_isSleepEnterFB || s_isWaitEnterFB))
+        forceAdvancedTicks = 0;
+    //if(takenTicks >= newTicks && newTicks > 0) // FIXME TEMP TESTING
+    //	takenTicks = newTicks - 1; // FIXME TEMP TESTING
+    if (newTicks > takenTicks)
+    {
+        ticks += newTicks - takenTicks;
+        //			debugprintf("%d: ticks += %d\n", __LINE__, newTicks - takenTicks);
+        //			/*time*/debugprintf("ADDED: %d ticks (%d - %d)\n", newTicks - takenTicks, newTicks, takenTicks);
+        LOG() << ": ADDED: " << newTicks - takenTicks << " ticks (" << newTicks << " - "
+              << takenTicks << ")";
+        //		cmdprintf("SHORTTRACE: 3,6");
+    }
 
-	// get the current actual time
-	DWORD time = Hooks::timeGetTime();
+    // get the current actual time
+    DWORD time = Hooks::timeGetTime();
 
-	// calculate the target time we wanted to be at now
-	DWORD timeScale = tasflags.timescale;
-	DWORD timeScaleDiv = tasflags.timescaleDivisor;
-	int desiredDeltaTime = ((int)(newTicks - lastOvershot)) * (int)timeScaleDiv;
-	if(timeScale > 1)
-		desiredDeltaTime /= (int)timeScale;
-	DWORD desiredTime = lastEnterTime + desiredDeltaTime;
-//MAIN: (f=453, t=21173) WARNING: 1.43166e+006 second wait... time=71729, desiredTime=1431727455, timeScaleDiv=4, timeScale=3, lastEnterTime=71691, newTicks=33, lastOvershot=34
+    // calculate the target time we wanted to be at now
+    DWORD timeScale = tasflags.timescale;
+    DWORD timeScaleDiv = tasflags.timescaleDivisor;
+    int desiredDeltaTime = ((int) (newTicks - lastOvershot)) * (int) timeScaleDiv;
+    if (timeScale > 1)
+        desiredDeltaTime /= (int) timeScale;
+    DWORD desiredTime = lastEnterTime + desiredDeltaTime;
+    //MAIN: (f=453, t=21173) WARNING: 1.43166e+006 second wait... time=71729, desiredTime=1431727455, timeScaleDiv=4, timeScale=3, lastEnterTime=71691, newTicks=33, lastOvershot=34
 
-	// safety net disabled because it could lead to movies that lie about their time (e.g. years pass by in a few minutes of watching) (note that there's aleady a warning below too)
-	//// safety net: don't wait more than 1 full second per frame
-	//if(!disableSelfTicking)
-	//{
-	//	if((int)(desiredTime - time) > 1000)
-	//	{
-	//		debugprintf("WARNING: %g second wait capped at 1 second.\n", (float)(int)(desiredTime - time)/1000.0f, 1000);
-	//		desiredTime = time + 1000;
-	//	}
-	//}
+    // safety net disabled because it could lead to movies that lie about their time (e.g. years pass by in a few minutes of watching) (note that there's aleady a warning below too)
+    //// safety net: don't wait more than 1 full second per frame
+    //if(!disableSelfTicking)
+    //{
+    //	if((int)(desiredTime - time) > 1000)
+    //	{
+    //		debugprintf("WARNING: %g second wait capped at 1 second.\n", (float)(int)(desiredTime - time)/1000.0f, 1000);
+    //		desiredTime = time + 1000;
+    //	}
+    //}
 
-//		debugprintf("time = %d, desired = %d, diff = %d\n", time, desiredTime, desiredTime-time);
+    //		debugprintf("time = %d, desired = %d, diff = %d\n", time, desiredTime, desiredTime-time);
 
-	// add postponed delay frames (if any extra ones) to AVI
-	//if(addedDelay > newTicks)
-	//	SleepAndAccumulateOutput(addedDelay - newTicks, FALSE);
+    // add postponed delay frames (if any extra ones) to AVI
+    //if(addedDelay > newTicks)
+    //	SleepAndAccumulateOutput(addedDelay - newTicks, FALSE);
 
-	// FIXME TESTING (this block was enabled, is disabled for testing)
-	//if(replacedDelay)
-	//{
-	//	if(replacedDelay > newTicks)
-	//		replacedDelay = newTicks;
-	//	if(addedDelay > replacedDelay)
-	//		addedDelay -= replacedDelay;
-	//	else
-	//		addedDelay = 0;
-	//}
-	//if(addedDelay)
-	//	SleepAndAccumulateOutput(addedDelay, FALSE);
-	//addedDelay = 0;
-	//replacedDelay = 0;
+    // FIXME TESTING (this block was enabled, is disabled for testing)
+    //if(replacedDelay)
+    //{
+    //	if(replacedDelay > newTicks)
+    //		replacedDelay = newTicks;
+    //	if(addedDelay > replacedDelay)
+    //		addedDelay -= replacedDelay;
+    //	else
+    //		addedDelay = 0;
+    //}
+    //if(addedDelay)
+    //	SleepAndAccumulateOutput(addedDelay, FALSE);
+    //addedDelay = 0;
+    //replacedDelay = 0;
 
-	// must happen after any calls to SleepAndAccumulateOutput in this function,
-	// or AVIs will get skipping audio in games that sleep
-	Hooks::DirectSound::AdvanceTimeAndMixAll(newTicks);
+    // must happen after any calls to SleepAndAccumulateOutput in this function,
+    // or AVIs will get skipping audio in games that sleep
+    Hooks::DirectSound::AdvanceTimeAndMixAll(newTicks);
 
-	BOOL skip = tasflags.fastForward;
-	if(skip)
-	{
-		if(s_isSleepEnterFB && !(tasflags.fastForwardFlags & FFMODE_SLEEPSKIP))
-			skip = false;
-		if(s_isWaitEnterFB && !(tasflags.fastForwardFlags & FFMODE_WAITSKIP))
-			skip = false;
-	}
-	BOOL thisFrameIsFromDraw = !(s_isSleepEnterFB || s_isWaitEnterFB);
-// FIXME
-	//if(thisFrameIsFromDraw && !lastFrameIsFromDraw)
-	//	skip = true;
-	lastFrameIsFromDraw = thisFrameIsFromDraw;
-	s_isSleepEnterFB = false;
-	s_isWaitEnterFB = false;
+    BOOL skip = tasflags.fastForward;
+    if (skip)
+    {
+        if (s_isSleepEnterFB && !(tasflags.fastForwardFlags & FFMODE_SLEEPSKIP))
+            skip = false;
+        if (s_isWaitEnterFB && !(tasflags.fastForwardFlags & FFMODE_WAITSKIP))
+            skip = false;
+    }
+    BOOL thisFrameIsFromDraw = !(s_isSleepEnterFB || s_isWaitEnterFB);
+    // FIXME
+    //if(thisFrameIsFromDraw && !lastFrameIsFromDraw)
+    //	skip = true;
+    lastFrameIsFromDraw = thisFrameIsFromDraw;
+    s_isSleepEnterFB = false;
+    s_isWaitEnterFB = false;
 
-	if(!skip && lastEnterValid) // if not fast-forwarding and not the first frame
-	{
-		if((int)(desiredTime - time) > 1000)
-		{
-            DEBUG_LOG() << "WARNING: " << (float)(int)(desiredTime - time) / 1000.0f << "second wait... time=" << time
-                        << " desiredTime=" << desiredTime << " desiredDeltaTime=" << desiredDeltaTime
+    if (!skip && lastEnterValid) // if not fast-forwarding and not the first frame
+    {
+        if ((int) (desiredTime - time) > 1000)
+        {
+            DEBUG_LOG() << "WARNING: " << (float) (int) (desiredTime - time) / 1000.0f
+                        << "second wait... time=" << time << " desiredTime=" << desiredTime
+                        << " desiredDeltaTime=" << desiredDeltaTime
                         << " timeScaleDiv=" << timeScaleDiv << " timeScale=" << timeScale
                         << " lastEnterTime=" << lastEnterTime << " newTicks=" << newTicks
                         << " lastOvershot=" << lastOvershot;
-			//debugprintf("desiredTime = %d, time = %d\n", desiredTime, time);
-			//debugprintf("DWORD %d = %d + (%d - %d)*%d/%d\n", desiredTime,lastEnterTime,newTicks,lastOvershot,tasflags.timescaleDivisor,tasflags.timescale);
-			//cmdprintf("SHORTTRACE: 3,50");
-		}
+            //debugprintf("desiredTime = %d, time = %d\n", desiredTime, time);
+            //debugprintf("DWORD %d = %d + (%d - %d)*%d/%d\n", desiredTime,lastEnterTime,newTicks,lastOvershot,tasflags.timescaleDivisor,tasflags.timescale);
+            //cmdprintf("SHORTTRACE: 3,50");
+        }
 
-		// wait for the amount of time it should have taken (THROTTLE)
-		while((int)(desiredTime - time) > 0)
-		{
-			Hooks::Sleep(1);
-			time = Hooks::timeGetTime();
-			if(tasflags.fastForward || timeScaleDiv != tasflags.timescaleDivisor)
-				break;
-		}
-	}
+        // wait for the amount of time it should have taken (THROTTLE)
+        while ((int) (desiredTime - time) > 0)
+        {
+            Hooks::Sleep(1);
+            time = Hooks::timeGetTime();
+            if (tasflags.fastForward || timeScaleDiv != tasflags.timescaleDivisor)
+                break;
+        }
+    }
 
-	//if(queuedAsyncAddDelay)
-	//{
-	//	SleepAndAccumulateOutput(queuedAsyncAddDelay, FALSE);
-	//	queuedAsyncAddDelay = 0;
-	//}
+    //if(queuedAsyncAddDelay)
+    //{
+    //	SleepAndAccumulateOutput(queuedAsyncAddDelay, FALSE);
+    //	queuedAsyncAddDelay = 0;
+    //}
 
-	// if we accidentally waited too long,
-	// remember that so we can compensate for it the next time through.
-	lastOvershot = Hooks::timeGetTime() - desiredTime;
-	if((int)lastOvershot < 0) lastOvershot = 0;
-	if((int)lastOvershot > newTicks) lastOvershot = newTicks;
-//		debugprintf("overshot: %d\n", lastOvershot);
+    // if we accidentally waited too long,
+    // remember that so we can compensate for it the next time through.
+    lastOvershot = Hooks::timeGetTime() - desiredTime;
+    if ((int) lastOvershot < 0)
+        lastOvershot = 0;
+    if ((int) lastOvershot > newTicks)
+        lastOvershot = newTicks;
+    //		debugprintf("overshot: %d\n", lastOvershot);
 
-//		debugprintf("time, newticks, taken = %d, %d, %d\n", time, newTicks, takenTicks);
+    //		debugprintf("time, newticks, taken = %d, %d, %d\n", time, newTicks, takenTicks);
 
-	lastEnterTime = time; // TODO: can't remember if it's intentional that this is affected by the throttle loop
-	lastEnterTicks = ticks;
-	lastEnterValid = TRUE;
+    lastEnterTime =
+        time; // TODO: can't remember if it's intentional that this is affected by the throttle loop
+    lastEnterTicks = ticks;
+    lastEnterValid = TRUE;
 }
 //	void SleepAndAccumulateOutput(DWORD sleepTicks, BOOL doSleep) // sync hack, usually not used (except when waitSyncMode is 2)
 //	{
 //		TIME_ENTER(sleepTicks, doSleep);
-//	
+//
 //		// add sleep time
 //		if(doSleep && !tasflags.fastForward)
 //			Hooks::Sleep(sleepTicks);
 //		sleepAccumTicks += sleepTicks;
-//	
+//
 //		while(true)
 //		{
 //			// calculate threshold
@@ -573,7 +574,7 @@ void DeterministicTimer::EnterFrameBoundary(DWORD framesPerSecond)
 //			int ticksOver = sleepTicksMinorAccum/framesPerSecond;
 //			if(ticksOver < 0) ticksOver = 0;
 //			sleepFrameTickThreshold += ticksOver;
-//	
+//
 //			// if sleep time exceeds threshold, output a sleep frame (AVI)
 //			if((int)sleepAccumTicks >= (int)sleepFrameTickThreshold)
 //			{
@@ -611,11 +612,9 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     //cmdprintf("SHORTTRACE: 3,120");
     //cmdprintf("SHORTTRACE: 3,10");
 
-
     //		cmdprintf("SHORTTRACE: 3,5");
     if (tasflags.framerate <= 0) // 0 framerate means disable deterministic timer
         return nonDetTimer.AddDelay(delayTicks, isSleep, timed);
-
 
     //		if(replace)
     //		{
@@ -687,8 +686,8 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
     }
 
     while (addedDelay > maxDeferredDelay)
-        //		while(addedDelay >= lastNewTicks)
-        //		while(addedDelay > lastNewTicks + 1) // note: the threshold here affects sync. but the specific value is not very important as long as it's >= newTicks. I think (lastNewTicks + 1) is always >= newTicks which is why I chose it.
+    //		while(addedDelay >= lastNewTicks)
+    //		while(addedDelay > lastNewTicks + 1) // note: the threshold here affects sync. but the specific value is not very important as long as it's >= newTicks. I think (lastNewTicks + 1) is always >= newTicks which is why I chose it.
     {
         s_isSleepEnterFB = !!isSleep;
         s_isWaitEnterFB = !isSleep;
@@ -700,9 +699,6 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
 
         //			ticksAddedSinceLastFrame += ticks - prevtu;
     }
-
-
-
 
     //		// non-deferred delay add
     //		if(delayTicks)
@@ -729,70 +725,70 @@ void DeterministicTimer::AddDelay(DWORD delayTicks, BOOL isSleep, BOOL timed, BO
 
 DeterministicTimer::DeterministicTimer()
 {
-	InitializeWithoutDependencies(/*tasflags.initialTime ? tasflags.initialTime :*/ 6000);
+    InitializeWithoutDependencies(/*tasflags.initialTime ? tasflags.initialTime :*/ 6000);
 }
 void DeterministicTimer::InitializeWithoutDependencies(DWORD startTicks)
 {
-//		fullyInitialized = false;
-	getTimes = 0;
-	ticks = startTicks;
-	ticksMinorAccum = 0;
-	lastOvershot = 0;
-	lastEnterTime = /*timeGetTime()*/0;
-	lastEnterTicks = ticks;
-	lastEnterStartTicks = ticks;
-	frameThreadId = 0;
-	for(int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
-		altGetTimes[i] = 0;
-	for(int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
-		altGetTimeLimits[i] = 10;
-	altGetTimeLimits[TIMETYPE_GETTICKCOUNT] = 150;
-	altGetTimeLimits[TIMETYPE_CRAWLHACK] = 5;
-	//altGetTimeLimits[TIMETYPE_QUERYPERFCOUNT] = 50;
-	forceAdvancedTicks = 0;
-	ticksAddedSinceLastFrame = 0;
-	warningcountdown = 100;
-	lastNewTicks = 0;
-	addedDelay = 0;
-	replacedDelay = 0;
-	lastEnterValid = 0;
-	sleepAccumTicks = 0;
-	sleepTicksMinorAccum = 0;
-	totalSleepFrames = 0;
-	//queuedAsyncAddDelay = 0;
-	replaceReserveUsed = 0;
-	nonPostponedAddedDelay = 0;
-//		disableSelfTicking = 0;
-	lastFrameIsFromDraw = 1;
+    //		fullyInitialized = false;
+    getTimes = 0;
+    ticks = startTicks;
+    ticksMinorAccum = 0;
+    lastOvershot = 0;
+    lastEnterTime = /*timeGetTime()*/ 0;
+    lastEnterTicks = ticks;
+    lastEnterStartTicks = ticks;
+    frameThreadId = 0;
+    for (int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
+        altGetTimes[i] = 0;
+    for (int i = 0; i < TIMETYPE_NUMTRACKEDTYPES; i++)
+        altGetTimeLimits[i] = 10;
+    altGetTimeLimits[TIMETYPE_GETTICKCOUNT] = 150;
+    altGetTimeLimits[TIMETYPE_CRAWLHACK] = 5;
+    //altGetTimeLimits[TIMETYPE_QUERYPERFCOUNT] = 50;
+    forceAdvancedTicks = 0;
+    ticksAddedSinceLastFrame = 0;
+    warningcountdown = 100;
+    lastNewTicks = 0;
+    addedDelay = 0;
+    replacedDelay = 0;
+    lastEnterValid = 0;
+    sleepAccumTicks = 0;
+    sleepTicksMinorAccum = 0;
+    totalSleepFrames = 0;
+    //queuedAsyncAddDelay = 0;
+    replaceReserveUsed = 0;
+    nonPostponedAddedDelay = 0;
+    //		disableSelfTicking = 0;
+    lastFrameIsFromDraw = 1;
 }
 void DeterministicTimer::Initialize(DWORD startTicks)
 {
-	ENTER();
-	InitializeWithoutDependencies(startTicks);
-	lastEnterTime = Hooks::timeGetTime();
-	OnSystemTimerRecalibrated(); // in case
-//		fullyInitialized = true;
-//		debugprintf("thread = 0x%X, framethread = 0x%X\n", frameThreadId, GetCurrentThreadId());
+    ENTER();
+    InitializeWithoutDependencies(startTicks);
+    lastEnterTime = Hooks::timeGetTime();
+    OnSystemTimerRecalibrated(); // in case
+    //		fullyInitialized = true;
+    //		debugprintf("thread = 0x%X, framethread = 0x%X\n", frameThreadId, GetCurrentThreadId());
 }
 void DeterministicTimer::OnSystemTimerRecalibrated()
 {
-	// hack, _KiUserCallbackDispatcher > _LdrpCallInitRoutine > _DllProcessAttach > _InitDevices > _TimeInit > _CalibrateTimer (winmm) calls GetTickCount...
-	// so the system time can actually jump around before all loaded dlls have been initialized
-	// and opengl's dll initialization actually does things we could interpret as rendering a frame...
-	// if lastEnterTime got set before the system time jumped, we're hosed, so let's invalidate it
-	lastEnterValid = FALSE;
-	// also TODO: hook time source maybe used by perfect cherry blossom: google for: KUSER_SHARED_DATA 0x7ffe0000 time
-	// see "getting-os-information-the-kuser_shared_data-structure/"
-	// maybe should use that (InterruptTime) if we want to get the real time, instead of calling timeGetTime.
-	// then we wouldn't have recalibration issues.
-	// but we haven't to worry about what happens if the game tries to do that too.
+    // hack, _KiUserCallbackDispatcher > _LdrpCallInitRoutine > _DllProcessAttach > _InitDevices > _TimeInit > _CalibrateTimer (winmm) calls GetTickCount...
+    // so the system time can actually jump around before all loaded dlls have been initialized
+    // and opengl's dll initialization actually does things we could interpret as rendering a frame...
+    // if lastEnterTime got set before the system time jumped, we're hosed, so let's invalidate it
+    lastEnterValid = FALSE;
+    // also TODO: hook time source maybe used by perfect cherry blossom: google for: KUSER_SHARED_DATA 0x7ffe0000 time
+    // see "getting-os-information-the-kuser_shared_data-structure/"
+    // maybe should use that (InterruptTime) if we want to get the real time, instead of calling timeGetTime.
+    // then we wouldn't have recalibration issues.
+    // but we haven't to worry about what happens if the game tries to do that too.
 }
 
 FILETIME DeterministicTimer::GetFileTime()
 {
     ENTER();
     ULARGE_INTEGER uli;
-    uli.QuadPart = (ULONGLONG)GetTicks() * 10000;
+    uli.QuadPart = (ULONGLONG) GetTicks() * 10000;
 
     // some games crash if the time is too bogus
     // (e.g. BMD crashes when you press S to take a screenshot),

@@ -2,33 +2,33 @@
 
 #include "Movie.h" // <vector> included through Movie.h
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
-#include "shared\version.h"
 #include "CustomDLGs.h"
+#include "shared\version.h"
 //#include "..\shared\ipc.h"
 
 //extern TasFlags localTASflags;
 
 Movie::Movie()
 {
-	currentFrame = 0;
-	rerecordCount = 0;
-	version = VERSION;
-	for(int i = 0; i < KL_NAMELENGTH; i++)
-	{
-		keyboardLayoutName[i] = 0;
-	}
-	author[0] = L'\0';
-	commandline[0] = L'\0';
-	headerBuilt = false;
-	fps = 0;
-	it = 0;
-	memset(fmd5, 0, sizeof(fmd5));
-	fsize = 0;
-	memset(desyncDetectionTimerValues, 0, sizeof(desyncDetectionTimerValues));
+    currentFrame = 0;
+    rerecordCount = 0;
+    version = VERSION;
+    for (int i = 0; i < KL_NAMELENGTH; i++)
+    {
+        keyboardLayoutName[i] = 0;
+    }
+    author[0] = L'\0';
+    commandline[0] = L'\0';
+    headerBuilt = false;
+    fps = 0;
+    it = 0;
+    memset(fmd5, 0, sizeof(fmd5));
+    fsize = 0;
+    memset(desyncDetectionTimerValues, 0, sizeof(desyncDetectionTimerValues));
 }
 
 // TODO: save incrementally?, and work on the format
@@ -38,324 +38,352 @@ Movie::Movie()
 #define MOVIE_TYPE_IDENTIFIER 0x02486752 // "\02HgR"
 /*static*/ bool SaveMovieToFile(Movie& movie, LPCWSTR filename)
 {
-	//bool hadUnsaved = unsaved;
-	//unsaved = false;
+    //bool hadUnsaved = unsaved;
+    //unsaved = false;
 
-	//if(movie.frames.size() == 0)
-	//	return true; // Technically we did "Save" the movie...
+    //if(movie.frames.size() == 0)
+    //	return true; // Technically we did "Save" the movie...
 
-	FILE* file = _wfopen(filename, L"wb");
-	if(!file) // File failed to open
-	{
+    FILE* file = _wfopen(filename, L"wb");
+    if (!file) // File failed to open
+    {
+        //if(errno == EACCES)
+        //{
+        //	// If for some reason the file has been set to read-only in Windows since the last save,
+        //	// we attempt to save it to a new file just as a safety-measure... because people...
+        //	int dotLocation = (wcsrchr(filename, L'.'))-filename+1; // Wohoo for using pointers as values!
+        //	WCHAR newFilename[MAX_PATH+1];
+        //	wcsncpy(newFilename, filename, dotLocation);
+        //	newFilename[dotLocation+1] = L'\0'; // Make sure the string is null-terminated before we cat it.
+        //	wcscat(newFilename, L"new.hgr\0");
 
-		//if(errno == EACCES)
-		//{
-		//	// If for some reason the file has been set to read-only in Windows since the last save,
-		//	// we attempt to save it to a new file just as a safety-measure... because people...
-		//	int dotLocation = (wcsrchr(filename, L'.'))-filename+1; // Wohoo for using pointers as values!
-		//	WCHAR newFilename[MAX_PATH+1];
-		//	wcsncpy(newFilename, filename, dotLocation);
-		//	newFilename[dotLocation+1] = L'\0'; // Make sure the string is null-terminated before we cat it.
-		//	wcscat(newFilename, L"new.hgr\0");
+        //	WCHAR str[1024];
+        //	swprintf(str, L"Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
+        //	CustomMessageBox(str, L"Warning!", MB_OK | MB_ICONWARNING);
 
-		//	WCHAR str[1024];
-		//	swprintf(str, L"Permission on \"%s\" denied, attempting to save to %s.", filename, newFilename);
-		//	CustomMessageBox(str, L"Warning!", MB_OK | MB_ICONWARNING);
+        //	file = _wfopen(newFilename, L"wb");
+        //
+        //	// Update to the new filename
+        //	wcscpy(filename, newFilename);
+        //}
 
-		//	file = _wfopen(newFilename, L"wb");
-		//	
-		//	// Update to the new filename
-		//	wcscpy(filename, newFilename);
-		//}
+        if (!file) // New file also failed OR first file failed for some other reason
+        {
+            WCHAR str[1024];
+            swprintf(str,
+                     ARRAYSIZE(str),
+                     L"Saving movie data to \"%s\" failed.\nReason: %S",
+                     filename,
+                     strerror(errno));
+            CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
+            return false;
+        }
 
-		if (!file) // New file also failed OR first file failed for some other reason
-		{
-			WCHAR str[1024];
-			swprintf(str, ARRAYSIZE(str), L"Saving movie data to \"%s\" failed.\nReason: %S", filename, strerror(errno));
-			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
-			return false;
-		}
+        //if(!filename || !*filename || strlen(filename) > MAX_PATH-10)
+        //{
+        //	debugprintf("FAILED TO SAVE MOVIE FILE.\n");
+        //	return;
+        //}
+        //char str [1024];
+        //sprintf(str, "Warning: unable to open \"%s\" for writing.\n"
+        //	"The movie will be saved to \"%s.wtf\" instead.\n", filename, filename);
+        //strcat((char*)filename, ".wtf");
+        //CustomMessageBox(str, "Movie Save Warning", MB_OK | MB_ICONWARNING);
+        //file = (filename && *filename) ? fopen(filename, "wb") : NULL;
+        //if(!file)
+        //{
+        //	debugprintf("FAILED TO SAVE MOVIE FILE.\n");
+        //	return;
+        //}
+    }
 
-		//if(!filename || !*filename || strlen(filename) > MAX_PATH-10)
-		//{
-		//	debugprintf("FAILED TO SAVE MOVIE FILE.\n");
-		//	return;
-		//}
-		//char str [1024];
-		//sprintf(str, "Warning: unable to open \"%s\" for writing.\n"
-		//	"The movie will be saved to \"%s.wtf\" instead.\n", filename, filename);
-		//strcat((char*)filename, ".wtf");
-		//CustomMessageBox(str, "Movie Save Warning", MB_OK | MB_ICONWARNING);
-		//file = (filename && *filename) ? fopen(filename, "wb") : NULL;
-		//if(!file)
-		//{
-		//	debugprintf("FAILED TO SAVE MOVIE FILE.\n");
-		//	return;
-		//}
-	}
-	
-	int identifier = MOVIE_TYPE_IDENTIFIER;
-	fwrite(&identifier, 4, 1, file);
+    int identifier = MOVIE_TYPE_IDENTIFIER;
+    fwrite(&identifier, 4, 1, file);
 
-	unsigned int length = movie.frames.size();
-	fwrite(&length, 4, 1, file);
+    unsigned int length = movie.frames.size();
+    fwrite(&length, 4, 1, file);
 
-	unsigned int rerecords = movie.rerecordCount;
-	fwrite(&rerecords, 4, 1, file);
+    unsigned int rerecords = movie.rerecordCount;
+    fwrite(&rerecords, 4, 1, file);
 
-	LPCWSTR author = movie.author;
-	unsigned int authorLen = wcslen(author);
-	fwrite(&authorLen, 4, 1, file);
-	if (authorLen) // If the author-field contains something, write that too
-	{
-		fwrite(author, authorLen, 2, file);
-	}
+    LPCWSTR author = movie.author;
+    unsigned int authorLen = wcslen(author);
+    fwrite(&authorLen, 4, 1, file);
+    if (authorLen) // If the author-field contains something, write that too
+    {
+        fwrite(author, authorLen, 2, file);
+    }
 
-	const char* keyboardLayoutName = movie.keyboardLayoutName;
-	fwrite(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
+    const char* keyboardLayoutName = movie.keyboardLayoutName;
+    fwrite(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
 
-	unsigned int fps = movie.fps;
-	fwrite(&fps, 4, 1, file);
+    unsigned int fps = movie.fps;
+    fwrite(&fps, 4, 1, file);
 
-	unsigned int it = movie.it;
-	fwrite(&it, 4, 1, file);
+    unsigned int it = movie.it;
+    fwrite(&it, 4, 1, file);
 
-	// MD5 checksum
-	fwrite(&movie.fmd5, 4, 4, file);
+    // MD5 checksum
+    fwrite(&movie.fmd5, 4, 4, file);
 
-	LONGLONG fsize = movie.fsize;
-	fwrite(&fsize, sizeof(fsize), 1, file);
+    LONGLONG fsize = movie.fsize;
+    fwrite(&fsize, sizeof(fsize), 1, file);
 
-	fwrite(&movie.desyncDetectionTimerValues, 16, 4, file);
+    fwrite(&movie.desyncDetectionTimerValues, 16, 4, file);
 
-	unsigned int version = movie.version;
-	fwrite(&version, 4, 1, file);
+    unsigned int version = movie.version;
+    fwrite(&version, 4, 1, file);
 
-	// Windows limitation for command lines are 8191 characters, program included.
-	// e.g. "C:/Program Files/games/some game/game.exe /whatever /and /beyond" cannot be more than 8191 characters in total.
-	// No commandline should need to be that long, but we should still apply a limitation of 8191-(MAX_PATH+1) instead of 160.
-	// CreateProcess has a limit of 32767 characters, which I find odd since Windows itself has a limit of 8191.
-	// -- Warepire
-	LPCWSTR commandline = movie.commandline;
-	unsigned int commandlineLen = wcslen(commandline);
-	fwrite(&commandlineLen, 4, 1, file);
-	if(commandlineLen) // If a commandline was entered, write that too.
-	{
-		fwrite(commandline, commandlineLen, 2, file);
-	}
+    // Windows limitation for command lines are 8191 characters, program included.
+    // e.g. "C:/Program Files/games/some game/game.exe /whatever /and /beyond" cannot be more than 8191 characters in total.
+    // No commandline should need to be that long, but we should still apply a limitation of 8191-(MAX_PATH+1) instead of 160.
+    // CreateProcess has a limit of 32767 characters, which I find odd since Windows itself has a limit of 8191.
+    // -- Warepire
+    LPCWSTR commandline = movie.commandline;
+    unsigned int commandlineLen = wcslen(commandline);
+    fwrite(&commandlineLen, 4, 1, file);
+    if (commandlineLen) // If a commandline was entered, write that too.
+    {
+        fwrite(commandline, commandlineLen, 2, file);
+    }
 
-	// write remaining padding before movie data
-	// Why is there an assert here?
-	// TODO: clean up this assert
-	// assert(ftell(file) <= 1024-4);
-	//while(ftell(file) < 1024)
-	//	fputc(0, file);
-	// ^^^^^^^^^^^^^^^^^^^^^^^^
-	// That is no longer valid since we have a header of variable size
-	// Perhaps we shall introduce a fixed number of null-bytes instead?
-	if(movie.frames.size() > 0)
-	{
-		unsigned char* input_buffer = (unsigned char*)malloc(4+1+256+13+4*sizeof(XINPUT_GAMEPAD)+1); // Max size of a frame input.
-		for (unsigned int i=0; i<movie.frames.size(); i++){
-			int size = movie.frames[i].inputs.serialize(input_buffer);
-			fwrite(input_buffer, 1, size, file);
-		}
-	}
+    // write remaining padding before movie data
+    // Why is there an assert here?
+    // TODO: clean up this assert
+    // assert(ftell(file) <= 1024-4);
+    //while(ftell(file) < 1024)
+    //	fputc(0, file);
+    // ^^^^^^^^^^^^^^^^^^^^^^^^
+    // That is no longer valid since we have a header of variable size
+    // Perhaps we shall introduce a fixed number of null-bytes instead?
+    if (movie.frames.size() > 0)
+    {
+        unsigned char* input_buffer = (unsigned char*) malloc(
+            4 + 1 + 256 + 13 + 4 * sizeof(XINPUT_GAMEPAD) + 1); // Max size of a frame input.
+        for (unsigned int i = 0; i < movie.frames.size(); i++)
+        {
+            int size = movie.frames[i].inputs.serialize(input_buffer);
+            fwrite(input_buffer, 1, size, file);
+        }
+    }
 
-	fclose(file);
+    fclose(file);
 
-	return true;
+    return true;
 }
 
 // NOTE: FPS and InitialTime used to have -1, we don't know why and we removed it as we made the values unsigned.
 // If problems arise, revert back to old behavior!
 // returns 1 on success, 0 on failure, -1 on cancel
-/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, LPCWSTR filename/*, bool forPreview*/)
+/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, LPCWSTR filename /*, bool forPreview*/)
 {
-	//if(unsaved && forPreview)
-	//	return 0; // never replace movie data with a preview if we haven't saved it yet
+    //if(unsaved && forPreview)
+    //	return 0; // never replace movie data with a preview if we haven't saved it yet
 
-	FILE* file = _wfopen(filename, L"rb");
-	if(!file)
-	{
-		WCHAR str[1024];
-		swprintf(str, ARRAYSIZE(str), L"The movie file '%s' could not be opened.\nReason: %S", filename, strerror(errno));
-		CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
-		return false;
-	}
-	
-	unsigned int identifier;
-	fread(&identifier, 4, 1, file);
+    FILE* file = _wfopen(filename, L"rb");
+    if (!file)
+    {
+        WCHAR str[1024];
+        swprintf(str,
+                 ARRAYSIZE(str),
+                 L"The movie file '%s' could not be opened.\nReason: %S",
+                 filename,
+                 strerror(errno));
+        CustomMessageBox(str, L"Error!", (MB_OK | MB_ICONERROR));
+        return false;
+    }
 
-	if(identifier != MOVIE_TYPE_IDENTIFIER)
-	{
-		fclose(file);
-		WCHAR str[1024];
-		swprintf(str, ARRAYSIZE(str), L"The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass Resurrection.", filename);
-		CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
-		return false;
-	}
+    unsigned int identifier;
+    fread(&identifier, 4, 1, file);
 
-	unsigned int length;
-	fread(&length, 4, 1, file);
+    if (identifier != MOVIE_TYPE_IDENTIFIER)
+    {
+        fclose(file);
+        WCHAR str[1024];
+        swprintf(str,
+                 ARRAYSIZE(str),
+                 L"The movie file '%s' is not a valid Hourglass Resurrection movie.\nProbable "
+                 L"causes are that the movie file has become corrupt\nor that it wasn't made with "
+                 L"Hourglass Resurrection.",
+                 filename);
+        CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
+        return false;
+    }
 
-	unsigned int rerecords;
-	fread(&rerecords, 4, 1, file);
+    unsigned int length;
+    fread(&length, 4, 1, file);
 
-	unsigned int authorLen;
-	fread(&authorLen, 4, 1, file);
-	LPWSTR author = nullptr;
-	if(authorLen) // If this is non-zero, there is an author name in the movie.
-	{
-		if(authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
-		{
-			fclose(file);
-			WCHAR str[1024];
-			swprintf(str, ARRAYSIZE(str), L"The movie file '%s' cannot be loaded because the author name is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
-			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
-			return false;
-		}
-		author = new WCHAR[authorLen+1]; // Need room for the null-termination.
-		fread(author, authorLen, 2, file);
-		author[authorLen] = '\0'; // Make sure the string is null-terminated.
-	}
-	
-	char keyboardLayoutName[KL_NAMELENGTH];// = movie.keyboardLayoutName;
-	fread(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
+    unsigned int rerecords;
+    fread(&rerecords, 4, 1, file);
 
-	unsigned int fps = 0;
-	fread(&fps, 4, 1, file);
+    unsigned int authorLen;
+    fread(&authorLen, 4, 1, file);
+    LPWSTR author = nullptr;
+    if (authorLen) // If this is non-zero, there is an author name in the movie.
+    {
+        if (authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
+        {
+            fclose(file);
+            WCHAR str[1024];
+            swprintf(str,
+                     ARRAYSIZE(str),
+                     L"The movie file '%s' cannot be loaded because the author name is too "
+                     L"long.\nProbable causes are that the movie file has become corrupt\nor that "
+                     L"it wasn't made with Hourglass.",
+                     filename);
+            CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
+            return false;
+        }
+        author = new WCHAR[authorLen + 1]; // Need room for the null-termination.
+        fread(author, authorLen, 2, file);
+        author[authorLen] = '\0'; // Make sure the string is null-terminated.
+    }
 
-	unsigned int it = 0;
-	fread(&it, 4, 1, file);
+    char keyboardLayoutName[KL_NAMELENGTH]; // = movie.keyboardLayoutName;
+    fread(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
 
-	unsigned int fmd5[4] = { 0 };
-	fread(fmd5, 4, 4, file);
+    unsigned int fps = 0;
+    fread(&fps, 4, 1, file);
 
-	LONGLONG fsize = 0;
-	fread(&fsize, sizeof(fsize), 1, file);
+    unsigned int it = 0;
+    fread(&it, 4, 1, file);
 
-	int desyncDetectionTimerValues[16];
-	fread(&desyncDetectionTimerValues, 16, 4, file);
+    unsigned int fmd5[4] = {0};
+    fread(fmd5, 4, 4, file);
 
-	unsigned int version;
-	fread(&version, 4, 1, file);
-	/*if(version == 0)
+    LONGLONG fsize = 0;
+    fread(&fsize, sizeof(fsize), 1, file);
+
+    int desyncDetectionTimerValues[16];
+    fread(&desyncDetectionTimerValues, 16, 4, file);
+
+    unsigned int version;
+    fread(&version, 4, 1, file);
+    /*if(version == 0)
 		if(movie.desyncDetectionTimerValues[0])
 			version = 51; // or 49
 		else
 			version = 39; // or older*/
 
-	unsigned int commandlineLen;
-	fread(&commandlineLen, 4, 1, file);
-	LPWSTR commandline = nullptr;//= movie.commandline;
-	if(commandlineLen) // There's a command line in the movie file.
-	{
-		if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.
-		{
-			fclose(file);
-			if (author)
-			{
-				delete[] author; // Prevent memory leak
-			}
-			WCHAR str[1024];
-			swprintf(str, ARRAYSIZE(str), L"The movie file '%s' cannot be loaded because the command line is too long.\nProbable causes are that the movie file has become corrupt\nor that it wasn't made with Hourglass.", filename);
-			CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
-			return false;
-		}
-		commandline = new WCHAR[commandlineLen+1];
-		fread(commandline, commandlineLen, 2, file);
-		commandline[commandlineLen] = '\0'; // Ensure proper null-termination.
-	}
-	//fread(cmdline, 1, 160, file);
-	//cmdline[strlen(cmdline)] = '\0'; // properly null-terminate the string.
-	//cmdline[min(ARRAYSIZE(cmdline),ARRAYSIZE(commandline))-1] = 0;
+    unsigned int commandlineLen;
+    fread(&commandlineLen, 4, 1, file);
+    LPWSTR commandline = nullptr; //= movie.commandline;
+    if (commandlineLen) // There's a command line in the movie file.
+    {
+        if (commandlineLen
+            > (8192 - 1)
+                  - (MAX_PATH
+                     + 1)) // We have exceeded the maximum allowed command line. Something's wrong.
+        {
+            fclose(file);
+            if (author)
+            {
+                delete[] author; // Prevent memory leak
+            }
+            WCHAR str[1024];
+            swprintf(str,
+                     ARRAYSIZE(str),
+                     L"The movie file '%s' cannot be loaded because the command line is too "
+                     L"long.\nProbable causes are that the movie file has become corrupt\nor that "
+                     L"it wasn't made with Hourglass.",
+                     filename);
+            CustomMessageBox(str, L"Error!", MB_OK | MB_ICONERROR);
+            return false;
+        }
+        commandline = new WCHAR[commandlineLen + 1];
+        fread(commandline, commandlineLen, 2, file);
+        commandline[commandlineLen] = '\0'; // Ensure proper null-termination.
+    }
+    //fread(cmdline, 1, 160, file);
+    //cmdline[strlen(cmdline)] = '\0'; // properly null-terminate the string.
+    //cmdline[min(ARRAYSIZE(cmdline),ARRAYSIZE(commandline))-1] = 0;
 
+    //bool failed = false;
+    if (length > 0) // && magic == MAGIC)
+    {
+        // skip remaining padding before movie data
+        // Why is there an assert here?
+        // TODO: clean up this assert
+        // assert(ftell(file) <= 1024-4);
+        //	fseek(file, 1024, SEEK_SET);
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // The above line is no longer accurate since the header now is of variable size.
+        // Perhaps we should add a fixed number of null-bytes?
 
-	//bool failed = false;
-	if(length > 0)// && magic == MAGIC)
-	{
-		// skip remaining padding before movie data
-		// Why is there an assert here?
-		// TODO: clean up this assert
-		// assert(ftell(file) <= 1024-4);
-	//	fseek(file, 1024, SEEK_SET);
-		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-		// The above line is no longer accurate since the header now is of variable size.
-		// Perhaps we should add a fixed number of null-bytes?
+        movie.currentFrame = 0;
+        movie.rerecordCount = /*(localTASflags.playback || forPreview) ? */ rerecords; // : 0;
+        movie.frames.resize(length);
+        movie.fps = fps;
+        movie.it = it;
 
-		movie.currentFrame = 0;
-		movie.rerecordCount = /*(localTASflags.playback || forPreview) ? */rerecords;// : 0;
-		movie.frames.resize(length);
-		movie.fps = fps;
-		movie.it = it;
-		
-		memcpy(movie.fmd5, fmd5, 4*4);
+        memcpy(movie.fmd5, fmd5, 4 * 4);
 
-		movie.fsize = fsize;
+        movie.fsize = fsize;
 
-		// We've gotten far enough, it's safe to put these values in the movie struct
-		if(author)
-		{
-			wcscpy(movie.author, author);
-		}
-		memcpy(movie.desyncDetectionTimerValues, desyncDetectionTimerValues, (sizeof(int)*16));
+        // We've gotten far enough, it's safe to put these values in the movie struct
+        if (author)
+        {
+            wcscpy(movie.author, author);
+        }
+        memcpy(movie.desyncDetectionTimerValues, desyncDetectionTimerValues, (sizeof(int) * 16));
 
-		if(commandline)
-		{
-			wcscpy(movie.commandline, commandline);
-		}
+        if (commandline)
+        {
+            wcscpy(movie.commandline, commandline);
+        }
 
-		// We now import the inputs into the movie.frames structure.
-		movie.frames.clear();
+        // We now import the inputs into the movie.frames structure.
+        movie.frames.clear();
 
-		// First, we determine how long is the rest of the file (might be improved).
-		long current_file_pos = ftell(file); // Current position in file.
-		fseek(file, 0L, SEEK_END); // Seek to the end of file.
-		long end_file_pos = ftell(file); // Last position in file.
-		fseek(file, current_file_pos, SEEK_SET); // Go back to the previous position.
-		long file_size = end_file_pos - current_file_pos; // Length of the remaining part of the file.
+        // First, we determine how long is the rest of the file (might be improved).
+        long current_file_pos = ftell(file); // Current position in file.
+        fseek(file, 0L, SEEK_END); // Seek to the end of file.
+        long end_file_pos = ftell(file); // Last position in file.
+        fseek(file, current_file_pos, SEEK_SET); // Go back to the previous position.
+        long file_size =
+            end_file_pos - current_file_pos; // Length of the remaining part of the file.
 
-		// Then, we import the whole rest of the file into a buffer.
-		unsigned char* all_inputs = (unsigned char*)malloc(file_size);
-		fread(all_inputs, 1, file_size, file);
-		long current_pos = 0;
-		while(current_pos < file_size){
-			MovieFrame mf;
-			int size = mf.inputs.unserialize(all_inputs+current_pos);
-			movie.frames.push_back(mf);
-			current_pos += size;
-		}
-		free(all_inputs);
-	}
-	else // empty movie file... do we really need this anymore? I mean, it would fail earlier if there was a problem.
-	{
-		movie.currentFrame = 0;
-		movie.rerecordCount = 0;
-		movie.frames.clear();
-		movie.version = VERSION;
-		//failed = true;
-	}
+        // Then, we import the whole rest of the file into a buffer.
+        unsigned char* all_inputs = (unsigned char*) malloc(file_size);
+        fread(all_inputs, 1, file_size, file);
+        long current_pos = 0;
+        while (current_pos < file_size)
+        {
+            MovieFrame mf;
+            int size = mf.inputs.unserialize(all_inputs + current_pos);
+            movie.frames.push_back(mf);
+            current_pos += size;
+        }
+        free(all_inputs);
+    }
+    else // empty movie file... do we really need this anymore? I mean, it would fail earlier if there was a problem.
+    {
+        movie.currentFrame = 0;
+        movie.rerecordCount = 0;
+        movie.frames.clear();
+        movie.version = VERSION;
+        //failed = true;
+    }
 
-	//if(!forPreview)
-	//	unsaved = false; // either we just opened the movie and have no changes to save yet, or we just failed and have nothing to save at all
-	fclose(file);
+    //if(!forPreview)
+    //	unsaved = false; // either we just opened the movie and have no changes to save yet, or we just failed and have nothing to save at all
+    fclose(file);
 
-	/*if(failed)
+    /*if(failed)
 	{
 		if(localTASflags.playback && !forPreview)
 			CustomMessageBox("The movie file is invalid or empty.", "Unable to play movie", MB_OK | MB_ICONERROR);
 		return 0;
 	}*/
 
-	/*if(!localTASflags.playback && !forPreview && (length + rerecords*4 > 1800))
+    /*if(!localTASflags.playback && !forPreview && (length + rerecords*4 > 1800))
 	{
 		int result = CustomMessageBox("Really record over this movie?", "Record Movie", MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON1);
 		if(result == IDCANCEL)
 			return -1;
 	}*/
 
-	/*if(fpsp1 > 0 && (localTASflags.playback || forPreview))
+    /*if(fpsp1 > 0 && (localTASflags.playback || forPreview))
 	{
 		DWORD movieFramerate = fpsp1 - 1;
 		if(localTASflags.playback && !forPreview && movieFramerate != localTASflags.framerate)
@@ -372,7 +400,7 @@ Movie::Movie()
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_FPS), str);
 	}*/
 
-	/*if(localTASflags.playback || forPreview)
+    /*if(localTASflags.playback || forPreview)
 	{
 		DWORD movieInitialTime = itp1 ? (itp1 - 1) : 6000;
 		if(localTASflags.playback && !forPreview && movieInitialTime != localTASflags.initialTime)
@@ -389,7 +417,7 @@ Movie::Movie()
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SYSTEMCLOCK), str);
 	}*/
 
-	/*if(localTASflags.playback && !forPreview && crc && crcVerifyEnabled)
+    /*if(localTASflags.playback && !forPreview && crc && crcVerifyEnabled)
 	{
 		int curcrc = CalcExeCrc();
 		if(crc != curcrc)
@@ -415,12 +443,12 @@ Movie::Movie()
 		}
 	}*/
 
-	// TODO: Find out what forPreview is!
-//	if(localTASflags.playback && !forPreview && version != VERSION)
-//	{
-//		char movver [64];
-//		sprintf(movver, "v.%d", version);
-		/*if(version == 51)
+    // TODO: Find out what forPreview is!
+    //	if(localTASflags.playback && !forPreview && version != VERSION)
+    //	{
+    //		char movver [64];
+    //		sprintf(movver, "v.%d", version);
+    /*if(version == 51)
 			strcpy(mvvs, "r49 or r51");
 		else if(version == 39)
 			strcpy(mvvs, "r39 or older");
@@ -429,77 +457,77 @@ Movie::Movie()
 		else
 			sprintf(mvvs, "r%d", version);*/
 
-		//int myVersion = VERSION;
-//		char prgver [64];
-//		sprintf(prgver, "v.%d", (unsigned int)VERSION);
-		/*if((int)VERSION == -1)
+    //int myVersion = VERSION;
+    //		char prgver [64];
+    //		sprintf(prgver, "v.%d", (unsigned int)VERSION);
+    /*if((int)VERSION == -1)
 			strcpy(myvs, "unknown version (r57 or later)");
 		else
 		{
 			sprintf(myvs, "r%d", myVersion);
 		}*/
 
-		//bool probableDesyncs = false;
-		//if(version != VERSION /*|| version < myVersion-40*/) // not very scientific here. change as needed.
-		//	probableDesyncs = true;
-		// in the future: if it's known whether certain versions sync with the current version, set probablyDesync depending on the version numbers.
-		// and maybe add more specific warning messages, if warranted
+    //bool probableDesyncs = false;
+    //if(version != VERSION /*|| version < myVersion-40*/) // not very scientific here. change as needed.
+    //	probableDesyncs = true;
+    // in the future: if it's known whether certain versions sync with the current version, set probablyDesync depending on the version numbers.
+    // and maybe add more specific warning messages, if warranted
 
-		//bool assumeOK = false;
-//#if SRCVERSION >= 71 && SRCVERSION <= 78 // a range of definitely sync-compatible versions
-//		if(version >= 71 && version < SRCVERSION)
-//			assumeOK = true;
-//#endif
+    //bool assumeOK = false;
+    //#if SRCVERSION >= 71 && SRCVERSION <= 78 // a range of definitely sync-compatible versions
+    //		if(version >= 71 && version < SRCVERSION)
+    //			assumeOK = true;
+    //#endif
 
-//		char str [1024];
-//		sprintf(str,
-//			"This movie was recorded using a different version of Hourglass.\n"
-//			"\n"
-//			"Movie's version: %s\n"
-//			"Program version: %s\n"
-//			"\n"
-//			"%s\n"
-//			"%s\n"
-//			"\n"
-//			"%s\n"
-//			"%s\n",
-//			movver, prgver,
-//			// Merge the strings below?
-//			/*probableDesyncs?*/"This may lead to the movie desyncing.",//:"This could cause desyncs if there were sync changes in-between those versions.",
-//			/*(version != VERSION)?*/"If it would desync you might want to use the movies version of Hourglass.",//:"",
-//			/*(version != VERSION)?*/"Do you want to try playing back the movie anyway?",//:"",
-//			/*(version != VERSION)?*/"(Click \"Yes\" to continue, or click \"No\" to stop loading the movie)"//:""
-//		);
-		/*int result;
+    //		char str [1024];
+    //		sprintf(str,
+    //			"This movie was recorded using a different version of Hourglass.\n"
+    //			"\n"
+    //			"Movie's version: %s\n"
+    //			"Program version: %s\n"
+    //			"\n"
+    //			"%s\n"
+    //			"%s\n"
+    //			"\n"
+    //			"%s\n"
+    //			"%s\n",
+    //			movver, prgver,
+    //			// Merge the strings below?
+    //			/*probableDesyncs?*/"This may lead to the movie desyncing.",//:"This could cause desyncs if there were sync changes in-between those versions.",
+    //			/*(version != VERSION)?*/"If it would desync you might want to use the movies version of Hourglass.",//:"",
+    //			/*(version != VERSION)?*/"Do you want to try playing back the movie anyway?",//:"",
+    //			/*(version != VERSION)?*/"(Click \"Yes\" to continue, or click \"No\" to stop loading the movie)"//:""
+    //		);
+    /*int result;
 		if(assumeOK)
 			result = IDYES;
 		else*/
-//		int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
-		
-		/*if(result == IDYES)
+    //		int result = CustomMessageBox(str, "Warning!", (MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1)); // MS_DEFBUTTON1 marks "Yes" as the default choice.
+
+    /*if(result == IDYES)
 			movie.version = VERSION;
 		else if(result == IDNO)
 			movie.version = version;
 		else //IDCANCEL
 			return -1;*/
-//		if(result == IDNO) return -1;
+    //		if(result == IDNO) return -1;
 
-//		movie.version = VERSION;
-		
-		/*else
+    //		movie.version = VERSION;
+
+    /*else
 		{
 			if(result == IDYES)
 				movie.version = version;
 			else //IDNO
 				return -1;
 		}*/
-//	}
-//	else
-//	{
-//		movie.version = version;
-//	}
+    //	}
+    //	else
+    //	{
+    //		movie.version = version;
+    //	}
 
-	/*if(localTASflags.playback || forPreview)
+    /*if(localTASflags.playback || forPreview)
 	{		
 		bool useMovieCommandline = true;
 		if(localTASflags.playback && !forPreview && strcmp(commandline, cmdline))
@@ -515,15 +543,15 @@ Movie::Movie()
 
 		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_COMMANDLINE), commandline);
 	}*/
-	
-	if (commandline)
-	{
-		delete[] commandline;
-	}
-	if (author)
-	{
-		delete[] author;
-	}
 
-	return true;
+    if (commandline)
+    {
+        delete[] commandline;
+    }
+    if (author)
+    {
+        delete[] author;
+    }
+
+    return true;
 }

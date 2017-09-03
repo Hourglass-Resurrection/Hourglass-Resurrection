@@ -1,10 +1,10 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#include "../wintasee.h"
-#include "../tls.h"
-#include "shared/winutil.h"
 #include <windowsx.h>
+#include "../tls.h"
+#include "../wintasee.h"
+#include "shared/winutil.h"
 
 #include "../phasedetection.h"
 //static PhaseDetector s_gdiPhaseDetector;
@@ -20,24 +20,23 @@ namespace Hooks
     bool PresentOGLD3D();
     void FakeBroadcastDisplayChange(int width, int height, int depth);
 
-
     static void FrameBoundaryDIBitsToAVI(const void* bits, const BITMAPINFO& bmi)
     {
-        DDSURFACEDESC desc = { sizeof(DDSURFACEDESC) };
+        DDSURFACEDESC desc = {sizeof(DDSURFACEDESC)};
         desc.lpSurface = const_cast<LPVOID>(bits);
         desc.dwWidth = bmi.bmiHeader.biWidth;
         desc.dwHeight = bmi.bmiHeader.biHeight;
         desc.lPitch = bmi.bmiHeader.biWidth * (bmi.bmiHeader.biBitCount >> 3);
         // correct for upside-down bitmaps.
-        if ((LONG)desc.dwHeight < 0)
+        if ((LONG) desc.dwHeight < 0)
         {
             // FillFrame won't understand negative height.
-            desc.dwHeight = -(LONG)desc.dwHeight;
+            desc.dwHeight = -(LONG) desc.dwHeight;
         }
         else
         {
             // give WriteAVIFrame negative pitch.
-            (char*&)desc.lpSurface += (desc.dwHeight - 1) * desc.lPitch;
+            (char*&) desc.lpSurface += (desc.dwHeight - 1) * desc.lPitch;
             desc.lPitch = -desc.lPitch;
         }
         desc.ddpfPixelFormat.dwRGBBitCount = bmi.bmiHeader.biBitCount;
@@ -59,7 +58,8 @@ namespace Hooks
                 desc.ddpfPixelFormat.dwGBitMask = 0x03E0;
                 desc.ddpfPixelFormat.dwBBitMask = 0x001F;
                 break;
-            case 8: {
+            case 8:
+            {
                 int numEntries = 256;
                 if (bmi.bmiHeader.biClrUsed)
                     numEntries = std::min<DWORD>(256, bmi.bmiHeader.biClrUsed);
@@ -70,7 +70,8 @@ namespace Hooks
                     activePalette[i].peRed = bmi.bmiColors[i].rgbRed;
                     activePalette[i].peFlags = bmi.bmiColors[i].rgbReserved;
                 }
-            }	break;
+            }
+            break;
             default:
                 valid = false;
                 break;
@@ -78,9 +79,9 @@ namespace Hooks
             break;
         case BI_BITFIELDS:
             // probably RGB565
-            desc.ddpfPixelFormat.dwRBitMask = 0[(DWORD*)bmi.bmiColors];
-            desc.ddpfPixelFormat.dwGBitMask = 1[(DWORD*)bmi.bmiColors];
-            desc.ddpfPixelFormat.dwBBitMask = 2[(DWORD*)bmi.bmiColors];
+            desc.ddpfPixelFormat.dwRBitMask = 0 [(DWORD*) bmi.bmiColors];
+            desc.ddpfPixelFormat.dwGBitMask = 1 [(DWORD*) bmi.bmiColors];
+            desc.ddpfPixelFormat.dwBBitMask = 2 [(DWORD*) bmi.bmiColors];
             break;
         default:
             valid = false;
@@ -111,26 +112,27 @@ namespace Hooks
     {
 #ifdef UNSELECT_BEFORE_HDC_CAPTURE
         // the docs say: "The bitmap identified by the hbmp parameter must not be selected into a device context when the application calls this function."
-        HBITMAP bitmap = (HBITMAP)SelectObject(hdc, CreateCompatibleBitmap(hdc, 1, 1));
+        HBITMAP bitmap = (HBITMAP) SelectObject(hdc, CreateCompatibleBitmap(hdc, 1, 1));
 #else
         // but this appears to work fine and it's probably at least a little bit faster, so...
-        HBITMAP bitmap = (HBITMAP)GetCurrentObject(hdc, OBJ_BITMAP);
+        HBITMAP bitmap = (HBITMAP) GetCurrentObject(hdc, OBJ_BITMAP);
 #endif
 
-        FULLBITMAPINFO fbmi = { sizeof(BITMAPINFOHEADER) };
-        BITMAPINFO& bmi = *(BITMAPINFO*)&fbmi;
+        FULLBITMAPINFO fbmi = {sizeof(BITMAPINFOHEADER)};
+        BITMAPINFO& bmi = *(BITMAPINFO*) &fbmi;
         GetDIBits(hdc, bitmap, 0, 0, 0, &bmi, DIB_RGB_COLORS);
 
         static char* bits = NULL;
         static unsigned int bitsAllocated = 0;
         if (bitsAllocated < bmi.bmiHeader.biSizeImage)
         {
-            bits = (char*)realloc(bits, bmi.bmiHeader.biSizeImage);
+            bits = (char*) realloc(bits, bmi.bmiHeader.biSizeImage);
             bitsAllocated = bmi.bmiHeader.biSizeImage;
         }
 
         int height = bmi.bmiHeader.biHeight;
-        if (height < 0) height = -height;
+        if (height < 0)
+            height = -height;
 
         GetDIBits(hdc, bitmap, 0, height, bits, &bmi, DIB_RGB_COLORS);
         FrameBoundaryDIBitsToAVI(bits, bmi);
@@ -146,18 +148,19 @@ namespace Hooks
     {
 #ifdef UNSELECT_BEFORE_HDC_CAPTURE
         // the docs say: "The bitmap identified by the hbmp parameter must not be selected into a device context when the application calls this function."
-        HBITMAP bitmap = (HBITMAP)SelectObject(hdc, CreateCompatibleBitmap(hdc, 1, 1));
+        HBITMAP bitmap = (HBITMAP) SelectObject(hdc, CreateCompatibleBitmap(hdc, 1, 1));
 #else
         // but this appears to work fine and it's probably at least a little bit faster, so...
-        HBITMAP bitmap = (HBITMAP)GetCurrentObject(hdc, OBJ_BITMAP);
+        HBITMAP bitmap = (HBITMAP) GetCurrentObject(hdc, OBJ_BITMAP);
 #endif
 
-        BITMAPINFO bmi = { sizeof(BITMAPINFOHEADER) };
+        BITMAPINFO bmi = {sizeof(BITMAPINFOHEADER)};
         GetDIBits(hdc, bitmap, 0, 0, 0, &bmi, DIB_RGB_COLORS);
 
         int width = bmi.bmiHeader.biWidth;
         int height = bmi.bmiHeader.biHeight;
-        if (height < 0) height = -height;
+        if (height < 0)
+            height = -height;
 
         bool bigEnough = (width >= gdiFrameBigEnoughWidth && height >= gdiFrameBigEnoughHeight);
 
@@ -167,8 +170,6 @@ namespace Hooks
 
         return bigEnough;
     }
-
-
 
     int depth_SwapBuffers = 0;
     HOOK_FUNCTION(BOOL, WINAPI, SwapBuffers, HDC hdc);
@@ -194,7 +195,7 @@ namespace Hooks
             // maybe this branch is just broken?
             // rescue: the beagles crashes with no clear callstack if we get here.
             // disabled for now.
-                    //SwapBuffers(hdc);
+            //SwapBuffers(hdc);
         }
         depth_SwapBuffers--;
 
@@ -202,42 +203,48 @@ namespace Hooks
         return TRUE;
     }
 
-
-
-
     void RescaleRect(RECT& rect, RECT from, RECT to)
     {
-        rect.left = ((rect.left - from.left) * (to.right - to.left)) / (from.right - from.left) + to.left;
-        rect.top = ((rect.top - from.top)  * (to.bottom - to.top)) / (from.bottom - from.top) + to.top;
-        rect.right = ((rect.right - from.left) * (to.right - to.left)) / (from.right - from.left) + to.left;
-        rect.bottom = ((rect.bottom - from.top)  * (to.bottom - to.top)) / (from.bottom - from.top) + to.top;
+        rect.left =
+            ((rect.left - from.left) * (to.right - to.left)) / (from.right - from.left) + to.left;
+        rect.top =
+            ((rect.top - from.top) * (to.bottom - to.top)) / (from.bottom - from.top) + to.top;
+        rect.right =
+            ((rect.right - from.left) * (to.right - to.left)) / (from.right - from.left) + to.left;
+        rect.bottom =
+            ((rect.bottom - from.top) * (to.bottom - to.top)) / (from.bottom - from.top) + to.top;
     }
-
-
-
-
 
     static HDC s_hdcSrcSaved;
     static HDC s_hdcDstSaved;
     static bool s_gdiPendingRefresh;
     bool RedrawScreenGDI();
 
-
-    HOOK_FUNCTION(BOOL, WINAPI, StretchBlt,
-        HDC hdcDest,
-        int nXOriginDest, int nYOriginDest,
-        int nWidthDest, int nHeightDest,
-        HDC hdcSrc,
-        int nXOriginSrc, int nYOriginSrc,
-        int nWidthSrc, int nHeightSrc,
-        DWORD dwRop);
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  StretchBlt,
+                  HDC hdcDest,
+                  int nXOriginDest,
+                  int nYOriginDest,
+                  int nWidthDest,
+                  int nHeightDest,
+                  HDC hdcSrc,
+                  int nXOriginSrc,
+                  int nYOriginSrc,
+                  int nWidthSrc,
+                  int nHeightSrc,
+                  DWORD dwRop);
     HOOKFUNC BOOL WINAPI MyStretchBlt(HDC hdcDest,
-            int nXOriginDest, int nYOriginDest,
-            int nWidthDest, int nHeightDest,
-            HDC hdcSrc,
-            int nXOriginSrc, int nYOriginSrc,
-            int nWidthSrc, int nHeightSrc,
-            DWORD dwRop)
+                                      int nXOriginDest,
+                                      int nYOriginDest,
+                                      int nWidthDest,
+                                      int nHeightDest,
+                                      HDC hdcSrc,
+                                      int nXOriginSrc,
+                                      int nYOriginSrc,
+                                      int nWidthSrc,
+                                      int nHeightSrc,
+                                      DWORD dwRop)
     {
         bool isFrameBoundary = false;
         if (!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)
@@ -248,9 +255,11 @@ namespace Hooks
                 if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
                 {
                     if ((/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(nXOriginDest,nYOriginDest))
-                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
+                        ||*/ tls.peekedMessage)
+                        && VerifyIsTrustedCaller())
                     {
-                        if ((nWidthSrc >= gdiFrameBigEnoughWidth && nHeightSrc >= gdiFrameBigEnoughHeight)
+                        if ((nWidthSrc >= gdiFrameBigEnoughWidth
+                             && nHeightSrc >= gdiFrameBigEnoughHeight)
                             || HDCSizeBigEnoughForFrameBoundary(hdcSrc))
                         {
                             isFrameBoundary = true;
@@ -262,7 +271,6 @@ namespace Hooks
 
         ENTER();
 
-
         BOOL rv = TRUE;
         if (!ShouldSkipDrawing(false, WindowFromDC(hdcDest) != 0))
         {
@@ -272,7 +280,17 @@ namespace Hooks
                 RedrawScreenGDI();
                 redrawingScreen = false;
             }
-            rv = StretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, hdcSrc, nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc, dwRop);
+            rv = StretchBlt(hdcDest,
+                            nXOriginDest,
+                            nYOriginDest,
+                            nWidthDest,
+                            nHeightDest,
+                            hdcSrc,
+                            nXOriginSrc,
+                            nYOriginSrc,
+                            nWidthSrc,
+                            nHeightSrc,
+                            dwRop);
         }
         else
             s_gdiPendingRefresh = true;
@@ -290,19 +308,27 @@ namespace Hooks
 
         return rv;
     }
-    HOOK_FUNCTION(BOOL, WINAPI, BitBlt,
-        HDC hdcDest,
-        int nXDest, int nYDest,
-        int nWidth, int nHeight,
-        HDC hdcSrc,
-        int nXSrc, int nYSrc,
-        DWORD dwRop);
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  BitBlt,
+                  HDC hdcDest,
+                  int nXDest,
+                  int nYDest,
+                  int nWidth,
+                  int nHeight,
+                  HDC hdcSrc,
+                  int nXSrc,
+                  int nYSrc,
+                  DWORD dwRop);
     HOOKFUNC BOOL WINAPI MyBitBlt(HDC hdcDest,
-            int nXDest, int nYDest,
-            int nWidth, int nHeight,
-            HDC hdcSrc,
-            int nXSrc, int nYSrc,
-            DWORD dwRop)
+                                  int nXDest,
+                                  int nYDest,
+                                  int nWidth,
+                                  int nHeight,
+                                  HDC hdcSrc,
+                                  int nXSrc,
+                                  int nYSrc,
+                                  DWORD dwRop)
     {
         bool isFrameBoundary = false;
         if (!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)
@@ -313,7 +339,8 @@ namespace Hooks
                 if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
                 {
                     if ((/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(nXDest,nYDest))
-                        ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
+                        ||*/ tls.peekedMessage)
+                        && VerifyIsTrustedCaller())
                     {
                         if ((nWidth >= gdiFrameBigEnoughWidth && nHeight >= gdiFrameBigEnoughHeight)
                             || HDCSizeBigEnoughForFrameBoundary(hdcSrc))
@@ -326,8 +353,6 @@ namespace Hooks
         }
 
         ENTER(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-
-
 
         BOOL rv = TRUE;
         if (!ShouldSkipDrawing(false, WindowFromDC(hdcDest) != 0))
@@ -346,9 +371,18 @@ namespace Hooks
             {
                 HWND hwnd = WindowFromDC(hdcDest);
                 RECT realRect;
-                if (!GetClientRect(hwnd, &realRect) || (realRect.right == fakeDisplayWidth && realRect.bottom == fakeDisplayHeight))
+                if (!GetClientRect(hwnd, &realRect)
+                    || (realRect.right == fakeDisplayWidth && realRect.bottom == fakeDisplayHeight))
                 {
-                    rv = BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+                    rv = BitBlt(hdcDest,
+                                nXDest,
+                                nYDest,
+                                nWidth,
+                                nHeight,
+                                hdcSrc,
+                                nXSrc,
+                                nYSrc,
+                                dwRop);
                 }
                 else
                 {
@@ -364,10 +398,20 @@ namespace Hooks
                     }
                     // FIXME this feature actually broke, it's drawing at 100% size again no matter the window size,
                     // it probably broke because of extra hooking of functions like GetClientRect.
-                    RECT dstRect = { nXDest, nYDest, nXDest + nWidth, nYDest + nHeight };
-                    RECT fakeRect = { 0, 0, fakeDisplayWidth, fakeDisplayHeight };
+                    RECT dstRect = {nXDest, nYDest, nXDest + nWidth, nYDest + nHeight};
+                    RECT fakeRect = {0, 0, fakeDisplayWidth, fakeDisplayHeight};
                     RescaleRect(dstRect, fakeRect, realRect);
-                    rv = StretchBlt(hdc, dstRect.left, dstRect.top, dstRect.right - dstRect.left, dstRect.bottom - dstRect.top, hdcSrc, nXSrc, nYSrc, nWidth, nHeight, dwRop);
+                    rv = StretchBlt(hdc,
+                                    dstRect.left,
+                                    dstRect.top,
+                                    dstRect.right - dstRect.left,
+                                    dstRect.bottom - dstRect.top,
+                                    hdcSrc,
+                                    nXSrc,
+                                    nYSrc,
+                                    nWidth,
+                                    nHeight,
+                                    dwRop);
                     if (hdcTemp)
                         ReleaseDC(hwnd, hdcTemp);
                 }
@@ -399,25 +443,63 @@ namespace Hooks
         if (!GetClientRect(WindowFromDC(s_hdcDstSaved), &rect))
             return false;
         BITMAP srcBitmap;
-        if (!GetObject((HBITMAP)GetCurrentObject(s_hdcSrcSaved, OBJ_BITMAP), sizeof(BITMAP), &srcBitmap))
+        if (!GetObject((HBITMAP) GetCurrentObject(s_hdcSrcSaved, OBJ_BITMAP),
+                       sizeof(BITMAP),
+                       &srcBitmap))
             return false;
-        MyStretchBlt(s_hdcDstSaved, 0, 0, rect.right, rect.bottom, s_hdcSrcSaved, 0, 0, srcBitmap.bmWidth, srcBitmap.bmHeight, SRCCOPY);
+        MyStretchBlt(s_hdcDstSaved,
+                     0,
+                     0,
+                     rect.right,
+                     rect.bottom,
+                     s_hdcSrcSaved,
+                     0,
+                     0,
+                     srcBitmap.bmWidth,
+                     srcBitmap.bmHeight,
+                     SRCCOPY);
         return true;
     }
 
-
-    HOOK_FUNCTION(int, WINAPI, SetDIBitsToDevice,
-        HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, CONST VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse);
-    HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, CONST VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse)
+    HOOK_FUNCTION(int,
+                  WINAPI,
+                  SetDIBitsToDevice,
+                  HDC hdc,
+                  int xDest,
+                  int yDest,
+                  DWORD w,
+                  DWORD h,
+                  int xSrc,
+                  int ySrc,
+                  UINT StartScan,
+                  UINT cLines,
+                  CONST VOID* lpvBits,
+                  CONST BITMAPINFO* lpbmi,
+                  UINT ColorUse);
+    HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc,
+                                            int xDest,
+                                            int yDest,
+                                            DWORD w,
+                                            DWORD h,
+                                            int xSrc,
+                                            int ySrc,
+                                            UINT StartScan,
+                                            UINT cLines,
+                                            CONST VOID* lpvBits,
+                                            CONST BITMAPINFO* lpbmi,
+                                            UINT ColorUse)
     {
-        int rv = SetDIBitsToDevice(hdc, xDest, yDest, w, h, xSrc, ySrc, StartScan, cLines, lpvBits, lpbmi, ColorUse);
+        int rv = SetDIBitsToDevice(
+            hdc, xDest, yDest, w, h, xSrc, ySrc, StartScan, cLines, lpvBits, lpbmi, ColorUse);
         if (!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)
         {
             HWND hwnd = WindowFromDC(hdc);
             if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
             {
-                if (rv != 0 && rv != GDI_ERROR && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
-                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
+                if (rv != 0 && rv != GDI_ERROR
+                    && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
+                    ||*/ tls.peekedMessage)
+                    && VerifyIsTrustedCaller())
                 {
                     if (!(tasflags.aviMode & 1))
                         FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
@@ -430,18 +512,58 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(int, WINAPI, StretchDIBits,
-        HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, CONST VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop);
-    HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, CONST VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop)
+    HOOK_FUNCTION(int,
+                  WINAPI,
+                  StretchDIBits,
+                  HDC hdc,
+                  int xDest,
+                  int yDest,
+                  int DestWidth,
+                  int DestHeight,
+                  int xSrc,
+                  int ySrc,
+                  int SrcWidth,
+                  int SrcHeight,
+                  CONST VOID* lpBits,
+                  CONST BITMAPINFO* lpbmi,
+                  UINT iUsage,
+                  DWORD rop);
+    HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc,
+                                        int xDest,
+                                        int yDest,
+                                        int DestWidth,
+                                        int DestHeight,
+                                        int xSrc,
+                                        int ySrc,
+                                        int SrcWidth,
+                                        int SrcHeight,
+                                        CONST VOID* lpBits,
+                                        CONST BITMAPINFO* lpbmi,
+                                        UINT iUsage,
+                                        DWORD rop)
     {
-        int rv = StretchDIBits(hdc, xDest, yDest, DestWidth, DestHeight, xSrc, ySrc, SrcWidth, SrcHeight, lpBits, lpbmi, iUsage, rop);
+        int rv = StretchDIBits(hdc,
+                               xDest,
+                               yDest,
+                               DestWidth,
+                               DestHeight,
+                               xSrc,
+                               ySrc,
+                               SrcWidth,
+                               SrcHeight,
+                               lpBits,
+                               lpbmi,
+                               iUsage,
+                               rop);
         if (!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)
         {
             HWND hwnd = WindowFromDC(hdc);
             if (hwnd /*&& !hwndRespondingToPaintMessage[hwnd]*/)
             {
-                if (rv != 0 && rv != GDI_ERROR && rop == SRCCOPY && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
-                    ||*/ tls.peekedMessage) && VerifyIsTrustedCaller())
+                if (rv != 0 && rv != GDI_ERROR && rop == SRCCOPY
+                    && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
+                    ||*/ tls.peekedMessage)
+                    && VerifyIsTrustedCaller())
                 {
                     if (!(tasflags.aviMode & 1))
                         FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
@@ -454,12 +576,7 @@ namespace Hooks
         return rv;
     }
 
-
-
     // TODO: DrawDib support needed?
-
-
-
 
     HOOK_FUNCTION(int, WINAPI, ChoosePixelFormat, HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd);
     HOOKFUNC int WINAPI MyChoosePixelFormat(HDC hdc, CONST PIXELFORMATDESCRIPTOR* pfd)
@@ -469,8 +586,13 @@ namespace Hooks
         return rv;
     }
     int depth_SetPixelFormat = 0;
-    HOOK_FUNCTION(BOOL, WINAPI, SetPixelFormat, HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd);
-    HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * pfd)
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  SetPixelFormat,
+                  HDC hdc,
+                  int format,
+                  CONST PIXELFORMATDESCRIPTOR* pfd);
+    HOOKFUNC BOOL WINAPI MySetPixelFormat(HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR* pfd)
     {
         ENTER();
         BOOL rv;
@@ -503,21 +625,46 @@ namespace Hooks
         {
             switch (index)
             {
-            case HORZRES: case DESKTOPHORZRES: rv = fakeDisplayWidth; got = true; break;
-            case VERTRES: case DESKTOPVERTRES: rv = fakeDisplayHeight; got = true; break;
-            case BITSPIXEL: rv = fakePixelFormatBPP; got = true; break;
-            case VREFRESH: rv = fakeDisplayRefresh; got = true; break;
+            case HORZRES:
+            case DESKTOPHORZRES:
+                rv = fakeDisplayWidth;
+                got = true;
+                break;
+            case VERTRES:
+            case DESKTOPVERTRES:
+                rv = fakeDisplayHeight;
+                got = true;
+                break;
+            case BITSPIXEL:
+                rv = fakePixelFormatBPP;
+                got = true;
+                break;
+            case VREFRESH:
+                rv = fakeDisplayRefresh;
+                got = true;
+                break;
             }
         }
         if (!got)
         {
             switch (index)
             {
-            case TECHNOLOGY: rv = DT_RASDISPLAY; got = true; break;
-            case PLANES: rv = 1; got = true; break;
-            case LOGPIXELSX: case LOGPIXELSY: rv = 96; got = true; break;
-                //case BITSPIXEL: // user-specified default? but that's what their display setting is anyway.
-            case VREFRESH: {
+            case TECHNOLOGY:
+                rv = DT_RASDISPLAY;
+                got = true;
+                break;
+            case PLANES:
+                rv = 1;
+                got = true;
+                break;
+            case LOGPIXELSX:
+            case LOGPIXELSY:
+                rv = 96;
+                got = true;
+                break;
+            //case BITSPIXEL: // user-specified default? but that's what their display setting is anyway.
+            case VREFRESH:
+            {
                 // TODO: unduplicate, see GetMonitorFrequency
                 int dist50 = abs((tasflags.framerate % 25) - 12);
                 int dist60 = abs((tasflags.framerate % 15) - 8) * 3 / 2;
@@ -528,7 +675,8 @@ namespace Hooks
                 else
                     rv = 100;
                 got = true;
-            } break;
+            }
+            break;
             }
         }
         if (!got)
@@ -550,44 +698,48 @@ namespace Hooks
     //	return 1;
     //}
 
-    static int CALLBACK DoesFontExistWCallback(CONST LOGFONTW * lplf, CONST TEXTMETRICW * tm, DWORD type, LPARAM param)
+    static int CALLBACK DoesFontExistWCallback(CONST LOGFONTW* lplf,
+                                               CONST TEXTMETRICW* tm,
+                                               DWORD type,
+                                               LPARAM param)
     {
         //debugprintf(__FUNCTION__": %S,%d,%d\n", lplf->lfFaceName, lplf->lfCharSet, type);
-        *((DWORD*)param) = 1;
+        *((DWORD*) param) = 1;
         return 0;
     }
-    bool DoesFontExistW(CONST LOGFONTW *lplf)
+    bool DoesFontExistW(CONST LOGFONTW* lplf)
     {
         if (!*lplf->lfFaceName)
             return false;
-        HDC hdc = GetDC(NULL); // "If this value is NULL, GetDC retrieves the DC for the entire screen."
+        HDC hdc =
+            GetDC(NULL); // "If this value is NULL, GetDC retrieves the DC for the entire screen."
         DWORD rv = 0;
-        EnumFontFamiliesExW(hdc, (LPLOGFONTW)lplf, &DoesFontExistWCallback, (LPARAM)&rv, 0);
+        EnumFontFamiliesExW(hdc, (LPLOGFONTW) lplf, &DoesFontExistWCallback, (LPARAM) &rv, 0);
         ReleaseDC(NULL, hdc);
         return rv != 0;
     }
 
-#define DEFAULT_FONT_FOR_LOCALE_1041 "MS Gothic" // English name of the default system font on Windows XP Japanese systems. Maybe there should be an option to use Meiryo instead (the default on Vista).
-    // TODO: add defaults for other locales. without this, it should still find a readable font, but it might not look like what people are used to.
+#define DEFAULT_FONT_FOR_LOCALE_1041 \
+    "MS Gothic" // English name of the default system font on Windows XP Japanese systems. Maybe there should be an option to use Meiryo instead (the default on Vista).
+// TODO: add defaults for other locales. without this, it should still find a readable font, but it might not look like what people are used to.
 
-    // workaround for L"string" not working with macros
+// workaround for L"string" not working with macros
 #define _L2(x) L##x
 #define _L(x) _L2(x)
 
-
-    HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectA, CONST LOGFONTA *lplf);
-    HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA *lplf)
+    HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectA, CONST LOGFONTA* lplf);
+    HOOKFUNC HFONT WINAPI MyCreateFontIndirectA(CONST LOGFONTA* lplf)
     {
         ENTER(lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
 
         if (lplf->lfQuality != NONANTIALIASED_QUALITY)
-            ((LOGFONTA*)lplf)->lfQuality = ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
+            ((LOGFONTA*) lplf)->lfQuality =
+                ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
 
         HFONT rv;
-        if (tasflags.appLocale
-            && (lplf->lfCharSet == LocaleToCharset(tasflags.appLocale)
-                || (/*tasflags.movieVersion >= 79
-                 && */(lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET)))
+        if (tasflags.appLocale && (lplf->lfCharSet == LocaleToCharset(tasflags.appLocale)
+                                   || (/*tasflags.movieVersion >= 79
+                 && */ (lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET)))
             /*&& lplf->lfCharSet != LocaleToCharset(GetACP())*/)
         {
             // since windows 2000, the CreateFont functions can recognize either the localized or unlocalized font name.
@@ -595,9 +747,10 @@ namespace Hooks
             str_to_wstr(wstr, lplf->lfFaceName, LocaleToCodePage(tasflags.appLocale));
 
             LOGFONTW fontw;
-            memcpy(&fontw, lplf, (int)&fontw.lfFaceName - (int)&fontw);
+            memcpy(&fontw, lplf, (int) &fontw.lfFaceName - (int) &fontw);
             wcscpy(fontw.lfFaceName, wstr);
-            if (/*tasflags.movieVersion >= 79 && */tasflags.appLocale == 1041 && !DoesFontExistW(&fontw))
+            if (/*tasflags.movieVersion >= 79 && */ tasflags.appLocale == 1041
+                && !DoesFontExistW(&fontw))
             {
                 wcscpy(fontw.lfFaceName, _L(DEFAULT_FONT_FOR_LOCALE_1041));
                 if (!DoesFontExistW(&fontw))
@@ -612,17 +765,19 @@ namespace Hooks
 
         return rv;
     }
-    HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectW, CONST LOGFONTW *lplf);
-    HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW *lplf)
+    HOOK_FUNCTION(HFONT, WINAPI, CreateFontIndirectW, CONST LOGFONTW* lplf);
+    HOOKFUNC HFONT WINAPI MyCreateFontIndirectW(CONST LOGFONTW* lplf)
     {
         ENTER(lplf->lfQuality, lplf->lfCharSet, lplf->lfFaceName);
         if (lplf->lfQuality != NONANTIALIASED_QUALITY)
-            ((LOGFONTW*)lplf)->lfQuality = ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
+            ((LOGFONTW*) lplf)->lfQuality =
+                ANTIALIASED_QUALITY; // disable ClearType so it doesn't get into AVIs
 
         LOGFONTW fontw;
-        if (/*tasflags.movieVersion >= 79 && */tasflags.appLocale
+        if (/*tasflags.movieVersion >= 79 && */ tasflags.appLocale
             && (lplf->lfCharSet == LocaleToCharset(tasflags.appLocale)
-                || lplf->lfCharSet == DEFAULT_CHARSET || lplf->lfCharSet == OEM_CHARSET))
+                || lplf->lfCharSet == DEFAULT_CHARSET
+                || lplf->lfCharSet == OEM_CHARSET))
         {
             if (tasflags.appLocale == 1041 && !DoesFontExistW(lplf))
             {
@@ -636,8 +791,6 @@ namespace Hooks
         HFONT rv = CreateFontIndirectW(lplf);
         return rv;
     }
-
-
 
     HOOK_FUNCTION(LONG, WINAPI, ChangeDisplaySettingsA, LPDEVMODEA lpDevMode, DWORD dwFlags);
     HOOKFUNC LONG WINAPI MyChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlags)
@@ -663,7 +816,10 @@ namespace Hooks
             return DISP_CHANGE_SUCCESSFUL;
         }
         LONG rv = ChangeDisplaySettingsA(lpDevMode, dwFlags);
-        if (lpDevMode) FakeBroadcastDisplayChange(lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel);
+        if (lpDevMode)
+            FakeBroadcastDisplayChange(lpDevMode->dmPelsWidth,
+                                       lpDevMode->dmPelsHeight,
+                                       lpDevMode->dmBitsPerPel);
         return rv;
     }
     HOOK_FUNCTION(LONG, WINAPI, ChangeDisplaySettingsW, LPDEVMODEW lpDevMode, DWORD dwFlags);
@@ -686,15 +842,16 @@ namespace Hooks
             return DISP_CHANGE_SUCCESSFUL;
         }
         LONG rv = MyChangeDisplaySettingsW(lpDevMode, dwFlags);
-        if (lpDevMode) FakeBroadcastDisplayChange(lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel);
+        if (lpDevMode)
+            FakeBroadcastDisplayChange(lpDevMode->dmPelsWidth,
+                                       lpDevMode->dmPelsHeight,
+                                       lpDevMode->dmBitsPerPel);
         return rv;
     }
 
-
     void ApplyGDIIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, GDI32, StretchBlt),
             MAKE_INTERCEPT(1, GDI32, BitBlt),
             MAKE_INTERCEPT(1, GDI32, SetDIBitsToDevice),
@@ -702,7 +859,10 @@ namespace Hooks
             MAKE_INTERCEPT(1, GDI32, GetPixel),
             MAKE_INTERCEPT(1, GDI32, GetDeviceCaps),
             MAKE_INTERCEPT(1, GDI32, ChoosePixelFormat),
-            MAKE_INTERCEPT(/*1*/1, GDI32, SetPixelFormat), // todo? but overriding it breaks tumiki fighters sometimes?
+            MAKE_INTERCEPT(
+                /*1*/ 1,
+                GDI32,
+                SetPixelFormat), // todo? but overriding it breaks tumiki fighters sometimes?
             MAKE_INTERCEPT(1, GDI32, SwapBuffers),
 
             MAKE_INTERCEPT(1, GDI32, CreateFontIndirectA),
