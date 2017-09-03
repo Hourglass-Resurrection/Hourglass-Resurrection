@@ -36,6 +36,15 @@
     <Filter Include="Source Files\Utils\Thread">
       <UniqueIdentifier>{a9554fd0-cd89-4fdc-ad98-782257099fe9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI\Core">
+      <UniqueIdentifier>{833771bd-57d8-497c-9a96-56296828fb7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\Utils">
+      <UniqueIdentifier>{535eb9f0-3ddc-415d-9bf7-03dd44f7039c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\Objects">
+      <UniqueIdentifier>{3163ab1d-3a5f-4eff-8cc2-8c68d1c84935}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomDLGs.cpp">
@@ -85,12 +94,6 @@
     </ClCompile>
     <ClCompile Include="md5.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\DlgBase.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\Menu.cpp">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="MainMenu.cpp">
       <Filter>Source Files</Filter>
@@ -142,6 +145,45 @@
     </ClCompile>
     <ClCompile Include="Utils\Arguments.cpp">
       <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Core\DlgBase.cpp">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Utils\ListViewUtils.cpp">
+      <Filter>Source Files\GUI\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\PushButton.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\RadioButton.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\CheckboxButton.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\EditControl.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\StaticText.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\GroupBox.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Core\MenuItemBase.cpp">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\MenuItem.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\CheckableMenuItem.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\SubMenu.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Objects\MenuSeparator.cpp">
+      <Filter>Source Files\GUI\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -214,12 +256,6 @@
     <ClInclude Include="MD5Checksum.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\DlgBase.h">
-      <Filter>Source Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\Menu.h">
-      <Filter>Source Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="MainMenu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -282,6 +318,54 @@
     </ClInclude>
     <ClInclude Include="Utils\Arguments.h">
       <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Core\DlgBase.h">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Utils\ListViewUtils.h">
+      <Filter>Source Files\GUI\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Core\ObjBase.h">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\PushButton.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Core\WindowClasses.h">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\RadioButton.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\CheckboxButton.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\EditControl.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\StaticText.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\GroupBox.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Core\MenuItemBase.h">
+      <Filter>Source Files\GUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\MenuItem.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\CheckableMenuItem.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\SubMenu.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Objects\MenuSeparator.h">
+      <Filter>Source Files\GUI\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Core\MenuBase.h">
+      <Filter>Source Files\GUI\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
