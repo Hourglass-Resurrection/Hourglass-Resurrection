@@ -32,8 +32,6 @@ Do not use implicit casts. Use explicit casts for assignment, comparisons and fu
 
 Anything local to a file shall be declared in an anonymous namespace.
 
-Make sure your code can, at least theoretically, compile with any Windows SDK from XP to most recent. Do try to check on MSDN for every used WinAPI function if it needs special includes etc. If there is a difference between header requirements between some versions of the Window SDKs, use proper `#ifdef` with Windows SDK defined values to handle it.
-
 Includes
 --------
 MSVC C++ header include guard style (`#pragma once`).
