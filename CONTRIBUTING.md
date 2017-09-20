@@ -32,6 +32,8 @@ Do not use implicit casts. Use explicit casts for assignment, comparisons and fu
 
 Anything local to a file shall be declared in an anonymous namespace.
 
+We're currently targetting Windows 7 and above. Ensure your code can run on Windows 7.
+
 Includes
 --------
 MSVC C++ header include guard style (`#pragma once`).
