@@ -44,7 +44,8 @@ ULONG DbgHelpLoadCallback::Release()
 
 HRESULT DbgHelpLoadCallback::NotifyDebugDir(BOOL executable, DWORD data_length, BYTE* data)
 {
-    DebugLog() << "[Hourglass][DebugSymbols] Found debug directory in " << (executable ? "executable" : "dbg-file") << " length=" << data_length;
+    DebugLog() << "[Hourglass][DebugSymbols] Found debug directory in "
+               << (executable ? "executable" : "dbg-file") << " length=" << data_length;
     return S_OK;
 }
 

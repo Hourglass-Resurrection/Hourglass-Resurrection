@@ -40,12 +40,20 @@ protected:
         Unset,
     };
 
-    ObjBase(const std::wstring& title, const WCHAR* const window_class, DWORD ex_style, DWORD style, short x, short y, short w, short h, DlgBase* dlg) :
+    ObjBase(const std::wstring& title,
+            const WCHAR* const window_class,
+            DWORD ex_style,
+            DWORD style,
+            short x,
+            short y,
+            short w,
+            short h,
+            DlgBase* dlg)
         /*
          * Struct size + title-len + extraCount
          */
-        m_object(sizeof(DLGITEMTEMPLATEEX) + (title.size() * sizeof(WCHAR)) + sizeof(WORD)),
-        m_dlg(dlg)
+        : m_object(sizeof(DLGITEMTEMPLATEEX) + (title.size() * sizeof(WCHAR)) + sizeof(WORD))
+        , m_dlg(dlg)
     {
         auto obj = reinterpret_cast<DLGITEMTEMPLATEEX*>(m_object.data());
         obj->exStyle = ex_style;

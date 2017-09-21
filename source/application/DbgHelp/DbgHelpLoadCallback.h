@@ -16,13 +16,14 @@ class DbgHelpLoadCallback : public IDiaLoadCallback
     /*
      * From IUnknown, overload these to turn this class into a regular C++ object.
      */
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject);
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
+                                             _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject);
 
     ULONG STDMETHODCALLTYPE AddRef();
 
     ULONG STDMETHODCALLTYPE Release();
 
-    HRESULT STDMETHODCALLTYPE NotifyDebugDir(BOOL executable, DWORD data_length, BYTE *data);
+    HRESULT STDMETHODCALLTYPE NotifyDebugDir(BOOL executable, DWORD data_length, BYTE* data);
 
     HRESULT STDMETHODCALLTYPE NotifyOpenDBG(LPCOLESTR dbg_path, HRESULT result_code);
 

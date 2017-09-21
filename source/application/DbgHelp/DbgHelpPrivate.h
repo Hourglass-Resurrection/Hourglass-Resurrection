@@ -14,12 +14,12 @@
 #include <string>
 #include <vector>
 
+#include <DIA SDK/include/dia2.h>
 #include <atlbase.h>
 #include <atlcom.h>
-#include <DIA SDK/include/dia2.h>
 
-#include "application/Utils/COM.h"
 #include "DbgHelp.h"
+#include "application/Utils/COM.h"
 
 class DbgHelpPrivate
 {
@@ -35,11 +35,14 @@ public:
     DbgHelpPrivate(const Utils::COM::COMLibrary& dia, HANDLE process);
     ~DbgHelpPrivate();
 
-    bool LoadSymbols(DWORD64 module_base, const std::wstring& exec, const std::wstring& search_path);
+    bool LoadSymbols(DWORD64 module_base,
+                     const std::wstring& exec,
+                     const std::wstring& search_path);
     bool StackWalk(HANDLE thread, DbgHelp::StackWalkCallback& cb);
 
     HANDLE GetProcess() const;
     const ModuleData* GetModuleData(ULONGLONG virtual_address) const;
+
 private:
     const Utils::COM::COMLibrary& m_dia;
 

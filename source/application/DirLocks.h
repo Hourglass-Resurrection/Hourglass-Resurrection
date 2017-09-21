@@ -1,8 +1,9 @@
 #pragma once
 
-enum LockTypes {
-	MOVIE = 0,
-	SSTATE,
+enum LockTypes
+{
+    MOVIE = 0,
+    SSTATE,
 };
 
 bool LockDirectory(LPCWSTR directory, LockTypes type);

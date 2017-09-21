@@ -89,15 +89,22 @@ namespace TrustedModule
         {
             s_trusted_modules[process_id].emplace_back(path);
         }
-        else if (CountBackslashes(Config::exe_filename.c_str() + CountSharedPrefixLength(Config::exe_filename, path)) < proximity)
+        else if (CountBackslashes(Config::exe_filename.c_str()
+                                  + CountSharedPrefixLength(Config::exe_filename, path))
+                 < proximity)
         {
             s_trusted_modules[process_id].emplace_back(path);
         }
-        else if (CountBackslashes(sub_exe_filename.c_str() + CountSharedPrefixLength(sub_exe_filename, path)) < proximity)
+        else if (CountBackslashes(sub_exe_filename.c_str()
+                                  + CountSharedPrefixLength(sub_exe_filename, path))
+                 < proximity)
         {
             s_trusted_modules[process_id].emplace_back(path);
         }
-        else if (path.length() >= 4 && (path.substr(path.length() - 4)) == L".cox") // hack, we can generally assume the game outputted any dll that has this extension
+        else if (
+            path.length() >= 4
+            && (path.substr(path.length() - 4))
+                   == L".cox") // hack, we can generally assume the game outputted any dll that has this extension
         {
             s_trusted_modules[process_id].emplace_back(path);
         }
@@ -107,9 +114,8 @@ namespace TrustedModule
 
             if (std::find_if(std::cbegin(CRT_FILENAMES),
                              std::cend(CRT_FILENAMES),
-                             [&filename](const std::wstring& m) {
-                                 return (filename == m);
-                             }) != std::cend(CRT_FILENAMES))
+                             [&filename](const std::wstring& m) { return (filename == m); })
+                != std::cend(CRT_FILENAMES))
             {
                 s_trusted_modules[process_id].emplace_back(path);
             }
@@ -119,7 +125,8 @@ namespace TrustedModule
     void OnUnload(DWORD process_id, const std::wstring& path)
     {
         auto& proc_modules = s_trusted_modules[process_id];
-        auto removed = std::remove_if(proc_modules.begin(), proc_modules.end(),
+        auto removed = std::remove_if(proc_modules.begin(),
+                                      proc_modules.end(),
                                       [&path](const std::wstring& m) { return (m == path); });
 
         if (removed == proc_modules.end())
@@ -131,11 +138,10 @@ namespace TrustedModule
 
     bool IsTrusted(DWORD process_id, const std::wstring& path)
     {
-        auto CheckModule = [&path](const std::wstring &m) {
-            return (path == m);
-        };
+        auto CheckModule = [&path](const std::wstring& m) { return (path == m); };
         return (std::find_if(s_trusted_modules[process_id].begin(),
                              s_trusted_modules[process_id].end(),
-                             CheckModule) != s_trusted_modules[process_id].end());
+                             CheckModule)
+                != s_trusted_modules[process_id].end());
     }
 }

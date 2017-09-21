@@ -12,8 +12,8 @@
 
 #include <sstream>
 
-#include "shared/ipc.h"
 #include "DbgHelp/DbgHelp.h"
+#include "shared/ipc.h"
 
 /*
  * TODO: Categorization of messages
@@ -49,6 +49,7 @@ public:
 #endif
         return *this;
     }
+
 private:
     DebugLog m_buffer;
 };

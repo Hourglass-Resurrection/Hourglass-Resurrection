@@ -14,7 +14,7 @@
 
 #include "GroupBox.h"
 
-GroupBox::GroupBox(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, BUTTON_WND_CLASS, WS_EX_TRANSPARENT, BS_GROUPBOX, x, y, w, h, dlg)
+GroupBox::GroupBox(const std::wstring& title, short x, short y, short w, short h, DlgBase* dlg)
+    : ObjBase(title, BUTTON_WND_CLASS, WS_EX_TRANSPARENT, BS_GROUPBOX, x, y, w, h, dlg)
 {
 }

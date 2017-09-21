@@ -10,60 +10,67 @@
 
 using Log = DebugLog<LogCategory::HOOK>;
 
-BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, BOOL rvOnSkip)
+BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept,
+                             FARPROC dwReplaced,
+                             FARPROC dwTrampoline,
+                             bool trampolineOnly,
+                             BOOL rvOnSkip)
 {
     ENTER(dwAddressToIntercept, dwReplaced, dwTrampoline, trampolineOnly, rvOnSkip);
-	if(!dwAddressToIntercept)
-		return FALSE;
+    if (!dwAddressToIntercept)
+        return FALSE;
 
-	enum { JMP_REL32 = 0xE9 };
+    enum
+    {
+        JMP_REL32 = 0xE9
+    };
 
-	BYTE* pTargetHead = (BYTE*)dwAddressToIntercept;
-	BYTE* pTargetTail = pTargetHead;
-	BYTE* pTramp = (BYTE*)dwTrampoline;
-	BYTE* pHook = (BYTE*)dwReplaced;
+    BYTE* pTargetHead = (BYTE*) dwAddressToIntercept;
+    BYTE* pTargetTail = pTargetHead;
+    BYTE* pTramp = (BYTE*) dwTrampoline;
+    BYTE* pHook = (BYTE*) dwReplaced;
 
-	// trampolines work by running a copy of the first few bytes of the target function
-	// and then jumping to the remainder of the target function.
-	// this totally breaks down if the first few bytes of the target function is a jump.
-	// so, the first thing we do is detect if the target starts with a jump,
-	// and if so, we follow where the jump goes instead of hooking the target directly.
-	//if(tasflags.movieVersion >= 65)
-	//{
-		for(int i = 0; *pTargetTail == JMP_REL32; i++)
-		{
-			int diff = *(DWORD*)(pTargetTail+1) + 5;
-			pTargetTail += diff;
-			if(pTargetTail == pHook)
-			{
-				if(i == 0)
-					LOG() << "already hooked. skipping.";
-				else
-					LOG() << "already hooked (from " << pTargetTail - diff  << " to " << pTargetTail
-                          << ") although the hook chain is longer than expected. skipping.";
-				return rvOnSkip;
-			}
-			else
-			{
-				if(i < 64)
-					LOG() << "rejump detected in target (from " << pTargetTail - diff << " to " << pTargetTail
-                          << "). following chain...";
-				else
-				{
-					LOG() << "hook chain is too long. target function jumps to itself? skipping.";
-					return rvOnSkip;
-				}
-			}
-		}
+    // trampolines work by running a copy of the first few bytes of the target function
+    // and then jumping to the remainder of the target function.
+    // this totally breaks down if the first few bytes of the target function is a jump.
+    // so, the first thing we do is detect if the target starts with a jump,
+    // and if so, we follow where the jump goes instead of hooking the target directly.
+    //if(tasflags.movieVersion >= 65)
+    //{
+    for (int i = 0; *pTargetTail == JMP_REL32; i++)
+    {
+        int diff = *(DWORD*) (pTargetTail + 1) + 5;
+        pTargetTail += diff;
+        if (pTargetTail == pHook)
+        {
+            if (i == 0)
+                LOG() << "already hooked. skipping.";
+            else
+                LOG() << "already hooked (from " << pTargetTail - diff << " to " << pTargetTail
+                      << ") although the hook chain is longer than expected. skipping.";
+            return rvOnSkip;
+        }
+        else
+        {
+            if (i < 64)
+                LOG() << "rejump detected in target (from " << pTargetTail - diff << " to "
+                      << pTargetTail << "). following chain...";
+            else
+            {
+                LOG() << "hook chain is too long. target function jumps to itself? skipping.";
+                return rvOnSkip;
+            }
+        }
+    }
 
-		if(pTargetHead == pHook || pTramp == pHook || pTargetHead == pTramp)
-		{
-			LOG() << "bad input? target=" << pTargetHead << ", hook=" << pHook
-                  << ", tramp=" << pTramp << ". skipping hook.";
-			return rvOnSkip;
-		}
-	//}
-	/*else // old version. if avast! is installed, this results in an incorrect trampoline which will crash the game.
+    if (pTargetHead == pHook || pTramp == pHook || pTargetHead == pTramp)
+    {
+        LOG() << "bad input? target=" << pTargetHead << ", hook=" << pHook << ", tramp=" << pTramp
+              << ". skipping hook.";
+        return rvOnSkip;
+    }
+    //}
+    /*else // old version. if avast! is installed, this results in an incorrect trampoline which will crash the game.
 	{
 		if(*pTargetHead == JMP_REL32)
 		{
@@ -80,69 +87,73 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
 		}
 	}*/
 
-	LOG() << "want to hook " << pTargetHead << " to call " << pHook
-          << ", and want trampoline " << pTramp << " to call " << pTargetTail;
+    LOG() << "want to hook " << pTargetHead << " to call " << pHook << ", and want trampoline "
+          << pTramp << " to call " << pTargetTail;
 
-	if(*pTramp == JMP_REL32)
-	{
-		int diff = *(DWORD*)(pTramp+1) + 5;
-		LOG() << "rejump detected in trampoline (from " << pTramp << " to " << pTramp + diff << ". giving up.";
-		return rvOnSkip;
-	}
+    if (*pTramp == JMP_REL32)
+    {
+        int diff = *(DWORD*) (pTramp + 1) + 5;
+        LOG() << "rejump detected in trampoline (from " << pTramp << " to " << pTramp + diff
+              << ". giving up.";
+        return rvOnSkip;
+    }
 
-	// we'll have to overwrite 5 bytes, which means we have to backup at least 5 bytes (up to next instruction boundary)
-	int offset = 0;
-	while(offset < 5)
-		offset += instructionLength(pTargetTail + offset);
+    // we'll have to overwrite 5 bytes, which means we have to backup at least 5 bytes (up to next instruction boundary)
+    int offset = 0;
+    while (offset < 5)
+        offset += instructionLength(pTargetTail + offset);
 
-	DWORD dwOldProtect;
+    DWORD dwOldProtect;
 
-	// in the trampoline, write the first 5+ bytes of the target function followed by a jump to our hook
-	VirtualProtect((void*)dwTrampoline, 5+offset, PAGE_EXECUTE_READWRITE, &dwOldProtect); 
-	for(int i=0; i<offset; i++) 
-		*pTramp++ = *pTargetTail++; 
-	*pTramp++ = JMP_REL32;
-	*((int*)pTramp) = (int)(pTargetTail - (pTramp + 4)); 
-	VirtualProtect((void*)dwTrampoline, 5+offset, PAGE_EXECUTE, &dwOldProtect); 
+    // in the trampoline, write the first 5+ bytes of the target function followed by a jump to our hook
+    VirtualProtect((void*) dwTrampoline, 5 + offset, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+    for (int i = 0; i < offset; i++)
+        *pTramp++ = *pTargetTail++;
+    *pTramp++ = JMP_REL32;
+    *((int*) pTramp) = (int) (pTargetTail - (pTramp + 4));
+    VirtualProtect((void*) dwTrampoline, 5 + offset, PAGE_EXECUTE, &dwOldProtect);
 
-	if(!trampolineOnly)
-	{
-		// overwrite the first 5 bytes of the target function with a jump to our hook
-		VirtualProtect((void*)dwAddressToIntercept, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect); 
-		*pTargetHead++ = JMP_REL32;
-		*((signed int *)(pTargetHead)) = (int)(pHook - (pTargetHead +4)); 
-		VirtualProtect((void*)dwAddressToIntercept, 5, PAGE_EXECUTE, &dwOldProtect); 
-	}
+    if (!trampolineOnly)
+    {
+        // overwrite the first 5 bytes of the target function with a jump to our hook
+        VirtualProtect((void*) dwAddressToIntercept, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+        *pTargetHead++ = JMP_REL32;
+        *((signed int*) (pTargetHead)) = (int) (pHook - (pTargetHead + 4));
+        VirtualProtect((void*) dwAddressToIntercept, 5, PAGE_EXECUTE, &dwOldProtect);
+    }
 
-	// flush the instruction cache to make sure the modified code is executed
-	FlushInstructionCache(GetCurrentProcess(), NULL, NULL); 
+    // flush the instruction cache to make sure the modified code is executed
+    FlushInstructionCache(GetCurrentProcess(), NULL, NULL);
 
-	return TRUE; 
+    return TRUE;
 }
 
 // replace a virtual function slot of an object
-BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer, const char* debugname)
+BOOL HookVTable(void* iface,
+                int entry,
+                FARPROC replace,
+                FARPROC& oldfuncPointer,
+                const char* debugname)
 {
-	size_t* pVTable = (size_t*)*(size_t*)iface;
-	FARPROC oldPtr = (FARPROC)pVTable[entry];
-	if(oldPtr == replace)
-		return FALSE; // already hooked, re-hooking would be disastrous
-	if(!oldPtr)
-		return FALSE; // uh, I guess this would be bad too
-	DWORD dwOldProt;
-	VirtualProtect(&pVTable[entry], sizeof(size_t), PAGE_EXECUTE_READWRITE, &dwOldProt);
-	oldfuncPointer = oldPtr;
-	pVTable[entry] = (size_t)replace;
-	VirtualProtect(&pVTable[entry], sizeof(size_t), dwOldProt, &dwOldProt);
-	FlushInstructionCache(GetCurrentProcess(), NULL, NULL); 
-    LOG() << "HOOKING: " << debugname << ": " << entry << ", " << oldfuncPointer << " -> " << replace;
-	return TRUE;
+    size_t* pVTable = (size_t*) *(size_t*) iface;
+    FARPROC oldPtr = (FARPROC) pVTable[entry];
+    if (oldPtr == replace)
+        return FALSE; // already hooked, re-hooking would be disastrous
+    if (!oldPtr)
+        return FALSE; // uh, I guess this would be bad too
+    DWORD dwOldProt;
+    VirtualProtect(&pVTable[entry], sizeof(size_t), PAGE_EXECUTE_READWRITE, &dwOldProt);
+    oldfuncPointer = oldPtr;
+    pVTable[entry] = (size_t) replace;
+    VirtualProtect(&pVTable[entry], sizeof(size_t), dwOldProt, &dwOldProt);
+    FlushInstructionCache(GetCurrentProcess(), NULL, NULL);
+    LOG() << "HOOKING: " << debugname << ": " << entry << ", " << oldfuncPointer << " -> "
+          << replace;
+    return TRUE;
 }
 
-
-
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 struct InterceptAPIArgs
 {
@@ -151,15 +162,15 @@ struct InterceptAPIArgs
     FARPROC dwTrampoline;
     bool trampolineOnly;
     const char* dllName;
-//  const char** dllNameArray; // if nonzero, we assume this is a dynamictramp hook and interpret the other arguments differently
+    //  const char** dllNameArray; // if nonzero, we assume this is a dynamictramp hook and interpret the other arguments differently
     bool ordinal;
 };
 struct lessicmp
 {
-   bool operator() (const std::string& a, const std::string& b) const
-   {
-      return(_stricmp(a.c_str(), b.c_str()) < 0);
-   }
+    bool operator()(const std::string& a, const std::string& b) const
+    {
+        return (_stricmp(a.c_str(), b.c_str()) < 0);
+    }
 };
 std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> pendingInterceptAPICalls;
 //std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> delayHookedInterceptAPICalls;
@@ -171,78 +182,100 @@ std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp> pendingInterceptA
 //	multiDllInterceptAPICalls.push_back(args);
 //}
 
-BOOL InterceptAPI(const char* c_szDllName, const char* c_szApiName,
-				  FARPROC dwReplaced, FARPROC dwTrampoline, bool trampolineOnly, bool forceLoad, bool allowTrack, BOOL rvOnSkip, bool ordinal)
+BOOL InterceptAPI(const char* c_szDllName,
+                  const char* c_szApiName,
+                  FARPROC dwReplaced,
+                  FARPROC dwTrampoline,
+                  bool trampolineOnly,
+                  bool forceLoad,
+                  bool allowTrack,
+                  BOOL rvOnSkip,
+                  bool ordinal)
 {
-	if (ordinal)
-	{
-		LOG() << "(" << c_szDllName << "." << reinterpret_cast<DWORD>(c_szApiName) << ") started...";
-	}
-	else
-	{
+    if (ordinal)
+    {
+        LOG() << "(" << c_szDllName << "." << reinterpret_cast<DWORD>(c_szApiName)
+              << ") started...";
+    }
+    else
+    {
         LOG() << "(" << c_szDllName << "." << c_szApiName << ") started...";
-	}
+    }
 
-	HMODULE hModule = GetModuleHandle(c_szDllName);
-	if(!hModule && forceLoad)
-	{
-		if (ordinal)
-		{
-			DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook " << reinterpret_cast<DWORD>(c_szApiName);
-		}
-		else
-		{
-			DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook " << c_szApiName;
-		}
-		// dangerous according to the documentation,
-		// but the alternative is usually to fail spectacularly anyway
-		// and it seems to work for me...
-		hModule = LoadLibrary(c_szDllName);
-	}
-	FARPROC dwAddressToIntercept = GetProcAddress(hModule, (char*)c_szApiName); 
-	BOOL rv = InterceptGlobalFunction(dwAddressToIntercept, dwReplaced, dwTrampoline, trampolineOnly, rvOnSkip);
+    HMODULE hModule = GetModuleHandle(c_szDllName);
+    if (!hModule && forceLoad)
+    {
+        if (ordinal)
+        {
+            DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook "
+                        << reinterpret_cast<DWORD>(c_szApiName);
+        }
+        else
+        {
+            DEBUG_LOG() << "WARNING: Loading module " << c_szDllName << " to hook " << c_szApiName;
+        }
+        // dangerous according to the documentation,
+        // but the alternative is usually to fail spectacularly anyway
+        // and it seems to work for me...
+        hModule = LoadLibrary(c_szDllName);
+    }
+    FARPROC dwAddressToIntercept = GetProcAddress(hModule, (char*) c_szApiName);
+    BOOL rv = InterceptGlobalFunction(dwAddressToIntercept,
+                                      dwReplaced,
+                                      dwTrampoline,
+                                      trampolineOnly,
+                                      rvOnSkip);
     if (rv || allowTrack)
     {
         if (ordinal)
         {
             LOG() << "(" << c_szDllName << "." << reinterpret_cast<DWORD>(c_szApiName) << ") "
-                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!")
-                  << "\t(" << dwAddressToIntercept << ", " << dwTrampoline << ")";
+                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!") << "\t("
+                  << dwAddressToIntercept << ", " << dwTrampoline << ")";
         }
         else
         {
             LOG() << "(" << c_szDllName << "." << c_szApiName << ") "
-                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!")
-                  << "\t(" << dwAddressToIntercept << ", " << dwTrampoline << ")";
+                  << (rv ? (trampolineOnly ? "bypassed." : "succeeded.") : "failed!") << "\t("
+                  << dwAddressToIntercept << ", " << dwTrampoline << ")";
         }
     }
 
-	if(/*!rv && */allowTrack)
-	{
-		InterceptAPIArgs args = {c_szApiName, dwReplaced, dwTrampoline, trampolineOnly, c_szDllName, ordinal};
-		pendingInterceptAPICalls[c_szDllName].push_back(args);
-	}
+    if (/*!rv && */ allowTrack)
+    {
+        InterceptAPIArgs args =
+            {c_szApiName, dwReplaced, dwTrampoline, trampolineOnly, c_szDllName, ordinal};
+        pendingInterceptAPICalls[c_szDllName].push_back(args);
+    }
 
-	return rv;
+    return rv;
 }
 
 static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPIArgs>& vec)
 {
-	for(int i = (int)vec.size()-1; i >= 0; i--)
-	{
-		InterceptAPIArgs& args = vec[i];
-		BOOL success;
-//		if(!args.dllNameArray)
-			success = InterceptAPI(c_szDllName, args.funcName, args.dwReplaced, args.dwTrampoline, args.trampolineOnly, false, /*true*/false, TRUE, args.ordinal);
-//		else
-//			success = InterceptAPIDynamicTramp(c_szDllName, args.funcName.c_str(), (FARPROC*&)*(FARPROC**)args.dwReplaced, (FARPROC*&)*(FARPROC**)args.dwTrampoline, args.trampolineOnly, args.dllNameArray);
-		//if(success)
-		//	delayHookedInterceptAPICalls[c_szDllName].push_back(args);
-		//vec.erase(vec.begin() + i); // even on failure, because InterceptAPI re-adds it in that case
-	}
-	////debugprintf("RetryInterceptAPIs: failvec=%d\n", vec.size());
-	//if(vec.empty())
-	//	pendingInterceptAPICalls.erase(c_szDllName);
+    for (int i = (int) vec.size() - 1; i >= 0; i--)
+    {
+        InterceptAPIArgs& args = vec[i];
+        BOOL success;
+        //		if(!args.dllNameArray)
+        success = InterceptAPI(c_szDllName,
+                               args.funcName,
+                               args.dwReplaced,
+                               args.dwTrampoline,
+                               args.trampolineOnly,
+                               false,
+                               /*true*/ false,
+                               TRUE,
+                               args.ordinal);
+        //		else
+        //			success = InterceptAPIDynamicTramp(c_szDllName, args.funcName.c_str(), (FARPROC*&)*(FARPROC**)args.dwReplaced, (FARPROC*&)*(FARPROC**)args.dwTrampoline, args.trampolineOnly, args.dllNameArray);
+        //if(success)
+        //	delayHookedInterceptAPICalls[c_szDllName].push_back(args);
+        //vec.erase(vec.begin() + i); // even on failure, because InterceptAPI re-adds it in that case
+    }
+    ////debugprintf("RetryInterceptAPIs: failvec=%d\n", vec.size());
+    //if(vec.empty())
+    //	pendingInterceptAPICalls.erase(c_szDllName);
 }
 
 //static void HookDelayLoadedDll_MultiDll(const char* c_szDllName, std::vector<InterceptAPIArgs>& vec)
@@ -306,68 +339,74 @@ static void HookDelayLoadedDll(const char* c_szDllName, std::vector<InterceptAPI
 //	return FALSE;
 //}
 
-
 void RetryInterceptAPIs(const char* c_szDllName)
 {
-	std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
+    std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp>::iterator found;
 
-	//for(found = pendingInterceptAPICalls.begin(); found != pendingInterceptAPICalls.end(); found++)
-	//{
-	//	const char* dllnamecheck = found->first.c_str();
-	//	debugprintf("check: \"%s\" vs \"%s\"\n", c_szDllName, dllnamecheck);
-	//}
+    //for(found = pendingInterceptAPICalls.begin(); found != pendingInterceptAPICalls.end(); found++)
+    //{
+    //	const char* dllnamecheck = found->first.c_str();
+    //	debugprintf("check: \"%s\" vs \"%s\"\n", c_szDllName, dllnamecheck);
+    //}
 
-	found = pendingInterceptAPICalls.find(c_szDllName);
-	if(found != pendingInterceptAPICalls.end() && !found->second.empty())
-	{
-		LOG() << "Hooking delayed load DLL: " << c_szDllName;
-		HookDelayLoadedDll(c_szDllName, found->second);
-	}
-	//if(!multiDllInterceptAPICalls.empty())
-	//{
-	//	verbosedebugprintf("Maybe hooking delayed load DLL: %s\n", c_szDllName);
-	//	HookDelayLoadedDll_MultiDll(c_szDllName, multiDllInterceptAPICalls);
-	//}
+    found = pendingInterceptAPICalls.find(c_szDllName);
+    if (found != pendingInterceptAPICalls.end() && !found->second.empty())
+    {
+        LOG() << "Hooking delayed load DLL: " << c_szDllName;
+        HookDelayLoadedDll(c_szDllName, found->second);
+    }
+    //if(!multiDllInterceptAPICalls.empty())
+    //{
+    //	verbosedebugprintf("Maybe hooking delayed load DLL: %s\n", c_szDllName);
+    //	HookDelayLoadedDll_MultiDll(c_szDllName, multiDllInterceptAPICalls);
+    //}
 }
 
 void UnInterceptUnloadingAPIs(const char* c_szDllName)
 {
-	LOG() << "Unloaded delayed load DLL: " << c_szDllName;
-	//std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
-	//found = delayHookedInterceptAPICalls.find(c_szDllName);
-	//if(found == delayHookedInterceptAPICalls.end())
-	//	return;
-	//std::vector<InterceptAPIArgs>& vec = found->second;
-	//std::vector<InterceptAPIArgs>& vecTo = pendingInterceptAPICalls[c_szDllName];
-	//for(int i = (int)vec.size()-1; i >= 0; i--)
-	//{
-	//	vecTo.push_back(vec[i]);
-	//	vec.erase(vec.begin()+i);
-	//}
-	////debugprintf("UnInterceptUnloadingAPIs: failvec=%d\n", vecTo.size());
-	//if(vec.empty())
-	//	delayHookedInterceptAPICalls.erase(c_szDllName);
+    LOG() << "Unloaded delayed load DLL: " << c_szDllName;
+    //std::map<std::string, std::vector<InterceptAPIArgs>, lessicmp >::iterator found;
+    //found = delayHookedInterceptAPICalls.find(c_szDllName);
+    //if(found == delayHookedInterceptAPICalls.end())
+    //	return;
+    //std::vector<InterceptAPIArgs>& vec = found->second;
+    //std::vector<InterceptAPIArgs>& vecTo = pendingInterceptAPICalls[c_szDllName];
+    //for(int i = (int)vec.size()-1; i >= 0; i--)
+    //{
+    //	vecTo.push_back(vec[i]);
+    //	vec.erase(vec.begin()+i);
+    //}
+    ////debugprintf("UnInterceptUnloadingAPIs: failvec=%d\n", vecTo.size());
+    //if(vec.empty())
+    //	delayHookedInterceptAPICalls.erase(c_szDllName);
 }
-
 
 void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count)
 {
-	for(int i=0;i<count;i++)
-	{
-		const InterceptDescriptor& intercept = intercepts[i];
-		//if(!intercept.functionName)
-		//	break;
-		//if(intercept.enabled == 3 || intercept.enabled == -3) // MAKE_INTERCEPT_DYNAMICTRAMP
-		//{
-		//	InterceptAPIDynamicTramp(intercept.dllName, intercept.functionName, (FARPROC*&)intercept.replacementFunction, (FARPROC*&)intercept.trampolineFunction, intercept.enabled <= 0, intercept.dllNameArray);
-		//}
-		//else if(intercept.enabled == 4 || intercept.enabled == -4) // MAKE_INTERCEPT_ALLDLLS
-		//{
-		//	InterceptAllDllAPI((const char*)intercept.dllNameArray, intercept.functionName, intercept.replacementFunction, intercept.trampolineFunction, intercept.enabled <= 0);
-		//}
-		//else // MAKE_INTERCEPT or MAKE_INTERCEPT2 or MAKE_INTERCEPT3
-		{
-			InterceptAPI(intercept.dllName, intercept.functionName, intercept.replacementFunction, intercept.trampolineFunction, intercept.enabled <= 0, intercept.enabled != 0 && intercept.enabled != 1, true, TRUE, intercept.ordinal);
-		}
-	}
+    for (int i = 0; i < count; i++)
+    {
+        const InterceptDescriptor& intercept = intercepts[i];
+        //if(!intercept.functionName)
+        //	break;
+        //if(intercept.enabled == 3 || intercept.enabled == -3) // MAKE_INTERCEPT_DYNAMICTRAMP
+        //{
+        //	InterceptAPIDynamicTramp(intercept.dllName, intercept.functionName, (FARPROC*&)intercept.replacementFunction, (FARPROC*&)intercept.trampolineFunction, intercept.enabled <= 0, intercept.dllNameArray);
+        //}
+        //else if(intercept.enabled == 4 || intercept.enabled == -4) // MAKE_INTERCEPT_ALLDLLS
+        //{
+        //	InterceptAllDllAPI((const char*)intercept.dllNameArray, intercept.functionName, intercept.replacementFunction, intercept.trampolineFunction, intercept.enabled <= 0);
+        //}
+        //else // MAKE_INTERCEPT or MAKE_INTERCEPT2 or MAKE_INTERCEPT3
+        {
+            InterceptAPI(intercept.dllName,
+                         intercept.functionName,
+                         intercept.replacementFunction,
+                         intercept.trampolineFunction,
+                         intercept.enabled <= 0,
+                         intercept.enabled != 0 && intercept.enabled != 1,
+                         true,
+                         TRUE,
+                         intercept.ordinal);
+        }
+    }
 }

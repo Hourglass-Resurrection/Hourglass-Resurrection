@@ -11,14 +11,14 @@
 constexpr WCHAR CLASS_NAME[] = L"basic_timing";
 constexpr WCHAR WINDOW_NAME[] = L"basic_timing";
 
-ATOM             MyRegisterClass(HINSTANCE);
-HWND             InitInstance(HINSTANCE, int);
+ATOM MyRegisterClass(HINSTANCE);
+HWND InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+                      _In_opt_ HINSTANCE hPrevInstance,
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -70,11 +70,11 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex{};
 
-    wcex.cbSize        = sizeof(wcex);
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = WndProc;
-    wcex.hInstance     = hInstance;
-    wcex.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+    wcex.cbSize = sizeof(wcex);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.hInstance = hInstance;
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wcex.lpszClassName = CLASS_NAME;
 
@@ -83,27 +83,27 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd = CreateWindowW(CLASS_NAME,
-                             WINDOW_NAME,
-                             WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT,
-                             0,
-                             CW_USEDEFAULT,
-                             0,
-                             nullptr,
-                             nullptr,
-                             hInstance,
-                             nullptr);
+    HWND hWnd = CreateWindowW(CLASS_NAME,
+                              WINDOW_NAME,
+                              WS_OVERLAPPEDWINDOW,
+                              CW_USEDEFAULT,
+                              0,
+                              CW_USEDEFAULT,
+                              0,
+                              nullptr,
+                              nullptr,
+                              hInstance,
+                              nullptr);
 
-   if (!hWnd)
-   {
-      return nullptr;
-   }
+    if (!hWnd)
+    {
+        return nullptr;
+    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
-   return hWnd;
+    return hWnd;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

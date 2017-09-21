@@ -17,8 +17,11 @@
 
 class DlgBase;
 
-MenuItem::MenuItem(const std::wstring& title, const std::wstring& shortcut, MenuItemBase* parent, DlgBase* dlg) :
-    MenuItemBase(title, shortcut, false, parent, dlg)
+MenuItem::MenuItem(const std::wstring& title,
+                   const std::wstring& shortcut,
+                   MenuItemBase* parent,
+                   DlgBase* dlg)
+    : MenuItemBase(title, shortcut, false, parent, dlg)
 {
     assert(!title.empty());
 }

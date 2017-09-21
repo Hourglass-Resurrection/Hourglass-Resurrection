@@ -32,19 +32,20 @@ namespace
 #pragma pack(pop)
 }
 
-MenuItemBase::MenuItemBase(const std::wstring& title, const std::wstring& shortcut, bool submenu, MenuBase* parent, DlgBase* dlg) :
-    m_dlg(dlg),
-    m_title(title),
-    m_shortcut(shortcut)
+MenuItemBase::MenuItemBase(const std::wstring& title,
+                           const std::wstring& shortcut,
+                           bool submenu,
+                           MenuBase* parent,
+                           DlgBase* dlg)
+    : m_dlg(dlg), m_title(title), m_shortcut(shortcut)
 {
     assert(dlg != nullptr);
 
     auto data = std::make_unique<MenuData>();
     m_data = data.get();
     std::wstring text = title + (shortcut.empty() ? L"" : L"\t" + shortcut);
-    data->m_menu.resize(sizeof(MENUEX_TEMPLATE_ITEM) +
-                        (text.size() * sizeof(WCHAR)) +
-                        (submenu ? sizeof(DWORD) : 0));
+    data->m_menu.resize(sizeof(MENUEX_TEMPLATE_ITEM) + (text.size() * sizeof(WCHAR))
+                        + (submenu ? sizeof(DWORD) : 0));
     auto item = reinterpret_cast<MENUEX_TEMPLATE_ITEM*>(data->m_menu.data());
     item->dwType = title.empty() ? MFT_SEPARATOR : 0;
     item->menuId = m_dlg->GetNextID();

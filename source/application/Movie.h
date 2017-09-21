@@ -5,30 +5,35 @@
 
 struct MovieFrame
 {
-	CurrentInput inputs;
+    CurrentInput inputs;
 };
 
 #include <vector>
 struct Movie
 {
-	std::vector<MovieFrame> frames;
-	int currentFrame;
-	unsigned int rerecordCount;
-	WCHAR author[64]; // Authors will have to do with 63 characters (last char needed for null-termination).
-	char keyboardLayoutName [KL_NAMELENGTH]; // "00000409" for standard US layout
-	unsigned int fps;
-	unsigned int it;
-	unsigned int fmd5[4]; // MD5 Checksum of the exefile
-	LONGLONG fsize;
-	int desyncDetectionTimerValues[16];
-	unsigned int version;
-	WCHAR commandline[8192-1-(MAX_PATH+1)]; // Windows can handle command lines of 8192 with the null termination char. This includes the program path though so we need to make sure our command line remains valid.
-	bool headerBuilt; // When true, the header is properly populated.
-	
-	// note: these aren't the only things in the movie file format.
-	// see SaveMovieToFile or LoadMovieFromFile for the rest.
-	Movie();
+    std::vector<MovieFrame> frames;
+    int currentFrame;
+    unsigned int rerecordCount;
+    WCHAR author
+        [64]; // Authors will have to do with 63 characters (last char needed for null-termination).
+    char keyboardLayoutName[KL_NAMELENGTH]; // "00000409" for standard US layout
+    unsigned int fps;
+    unsigned int it;
+    unsigned int fmd5[4]; // MD5 Checksum of the exefile
+    LONGLONG fsize;
+    int desyncDetectionTimerValues[16];
+    unsigned int version;
+    WCHAR commandline
+        [8192 - 1
+         - (MAX_PATH
+            + 1)]; // Windows can handle command lines of 8192 with the null termination char. This includes the program path though so we need to make sure our command line remains valid.
+    bool headerBuilt; // When true, the header is properly populated.
+
+    // note: these aren't the only things in the movie file format.
+    // see SaveMovieToFile or LoadMovieFromFile for the rest.
+    Movie();
 };
 
 /*static*/ bool SaveMovieToFile(Movie& movie, LPCWSTR filename);
-/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie, LPCWSTR filename/*, bool forPreview=false*/);
+/*static*/ bool LoadMovieFromFile(/*out*/ Movie& movie,
+                                  LPCWSTR filename /*, bool forPreview=false*/);

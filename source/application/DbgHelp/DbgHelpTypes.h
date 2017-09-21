@@ -15,7 +15,7 @@
  * https://connect.microsoft.com/VisualStudio/feedback/details/3049481/c4455-on-standard-string-literal-operators
  */
 #pragma warning(push)
-#pragma warning(disable: 4455)
+#pragma warning(disable : 4455)
 using std::string_literals::operator""s;
 #pragma warning(pop)
 
@@ -25,7 +25,8 @@ using std::string_literals::operator""s;
 class DbgHelpBasicType
 {
 public:
-    enum class BasicType {
+    enum class BasicType
+    {
         Void,
         Char,
         WideChar,
@@ -45,7 +46,9 @@ public:
 
     const BasicType m_type;
 
-    DbgHelpBasicType(BasicType type) : m_type(type) {}
+    DbgHelpBasicType(BasicType type) : m_type(type)
+    {
+    }
 
     std::wstring GetName() const
     {
@@ -137,7 +140,10 @@ public:
     const size_t m_size;
     const std::optional<std::wstring> m_name;
 
-    DbgHelpUnknownType(size_t size, std::optional<std::wstring> name = std::nullopt) : m_size(size), m_name(name) {}
+    DbgHelpUnknownType(size_t size, std::optional<std::wstring> name = std::nullopt)
+        : m_size(size), m_name(name)
+    {
+    }
 
     std::wstring GetName() const
     {
@@ -158,7 +164,9 @@ class DbgHelpUnknownUnsizedType
 public:
     const std::optional<std::wstring> m_name;
 
-    DbgHelpUnknownUnsizedType(std::optional<std::wstring> name = std::nullopt) : m_name(name) {}
+    DbgHelpUnknownUnsizedType(std::optional<std::wstring> name = std::nullopt) : m_name(name)
+    {
+    }
 
     std::wstring GetName() const
     {
@@ -176,30 +184,34 @@ public:
     const std::optional<std::wstring> m_name;
 
     DbgHelpEnumType(DbgHelpBasicType underlying_type, std::optional<std::wstring> name)
-        : m_underlying_type(underlying_type), m_name(name) {}
+        : m_underlying_type(underlying_type), m_name(name)
+    {
+    }
     DbgHelpEnumType(DbgHelpUnknownType underlying_type, std::optional<std::wstring> name)
-        : m_underlying_type(underlying_type), m_name(name) {}
+        : m_underlying_type(underlying_type), m_name(name)
+    {
+    }
 
     std::wstring GetName() const
     {
-        return std::visit([this](const auto& type) {
-            std::wstring rv = L"enum";
+        return std::visit(
+            [this](const auto& type) {
+                std::wstring rv = L"enum";
 
-            if (m_name.has_value())
-            {
-                rv += L' ' + m_name.value();
-            }
+                if (m_name.has_value())
+                {
+                    rv += L' ' + m_name.value();
+                }
 
-            rv += L" : " + type.GetName();
-            return rv;
-        }, m_underlying_type);
+                rv += L" : " + type.GetName();
+                return rv;
+            },
+            m_underlying_type);
     }
 
     size_t GetSize() const
     {
-        return std::visit([](const auto& type) {
-            return type.GetSize();
-        }, m_underlying_type);
+        return std::visit([](const auto& type) { return type.GetSize(); }, m_underlying_type);
     }
 };
 
@@ -210,10 +222,12 @@ public:
 class DbgHelpPointerType
 {
 public:
+    // clang-format off
     const std::variant<DbgHelpBasicType,
                        DbgHelpUnknownType,
                        DbgHelpEnumType,
                        DbgHelpUnknownUnsizedType> m_underlying_type;
+    // clang-format on
 
     /*
      * Size of the pointer type (differs between 32-bit and 64-bit targets).
@@ -221,23 +235,33 @@ public:
     const size_t m_size;
 
     DbgHelpPointerType(DbgHelpBasicType underlying_type, size_t size)
-        : m_underlying_type(underlying_type), m_size(size) {}
+        : m_underlying_type(underlying_type), m_size(size)
+    {
+    }
     DbgHelpPointerType(DbgHelpUnknownType underlying_type, size_t size)
-        : m_underlying_type(underlying_type), m_size(size) {}
+        : m_underlying_type(underlying_type), m_size(size)
+    {
+    }
     DbgHelpPointerType(DbgHelpEnumType underlying_type, size_t size)
-        : m_underlying_type(underlying_type), m_size(size) {}
+        : m_underlying_type(underlying_type), m_size(size)
+    {
+    }
     DbgHelpPointerType(DbgHelpUnknownUnsizedType underlying_type, size_t size)
-        : m_underlying_type(underlying_type), m_size(size) {}
+        : m_underlying_type(underlying_type), m_size(size)
+    {
+    }
 
     std::wstring GetName() const
     {
-        return std::visit([](const auto& type) {
-            /*
+        return std::visit(
+            [](const auto& type) {
+                /*
              * L" *"s somehow becomes garbage data. Can't replicate in a test program.
              * -- YaLTeR
              */
-            return type.GetName() + L" *";
-        }, m_underlying_type);
+                return type.GetName() + L" *";
+            },
+            m_underlying_type);
     }
 
     size_t GetSize() const
@@ -252,24 +276,29 @@ public:
 class DbgHelpType
 {
 public:
-    const std::variant<DbgHelpBasicType, DbgHelpPointerType, DbgHelpUnknownType, DbgHelpEnumType> m_type;
+    const std::variant<DbgHelpBasicType, DbgHelpPointerType, DbgHelpUnknownType, DbgHelpEnumType>
+        m_type;
 
-    DbgHelpType(DbgHelpBasicType type) : m_type(type) {}
-    DbgHelpType(DbgHelpPointerType type) : m_type(type) {}
-    DbgHelpType(DbgHelpUnknownType type) : m_type(type) {}
-    DbgHelpType(DbgHelpEnumType type) : m_type(type) {}
+    DbgHelpType(DbgHelpBasicType type) : m_type(type)
+    {
+    }
+    DbgHelpType(DbgHelpPointerType type) : m_type(type)
+    {
+    }
+    DbgHelpType(DbgHelpUnknownType type) : m_type(type)
+    {
+    }
+    DbgHelpType(DbgHelpEnumType type) : m_type(type)
+    {
+    }
 
     std::wstring GetName() const
     {
-        return std::visit([](const auto& type) {
-            return type.GetName();
-        }, m_type);
+        return std::visit([](const auto& type) { return type.GetName(); }, m_type);
     }
 
     size_t GetSize() const
     {
-        return std::visit([](const auto& type) {
-            return type.GetSize();
-        }, m_type);
+        return std::visit([](const auto& type) { return type.GetSize(); }, m_type);
     }
 };

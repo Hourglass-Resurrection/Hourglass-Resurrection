@@ -14,8 +14,21 @@
 
 #include "EditControl.h"
 
-EditControl::EditControl(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, EDIT_WND_CLASS, 0, WS_GROUP | WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL, x, y, w, h, dlg)
+EditControl::EditControl(const std::wstring& title,
+                         short x,
+                         short y,
+                         short w,
+                         short h,
+                         DlgBase* dlg)
+    : ObjBase(title,
+              EDIT_WND_CLASS,
+              0,
+              WS_GROUP | WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL,
+              x,
+              y,
+              w,
+              h,
+              dlg)
 {
 }
 

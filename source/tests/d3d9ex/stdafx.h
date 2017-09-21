@@ -15,9 +15,9 @@
 #include <windows.h>
 #include <d3d9.h>
 
-#include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <stdlib.h>
 #include <tchar.h>
 
 #include <chrono>

@@ -6,8 +6,8 @@
 
 #include <filesystem>
 
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 
 #define CATCH_CONFIG_RUNNER
 #include "Catch/catch.hpp"
@@ -27,7 +27,8 @@ int main(int argc, char* argv[])
     std::wcout << L"Test runner .exe filename: " << test_runner_exe_filename << L'\n';
 
     const std::experimental::filesystem::path test_runner_exe(test_runner_exe_filename);
-    const std::experimental::filesystem::path base_path = test_runner_exe.parent_path().parent_path();
+    const std::experimental::filesystem::path base_path =
+        test_runner_exe.parent_path().parent_path();
 
     if (!Hourglass::Find(base_path))
     {

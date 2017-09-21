@@ -14,8 +14,13 @@
 
 #include "CheckboxButton.h"
 
-CheckboxButton::CheckboxButton(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, BUTTON_WND_CLASS, 0, WS_GROUP | WS_TABSTOP | BS_AUTOCHECKBOX, x, y, w, h, dlg)
+CheckboxButton::CheckboxButton(const std::wstring& title,
+                               short x,
+                               short y,
+                               short w,
+                               short h,
+                               DlgBase* dlg)
+    : ObjBase(title, BUTTON_WND_CLASS, 0, WS_GROUP | WS_TABSTOP | BS_AUTOCHECKBOX, x, y, w, h, dlg)
 {
 }
 

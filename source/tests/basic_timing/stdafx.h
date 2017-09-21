@@ -14,9 +14,9 @@
 #define NOMINMAX
 #include <windows.h>
 
-#include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <stdlib.h>
 #include <tchar.h>
 
 #include <chrono>

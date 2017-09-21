@@ -51,7 +51,9 @@ namespace BinaryTests
 
         void CopyContentsToTempDir(const filesystem::path& folder)
         {
-            filesystem::copy(folder, gs_base_path / TEMP_DIR_NAME, filesystem::copy_options::recursive);
+            filesystem::copy(folder,
+                             gs_base_path / TEMP_DIR_NAME,
+                             filesystem::copy_options::recursive);
         }
 
         std::vector<std::wstring> ReadLog(const filesystem::path& path)
@@ -82,9 +84,8 @@ namespace BinaryTests
 
                     if (expected_line != output_line)
                     {
-                        std::wcout << L"Log mismatch detected on line " << i
-                                   << L":\nExpected: " << expected_line
-                                   << L"\nOutput:   " << output_line << L'\n';
+                        std::wcout << L"Log mismatch detected on line " << i << L":\nExpected: "
+                                   << expected_line << L"\nOutput:   " << output_line << L'\n';
 
                         return false;
                     }
@@ -101,18 +102,18 @@ namespace BinaryTests
             return true;
         }
 
-        TEST_CASE( "binary tests" )
+        TEST_CASE("binary tests")
         {
             for (const auto& test : gs_tests)
             {
-                SECTION( test.first.filename().string() )
+                SECTION(test.first.filename().string())
                 {
                     const auto exe_filename = test.first.filename().replace_extension("exe");
                     const auto exe_path = gs_base_path / TEMP_DIR_NAME / exe_filename;
 
                     for (const auto& input_pair : test.second)
                     {
-                        SECTION( input_pair.input.filename().string() )
+                        SECTION(input_pair.input.filename().string())
                         {
                             /*
                              * Create a temp folder and copy the test there.
@@ -123,13 +124,14 @@ namespace BinaryTests
                             /*
                              * Run Hourglass on the test .exe with the current input file.
                              */
-                            REQUIRE_NOTHROW( Hourglass::Run(exe_path, input_pair.input) );
+                            REQUIRE_NOTHROW(Hourglass::Run(exe_path, input_pair.input));
 
                             /*
                              * Make sure the test output its log file.
                              */
-                            const filesystem::path output_log = gs_base_path / TEMP_DIR_NAME / OUTPUT_LOG_FILENAME;
-                            REQUIRE( filesystem::exists(output_log) );
+                            const filesystem::path output_log =
+                                gs_base_path / TEMP_DIR_NAME / OUTPUT_LOG_FILENAME;
+                            REQUIRE(filesystem::exists(output_log));
 
                             /*
                              * Compare the test output with the expected output.
@@ -141,19 +143,26 @@ namespace BinaryTests
                              */
                             if (!logs_match)
                             {
-                                const filesystem::path failed = gs_base_path / FAILED_DIR_NAME / test.first.filename();
+                                const filesystem::path failed =
+                                    gs_base_path / FAILED_DIR_NAME / test.first.filename();
                                 filesystem::create_directories(failed);
 
                                 filesystem::path expected = failed / input_pair.log.filename();
-                                expected.replace_filename(expected.stem().wstring() + L"_expected.log");
+                                expected.replace_filename(expected.stem().wstring()
+                                                          + L"_expected.log");
 
-                                filesystem::path output = failed / (input_pair.log.stem().wstring() + L"_output.log");
+                                filesystem::path output =
+                                    failed / (input_pair.log.stem().wstring() + L"_output.log");
 
-                                filesystem::copy_file(input_pair.log, expected, filesystem::copy_options::overwrite_existing);
-                                filesystem::copy_file(output_log, output, filesystem::copy_options::overwrite_existing);
+                                filesystem::copy_file(input_pair.log,
+                                                      expected,
+                                                      filesystem::copy_options::overwrite_existing);
+                                filesystem::copy_file(output_log,
+                                                      output,
+                                                      filesystem::copy_options::overwrite_existing);
                             }
 
-                            REQUIRE( logs_match );
+                            REQUIRE(logs_match);
                         }
                     }
                 }
@@ -165,7 +174,8 @@ namespace BinaryTests
     {
         gs_base_path = base_path;
 
-        const filesystem::path input_path = gs_base_path.parent_path().parent_path().parent_path() / "test_input";
+        const filesystem::path input_path =
+            gs_base_path.parent_path().parent_path().parent_path() / "test_input";
 
         /*
          * Find all folders in bin/.
@@ -184,7 +194,8 @@ namespace BinaryTests
                 const auto exe_filename = path.filename().replace_extension("exe");
                 if (!filesystem::exists(path / exe_filename))
                 {
-                    std::wcout << L"\t...but it doesn't contain " << exe_filename << L"! Ignoring.\n";
+                    std::wcout << L"\t...but it doesn't contain " << exe_filename
+                               << L"! Ignoring.\n";
                     continue;
                 }
 
@@ -204,13 +215,15 @@ namespace BinaryTests
                          */
                         if (!filesystem::exists(log_path))
                         {
-                            std::wcout << L"\tNo log file found for " << input_path.filename() << L"! Ignoring.\n";
+                            std::wcout << L"\tNo log file found for " << input_path.filename()
+                                       << L"! Ignoring.\n";
                             continue;
                         }
 
                         std::wcout << L"\tTest input: " << input_path.filename() << L'\n';
 
-                        gs_tests[path].push_back(InputPair{ std::move(input_path), std::move(log_path) });
+                        gs_tests[path].push_back(
+                            InputPair{std::move(input_path), std::move(log_path)});
                     }
                 }
             }

@@ -11,10 +11,36 @@ namespace Hooks
 
     namespace DirectInput
     {
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectInputCreateA, HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectInputCreateW, HINSTANCE hinst, DWORD dwVersion, struct LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectInputCreateEx, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
-        HOOK_FUNCTION_DECLARE(HRESULT, WINAPI, DirectInput8Create, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT,
+                              WINAPI,
+                              DirectInputCreateA,
+                              HINSTANCE hinst,
+                              DWORD dwVersion,
+                              struct LPDIRECTINPUTA* ppDI,
+                              LPUNKNOWN punkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT,
+                              WINAPI,
+                              DirectInputCreateW,
+                              HINSTANCE hinst,
+                              DWORD dwVersion,
+                              struct LPDIRECTINPUTW* ppDI,
+                              LPUNKNOWN punkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT,
+                              WINAPI,
+                              DirectInputCreateEx,
+                              HINSTANCE hinst,
+                              DWORD dwVersion,
+                              REFIID riidltf,
+                              LPVOID* ppvOut,
+                              LPUNKNOWN punkOuter);
+        HOOK_FUNCTION_DECLARE(HRESULT,
+                              WINAPI,
+                              DirectInput8Create,
+                              HINSTANCE hinst,
+                              DWORD dwVersion,
+                              REFIID riidltf,
+                              LPVOID* ppvOut,
+                              LPUNKNOWN punkOuter);
     }
 
     namespace WinInput
@@ -27,13 +53,29 @@ namespace Hooks
         HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetCursorPos, LPPOINT lpPoint);
         HOOK_FUNCTION_DECLARE(BOOL, WINAPI, GetCursorInfo, PCURSORINFO pci);
 
-        HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joySetCapture, HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
+        HOOK_FUNCTION_DECLARE(MMRESULT,
+                              WINAPI,
+                              joySetCapture,
+                              HWND hwnd,
+                              UINT uJoyID,
+                              UINT uPeriod,
+                              BOOL fChanged);
         HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joyReleaseCapture, UINT uJoyID);
         HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joyGetPosEx, UINT uJoyID, LPJOYINFOEX pji);
         HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joyGetPos, UINT uJoyID, LPJOYINFO pji);
         HOOK_FUNCTION_DECLARE(UINT, WINAPI, joyGetNumDevs);
-        HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joyGetDevCapsA, UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-        HOOK_FUNCTION_DECLARE(MMRESULT, WINAPI, joyGetDevCapsW, UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+        HOOK_FUNCTION_DECLARE(MMRESULT,
+                              WINAPI,
+                              joyGetDevCapsA,
+                              UINT_PTR uJoyID,
+                              LPJOYCAPSA pjc,
+                              UINT cbjc);
+        HOOK_FUNCTION_DECLARE(MMRESULT,
+                              WINAPI,
+                              joyGetDevCapsW,
+                              UINT_PTR uJoyID,
+                              LPJOYCAPSW pjc,
+                              UINT cbjc);
     }
 
     namespace WinInput
@@ -53,6 +95,9 @@ namespace Hooks
     namespace DirectInput
     {
         bool HookCOMInterfaceInput(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew);
-        bool HookCOMInterfaceInputEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew);
+        bool HookCOMInterfaceInputEx(REFIID riid,
+                                     LPVOID* ppvOut,
+                                     REFGUID parameter,
+                                     bool uncheckedFastNew);
     }
 }

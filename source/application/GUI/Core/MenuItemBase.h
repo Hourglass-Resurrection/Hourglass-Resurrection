@@ -26,7 +26,11 @@ protected:
         Unset,
     };
 
-    MenuItemBase(const std::wstring& title, const std::wstring& shortcut, bool submenu, MenuBase* parent, DlgBase* dlg);
+    MenuItemBase(const std::wstring& title,
+                 const std::wstring& shortcut,
+                 bool submenu,
+                 MenuBase* parent,
+                 DlgBase* dlg);
 
     void SetUnsetStyleBits(DWORD style, SetBits set);
 

@@ -14,8 +14,8 @@
 
 #include "PushButton.h"
 
-PushButton::PushButton(const std::wstring & title, short x, short y, short w, short h, DlgBase* dlg) :
-    ObjBase(title, BUTTON_WND_CLASS, 0, WS_GROUP | WS_TABSTOP, x, y, w, h, dlg)
+PushButton::PushButton(const std::wstring& title, short x, short y, short w, short h, DlgBase* dlg)
+    : ObjBase(title, BUTTON_WND_CLASS, 0, WS_GROUP | WS_TABSTOP, x, y, w, h, dlg)
 {
 }
 

@@ -70,6 +70,7 @@ namespace Utils
             ImageRelocationTable GetRelocationTable(DWORD64 mod_base) const;
 
             bool IsValid() const;
+
         private:
             DWORD RvaToOffset(DWORD rva) const;
 
@@ -90,7 +91,6 @@ namespace Utils
     }
 }
 
-
 namespace Utils
 {
     namespace File
@@ -105,12 +105,10 @@ namespace Utils
             AVI
         };
 
-        std::wstring GetFileNameOpen(
-            const std::wstring& location,
-            const std::vector<FileFilter>& file_types);
+        std::wstring GetFileNameOpen(const std::wstring& location,
+                                     const std::vector<FileFilter>& file_types);
 
-        std::wstring GetFileNameSave(
-            const std::wstring& location,
-            const std::vector<FileFilter>& file_types);
+        std::wstring GetFileNameSave(const std::wstring& location,
+                                     const std::vector<FileFilter>& file_types);
     }
 }

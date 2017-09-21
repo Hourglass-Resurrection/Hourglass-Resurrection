@@ -32,7 +32,7 @@ namespace Hooks
         {
             // if we are, it's still a regular frame boundary,
             // but we prepare extra info for the AVI capture around it.
-            DDSURFACEDESC desc = { sizeof(DDSURFACEDESC) };
+            DDSURFACEDESC desc = {sizeof(DDSURFACEDESC)};
             SDL_LockSurface(screen);
             desc.lpSurface = screen->pixels;
             desc.dwWidth = screen->w;
@@ -43,7 +43,9 @@ namespace Hooks
             desc.ddpfPixelFormat.dwGBitMask = screen->format->Gmask;
             desc.ddpfPixelFormat.dwBBitMask = screen->format->Bmask;
             if (desc.ddpfPixelFormat.dwRGBBitCount == 8 && screen->format->palette)
-                memcpy(&activePalette[0], &screen->format->palette->entries[0], std::min(256, screen->format->palette->entryCount));
+                memcpy(&activePalette[0],
+                       &screen->format->palette->entries[0],
+                       std::min(256, screen->format->palette->entryCount));
 
             FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
 
@@ -73,13 +75,20 @@ namespace Hooks
         ENTER(screen, x, y, w, h);
         usingSDLOrDD = true;
         bool isEntireScreen = !x && !y && !w && !h;
-        if (!ShouldSkipDrawing(isEntireScreen, /*!isEntireScreen*/false)) // eversion crashes sometimes if the second param is true
+        if (!ShouldSkipDrawing(isEntireScreen,
+                               /*!isEntireScreen*/
+                               false)) // eversion crashes sometimes if the second param is true
             SDL_UpdateRect(screen, x, y, w, h);
         // used_sdl_flip check needed for eversion, not needed for ?
         if (!used_sdl_flip && isEntireScreen)
             SDLFrameBoundary(screen);
     }
-    HOOK_FUNCTION(void, SDLCALL, SDL_UpdateRects, SDL_Surface* screen, int numrects, SDL_Rect* rects);
+    HOOK_FUNCTION(void,
+                  SDLCALL,
+                  SDL_UpdateRects,
+                  SDL_Surface* screen,
+                  int numrects,
+                  SDL_Rect* rects);
     HOOKFUNC void SDLCALL MySDL_UpdateRects(SDL_Surface* screen, int numrects, SDL_Rect* rects)
     {
         ENTER(screen, numrects, rects);
@@ -105,8 +114,17 @@ namespace Hooks
         if (!used_sdl_flip && !alreadyDidBoundary)
             FrameBoundary();
     }
-    HOOK_FUNCTION(SDL_Surface*, SDLCALL, SDL_SetVideoMode, int width, int height, int bpp, unsigned int flags);
-    HOOKFUNC SDL_Surface* SDLCALL MySDL_SetVideoMode(int width, int height, int bpp, unsigned int flags)
+    HOOK_FUNCTION(SDL_Surface*,
+                  SDLCALL,
+                  SDL_SetVideoMode,
+                  int width,
+                  int height,
+                  int bpp,
+                  unsigned int flags);
+    HOOKFUNC SDL_Surface* SDLCALL MySDL_SetVideoMode(int width,
+                                                     int height,
+                                                     int bpp,
+                                                     unsigned int flags)
     {
         ENTER(width, height, bpp, flags);
         static const int SDL_FULLSCREEN = 0x80000000;
@@ -119,29 +137,28 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(int, SDLCALL, SDL_LockSurface, SDL_Surface *surface);
-    HOOKFUNC int SDLCALL MySDL_LockSurface(SDL_Surface *surface)
+    HOOK_FUNCTION(int, SDLCALL, SDL_LockSurface, SDL_Surface* surface);
+    HOOKFUNC int SDLCALL MySDL_LockSurface(SDL_Surface* surface)
     {
         ENTER(surface);
         return SDL_LockSurface(surface);
     }
-    HOOK_FUNCTION(void, SDLCALL, SDL_UnlockSurface, SDL_Surface *surface);
-    HOOKFUNC void SDLCALL MySDL_UnlockSurface(SDL_Surface *surface)
+    HOOK_FUNCTION(void, SDLCALL, SDL_UnlockSurface, SDL_Surface* surface);
+    HOOKFUNC void SDLCALL MySDL_UnlockSurface(SDL_Surface* surface)
     {
         ENTER(surface);
         SDL_UnlockSurface(surface);
     }
 
-
     void ApplySDLIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, SDL, SDL_Flip),
             MAKE_INTERCEPT(1, SDL, SDL_UpdateRect),
             MAKE_INTERCEPT(1, SDL, SDL_UpdateRects),
             MAKE_INTERCEPT(1, SDL, SDL_GL_SwapBuffers),
-            MAKE_INTERCEPT(1, SDL, SDL_SetVideoMode), // not necessary, but maybe helps app behave more nicely
+            MAKE_INTERCEPT(
+                1, SDL, SDL_SetVideoMode), // not necessary, but maybe helps app behave more nicely
             MAKE_INTERCEPT(0, SDL, SDL_LockSurface),
             MAKE_INTERCEPT(0, SDL, SDL_UnlockSurface),
         };

@@ -36,7 +36,12 @@ namespace
     }
 }
 
-HANDLE Utils::Thread::CreateThread(LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size, LPTHREAD_START_ROUTINE start_address, LPVOID parameter, DWORD creation_flags, LPDWORD thread_id)
+HANDLE Utils::Thread::CreateThread(LPSECURITY_ATTRIBUTES thread_attributes,
+                                   SIZE_T stack_size,
+                                   LPTHREAD_START_ROUTINE start_address,
+                                   LPVOID parameter,
+                                   DWORD creation_flags,
+                                   LPDWORD thread_id)
 {
     /*
      * Deleted by the PreThreadProc.
@@ -44,5 +49,10 @@ HANDLE Utils::Thread::CreateThread(LPSECURITY_ATTRIBUTES thread_attributes, SIZE
     ThreadParams* thread_params = new ThreadParams();
     thread_params->function = start_address;
     thread_params->param = parameter;
-    return ::CreateThread(thread_attributes, stack_size, PreThreadProc, thread_params, creation_flags, thread_id);
+    return ::CreateThread(thread_attributes,
+                          stack_size,
+                          PreThreadProc,
+                          thread_params,
+                          creation_flags,
+                          thread_id);
 }

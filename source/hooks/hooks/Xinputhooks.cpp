@@ -12,10 +12,12 @@ namespace Hooks
 {
     static bool gs_xinput_enabled = true;
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetState,
-        DWORD         dwUserIndex, // [in] Index of the user's controller.
-        XINPUT_STATE* pState       // [out] Receives the current state of the controller.
-    );
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputGetState,
+                  DWORD dwUserIndex, // [in] Index of the user's controller.
+                  XINPUT_STATE* pState // [out] Receives the current state of the controller.
+                  );
     HOOKFUNC DWORD WINAPI MyXInputGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
     {
         ENTER(dwUserIndex, gs_xinput_enabled);
@@ -38,16 +40,17 @@ namespace Hooks
         static XINPUT_GAMEPAD s_last_state[4];
         static DWORD s_packet_number = 0;
 
-        XINPUT_GAMEPAD new_state = gs_xinput_enabled ? curinput.gamepad[dwUserIndex] : XINPUT_GAMEPAD();
+        XINPUT_GAMEPAD new_state =
+            gs_xinput_enabled ? curinput.gamepad[dwUserIndex] : XINPUT_GAMEPAD();
         pState->Gamepad = new_state;
 
-        if (s_last_state[dwUserIndex].wButtons != new_state.wButtons ||
-            s_last_state[dwUserIndex].bLeftTrigger != new_state.bLeftTrigger ||
-            s_last_state[dwUserIndex].bRightTrigger != new_state.bRightTrigger ||
-            s_last_state[dwUserIndex].sThumbLX != new_state.sThumbLX ||
-            s_last_state[dwUserIndex].sThumbLY != new_state.sThumbLY ||
-            s_last_state[dwUserIndex].sThumbRX != new_state.sThumbRX ||
-            s_last_state[dwUserIndex].sThumbRY != new_state.sThumbRY)
+        if (s_last_state[dwUserIndex].wButtons != new_state.wButtons
+            || s_last_state[dwUserIndex].bLeftTrigger != new_state.bLeftTrigger
+            || s_last_state[dwUserIndex].bRightTrigger != new_state.bRightTrigger
+            || s_last_state[dwUserIndex].sThumbLX != new_state.sThumbLX
+            || s_last_state[dwUserIndex].sThumbLY != new_state.sThumbLY
+            || s_last_state[dwUserIndex].sThumbRX != new_state.sThumbRX
+            || s_last_state[dwUserIndex].sThumbRY != new_state.sThumbRY)
         {
             pState->dwPacketNumber = ++s_packet_number;
             s_last_state[dwUserIndex] = new_state;
@@ -60,10 +63,13 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_ORDINAL(DWORD, WINAPI, 100, XInputGetStateEx,
-        DWORD         dwUserIndex, // [in] Index of the user's controller.
-        XINPUT_STATE* pState       // [out] Receives the current state of the controller.
-    );
+    HOOK_ORDINAL(DWORD,
+                 WINAPI,
+                 100,
+                 XInputGetStateEx,
+                 DWORD dwUserIndex, // [in] Index of the user's controller.
+                 XINPUT_STATE* pState // [out] Receives the current state of the controller.
+                 );
     HOOKFUNC DWORD WINAPI MyXInputGetStateEx(DWORD dwUserIndex, XINPUT_STATE* pState)
     {
         ENTER(dwUserIndex, gs_xinput_enabled);
@@ -78,10 +84,13 @@ namespace Hooks
         return MyXInputGetState(dwUserIndex, pState);
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputSetState,
-        DWORD             dwUserIndex, // [in] Index of the user's controller.
-        XINPUT_VIBRATION* pVibration   // [in, out] The vibration information to send to the controller.
-    );
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputSetState,
+                  DWORD dwUserIndex, // [in] Index of the user's controller.
+                  XINPUT_VIBRATION*
+                      pVibration // [in, out] The vibration information to send to the controller.
+                  );
     HOOKFUNC DWORD WINAPI MyXInputSetState(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
     {
         ENTER(dwUserIndex);
@@ -94,12 +103,16 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetCapabilities,
-        DWORD                dwUserIndex,  // [in] Index of the gamer associated with the device.
-        DWORD                dwFlags,      // [in] Input flags that identify the device type.
-        XINPUT_CAPABILITIES* pCapabilities // [out] Receives the capabilities.
-    );
-    HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputGetCapabilities,
+                  DWORD dwUserIndex, // [in] Index of the gamer associated with the device.
+                  DWORD dwFlags, // [in] Input flags that identify the device type.
+                  XINPUT_CAPABILITIES* pCapabilities // [out] Receives the capabilities.
+                  );
+    HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(DWORD dwUserIndex,
+                                                  DWORD dwFlags,
+                                                  XINPUT_CAPABILITIES* pCapabilities)
     {
         ENTER(dwUserIndex, dwFlags);
 
@@ -141,12 +154,16 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetDSoundAudioDeviceGuids,
-        DWORD dwUserIndex,       // [in] Index of the gamer associated with the device.
-        GUID* pDSoundRenderGuid, // [out] DSound device ID for render.
-        GUID* pDSoundCaptureGuid // [out] DSound device ID for capture.
-    );
-    HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputGetDSoundAudioDeviceGuids,
+                  DWORD dwUserIndex, // [in] Index of the gamer associated with the device.
+                  GUID* pDSoundRenderGuid, // [out] DSound device ID for render.
+                  GUID* pDSoundCaptureGuid // [out] DSound device ID for capture.
+                  );
+    HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(DWORD dwUserIndex,
+                                                            GUID* pDSoundRenderGuid,
+                                                            GUID* pDSoundCaptureGuid)
     {
         ENTER(dwUserIndex);
 
@@ -252,15 +269,18 @@ namespace Hooks
         case ThumbState::UP:
             return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_UP : VK_PAD_RTHUMB_UP;
         case ThumbState::UP_RIGHT:
-            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_UPRIGHT : VK_PAD_RTHUMB_UPRIGHT;
+            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_UPRIGHT
+                                                     : VK_PAD_RTHUMB_UPRIGHT;
         case ThumbState::RIGHT:
             return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_RIGHT : VK_PAD_RTHUMB_RIGHT;
         case ThumbState::DOWN_RIGHT:
-            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_DOWNRIGHT : VK_PAD_RTHUMB_DOWNRIGHT;
+            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_DOWNRIGHT
+                                                     : VK_PAD_RTHUMB_DOWNRIGHT;
         case ThumbState::DOWN:
             return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_DOWN : VK_PAD_RTHUMB_DOWN;
         case ThumbState::DOWN_LEFT:
-            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_DOWNLEFT : VK_PAD_RTHUMB_DOWNLEFT;
+            return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_DOWNLEFT
+                                                     : VK_PAD_RTHUMB_DOWNLEFT;
         case ThumbState::LEFT:
             return (which_stick == ThumbStick::LEFT) ? VK_PAD_LTHUMB_LEFT : VK_PAD_RTHUMB_LEFT;
         case ThumbState::UP_LEFT:
@@ -305,22 +325,23 @@ namespace Hooks
 
         bool CheckOneDifference(const KeystrokeState& new_state, XINPUT_KEYSTROKE* keystroke)
         {
-#define CHECK_BUTTON(gamepad_name, vk_name) \
-            if ((m_buttons & XINPUT_GAMEPAD_ ## gamepad_name) != (new_state.m_buttons & XINPUT_GAMEPAD_ ## gamepad_name)) \
-            { \
-                keystroke->VirtualKey = VK_PAD_ ## vk_name; \
-                if ((new_state.m_buttons & XINPUT_GAMEPAD_ ## gamepad_name) > 0) \
-                { \
-                    keystroke->Flags = XINPUT_KEYSTROKE_KEYDOWN; \
-                    m_buttons |= XINPUT_GAMEPAD_ ## gamepad_name; \
-                } \
-                else \
-                { \
-                    keystroke->Flags = XINPUT_KEYSTROKE_KEYUP; \
-                    m_buttons &= ~XINPUT_GAMEPAD_ ## gamepad_name; \
-                } \
-                return true; \
-            }
+#define CHECK_BUTTON(gamepad_name, vk_name)                            \
+    if ((m_buttons & XINPUT_GAMEPAD_##gamepad_name)                    \
+        != (new_state.m_buttons & XINPUT_GAMEPAD_##gamepad_name))      \
+    {                                                                  \
+        keystroke->VirtualKey = VK_PAD_##vk_name;                      \
+        if ((new_state.m_buttons & XINPUT_GAMEPAD_##gamepad_name) > 0) \
+        {                                                              \
+            keystroke->Flags = XINPUT_KEYSTROKE_KEYDOWN;               \
+            m_buttons |= XINPUT_GAMEPAD_##gamepad_name;                \
+        }                                                              \
+        else                                                           \
+        {                                                              \
+            keystroke->Flags = XINPUT_KEYSTROKE_KEYUP;                 \
+            m_buttons &= ~XINPUT_GAMEPAD_##gamepad_name;               \
+        }                                                              \
+        return true;                                                   \
+    }
 
             CHECK_BUTTON(DPAD_UP, DPAD_UP);
             CHECK_BUTTON(DPAD_DOWN, DPAD_DOWN);
@@ -341,14 +362,16 @@ namespace Hooks
             if (m_left_trigger != new_state.m_left_trigger)
             {
                 keystroke->VirtualKey = VK_PAD_LTRIGGER;
-                keystroke->Flags = new_state.m_left_trigger ? XINPUT_KEYSTROKE_KEYDOWN : XINPUT_KEYSTROKE_KEYUP;
+                keystroke->Flags =
+                    new_state.m_left_trigger ? XINPUT_KEYSTROKE_KEYDOWN : XINPUT_KEYSTROKE_KEYUP;
                 m_left_trigger = new_state.m_left_trigger;
                 return true;
             }
             if (m_right_trigger != new_state.m_right_trigger)
             {
                 keystroke->VirtualKey = VK_PAD_RTRIGGER;
-                keystroke->Flags = new_state.m_right_trigger ? XINPUT_KEYSTROKE_KEYDOWN : XINPUT_KEYSTROKE_KEYUP;
+                keystroke->Flags =
+                    new_state.m_right_trigger ? XINPUT_KEYSTROKE_KEYDOWN : XINPUT_KEYSTROKE_KEYUP;
                 m_right_trigger = new_state.m_right_trigger;
                 return true;
             }
@@ -363,7 +386,8 @@ namespace Hooks
             {
                 if (m_left_thumb == ThumbState::NONE)
                 {
-                    keystroke->VirtualKey = ThumbStateToVirtualKey(new_state.m_left_thumb, ThumbStick::LEFT);
+                    keystroke->VirtualKey =
+                        ThumbStateToVirtualKey(new_state.m_left_thumb, ThumbStick::LEFT);
                     keystroke->Flags = XINPUT_KEYSTROKE_KEYDOWN;
                     m_left_thumb = new_state.m_left_thumb;
                     return true;
@@ -387,21 +411,24 @@ namespace Hooks
             {
                 if (m_right_thumb == ThumbState::NONE)
                 {
-                    keystroke->VirtualKey = ThumbStateToVirtualKey(new_state.m_right_thumb, ThumbStick::RIGHT);
+                    keystroke->VirtualKey =
+                        ThumbStateToVirtualKey(new_state.m_right_thumb, ThumbStick::RIGHT);
                     keystroke->Flags = XINPUT_KEYSTROKE_KEYDOWN;
                     m_right_thumb = new_state.m_right_thumb;
                     return true;
                 }
                 else if (new_state.m_right_thumb == ThumbState::NONE)
                 {
-                    keystroke->VirtualKey = ThumbStateToVirtualKey(m_right_thumb, ThumbStick::RIGHT);
+                    keystroke->VirtualKey =
+                        ThumbStateToVirtualKey(m_right_thumb, ThumbStick::RIGHT);
                     keystroke->Flags = XINPUT_KEYSTROKE_KEYUP;
                     m_right_thumb = new_state.m_right_thumb;
                     return true;
                 }
                 else
                 {
-                    keystroke->VirtualKey = ThumbStateToVirtualKey(m_right_thumb, ThumbStick::RIGHT);
+                    keystroke->VirtualKey =
+                        ThumbStateToVirtualKey(m_right_thumb, ThumbStick::RIGHT);
                     keystroke->Flags = XINPUT_KEYSTROKE_KEYUP;
                     m_right_thumb = ThumbState::NONE;
                     return true;
@@ -415,12 +442,16 @@ namespace Hooks
         }
     };
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetKeystroke,
-        DWORD             dwUserIndex, // [in] Index of the gamer associated with the device.
-        DWORD             dwReserved,  // [in] Reserved.
-        XINPUT_KEYSTROKE* pKeystroke   // [out] Receives the keystroke.
-    );
-    HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(DWORD dwUserIndex, DWORD dwReserved, XINPUT_KEYSTROKE* pKeystroke)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputGetKeystroke,
+                  DWORD dwUserIndex, // [in] Index of the gamer associated with the device.
+                  DWORD dwReserved, // [in] Reserved.
+                  XINPUT_KEYSTROKE* pKeystroke // [out] Receives the keystroke.
+                  );
+    HOOKFUNC DWORD WINAPI MyXInputGetKeystroke(DWORD dwUserIndex,
+                                               DWORD dwReserved,
+                                               XINPUT_KEYSTROKE* pKeystroke)
     {
         ENTER(dwUserIndex, gs_xinput_enabled);
 
@@ -439,7 +470,8 @@ namespace Hooks
             bool something_changed = false;
             for (INT i = 0; i < 4; ++i)
             {
-                XINPUT_GAMEPAD new_state = gs_xinput_enabled ? curinput.gamepad[i] : XINPUT_GAMEPAD();
+                XINPUT_GAMEPAD new_state =
+                    gs_xinput_enabled ? curinput.gamepad[i] : XINPUT_GAMEPAD();
                 if (s_last_state[i].CheckOneDifference(new_state, pKeystroke))
                 {
                     pKeystroke->UserIndex = i;
@@ -456,8 +488,10 @@ namespace Hooks
         else
         {
             pKeystroke->UserIndex = static_cast<BYTE>(dwUserIndex);
-            XINPUT_GAMEPAD new_state = gs_xinput_enabled ? curinput.gamepad[dwUserIndex] : XINPUT_GAMEPAD();
-            if (!s_last_state[dwUserIndex].CheckOneDifference(curinput.gamepad[dwUserIndex], pKeystroke))
+            XINPUT_GAMEPAD new_state =
+                gs_xinput_enabled ? curinput.gamepad[dwUserIndex] : XINPUT_GAMEPAD();
+            if (!s_last_state[dwUserIndex].CheckOneDifference(curinput.gamepad[dwUserIndex],
+                                                              pKeystroke))
             {
                 /*
                  * Nothing changed.
@@ -471,9 +505,11 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_FUNCTION(void, WINAPI, XInputEnable,
-        BOOL enable // [in] Indicates whether XInput is enabled or disabled.
-    );
+    HOOK_FUNCTION(void,
+                  WINAPI,
+                  XInputEnable,
+                  BOOL enable // [in] Indicates whether XInput is enabled or disabled.
+                  );
     HOOKFUNC void WINAPI MyXInputEnable(BOOL enable)
     {
         ENTER(enable);
@@ -481,12 +517,18 @@ namespace Hooks
         gs_xinput_enabled = (enable == FALSE) ? false : true;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetBatteryInformation,
-        DWORD                       dwUserIndex,        // [in] Index of the gamer associated with the device.
-        BYTE                        devType,            // [in] Which device on this user index.
-        XINPUT_BATTERY_INFORMATION* pBatteryInformation // [out] Contains the level and types of batteries.
-    );
-    HOOKFUNC DWORD WINAPI MyXInputGetBatteryInformation(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation)
+    HOOK_FUNCTION(DWORD,
+                  WINAPI,
+                  XInputGetBatteryInformation,
+                  DWORD dwUserIndex, // [in] Index of the gamer associated with the device.
+                  BYTE devType, // [in] Which device on this user index.
+                  XINPUT_BATTERY_INFORMATION*
+                      pBatteryInformation // [out] Contains the level and types of batteries.
+                  );
+    HOOKFUNC DWORD WINAPI
+    MyXInputGetBatteryInformation(DWORD dwUserIndex,
+                                  BYTE devType,
+                                  XINPUT_BATTERY_INFORMATION* pBatteryInformation)
     {
         ENTER(dwUserIndex);
 
@@ -504,14 +546,25 @@ namespace Hooks
         return ERROR_SUCCESS;
     }
 
-    HOOK_FUNCTION(DWORD, WINAPI, XInputGetAudioDeviceIds,
-        DWORD  dwUserIndex,      // [in] Index of the gamer associated with the device.
-        LPWSTR pRenderDeviceId,  // [out, optional] Windows Core Audio device ID string for render (speakers).
-        UINT*  pRenderCount,     // [in, out, optional] Size, in wide-chars, of the render device ID string buffer.
-        LPWSTR pCaptureDeviceId, // [out, optional] Windows Core Audio device ID string for capture (microphone).
-        UINT*  pCaptureCount     // [in, out, optional] Size, in wide-chars, of capture device ID string buffer.
-    );
-    HOOKFUNC DWORD WINAPI MyXInputGetAudioDeviceIds(DWORD dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount)
+    HOOK_FUNCTION(
+        DWORD,
+        WINAPI,
+        XInputGetAudioDeviceIds,
+        DWORD dwUserIndex, // [in] Index of the gamer associated with the device.
+        LPWSTR
+            pRenderDeviceId, // [out, optional] Windows Core Audio device ID string for render (speakers).
+        UINT*
+            pRenderCount, // [in, out, optional] Size, in wide-chars, of the render device ID string buffer.
+        LPWSTR
+            pCaptureDeviceId, // [out, optional] Windows Core Audio device ID string for capture (microphone).
+        UINT*
+            pCaptureCount // [in, out, optional] Size, in wide-chars, of capture device ID string buffer.
+        );
+    HOOKFUNC DWORD WINAPI MyXInputGetAudioDeviceIds(DWORD dwUserIndex,
+                                                    LPWSTR pRenderDeviceId,
+                                                    UINT* pRenderCount,
+                                                    LPWSTR pCaptureDeviceId,
+                                                    UINT* pCaptureCount)
     {
         ENTER(dwUserIndex);
 
@@ -548,8 +601,7 @@ namespace Hooks
 
     void ApplyXinputIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
+        static const InterceptDescriptor intercepts[] = {
             MAKE_INTERCEPT(1, XInput9_1_0, XInputGetState),
             MAKE_INTERCEPT(1, XInput9_1_0, XInputSetState),
             MAKE_INTERCEPT(1, XInput9_1_0, XInputGetCapabilities),

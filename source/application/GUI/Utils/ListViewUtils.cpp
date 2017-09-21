@@ -25,29 +25,28 @@ namespace
 
         HDC dc = CreateCompatibleDC(nullptr);
         HBITMAP checkbox_bitmaps;
-        RECT checkbox_full_rect = { 0, 0, 32, 16 };
+        RECT checkbox_full_rect = {0, 0, 32, 16};
 
         if (checkbox_bitmaps = CreateCompatibleBitmap(dc, 32, 16))
         {
             checkboxes = ImageList_Create(16, 16, ILC_COLOR, 2, 1);
-        
+
             if (checkboxes)
             {
                 HBITMAP previous_image = static_cast<HBITMAP>(SelectObject(dc, checkbox_bitmaps));
 
-                RECT checkbox_rect = { 1, 1, 16, 16 };
+                RECT checkbox_rect = {1, 1, 16, 16};
 
                 FillRect(dc, &checkbox_full_rect, reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1));
-                
-                DrawFrameControl(dc,
-                                 &checkbox_rect,
-                                 DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT);
-                checkbox_rect.left  += 16;
+
+                DrawFrameControl(dc, &checkbox_rect, DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT);
+                checkbox_rect.left += 16;
                 checkbox_rect.right += 16;
                 DrawFrameControl(dc,
                                  &checkbox_rect,
-                                 DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT | DFCS_CHECKED);
-                
+                                 DFC_BUTTON,
+                                 DFCS_BUTTONCHECK | DFCS_FLAT | DFCS_CHECKED);
+
                 SelectObject(dc, previous_image);
 
                 ImageList_Add(checkboxes, checkbox_bitmaps, 0);
@@ -66,18 +65,18 @@ namespace
 
 std::map<HWND, ListViewUtils*> ListViewUtils::ms_listviewutils_by_handle;
 
-ListViewUtils::ListViewUtils(HWND list_view_handle, HWND owner_dlg) :
-    m_parent(owner_dlg),
-    m_listview(list_view_handle),
-    m_listview_previous_cb(nullptr),
-    m_num_columns(0),
-    m_editing_enabled(false),
-    m_checkboxes_enabled(false),
-    m_editcontrol(nullptr),
-    m_editcontrol_font(nullptr),
-    m_editcontrol_previous_cb(nullptr),
-    m_item_being_edited(-1),
-    m_subitem_being_edited(-1)
+ListViewUtils::ListViewUtils(HWND list_view_handle, HWND owner_dlg)
+    : m_parent(owner_dlg)
+    , m_listview(list_view_handle)
+    , m_listview_previous_cb(nullptr)
+    , m_num_columns(0)
+    , m_editing_enabled(false)
+    , m_checkboxes_enabled(false)
+    , m_editcontrol(nullptr)
+    , m_editcontrol_font(nullptr)
+    , m_editcontrol_previous_cb(nullptr)
+    , m_item_being_edited(-1)
+    , m_subitem_being_edited(-1)
 {
 }
 
@@ -120,10 +119,7 @@ bool ListViewUtils::EnableCheckboxes()
     checkbox_init_ref_counter++;
     DWORD ex_styles = SendMessageW(m_listview, LVM_GETEXTENDEDLISTVIEWSTYLE, 0, 0);
     SendMessageW(m_listview, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, ex_styles | LVS_EX_SUBITEMIMAGES);
-    SendMessageW(m_listview,
-                 LVM_SETIMAGELIST,
-                 LVSIL_SMALL,
-                 reinterpret_cast<LPARAM>(checkboxes));
+    SendMessageW(m_listview, LVM_SETIMAGELIST, LVSIL_SMALL, reinterpret_cast<LPARAM>(checkboxes));
     return true;
 }
 
@@ -208,8 +204,10 @@ bool ListViewUtils::DeleteItem(INT item)
      * Not yet implemented
      * -- Warepire
      */
-    MessageBoxW(nullptr, L"ListViewUtils::DeleteItem(int item) is not yet implemented.",
-                L"Not yet implemented", MB_ICONASTERISK | MB_OK);
+    MessageBoxW(nullptr,
+                L"ListViewUtils::DeleteItem(int item) is not yet implemented.",
+                L"Not yet implemented",
+                MB_ICONASTERISK | MB_OK);
     return true;
 }
 
@@ -244,8 +242,8 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
                                       LVM_SUBITEMHITTEST,
                                       0,
                                       reinterpret_cast<LPARAM>(&hittest_info));
-            if (rv != -1 &&
-                m_protected_columns.find(hittest_info.iSubItem) == m_protected_columns.end())
+            if (rv != -1
+                && m_protected_columns.find(hittest_info.iSubItem) == m_protected_columns.end())
             {
                 RECT subitem_rect;
                 memset(&subitem_rect, 0, sizeof(subitem_rect));
@@ -259,19 +257,16 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
                                  hittest_info.iItem,
                                  reinterpret_cast<LPARAM>(&subitem_rect));
 
-                    if ((hittest_info.pt.x >= subitem_rect.left) &&
-                        (hittest_info.pt.x <= subitem_rect.right) &&
-                        (hittest_info.pt.y >= subitem_rect.top) &&
-                        (hittest_info.pt.y <= subitem_rect.bottom))
+                    if ((hittest_info.pt.x >= subitem_rect.left)
+                        && (hittest_info.pt.x <= subitem_rect.right)
+                        && (hittest_info.pt.y >= subitem_rect.top)
+                        && (hittest_info.pt.y <= subitem_rect.bottom))
                     {
                         LVITEM item;
                         item.mask = LVIF_IMAGE;
                         item.iItem = hittest_info.iItem;
                         item.iSubItem = hittest_info.iSubItem;
-                        SendMessageW(m_listview,
-                                     LVM_GETITEMW,
-                                     0,
-                                     reinterpret_cast<LPARAM>(&item));
+                        SendMessageW(m_listview, LVM_GETITEMW, 0, reinterpret_cast<LPARAM>(&item));
 
                         if (item.iImage == CHECKBOX_STATE_UNCHECKED)
                         {
@@ -282,10 +277,7 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
                             item.iImage = CHECKBOX_STATE_UNCHECKED;
                         }
 
-                        SendMessageW(m_listview,
-                                     LVM_SETITEMW,
-                                     0,
-                                     reinterpret_cast<LPARAM>(&item));
+                        SendMessageW(m_listview, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&item));
                     }
                 }
                 else
@@ -365,7 +357,7 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
                      */
                     m_editcontrol = CreateWindowExW(0,
                                                     L"EDIT",
-                                                    buf, 
+                                                    buf,
                                                     WS_CHILD | WS_VISIBLE | es_style,
                                                     subitem_rect.left + 2,
                                                     subitem_rect.top,
@@ -391,14 +383,13 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
                     SendMessageW(m_editcontrol,
                                  WM_SETFONT,
                                  reinterpret_cast<WPARAM>(m_editcontrol_font),
-                                 MAKELPARAM(TRUE,0));
+                                 MAKELPARAM(TRUE, 0));
                     SendMessageW(m_editcontrol, EM_SETSEL, 0xFFFF, 0xFFFF);
 
                     SetFocus(m_editcontrol);
-                    LONG proc =
-                        SetWindowLongW(m_editcontrol,
-                                       GWL_WNDPROC,
-                                       reinterpret_cast<LONG>(ListViewUtils::BaseCallback));
+                    LONG proc = SetWindowLongW(m_editcontrol,
+                                               GWL_WNDPROC,
+                                               reinterpret_cast<LONG>(ListViewUtils::BaseCallback));
                     m_editcontrol_previous_cb = reinterpret_cast<WNDPROC>(proc);
                     ms_listviewutils_by_handle.insert(std::make_pair(m_editcontrol, this));
                     m_item_being_edited = hittest_info.iItem;
@@ -427,112 +418,104 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
         {
             switch (wparam)
             {
-                case VK_RETURN:
-                case VK_TAB:
-                {
-                    /*
+            case VK_RETURN:
+            case VK_TAB:
+            {
+                /*
                      * Since this control gets re-created all the time the WM_KEYUP message
                      * does not go through this control every time leading to state conflicts
                      * using the WM_KEYDOWN message to detect shift-holding.
                      * Using GetKeyState gets around that issue.
                      */
-                    bool shift_held = (GetKeyState(VK_SHIFT) & 0x8000) == 0x8000;
-                    /*
+                bool shift_held = (GetKeyState(VK_SHIFT) & 0x8000) == 0x8000;
+                /*
                      * Calling LVM_GETSUBITEMRECT on invalid items doesn't cause SendMessageW
                      * to return an error, the resulting RECT will however be filled with
                      * obscenely large values instead. Mitigate this by finding out the length
                      * of the entire row and use that as a comparison.
                      */
-                    RECT bounds;
-                    memset(&bounds, 0, sizeof(bounds));
-                    bounds.left = LVIR_BOUNDS;
-                    SendMessageW(m_listview,
-                                 LVM_GETITEMRECT,
-                                 0,
-                                 reinterpret_cast<LPARAM>(&bounds));
+                RECT bounds;
+                memset(&bounds, 0, sizeof(bounds));
+                bounds.left = LVIR_BOUNDS;
+                SendMessageW(m_listview, LVM_GETITEMRECT, 0, reinterpret_cast<LPARAM>(&bounds));
 
-                    INT num_rows = SendMessageW(m_listview, LVM_GETITEMCOUNT, 0, 0) - 1;
+                INT num_rows = SendMessageW(m_listview, LVM_GETITEMCOUNT, 0, 0) - 1;
 
-                    RECT subitem_rect;
-                    INT next_item = m_item_being_edited;
-                    INT next_subitem = m_subitem_being_edited;
-                        
-                    /*
+                RECT subitem_rect;
+                INT next_item = m_item_being_edited;
+                INT next_subitem = m_subitem_being_edited;
+
+                /*
                      * Using a do-while loop for a nicer way to do this item scanning without
                      * the use of goto.
                      */
+                do
+                {
+                    memset(&subitem_rect, 0, sizeof(subitem_rect));
                     do
                     {
-                        memset(&subitem_rect, 0, sizeof(subitem_rect));
-                        do
+                        if (shift_held && wparam == VK_TAB)
                         {
-                            if (shift_held && wparam == VK_TAB)
-                            {
-                                next_subitem--;
-                            }
-                            else
-                            {
-                                next_subitem++;
-                            }
-                        } while ((m_protected_columns.find(next_subitem) !=
-                                     m_protected_columns.end()) ||
-                                 (m_checkbox_columns.find(next_subitem) != 
-                                     m_checkbox_columns.end()));
-
-                            
-                        subitem_rect.top = next_subitem;
-                        subitem_rect.left = LVIR_BOUNDS;
-                        LRESULT rv = SendMessageW(m_listview,
-                                                  LVM_GETSUBITEMRECT,
-                                                  next_item,
-                                                  reinterpret_cast<LPARAM>(&subitem_rect));
-
-                        if (static_cast<UINT>(subitem_rect.left) >
-                                static_cast<UINT>(bounds.right) ||
-                            static_cast<UINT>(subitem_rect.right) >
-                                static_cast<UINT>(bounds.right))
-                        {
-                            if (shift_held && wparam == VK_TAB)
-                            {
-                                if (next_item == 0)
-                                {
-                                    SetFocus(m_parent);
-                                    return 0;
-                                }
-                                next_item--;
-                                next_subitem = m_num_columns;
-                            }
-                            else
-                            {
-                                if (next_item == num_rows)
-                                {
-                                    SetFocus(m_parent);
-                                    return 0;
-                                }
-                                next_item++;
-                                next_subitem = -1;
-                            }
-                            continue;
+                            next_subitem--;
                         }
-                        break;
-                    } while (true);
+                        else
+                        {
+                            next_subitem++;
+                        }
+                    } while (
+                        (m_protected_columns.find(next_subitem) != m_protected_columns.end())
+                        || (m_checkbox_columns.find(next_subitem) != m_checkbox_columns.end()));
 
-                    SendMessageW(m_editcontrol, WM_KILLFOCUS, 0, 0);
+                    subitem_rect.top = next_subitem;
+                    subitem_rect.left = LVIR_BOUNDS;
+                    LRESULT rv = SendMessageW(m_listview,
+                                              LVM_GETSUBITEMRECT,
+                                              next_item,
+                                              reinterpret_cast<LPARAM>(&subitem_rect));
 
-                    /*
+                    if (static_cast<UINT>(subitem_rect.left) > static_cast<UINT>(bounds.right)
+                        || static_cast<UINT>(subitem_rect.right) > static_cast<UINT>(bounds.right))
+                    {
+                        if (shift_held && wparam == VK_TAB)
+                        {
+                            if (next_item == 0)
+                            {
+                                SetFocus(m_parent);
+                                return 0;
+                            }
+                            next_item--;
+                            next_subitem = m_num_columns;
+                        }
+                        else
+                        {
+                            if (next_item == num_rows)
+                            {
+                                SetFocus(m_parent);
+                                return 0;
+                            }
+                            next_item++;
+                            next_subitem = -1;
+                        }
+                        continue;
+                    }
+                    break;
+                } while (true);
+
+                SendMessageW(m_editcontrol, WM_KILLFOCUS, 0, 0);
+
+                /*
                      * Just dump the message the in the message queue, don't block for a
                      * return value, otherwise in larger lists we will have dangerously deep
                      * rectursion in this message handler.
                      */
-                    PostMessageW(m_listview,
-                                 WM_LBUTTONDOWN,
-                                 MK_LBUTTON,
-                                 MAKELPARAM(subitem_rect.left + 1,
-                                            subitem_rect.top + 1));
-                    return 0;
-                }
-                default:
-                    break;
+                PostMessageW(m_listview,
+                             WM_LBUTTONDOWN,
+                             MK_LBUTTON,
+                             MAKELPARAM(subitem_rect.left + 1, subitem_rect.top + 1));
+                return 0;
+            }
+            default:
+                break;
             }
             break;
         }
@@ -547,10 +530,7 @@ LRESULT ListViewUtils::ListViewCallback(HWND hwnd, UINT msg, WPARAM wparam, LPAR
             item.iItem = m_item_being_edited;
             item.iSubItem = m_subitem_being_edited;
             item.pszText = new_text;
-            SendMessageW(m_listview,
-                         LVM_SETITEMTEXTW,
-                         item.iItem,
-                         reinterpret_cast<LPARAM>(&item));
+            SendMessageW(m_listview, LVM_SETITEMTEXTW, item.iItem, reinterpret_cast<LPARAM>(&item));
 
             DestroyWindow(m_editcontrol);
             break;

@@ -20,7 +20,7 @@ namespace DiaEnumIteratorImpl
      * -- YaLTeR
      */
     template<class Enumerator, class Item, class IndexType>
-    Item* ItemTypeHelper(HRESULT(__stdcall Enumerator::*)(IndexType, Item**));
+    Item* ItemTypeHelper(HRESULT (__stdcall Enumerator::*)(IndexType, Item**));
 
     template<class Enumerator>
     using item_type = std::remove_pointer_t<decltype(ItemTypeHelper(&Enumerator::Item))>;
@@ -49,18 +49,18 @@ namespace DiaEnumIteratorImpl
      */
     template<class Enumerator, class Item>
     inline HRESULT CallItem(Enumerator* enumerator,
-        HRESULT(__stdcall Enumerator::*method)(DWORD, Item**),
-        DWORD index,
-        Item** item)
+                            HRESULT (__stdcall Enumerator::*method)(DWORD, Item**),
+                            DWORD index,
+                            Item** item)
     {
         return (enumerator->*method)(index, item);
     }
 
     template<class Enumerator, class Item>
     inline HRESULT CallItem(Enumerator* enumerator,
-        HRESULT(__stdcall Enumerator::*method)(VARIANT, Item**),
-        DWORD index,
-        Item** item)
+                            HRESULT (__stdcall Enumerator::*method)(VARIANT, Item**),
+                            DWORD index,
+                            Item** item)
     {
         VARIANT v;
         v.vt = VT_INT;
@@ -149,25 +149,27 @@ namespace DiaEnumIteratorImpl
 template<class Enumerator>
 DiaEnumIteratorImpl::DiaEnumIterator<Enumerator> begin(Enumerator* enumerator)
 {
-    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(enumerator, DiaEnumIteratorImpl::StartingState::Begin);
+    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(
+        enumerator, DiaEnumIteratorImpl::StartingState::Begin);
 }
 
 template<class Enumerator>
 DiaEnumIteratorImpl::DiaEnumIterator<Enumerator> end(Enumerator* enumerator)
 {
-    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(enumerator, DiaEnumIteratorImpl::StartingState::End);
+    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(
+        enumerator, DiaEnumIteratorImpl::StartingState::End);
 }
 
 template<class Enumerator>
 DiaEnumIteratorImpl::DiaEnumIterator<Enumerator> begin(CComPtr<Enumerator> enumerator)
 {
-    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(std::move(enumerator),
-                                                            DiaEnumIteratorImpl::StartingState::Begin);
+    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(
+        std::move(enumerator), DiaEnumIteratorImpl::StartingState::Begin);
 }
 
 template<class Enumerator>
 DiaEnumIteratorImpl::DiaEnumIterator<Enumerator> end(CComPtr<Enumerator> enumerator)
 {
-    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(std::move(enumerator),
-                                                            DiaEnumIteratorImpl::StartingState::End);
+    return DiaEnumIteratorImpl::DiaEnumIterator<Enumerator>(
+        std::move(enumerator), DiaEnumIteratorImpl::StartingState::End);
 }

@@ -19,12 +19,12 @@ extern bool RWfileChanged;
 // AddressWatcher is self-contained now
 struct AddressWatcher
 {
-	unsigned int Address; // hardware address
-	char Size;
-	char Type;
-	LPWSTR comment; // NULL means no comment, non-NULL means allocated comment
-	bool WrongEndian;
-	RSVal CurValue;
+    unsigned int Address; // hardware address
+    char Size;
+    char Type;
+    LPWSTR comment; // NULL means no comment, non-NULL means allocated comment
+    bool WrongEndian;
+    RSVal CurValue;
 };
 #define MAX_WATCH_COUNT 256
 extern AddressWatcher rswatches[MAX_WATCH_COUNT];
@@ -33,7 +33,7 @@ extern int WatchCount; // number of valid items in rswatches
 extern char Watch_Dir[1024];
 
 bool InsertWatch(const AddressWatcher& Watch, LPCWSTR Comment);
-void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
-bool InsertWatch(const AddressWatcher& Watch, HWND parent=NULL); // asks user for comment
+void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex = -1);
+bool InsertWatch(const AddressWatcher& Watch, HWND parent = NULL); // asks user for comment
 void Update_RAM_Watch();
 bool Load_Watches(bool clear, const char* filename);

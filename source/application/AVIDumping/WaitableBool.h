@@ -11,15 +11,15 @@
 class WaitableBool
 {
 public:
-	WaitableBool(bool initialState = false);
-	~WaitableBool();
-	void WaitUntilTrue() const;
-	void WaitUntilFalse() const;
-	void operator =(bool set);
-	operator bool() const;
+    WaitableBool(bool initialState = false);
+    ~WaitableBool();
+    void WaitUntilTrue() const;
+    void WaitUntilFalse() const;
+    void operator=(bool set);
+    operator bool() const;
 
 private:
-	HANDLE m_event_true;
-	HANDLE m_event_false;
-	bool m_value;
+    HANDLE m_event_true;
+    HANDLE m_event_false;
+    bool m_value;
 };

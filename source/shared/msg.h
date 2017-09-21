@@ -22,7 +22,8 @@
 //    0x10000 breaks lyle in cube sector
 // 0x80000000 breaks iji
 //     0x8000 breaks iji
-#define whitelistMsgMask 0x2000 // breaks who-knows-what... this is fundamentally flawed, need to implement MessageQueue in wintasee.cpp instead
+#define whitelistMsgMask \
+    0x2000 // breaks who-knows-what... this is fundamentally flawed, need to implement MessageQueue in wintasee.cpp instead
 //#ifdef whitelistMaskFilter
 //	#define curWhitelistMsgMask whitelistMaskFilter(whitelistMsgMask)
 //#else
@@ -30,6 +31,8 @@
 //#endif
 #define toggleWhitelistMessage(message) ((message) ^ (whitelistMsgMask))
 #define isMessageWhitelisted(message) ((message) & (whitelistMsgMask))
-#define whitelistUserMessage(message) (((message) >= WM_USER /*&& (message) < 0xC000*/) ? (toggleWhitelistMessage(message)) : (message)) 
+#define whitelistUserMessage(message)                                                     \
+    (((message) >= WM_USER /*&& (message) < 0xC000*/) ? (toggleWhitelistMessage(message)) \
+                                                      : (message))
 
 #endif

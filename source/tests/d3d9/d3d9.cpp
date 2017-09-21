@@ -13,14 +13,14 @@
 constexpr WCHAR CLASS_NAME[] = L"d3d9";
 constexpr WCHAR WINDOW_NAME[] = L"d3d9";
 
-ATOM             MyRegisterClass(HINSTANCE);
-BOOL             InitInstance(HINSTANCE, int);
+ATOM MyRegisterClass(HINSTANCE);
+BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+                      _In_opt_ HINSTANCE hPrevInstance,
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -64,11 +64,11 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex{};
 
-    wcex.cbSize        = sizeof(wcex);
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = WndProc;
-    wcex.hInstance     = hInstance;
-    wcex.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+    wcex.cbSize = sizeof(wcex);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.hInstance = hInstance;
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wcex.lpszClassName = CLASS_NAME;
 

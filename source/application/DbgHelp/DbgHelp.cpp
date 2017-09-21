@@ -41,22 +41,28 @@ namespace DbgHelp
         {
             s_symbol_paths.append(L";").append(buffer.data());
         }
-        if (GetEnvironmentVariableW(L"_NT_ALTERNATIVE_SYMBOL_PATH", buffer.data(), buffer.size()) != 0)
+        if (GetEnvironmentVariableW(L"_NT_ALTERNATIVE_SYMBOL_PATH", buffer.data(), buffer.size())
+            != 0)
         {
             s_symbol_paths.append(L";").append(buffer.data());
         }
         if (GetEnvironmentVariableW(L"SYSTEMROOT", buffer.data(), buffer.size()) != 0)
         {
-            s_symbol_paths.append(L";").append(buffer.data())
-                .append(L";").append(buffer.data()).append(L"\\system32")
-                .append(L";").append(buffer.data()).append(L"\\SysWOW64");
+            s_symbol_paths.append(L";")
+                .append(buffer.data())
+                .append(L";")
+                .append(buffer.data())
+                .append(L"\\system32")
+                .append(L";")
+                .append(buffer.data())
+                .append(L"\\SysWOW64");
         }
         /*
          * TODO: Enable when SymbolServer support is added. Needs symsrv.dll.
          * This will enable downloading of symbols for the system DLLs making stack traces more accurate.
          * -- Warepire
          */
-         //symbol_paths.append(";").append("SRV*%SYSTEMDRIVE%\\websymbols*http://msdl.microsoft.com/download/symbols");
+        //symbol_paths.append(";").append("SRV*%SYSTEMDRIVE%\\websymbols*http://msdl.microsoft.com/download/symbols");
     }
 
     void AddProcess(HANDLE process, DWORD process_id)

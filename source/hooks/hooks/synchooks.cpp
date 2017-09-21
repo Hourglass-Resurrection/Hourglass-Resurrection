@@ -12,11 +12,10 @@ using Log = DebugLog<LogCategory::SYNC>;
 
 namespace Hooks
 {
-    static std::map<DWORD, std::set<HANDLE> > s_threadIdHandles;
+    static std::map<DWORD, std::set<HANDLE>> s_threadIdHandles;
     static CRITICAL_SECTION s_handleCS;
 
     //static std::map<DWORD,HANDLE> s_threadHandleToFakeThreadHandle;
-
 
     void CloseHandles(DWORD threadId)
     {
@@ -33,9 +32,17 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
     }
 
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateEventA,
-        LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateEventA,
+                  LPSECURITY_ATTRIBUTES lpEventAttributes,
+                  BOOL bManualReset,
+                  BOOL bInitialState,
+                  LPCSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,
+                                          BOOL bManualReset,
+                                          BOOL bInitialState,
+                                          LPCSTR lpName)
     {
         ENTER();
         // TODO: disabling this makes the DirectMusic timer somewhat saveable... what drives that timer??
@@ -48,9 +55,17 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateEventW,
-        LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateEventW,
+                  LPSECURITY_ATTRIBUTES lpEventAttributes,
+                  BOOL bManualReset,
+                  BOOL bInitialState,
+                  LPCWSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes,
+                                          BOOL bManualReset,
+                                          BOOL bInitialState,
+                                          LPCWSTR lpName)
     {
         ENTER();
         HANDLE rv = CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName);
@@ -63,7 +78,12 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenEventA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenEventA,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenEventA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
         ENTER();
@@ -75,7 +95,12 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenEventW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenEventW,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCWSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenEventW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
     {
         ENTER();
@@ -102,8 +127,15 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexA, LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateMutexA,
+                  LPSECURITY_ATTRIBUTES lpMutexAttributes,
+                  BOOL bInitialOwner,
+                  LPCSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateMutexA(LPSECURITY_ATTRIBUTES lpMutexAttributes,
+                                          BOOL bInitialOwner,
+                                          LPCSTR lpName)
     {
         ENTER();
         HANDLE rv = CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
@@ -114,7 +146,12 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenMutexA,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenMutexA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
         ENTER();
@@ -126,8 +163,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateMutexW, LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes, BOOL bInitialOwner, LPCSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateMutexW,
+                  LPSECURITY_ATTRIBUTES lpMutexWttributes,
+                  BOOL bInitialOwner,
+                  LPCSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateMutexW(LPSECURITY_ATTRIBUTES lpMutexWttributes,
+                                          BOOL bInitialOwner,
+                                          LPCSTR lpName)
     {
         ENTER();
         HANDLE rv = CreateMutexW(lpMutexWttributes, bInitialOwner, lpName);
@@ -138,7 +182,12 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenMutexW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenMutexW,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCSTR lpName);
     HOOKFUNC HANDLE WINAPI MyOpenMutexW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
     {
         ENTER();
@@ -158,7 +207,6 @@ namespace Hooks
         BOOL rv = ReleaseMutex(hMutex);
         return rv;
     }
-
 
     HOOK_FUNCTION(BOOL, WINAPI, CloseHandle, HANDLE hObject);
     HOOKFUNC BOOL WINAPI MyCloseHandle(HANDLE hObject)
@@ -188,19 +236,34 @@ namespace Hooks
         return rv;
     }
 
-    HOOK_FUNCTION(BOOL, WINAPI, DuplicateHandle, HANDLE hSourceProcessHandle,
-        HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
-        DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions);
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  DuplicateHandle,
+                  HANDLE hSourceProcessHandle,
+                  HANDLE hSourceHandle,
+                  HANDLE hTargetProcessHandle,
+                  LPHANDLE lpTargetHandle,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  DWORD dwOptions);
     HOOKFUNC BOOL WINAPI MyDuplicateHandle(HANDLE hSourceProcessHandle,
-        HANDLE hSourceHandle, HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle,
-        DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
+                                           HANDLE hSourceHandle,
+                                           HANDLE hTargetProcessHandle,
+                                           LPHANDLE lpTargetHandle,
+                                           DWORD dwDesiredAccess,
+                                           BOOL bInheritHandle,
+                                           DWORD dwOptions)
     {
         HANDLE handle = 0;
         if (!lpTargetHandle)
             lpTargetHandle = &handle;
-        BOOL rv = DuplicateHandle(hSourceProcessHandle, hSourceHandle,
-            hTargetProcessHandle, lpTargetHandle,
-            dwDesiredAccess, bInheritHandle, dwOptions);
+        BOOL rv = DuplicateHandle(hSourceProcessHandle,
+                                  hSourceHandle,
+                                  hTargetProcessHandle,
+                                  lpTargetHandle,
+                                  dwDesiredAccess,
+                                  bInheritHandle,
+                                  dwOptions);
 
         LOG() << "hSourceHandle " << hSourceHandle << " -> lpTargetHandle " << *lpTargetHandle;
 
@@ -223,10 +286,17 @@ namespace Hooks
         return rv;
     }
 
-
-
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreA, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateSemaphoreA,
+                  LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+                  LONG lInitialCount,
+                  LONG lMaximumCount,
+                  LPCSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+                                              LONG lInitialCount,
+                                              LONG lMaximumCount,
+                                              LPCSTR lpName)
     {
         ENTER();
         HANDLE rv = CreateSemaphoreA(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
@@ -237,8 +307,17 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateSemaphoreW, LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateSemaphoreW,
+                  LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+                  LONG lInitialCount,
+                  LONG lMaximumCount,
+                  LPCWSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyCreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+                                              LONG lInitialCount,
+                                              LONG lMaximumCount,
+                                              LPCWSTR lpName)
     {
         ENTER();
         HANDLE rv = CreateSemaphoreW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
@@ -249,8 +328,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenSemaphoreA,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyOpenSemaphoreA(DWORD dwDesiredAccess,
+                                            BOOL bInheritHandle,
+                                            LPCSTR lpName)
     {
         ENTER();
         HANDLE rv = OpenSemaphoreA(dwDesiredAccess, bInheritHandle, lpName);
@@ -261,8 +347,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenSemaphoreW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName);
-    HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenSemaphoreW,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCWSTR lpName);
+    HOOKFUNC HANDLE WINAPI MyOpenSemaphoreW(DWORD dwDesiredAccess,
+                                            BOOL bInheritHandle,
+                                            LPCWSTR lpName)
     {
         ENTER();
         HANDLE rv = OpenSemaphoreW(dwDesiredAccess, bInheritHandle, lpName);
@@ -273,8 +366,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerA, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCSTR lpTimerName);
-    HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCSTR lpTimerName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateWaitableTimerA,
+                  LPSECURITY_ATTRIBUTES lpTimerAttributes,
+                  BOOL bManualReset,
+                  LPCSTR lpTimerName);
+    HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerA(LPSECURITY_ATTRIBUTES lpTimerAttributes,
+                                                  BOOL bManualReset,
+                                                  LPCSTR lpTimerName)
     {
         ENTER();
         HANDLE rv = CreateWaitableTimerA(lpTimerAttributes, bManualReset, lpTimerName);
@@ -285,8 +385,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, CreateWaitableTimerW, LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
-    HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  CreateWaitableTimerW,
+                  LPSECURITY_ATTRIBUTES lpTimerAttributes,
+                  BOOL bManualReset,
+                  LPCWSTR lpTimerName);
+    HOOKFUNC HANDLE WINAPI MyCreateWaitableTimerW(LPSECURITY_ATTRIBUTES lpTimerAttributes,
+                                                  BOOL bManualReset,
+                                                  LPCWSTR lpTimerName)
     {
         ENTER();
         HANDLE rv = CreateWaitableTimerW(lpTimerAttributes, bManualReset, lpTimerName);
@@ -297,8 +404,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerA, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpTimerName);
-    HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCSTR lpTimerName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenWaitableTimerA,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCSTR lpTimerName);
+    HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerA(DWORD dwDesiredAccess,
+                                                BOOL bInheritHandle,
+                                                LPCSTR lpTimerName)
     {
         ENTER();
         HANDLE rv = OpenWaitableTimerA(dwDesiredAccess, bInheritHandle, lpTimerName);
@@ -309,8 +423,15 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(HANDLE, WINAPI, OpenWaitableTimerW, DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpTimerName);
-    HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess, BOOL bInheritHandle, LPCWSTR lpTimerName)
+    HOOK_FUNCTION(HANDLE,
+                  WINAPI,
+                  OpenWaitableTimerW,
+                  DWORD dwDesiredAccess,
+                  BOOL bInheritHandle,
+                  LPCWSTR lpTimerName);
+    HOOKFUNC HANDLE WINAPI MyOpenWaitableTimerW(DWORD dwDesiredAccess,
+                                                BOOL bInheritHandle,
+                                                LPCWSTR lpTimerName)
     {
         ENTER();
         HANDLE rv = OpenWaitableTimerW(dwDesiredAccess, bInheritHandle, lpTimerName);
@@ -321,11 +442,29 @@ namespace Hooks
         LeaveCriticalSection(&s_handleCS);
         return rv;
     }
-    HOOK_FUNCTION(BOOL, WINAPI, SetWaitableTimer, HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
-    HOOKFUNC BOOL WINAPI MySetWaitableTimer(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume)
+    HOOK_FUNCTION(BOOL,
+                  WINAPI,
+                  SetWaitableTimer,
+                  HANDLE hTimer,
+                  const LARGE_INTEGER* lpDueTime,
+                  LONG lPeriod,
+                  PTIMERAPCROUTINE pfnCompletionRoutine,
+                  LPVOID lpArgToCompletionRoutine,
+                  BOOL fResume);
+    HOOKFUNC BOOL WINAPI MySetWaitableTimer(HANDLE hTimer,
+                                            const LARGE_INTEGER* lpDueTime,
+                                            LONG lPeriod,
+                                            PTIMERAPCROUTINE pfnCompletionRoutine,
+                                            LPVOID lpArgToCompletionRoutine,
+                                            BOOL fResume)
     {
         ENTER();
-        BOOL rv = SetWaitableTimer(hTimer, lpDueTime, lPeriod, pfnCompletionRoutine, lpArgToCompletionRoutine, fResume);
+        BOOL rv = SetWaitableTimer(hTimer,
+                                   lpDueTime,
+                                   lPeriod,
+                                   pfnCompletionRoutine,
+                                   lpArgToCompletionRoutine,
+                                   fResume);
         LEAVE(rv);
         return rv;
     }
@@ -354,12 +493,11 @@ namespace Hooks
 
     void ApplySyncIntercepts()
     {
-        static const InterceptDescriptor intercepts[] =
-        {
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, CreateMutexW),
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, OpenMutexW),
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, CreateEventW),
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, OpenEventW),
+        static const InterceptDescriptor intercepts[] = {
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, CreateMutexW),
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, OpenMutexW),
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, CreateEventW),
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, OpenEventW),
             MAKE_INTERCEPT(0, KERNEL32, CreateMutexA),
             MAKE_INTERCEPT(0, KERNEL32, OpenMutexA),
             MAKE_INTERCEPT(0, KERNEL32, CreateEventA),
@@ -377,8 +515,8 @@ namespace Hooks
             MAKE_INTERCEPT(0, KERNEL32, CancelWaitableTimer),
             MAKE_INTERCEPT(0, KERNEL32, SetEvent),
             MAKE_INTERCEPT(0, KERNEL32, ResetEvent),
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, DuplicateHandle),
-            MAKE_INTERCEPT(/*1*/0, KERNEL32, CloseHandle),
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, DuplicateHandle),
+            MAKE_INTERCEPT(/*1*/ 0, KERNEL32, CloseHandle),
             MAKE_INTERCEPT(1, KERNEL32, QueueUserAPC),
         };
         ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));

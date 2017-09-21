@@ -15,8 +15,8 @@
 
 #include "logging.h"
 
-#include "shared/ipc.h"
 #include "Config.h"
+#include "shared/ipc.h"
 
 #include "DbgHelp/DbgHelp.h"
 
@@ -29,18 +29,22 @@ namespace
 
 void InitDebugCriticalSection()
 {
-	InitializeCriticalSection(&gs_debug_print_cs);
+    InitializeCriticalSection(&gs_debug_print_cs);
 }
 
 void PrintLastError(LPCWSTR lpszFunction, DWORD dw)
 {
-	if(!dw)
-		return;
+    if (!dw)
+        return;
 
-	LPVOID lpMsgBuf;
-	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&lpMsgBuf, 0, NULL );
+    LPVOID lpMsgBuf;
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                   NULL,
+                   dw,
+                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                   (LPWSTR) &lpMsgBuf,
+                   0,
+                   NULL);
 
     DebugLog() << lpszFunction << " failed, error " << dw << ": " << lpMsgBuf;
     LocalFree(lpMsgBuf);
@@ -82,31 +86,36 @@ IDbgHelpStackWalkCallback::Action PrintStackTrace(IDbgHelpStackWalkCallback& dat
              */
             if (parameter.m_value.has_value())
             {
-                std::visit([&oss](auto&& value) {
-                    using T = std::decay_t<decltype(value)>;
+                std::visit(
+                    [&oss](auto&& value) {
+                        using T = std::decay_t<decltype(value)>;
 
+                        // clang-format off
                     if constexpr (std::is_same_v<T, char>
                                || std::is_same_v<T, wchar_t>
                                || std::is_same_v<T, char16_t>
                                || std::is_same_v<T, char32_t>)
-                    {
-                        /*
+                            // clang-format on
+                            {
+                                /*
                          * Print the characters.
                          */
-                        oss << static_cast<int>(value) << L" \'" << value << L'\'';
-                    }
-                    else if constexpr (std::is_same_v<T, void*>)
-                    {
-                        /*
+                                oss << static_cast<int>(value) << L" \'" << value << L'\'';
+                            }
+                        else if
+                            constexpr(std::is_same_v<T, void*>)
+                            {
+                                /*
                          * Pointers ignore showbase.
                          */
-                        oss << L"0x" << value;
-                    }
-                    else
-                    {
-                        oss << value;
-                    }
-                }, parameter.m_value.value());
+                                oss << L"0x" << value;
+                            }
+                        else
+                        {
+                            oss << value;
+                        }
+                    },
+                    parameter.m_value.value());
             }
 
             ++arg_number;
@@ -167,54 +176,54 @@ DebugLog& DebugLog::operator<<(const IPC::DebugMessage& dbgmsg)
         {
         case 'X':
         case 'p':
+        {
+            m_buffer << "0x" << std::hex << std::setfill(L'0') << std::setw(m.length * 2);
+            if (m.length == sizeof(unsigned char))
             {
-                m_buffer << "0x" << std::hex << std::setfill(L'0') << std::setw(m.length * 2);
-                if (m.length == sizeof(unsigned char))
-                {
-                    m_buffer << *reinterpret_cast<const unsigned char*>(m.data);
-                }
-                else if (m.length == sizeof(unsigned short))
-                {
-                    m_buffer << *reinterpret_cast<const unsigned short*>(m.data);
-                }
-                else if (m.length == sizeof(unsigned int))
-                {
-                    m_buffer << *reinterpret_cast<const unsigned int*>(m.data);
-                }
-                else if (m.length == sizeof(unsigned long long int))
-                {
-                    m_buffer << *reinterpret_cast<const unsigned long long int*>(m.data);
-                }
+                m_buffer << *reinterpret_cast<const unsigned char*>(m.data);
             }
-            break;
+            else if (m.length == sizeof(unsigned short))
+            {
+                m_buffer << *reinterpret_cast<const unsigned short*>(m.data);
+            }
+            else if (m.length == sizeof(unsigned int))
+            {
+                m_buffer << *reinterpret_cast<const unsigned int*>(m.data);
+            }
+            else if (m.length == sizeof(unsigned long long int))
+            {
+                m_buffer << *reinterpret_cast<const unsigned long long int*>(m.data);
+            }
+        }
+        break;
         case 'g':
+        {
+            m_buffer << std::dec;
+            if (m.length == sizeof(float))
             {
-                m_buffer << std::dec;
-                if (m.length == sizeof(float))
-                {
-                    m_buffer << *reinterpret_cast<const float*>(m.data);
-                }
-                else if (m.length == sizeof(double))
-                {
-                    m_buffer << *reinterpret_cast<const double*>(m.data);
-                }
+                m_buffer << *reinterpret_cast<const float*>(m.data);
             }
-            break;
+            else if (m.length == sizeof(double))
+            {
+                m_buffer << *reinterpret_cast<const double*>(m.data);
+            }
+        }
+        break;
         case 'b':
-            {
-                m_buffer << std::boolalpha << *reinterpret_cast<const bool*>(m.data);
-            }
-            break;
+        {
+            m_buffer << std::boolalpha << *reinterpret_cast<const bool*>(m.data);
+        }
+        break;
         case 'S':
-            {
-                m_buffer << reinterpret_cast<LPCSTR>(m.data);
-            }
-            break;
+        {
+            m_buffer << reinterpret_cast<LPCSTR>(m.data);
+        }
+        break;
         case 's':
-            {
-                m_buffer << reinterpret_cast<LPCWSTR>(m.data);
-            }
-            break;
+        {
+            m_buffer << reinterpret_cast<LPCWSTR>(m.data);
+        }
+        break;
         default:
             assert(false);
             break;

@@ -52,7 +52,9 @@ public:
         std::optional<ParameterValue> m_value;
 
         Parameter(DbgHelpType type, std::wstring name, std::optional<ParameterValue> value)
-            : m_type(type), m_name(name), m_value(value) {}
+            : m_type(type), m_name(name), m_value(value)
+        {
+        }
     };
 
     virtual ~IDbgHelpStackWalkCallback() = default;
