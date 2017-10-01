@@ -152,6 +152,9 @@
     <ClCompile Include="GUI\Utils\ListViewUtils.cpp">
       <Filter>Source Files\GUI\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\MainWindow.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
     <ClCompile Include="GUI\Objects\PushButton.cpp">
       <Filter>Source Files\GUI\Objects</Filter>
     </ClCompile>
@@ -324,6 +327,12 @@
     </ClInclude>
     <ClInclude Include="GUI\Utils\ListViewUtils.h">
       <Filter>Source Files\GUI\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\MainWindow.h">
+      <Filter>Source Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="wintaser.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GUI\Core\ObjBase.h">
       <Filter>Source Files\GUI\Core</Filter>
